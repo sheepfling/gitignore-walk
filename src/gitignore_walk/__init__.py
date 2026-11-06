@@ -5,6 +5,7 @@ from ._portable import (
     GitIgnoreDecision,
     GitIgnoreError,
     GitIgnorePolicy,
+    GitIgnoreWalkEntry,
     GitIgnoreWalker,
     is_gitignored,
     matches_gitignore,
@@ -15,9 +16,11 @@ __all__ = [
     "GitIgnoreDecision",
     "GitIgnoreError",
     "GitIgnorePolicy",
+    "GitIgnoreWalkEntry",
     "GitIgnoreWalker",
     "GitStandardPolicy",
     "is_gitignored",
     "matches_gitignore",
     "parse_gitignore",
 ]
+

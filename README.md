@@ -1,6 +1,6 @@
 # gitignore-walk
 
-An unreleased Python 3.10+ library for checking, explaining and traversing Git-ignore rules.
+An unreleased Python 3.11+ library for checking, explaining and traversing Git-ignore rules.
 Extracted from [mdrepo](https://github.com/sheepfling/mdrepo) without changing mdrepo.
 The [private repository](https://github.com/sheepfling/gitignore-walk) is created; the PyPI
 distribution name remains provisional and has not been reserved or published.
@@ -19,7 +19,8 @@ for path in GitIgnoreWalker(policy.root, policy=policy).iter_files(ignored=False
     print(path)
 ```
 
-Opt into `GitStandardPolicy` to use the installed Git executable and its actual configuration.
+`GitIgnorePolicy` works without a Git installation. Opt into `GitStandardPolicy` only when you
+want the installed Git executable and its actual configuration.
 It includes `core.excludesFile`, system/global/local/worktree config, includes and conditional
 includes, tilde expansion, XDG fallback, `.git/info/exclude`, and repository `.gitignore` files.
 Its root must be the root of a non-bare Git worktree. Linked worktrees and separate Git dirs are
@@ -46,7 +47,8 @@ explicit path and error boundaries described below.
 - Both policies provide `is_ignored(target)`, `is_ignored_many(targets)` and `explain(target)`.
 - `GitStandardPolicy.explain_many(targets)` returns ordered, detailed results in one Git process.
 - `GitIgnoreDecision` has `path`, `ignored`, `source`, `pattern`, and one-based `line` fields.
-- `GitIgnoreWalker.walk()` yields `(Path, list[str], list[str])`, like `os.walk`.
+- `GitIgnoreWalker.walk()` yields `GitIgnoreWalkEntry(directory, dir_names, file_names)`, a
+  named tuple that stays compatible with `os.walk`-style unpacking.
 - **`ignored=None` is the default and does no ignore filtering.** `False` selects unignored
   entries, and `True` selects ignored entries while still visiting safe unignored parents.
 - `iter_files()` yields the selected file paths. Hidden files and `.git` are not automatically
@@ -116,8 +118,8 @@ python -m twine check dist/*
 ```
 
 Tests isolate HOME, XDG and Git configuration and never alter the developer's global configuration.
-The proposed CI matrix covers Ubuntu, macOS and Windows on Python 3.10–3.14, plus the minimum
-pathspec version. A proposed workflow is not evidence those platforms have passed.
+The CI matrix covers Ubuntu, macOS and Windows on Python 3.11-3.15, plus the minimum pathspec
+version. A configured workflow is not evidence those platforms have passed on the current commit.
 
 ## Sources and license
 
@@ -129,3 +131,4 @@ This package adds explicit Git-backed policy and package tests, not a Rust bindi
 Normative references: [gitignore](https://git-scm.com/docs/gitignore),
 [git check-ignore](https://git-scm.com/docs/git-check-ignore),
 [git config](https://git-scm.com/docs/git-config).
+

@@ -9,7 +9,7 @@ import stat
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Protocol, cast
+from typing import NamedTuple, Protocol, cast
 
 from pathspec import GitIgnoreSpec
 from pathspec.patterns.gitignore import GitIgnorePatternError
@@ -30,6 +30,14 @@ class GitIgnoreDecision:
     line: int | None = None
 
 
+class GitIgnoreWalkEntry(NamedTuple):
+    """One ``os.walk``-style row with names for each returned value."""
+
+    directory: Path
+    dir_names: list[str]
+    file_names: list[str]
+
+
 @dataclass(frozen=True, slots=True)
 class _LoadedIgnore:
     spec: GitIgnoreSpec
@@ -47,7 +55,7 @@ class GitIgnorePolicy:
 
     def __init__(
         self,
-        root: str | os.PathLike[str] | Path,
+        root: str | os.PathLike[str],
         *,
         initial_excludes: Sequence[str] = (),
     ) -> None:
@@ -57,12 +65,12 @@ class GitIgnorePolicy:
             source="initial Git-ignore exclusions",
         )
 
-    def is_ignored(self, target: str | os.PathLike[str] | Path) -> bool:
+    def is_ignored(self, target: str | os.PathLike[str]) -> bool:
         """Return whether one target is ignored by the configured policy."""
 
         return self.explain(target).ignored
 
-    def explain(self, target: str | os.PathLike[str] | Path) -> GitIgnoreDecision:
+    def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
         """Return the effective decision and matching policy source for one target."""
 
         resolved_target = self.resolve_target(target)
@@ -70,7 +78,7 @@ class GitIgnorePolicy:
 
     def is_ignored_many(
         self,
-        targets: Iterable[str | os.PathLike[str] | Path],
+        targets: Iterable[str | os.PathLike[str]],
     ) -> tuple[bool, ...]:
         """Return ignore decisions for multiple targets using one policy snapshot.
 
@@ -111,10 +119,10 @@ class GitIgnorePolicy:
     ) -> tuple[GitIgnoreDecision, ...]:
         return tuple(self.decision(target=target, snapshot=snapshot) for target in targets)
 
-    def _walk_top(self, target: str | os.PathLike[str] | Path) -> Path:
+    def _walk_top(self, target: str | os.PathLike[str]) -> Path:
         return self.resolve_target(target)
 
-    def resolve_target(self, target: str | os.PathLike[str] | Path) -> Path:
+    def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         target_path = Path(target).expanduser()
         if not target_path.is_absolute():
             target_path = self.root / target_path
@@ -132,7 +140,7 @@ class GitIgnoreWalker:
 
     def __init__(
         self,
-        root: str | os.PathLike[str] | Path,
+        root: str | os.PathLike[str],
         *,
         policy: GitIgnorePolicy | None = None,
         initial_excludes: Sequence[str] = (),
@@ -145,7 +153,7 @@ class GitIgnoreWalker:
 
     def iter_files(
         self,
-        top: str | os.PathLike[str] | Path | None = None,
+        top: str | os.PathLike[str] | None = None,
         *,
         topdown: bool = True,
         onerror: Callable[[OSError], object] | None = None,
@@ -165,13 +173,13 @@ class GitIgnoreWalker:
 
     def walk(
         self,
-        top: str | os.PathLike[str] | Path | None = None,
+        top: str | os.PathLike[str] | None = None,
         *,
         topdown: bool = True,
         onerror: Callable[[OSError], object] | None = None,
         follow_links: bool = False,
         ignored: bool | None = None,
-    ) -> Iterator[tuple[Path, list[str], list[str]]]:
+    ) -> Iterator[GitIgnoreWalkEntry]:
         """Walk regular repository entries with an ``os.walk``-style result.
 
         ``ignored=None`` yields all regular files and directories. Set it to ``True`` or ``False``
@@ -200,7 +208,7 @@ class GitIgnoreWalker:
             dir_names[:] = safe_dir_names
 
             if ignored is None:
-                yield current, dir_names, safe_filenames
+                yield GitIgnoreWalkEntry(current, dir_names, safe_filenames)
                 continue
 
             paths = tuple(
@@ -224,12 +232,12 @@ class GitIgnoreWalker:
                 # An ignored parent cannot contain an unignored descendant under Git's traversal
                 # rules, so unignored walks can prune those directories safely.
                 dir_names[:] = matching_dirs
-                yield current, dir_names, matching_files
+                yield GitIgnoreWalkEntry(current, dir_names, matching_files)
                 continue
-            yield current, matching_dirs, matching_files
+            yield GitIgnoreWalkEntry(current, matching_dirs, matching_files)
 
 
-def _resolve_root(root: str | os.PathLike[str] | Path) -> Path:
+def _resolve_root(root: str | os.PathLike[str]) -> Path:
     try:
         root_path = Path(root).expanduser().resolve()
         if not root_path.is_dir():
@@ -312,8 +320,8 @@ def _ancestor_directories(*, root: Path, target: Path) -> tuple[Path, ...]:
 
 
 def is_gitignored(
-    root: str | os.PathLike[str] | Path,
-    target: str | os.PathLike[str] | Path,
+    root: str | os.PathLike[str],
+    target: str | os.PathLike[str],
 ) -> bool:
     """Return whether ``target`` is ignored by the Git-ignore files under ``root``.
 
@@ -512,3 +520,4 @@ def _decision_from_match(*, path: Path, match: _PatternMatch) -> GitIgnoreDecisi
         pattern=match.pattern,
         line=match.line,
     )
+

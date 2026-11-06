@@ -10,7 +10,7 @@ No mdrepo checkout, branch or PR was modified.
 - The same 53 cases on Python 3.12.14 with `pathspec==1.1.1`.
 - Git 2.52.0 is the native oracle and executable for these runs.
 - Ruff 0.17.4 lint and formatting checks.
-- Pyright 1.1.414 strict source checking targeting Python 3.10.
+- Pyright 1.1.414 strict source checking targeting Python 3.10 at that validation revision.
 - Source distribution and universal wheel builds; Twine metadata validation.
 - Installed-wheel tests outside the source tree, including `py.typed` presence.
 
@@ -40,10 +40,12 @@ false parity or dropping Windows coverage. The latest commit still needs its own
 
 - No package release or PyPI publication has occurred.
 - Cross-platform GitHub CI must be checked for the exact review commit; local Linux results do not
-  establish Windows/macOS results. The proposed matrix is Python 3.10–3.14 on all three platforms.
+  establish Windows/macOS results. The current proposed matrix is Python 3.11-3.15 on all three
+  platforms; historical local validation on Python 3.10 does not establish current-head support.
 - This is not mdrepo integration testing or approval to migrate it.
 - No performance benchmark, hostile concurrent-filesystem safety claim, persistent subprocess,
   parallel traversal, or atomic whole-tree snapshot is included.
 - The documented legacy portable behaviors remain compatibility limitations, not fixes.
 
 See [migration gates](migration.md) and the [API/defaults](../README.md) before adoption.
+

@@ -53,7 +53,7 @@ class GitStandardPolicy(GitIgnorePolicy):
 
     def __init__(
         self,
-        root: str | os.PathLike[str] | Path,
+        root: str | os.PathLike[str],
         *,
         initial_excludes: Sequence[str] = (),
         git_executable: str = "git",
@@ -73,7 +73,7 @@ class GitStandardPolicy(GitIgnorePolicy):
         if worktree != self.root:
             raise ValueError("GitStandardPolicy root must be the Git worktree root")
 
-    def resolve_target(self, target: str | os.PathLike[str] | Path) -> Path:
+    def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         """Keep Git's pathname identity; never traverse an intermediate symlink."""
 
         target_path = Path(target).expanduser()
@@ -89,20 +89,20 @@ class GitStandardPolicy(GitIgnorePolicy):
             parent = parent.parent
         return target_path
 
-    def _walk_top(self, target: str | os.PathLike[str] | Path) -> Path:
+    def _walk_top(self, target: str | os.PathLike[str]) -> Path:
         path = self.resolve_target(target)
         if path.is_symlink():
             raise ValueError("GitStandardPolicy walks cannot start at a symlink")
         return path
 
-    def explain(self, target: str | os.PathLike[str] | Path) -> GitIgnoreDecision:
+    def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
         """Explain one path using a fresh Git process."""
 
         return self.explain_many((target,))[0]
 
     def explain_many(
         self,
-        targets: Iterable[str | os.PathLike[str] | Path],
+        targets: Iterable[str | os.PathLike[str]],
     ) -> tuple[GitIgnoreDecision, ...]:
         """Explain an ordered batch in one Git process using NUL-safe input/output.
 
@@ -157,7 +157,7 @@ class GitStandardPolicy(GitIgnorePolicy):
 
     def is_ignored_many(
         self,
-        targets: Iterable[str | os.PathLike[str] | Path],
+        targets: Iterable[str | os.PathLike[str]],
     ) -> tuple[bool, ...]:
         """Return rule decisions in input order using one Git process."""
 
@@ -195,3 +195,4 @@ class GitStandardPolicy(GitIgnorePolicy):
             detail = _decode_git_output(result.stderr).strip() or f"exit status {result.returncode}"
             raise GitIgnoreError(f"Git ignore policy failed: {detail}")
         return result
+
