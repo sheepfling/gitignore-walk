@@ -543,6 +543,17 @@ class NativeTests(RepositoryCase):
 
 
 class DifferentialTests(RepositoryCase):
+    def test_trailing_space_paths_follow_platform_semantics(self) -> None:
+        self.init()
+        self.write(".gitignore", "trailing   \nspace\\ \n")
+        targets = ["trailing", "trailing   ", "space ", "space"]
+        # Win32 cannot represent the trailing-space names as distinct ordinary
+        # files. Git for Windows normalizes them; the portable legacy API does not.
+        portable = (True, False, True, False)
+        native = (True, True, False, False) if os.name == "nt" else portable
+        self.assertEqual(GitIgnorePolicy(self.root).is_ignored_many(targets), portable)
+        self.assertEqual(self.native().is_ignored_many(targets), native)
+
     def test_portable_pattern_corpus_against_git(self) -> None:
         self.init()
         fixtures = [
@@ -553,7 +564,6 @@ class DifferentialTests(RepositoryCase):
             ("dir/**\n!dir/keep\n", ["dir", "dir/keep", "dir/drop", "dir/sub/file"]),
             ("dir/\n!dir/keep\n", ["dir", "dir/keep", "dir/drop"]),
             ("\\#literal\n\\!literal\n", ["#literal", "!literal", "other"]),
-            ("trailing   \nspace\\ \n", ["trailing", "trailing   ", "space ", "space"]),
             ("[ab]?.tmp\n", ["a1.tmp", "b2.tmp", "c1.tmp", "a.tmp"]),
         ]
         (self.root / "dir").mkdir()

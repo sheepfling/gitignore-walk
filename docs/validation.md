@@ -6,8 +6,8 @@ No mdrepo checkout, branch or PR was modified.
 
 ## Passed locally on Linux
 
-- 52 isolated unittest cases on Python 3.10.22 with the minimum `pathspec==1.0.0`.
-- The same 52 cases on Python 3.12.14 with `pathspec==1.1.1`.
+- 53 isolated unittest cases on Python 3.10.22 with the minimum `pathspec==1.0.0`.
+- The same 53 cases on Python 3.12.14 with `pathspec==1.1.1`.
 - Git 2.52.0 is the native oracle and executable for these runs.
 - Ruff 0.17.4 lint and formatting checks.
 - Pyright 1.1.414 strict source checking targeting Python 3.10.
@@ -28,6 +28,14 @@ from unusual roots, dereferencing final symlink query targets, and classifying d
 directories for hard baseline patterns. These were fixed and given regression coverage. A malformed
 mock frame was also corrected so the unexpected-echo check is genuinely exercised.
 
+## First hosted CI pass
+
+At `cc273651`, all ten Linux/macOS matrix jobs plus the minimum-dependency job passed.
+The five Windows jobs found a trailing-space pathname difference: Git for Windows normalizes
+names Win32 cannot represent as distinct ordinary files, whereas the legacy portable policy keeps
+the strings. That fixture now explicitly asserts both platform contracts instead of demanding
+false parity or dropping Windows coverage. The latest commit still needs its own hosted result.
+
 ## Not yet established
 
 - No package release or PyPI publication has occurred.
@@ -36,6 +44,6 @@ mock frame was also corrected so the unexpected-echo check is genuinely exercise
 - This is not mdrepo integration testing or approval to migrate it.
 - No performance benchmark, hostile concurrent-filesystem safety claim, persistent subprocess,
   parallel traversal, or atomic whole-tree snapshot is included.
-- The two documented legacy portable behaviors remain compatibility limitations, not fixes.
+- The documented legacy portable behaviors remain compatibility limitations, not fixes.
 
 See [migration gates](migration.md) and the [API/defaults](../README.md) before adoption.

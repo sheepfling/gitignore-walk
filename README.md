@@ -88,7 +88,7 @@ per Git invocation. The subprocess uses no shell and does not change Git configu
 
 ## Compatibility limitations before migration
 
-Two legacy portable behaviors remain visible and tested rather than silently changed:
+Legacy portable behaviors remain visible and tested rather than silently changed:
 
 1. Portable point queries resolve symlinks before matching. An explicitly supplied internal
    symlink walk root also resolves to its target, even though discovered symlinks are omitted.
@@ -96,9 +96,12 @@ Two legacy portable behaviors remain visible and tested rather than silently cha
    traversal, and reject a symlink walk root.
 2. Bottom-up filtered walks cannot prune descent. An ignored directory row can be yielded with
    empty child lists. Use top-down traversal when pruning matters. This applies to both policies.
+3. Git for Windows normalizes trailing-space pathnames that Win32 cannot represent as distinct
+   ordinary files. The portable API preserves those strings. Tests assert each backend's actual
+   platform behavior rather than claiming universal parity for invalid native filenames.
 
-See [maturity and migration gates](docs/migration.md) and [validation](docs/validation.md). The library is alpha; mdrepo should keep its
-existing implementation until the gates are met and a separate migration is reviewed.
+See [maturity and migration gates](docs/migration.md) and [validation](docs/validation.md).
+The library is alpha; mdrepo should keep its existing implementation until the gates are met and a separate migration is reviewed.
 
 ## Development
 
