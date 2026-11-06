@@ -40,8 +40,8 @@ false parity or dropping Windows coverage. The latest commit still needs its own
 
 - No package release or PyPI publication has occurred.
 - Cross-platform GitHub CI must be checked for the exact review commit; local Linux results do not
-  establish Windows/macOS results. The current proposed matrix is Python 3.11-3.15 on all three
-  platforms; historical local validation on Python 3.10 does not establish current-head support.
+  establish Windows/macOS results. The current proposed matrix is Python 3.10-3.15 on all three
+  platforms. The earlier Python 3.10 results predate the latest code changes and need to be rerun.
 - This is not mdrepo integration testing or approval to migrate it.
 - No performance benchmark, hostile concurrent-filesystem safety claim, persistent subprocess,
   parallel traversal, or atomic whole-tree snapshot is included.

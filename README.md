@@ -1,45 +1,70 @@
 # gitignore-walk
 
-An unreleased Python 3.11+ library for checking, explaining and traversing Git-ignore rules.
-Extracted from [mdrepo](https://github.com/sheepfling/mdrepo) without changing mdrepo.
-The [private repository](https://github.com/sheepfling/gitignore-walk) is created; the PyPI
-distribution name remains provisional and has not been reserved or published.
+`gitignore-walk` supports Python 3.10-3.15 and evaluates Git ignore rules, explains matching
+decisions, and traverses directory trees under an explicit policy. It provides two backends:
 
-## Choose the scope explicitly
+- **`GitIgnorePolicy`** uses `pathspec` to read root and nested `.gitignore` files. It works
+  without Git or a Git repository.
+- **`GitStandardPolicy`** delegates to the installed Git executable and honors Git's configured
+  ignore sources, including global excludes and repository configuration.
 
-The default `GitIgnorePolicy` reads root and nested `.gitignore` files using `pathspec`.
-It works without Git and without a `.git` directory. It does **not** read global excludes,
-Git config, `.git/info/exclude`, or the index. This preserves the original mdrepo policy.
+Both backends support individual and batch queries, explanations, and filtered traversal through
+`GitIgnoreWalker`. The library is useful for repository analyzers, code indexers, documentation
+generators, linters, and build tools that need predictable control over file discovery.
+
+This unreleased alpha was extracted from [mdrepo](https://github.com/sheepfling/mdrepo) without
+changing mdrepo. The distribution name remains provisional and has not been reserved on PyPI.
+
+## Quick start
+
+### Portable matching
 
 ```python
 from gitignore_walk import GitIgnorePolicy, GitIgnoreWalker
 
-policy = GitIgnorePolicy("/path/to/project", initial_excludes=(".git/",))
-for path in GitIgnoreWalker(policy.root, policy=policy).iter_files(ignored=False):
+policy = GitIgnorePolicy(
+    "/path/to/project",
+    initial_excludes=(".git/",),
+)
+walker = GitIgnoreWalker(policy.root, policy=policy)
+
+for path in walker.iter_files(ignored=False):
     print(path)
 ```
 
-`GitIgnorePolicy` works without a Git installation. Opt into `GitStandardPolicy` only when you
-want the installed Git executable and its actual configuration.
-It includes `core.excludesFile`, system/global/local/worktree config, includes and conditional
-includes, tilde expansion, XDG fallback, `.git/info/exclude`, and repository `.gitignore` files.
-Its root must be the root of a non-bare Git worktree. Linked worktrees and separate Git dirs are
-resolved by Git, not by assuming `.git` is a directory.
+The portable backend reads repository `.gitignore` files with `pathspec`; it does not read global
+excludes, Git config, `.git/info/exclude`, or the index. This preserves the original mdrepo policy.
+
+### Git-native matching and explanations
 
 ```python
 from gitignore_walk import GitStandardPolicy, GitIgnoreWalker
 
-policy = GitStandardPolicy("/path/to/checkout", initial_excludes=(".git/",))
-for decision in policy.explain_many(["build/output.txt", "docs/guide.md"]):
-    print(decision.path, decision.ignored, decision.source, decision.line, decision.pattern)
-for path in GitIgnoreWalker(policy.root, policy=policy).iter_files(ignored=False):
+policy = GitStandardPolicy("/path/to/checkout")
+
+for decision in policy.explain_many(
+    ["build/output.txt", "docs/guide.md"]
+):
+    print(
+        decision.path,
+        decision.ignored,
+        decision.source,
+        decision.line,
+        decision.pattern,
+    )
+
+walker = GitIgnoreWalker(policy.root, policy=policy)
+for path in walker.iter_files(ignored=False):
     print(path)
 ```
 
-The Git-backed policy always uses `git check-ignore --no-index`. A tracked file can therefore
-be reported ignored by a matching rule. This is **not** an index/status/clean-checkout query or a
-promise about what Git will commit. Git-native means Git's ignore-rule engine, within the
-explicit path and error boundaries described below.
+The Git-backed policy uses `git check-ignore --no-index` and honors Git's configured excludes,
+including `core.excludesFile`, `.git/info/exclude`, conditional includes, and linked-worktree
+configuration. Its root must be the root of a non-bare Git worktree.
+
+A matching rule can report a tracked path as ignored because `--no-index` deliberately ignores
+index state. The result explains ignore rules; it does not predict Git status or whether a file
+will be committed.
 
 ## API and traversal
 
@@ -53,8 +78,10 @@ explicit path and error boundaries described below.
   entries, and `True` selects ignored entries while still visiting safe unignored parents.
 - `iter_files()` yields the selected file paths. Hidden files and `.git` are not automatically
   excluded. Set an explicit caller baseline if that is desired.
-- Top-down unignored/all walks expose mutable traversal directory lists. Ignored-only walks must
-  visit unignored parents, so their returned filtered directory list does not control traversal.
+- Top-down walks with `ignored=None` or `ignored=False` support `os.walk`-style pruning: mutate
+  the yielded `dir_names` list to prevent descent into selected directories. Ignored-only walks
+  must visit unignored parents to find ignored descendants, so their returned filtered directory
+  list does not control traversal.
 - Discovered symlinks and special files are omitted. `follow_links=True` is rejected.
 - Relative targets are rooted at the policy root. Missing paths are allowed. Targets outside
   the root are rejected. Unknown nonexistent paths are treated as files, not guessed directories.
@@ -118,7 +145,7 @@ python -m twine check dist/*
 ```
 
 Tests isolate HOME, XDG and Git configuration and never alter the developer's global configuration.
-The CI matrix covers Ubuntu, macOS and Windows on Python 3.11-3.15, plus the minimum pathspec
+The CI matrix covers Ubuntu, macOS and Windows on Python 3.10-3.15, plus the minimum pathspec
 version. A configured workflow is not evidence those platforms have passed on the current commit.
 
 ## Sources and license
