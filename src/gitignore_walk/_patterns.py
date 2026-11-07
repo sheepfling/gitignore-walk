@@ -168,7 +168,19 @@ def _character_class(pattern: str, start: int) -> tuple[str, int]:
     negate = content.startswith("!")
     if negate:
         content = content[1:]
+    if content.startswith("]"):
+        content = r"\]" + content[1:]
     if content.startswith("^"):
-        content = "\\" + content
-    content = content.replace("\\", "\\\\").replace("]", "\\]")
-    return f"[{'^' if negate else ''}{content}]", close
+        content = r"\^" + content[1:]
+    escaped: list[str] = []
+    index = 0
+    while index < len(content):
+        if content[index] == "\\" and index + 1 < len(content):
+            escaped.append(re.escape(content[index + 1]))
+            index += 2
+            continue
+        char = content[index]
+        escaped.append(r"\]" if char == "]" else char)
+        index += 1
+    content = "".join(escaped)
+    return f"(?!/)[{'^' if negate else ''}{content}]", close

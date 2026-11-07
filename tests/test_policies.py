@@ -682,6 +682,7 @@ class DifferentialTests(RepositoryCase):
             ("dir/\n!dir/keep\n", ["dir", "dir/keep", "dir/drop"]),
             ("\\#literal\n\\!literal\n", ["#literal", "!literal", "other"]),
             ("[ab]?.tmp\n", ["a1.tmp", "b2.tmp", "c1.tmp", "a.tmp"]),
+            ("[]a].txt\n", ["].txt", "a.txt", "b.txt"]),
             ("file[!0-4].txt\n", ["file5.txt", "file0.txt", "nested/file9.txt"]),
         ]
         (self.root / "dir").mkdir()
