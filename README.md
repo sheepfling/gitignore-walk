@@ -13,8 +13,6 @@ Both work with `GitIgnoreWalker`; choose the policy that fits the application's 
 
 Designed for repository analyzers, code indexers, documentation generators, linters, and build tools.
 
-**Status:** Unreleased alpha, extracted from [mdrepo](https://github.com/sheepfling/mdrepo) without modifying it. The PyPI distribution name remains provisional.
-
 ## Quick start
 
 ### Portable matching
