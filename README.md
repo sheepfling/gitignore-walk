@@ -54,9 +54,7 @@ from gitignore_walk import GitStandardPolicy, GitIgnoreWalker
 
 policy = GitStandardPolicy("/path/to/checkout")
 
-for decision in policy.explain_many(
-    ["build/output.txt", "docs/guide.md"]
-):
+for decision in policy.explain_many(["build/output.txt", "docs/guide.md"]):
     print(
         decision.path,
         decision.ignored,
