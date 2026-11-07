@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Final, NamedTuple
 
+
 class _PatternSyntax:
     """Named symbols for the Git-ignore syntax markers handled by this parser."""
 
@@ -23,6 +24,7 @@ class _PatternSyntax:
     CLASS_NEGATION: Final = "^"
     SPACE: Final = " "
 
+
 class GitIgnorePatternError(ValueError):
     """Raised when a Git-ignore pattern cannot be compiled."""
 
@@ -31,6 +33,7 @@ class GitIgnorePatternError(ValueError):
         self.line = line
         self.pattern = pattern
         self.reason = reason
+
 
 @dataclass(frozen=True, slots=True)
 class GitIgnorePattern:
@@ -64,9 +67,11 @@ class GitIgnorePattern:
                 return True
         return False
 
+
 class _CharacterClass(NamedTuple):
     expression: str
     end_index: int
+
 
 def parse_pattern_line(line: str, *, source_line: int) -> GitIgnorePattern | None:
     """Parse one nonempty source line into a compiled pattern, if it is active."""
@@ -117,6 +122,7 @@ def parse_pattern_line(line: str, *, source_line: int) -> GitIgnorePattern | Non
         first_literal=_first_literal(value),
     )
 
+
 def _first_literal(pattern: str) -> str | None:
     """Return a mandatory first character, or None when a glob can match anything."""
     if not pattern:
@@ -127,6 +133,7 @@ def _first_literal(pattern: str) -> str | None:
         return None
     return pattern[0]
 
+
 def _strip_unescaped_trailing_spaces(value: str) -> str:
     while value.endswith(_PatternSyntax.SPACE):
         space_index = len(value) - 1
@@ -136,6 +143,7 @@ def _strip_unescaped_trailing_spaces(value: str) -> str:
         value = value[:-1]
     return value
 
+
 def _is_escaped(value: str, index: int) -> bool:
     backslashes = 0
     index -= 1
@@ -143,6 +151,7 @@ def _is_escaped(value: str, index: int) -> bool:
         backslashes += 1
         index -= 1
     return backslashes % 2 == 1
+
 
 _begin_escape_group: Final = frozenset(
     {
@@ -152,6 +161,7 @@ _begin_escape_group: Final = frozenset(
         _PatternSyntax.CLASS_START,
     }
 )
+
 
 def _glob_to_regex(pattern: str) -> str:
     chunks = ["^"]
@@ -198,6 +208,7 @@ def _glob_to_regex(pattern: str) -> str:
     chunks.append("$")
     return "".join(chunks)
 
+
 def _character_class(pattern: str, start: int) -> _CharacterClass:
     content_start = start + 1
     negate = content_start < len(pattern) and pattern[content_start] in (
@@ -239,6 +250,7 @@ def _character_class(pattern: str, start: int) -> _CharacterClass:
             content.append(char)
         index += 1
     return _CharacterClass(f"(?!/)[{'^' if negate else ''}{''.join(content)}]", close)
+
 
 def normalize_relative_path(relative: str | os.PathLike[str]) -> str:
     value = os.fspath(Path(relative))

@@ -9,6 +9,7 @@ from ._ignore_types import GitIgnoreMatch
 
 __all__ = ["GitIgnoreMatcher"]
 
+
 class GitIgnoreMatcher(Protocol):
     """Backend contract for compiling one ignore file and checking paths against it."""
 

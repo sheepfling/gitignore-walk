@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, cast
 
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile, GitIgnoreMatch, GitIgnoreSpec
@@ -29,6 +29,7 @@ __all__ = [
     "parse_gitignore",
 ]
 
+
 @dataclass(frozen=True, slots=True)
 class RegexMatcher:
     """The bundled, supported Python-regex matcher and portable default."""
@@ -40,13 +41,15 @@ class RegexMatcher:
 
     def match(
         self,
-        spec: GitIgnoreSpec,
+        spec: object,
         relative: str,
         *,
         source: str,
         is_directory: bool,
     ) -> GitIgnoreMatch | None:
-        pattern = _last_matching_pattern(spec, relative, is_directory=is_directory)
+        pattern = _last_matching_pattern(
+            cast(GitIgnoreSpec, spec), relative, is_directory=is_directory
+        )
         if pattern is None:
             return None
         return GitIgnoreMatch(
@@ -56,7 +59,9 @@ class RegexMatcher:
             line=pattern.source_line,
         )
 
+
 DEFAULT_MATCHER: Final = RegexMatcher()
+
 
 def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
     """Parse an ignore file and report malformed patterns with their source."""
@@ -77,6 +82,7 @@ def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
         ) from error
     return GitIgnoreSpec(tuple(patterns))
 
+
 def matches_gitignore(
     spec: GitIgnoreSpec,
     relative: str | os.PathLike[str],
@@ -93,6 +99,7 @@ def matches_gitignore(
     )
     return matched is not None and matched.ignored
 
+
 def match_gitignore_file(
     ignore_file: GitIgnoreFile,
     relative: str | os.PathLike[str],
@@ -107,6 +114,7 @@ def match_gitignore_file(
         source=ignore_file.source,
         is_directory=is_directory,
     )
+
 
 def _last_matching_pattern(
     spec: GitIgnoreSpec,

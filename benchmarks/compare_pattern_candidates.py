@@ -18,6 +18,7 @@ DEFAULT_RULE_COUNT = 2_000
 DEFAULT_TARGET_COUNT = 1_000
 DEFAULT_REPEATS = 5
 
+
 def _compare(patterns: list[str], targets: list[str], *, repeats: int) -> tuple[float, float]:
     spec = parse_gitignore(patterns, source="synthetic benchmark")
 
@@ -50,6 +51,7 @@ def _compare(patterns: list[str], targets: list[str], *, repeats: int) -> tuple[
     indexed = median(repeat(candidate_scan, number=1, repeat=repeats))
     return full, indexed
 
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rules", type=int, default=DEFAULT_RULE_COUNT)
@@ -71,8 +73,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     wildcard_targets = [f"path-{index:05d}/keep-{index:05d}.bin" for index in range(target_count)]
 
     for name, patterns, targets in (
-            ("selective literal prefixes", selective_patterns, selective_targets),
-            ("wildcard-first extensions", wildcard_patterns, wildcard_targets),
+        ("selective literal prefixes", selective_patterns, selective_targets),
+        ("wildcard-first extensions", wildcard_patterns, wildcard_targets),
     ):
         full, indexed = _compare(patterns, targets, repeats=arguments.repeats)
         print(
@@ -80,6 +82,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             f"full={full:.3f}s; indexed={indexed:.3f}s; speedup={full / indexed:.2f}x"
         )
     return 0
+
 
 if __name__ == "__main__":
     raise SystemExit(main())

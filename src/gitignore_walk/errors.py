@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+
 class GitIgnoreError(RuntimeError):
     """Raised when an ignore policy cannot be interpreted safely."""
 
@@ -17,6 +18,7 @@ class GitIgnoreError(RuntimeError):
         self.operation = operation
         self.path = path
         self.source = source
+
 
 class GitIgnoreParseError(GitIgnoreError):
     """Raised when an ignore source contains a malformed pattern."""

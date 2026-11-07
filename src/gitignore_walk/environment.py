@@ -2,6 +2,7 @@
 
 from typing import Final
 
+
 class EnvVar:
     """Symbolic registry for environment variables read or written here."""
 

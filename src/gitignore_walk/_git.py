@@ -13,8 +13,15 @@ from itertools import islice
 from pathlib import Path
 from typing import Final
 
-from ._portable import (GitIgnoreDecision, GitIgnoreError, IgnorePolicy, _DEFAULT_INITIAL_EXCLUDES, _IgnoreSnapshot,
-                        _decision_from_match, _match_loaded_ignore)
+from ._portable import (
+    _DEFAULT_INITIAL_EXCLUDES,
+    GitIgnoreDecision,
+    GitIgnoreError,
+    IgnorePolicy,
+    _decision_from_match,
+    _IgnoreSnapshot,
+    _match_loaded_ignore,
+)
 from .environment import EnvVar
 
 # Repository selection must come from root, not an unrelated invoking Git process.
@@ -26,10 +33,12 @@ _REPOSITORY_ENVIRONMENT: Final = (
     EnvVar.GIT_PREFIX,
 )
 
+
 def _decode_git_output(data: bytes) -> str:
     # Windows' os.fsdecode uses surrogatepass; Git may return arbitrary ignore-file
     # bytes. Preserve those bytes in provenance without failing unrelated decisions.
     return data.decode(sys.getfilesystemencoding(), errors="surrogateescape")
+
 
 class GitStandardPolicy(IgnorePolicy):
     """Use Git's configured excludes and matching implementation explicitly.
@@ -132,7 +141,7 @@ class GitStandardPolicy(IgnorePolicy):
         if fields[-1] != b"" or len(fields) != 4 * len(pending) + 1:
             raise GitIgnoreError("Git returned an incomplete check-ignore response")
         for batch_index, (original_index, path) in enumerate(pending):
-            source, line, pattern, echoed = fields[batch_index * 4: batch_index * 4 + 4]
+            source, line, pattern, echoed = fields[batch_index * 4 : batch_index * 4 + 4]
             if echoed != relative[batch_index]:
                 raise GitIgnoreError("Git returned an unexpected check-ignore path")
             if source:

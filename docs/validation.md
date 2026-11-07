@@ -51,7 +51,7 @@ python -m scripts.ci all
 ## Commands
 
 | Command                                | Checks                                                                                                           |
-|----------------------------------------|------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | `python -m scripts.ci test`            | Test the active interpreter                                                                                      |
 | `python -m scripts.ci all`             | Pre-push checks on the active interpreter: pytest, Ruff, strict Pyright, Markdown checks, and package validation |
 | `python -m scripts.ci matrix`          | Test locally installed Python 3.10–3.15 interpreters                                                             |

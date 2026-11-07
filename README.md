@@ -60,10 +60,10 @@ from gitignore_walk import GitStandardPolicy, GitIgnoreWalker
 policy = GitStandardPolicy("/path/to/checkout")
 
 for decision in policy.explain_many(
-        [
-            "build/output.txt",
-            "docs/guide.md",
-        ]
+    [
+        "build/output.txt",
+        "docs/guide.md",
+    ]
 ):
     print(
         decision.path,
@@ -122,9 +122,9 @@ Using the Git-native policy:
 policy = GitStandardPolicy("/path/to/project")
 
 for path in (
-        "build/output.log",
-        "src/debug.log",
-        "src/keep.log",
+    "build/output.log",
+    "src/debug.log",
+    "src/keep.log",
 ):
     decision = policy.explain(path)
     print(path, decision.ignored, decision.pattern)
@@ -141,7 +141,7 @@ src/keep.log False !keep.log
 The detailed explanation also identifies the matching rule's origin:
 
 | Path               | Ignored | Source           | Line |
-|--------------------|---------|------------------|------|
+| ------------------ | ------- | ---------------- | ---- |
 | `build/output.log` | Yes     | `.gitignore`     | 1    |
 | `src/debug.log`    | Yes     | `.gitignore`     | 1    |
 | `src/keep.log`     | No      | `src/.gitignore` | 1    |
@@ -161,7 +161,7 @@ ignore rule.
 ## Choose a matching policy
 
 | Capability                     | Portable Python   | Git-native |
-|--------------------------------|-------------------|------------|
+| ------------------------------ | ----------------- | ---------- |
 | Requires Git                   | No                | Yes        |
 | Works outside Git repositories | Yes               | No         |
 | Nested `.gitignore`            | Yes               | Yes        |
@@ -195,7 +195,7 @@ for directory, dir_names, file_names in walker.walk():
 The `selection` parameter controls which entries are returned:
 
 | Value        | Behavior                           |
-|--------------|------------------------------------|
+| ------------ | ---------------------------------- |
 | `"included"` | Select unignored entries (default) |
 | `"ignored"`  | Select ignored entries             |
 | `"all"`      | Traverse without ignore filtering  |
@@ -241,7 +241,7 @@ policy.explain("build/output.log")
 Other available interfaces include:
 
 | API                                                   | Purpose                                              |
-|-------------------------------------------------------|------------------------------------------------------|
+| ----------------------------------------------------- | ---------------------------------------------------- |
 | `is_gitignored(root, target)`                         | Portable one-shot query                              |
 | `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec` |
 | `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                      |
@@ -338,7 +338,7 @@ python -m scripts.ci matrix
 ```
 
 | Command   | Purpose                                                      |
-|-----------|--------------------------------------------------------------|
+| --------- | ------------------------------------------------------------ |
 | `test`    | Unit and differential verification on the active interpreter |
 | `quality` | Ruff, strict Pyright, and Markdown checks                    |
 | `package` | Wheel/sdist build, Twine validation, isolated wheel import   |
