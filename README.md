@@ -4,7 +4,7 @@
 decisions, and traverses directory trees under an explicit policy. It provides two backends:
 
 - **`GitIgnorePolicy`** uses `pathspec` to read root and nested `.gitignore` files. It works
-  without Git or a Git repository.
+  without invoking Git and can discover an enclosing repository by walking upward.
 - **`GitStandardPolicy`** delegates to the installed Git executable and honors Git's configured
   ignore sources, including global excludes and repository configuration.
 
@@ -32,8 +32,20 @@ for path in walker.iter_files(ignored=False):
     print(path)
 ```
 
-The portable backend reads repository `.gitignore` files with `pathspec`; it does not read global
-excludes, Git config, `.git/info/exclude`, or the index. This preserves the original mdrepo policy.
+The portable backend uses `pathspec` and works without Git. Starting at the supplied root, it walks
+upward to discover a `.git` directory or worktree `.git` file. It reads applicable `.gitignore`
+files from the repository root through the target's ancestors, the repository's `info/exclude` when
+discoverable, and the conventional user-global file at `$XDG_CONFIG_HOME/git/ignore` (or
+`$HOME/.config/git/ignore`).
+
+Portable discovery intentionally does not interpret Git config. In particular, it does not resolve
+custom `core.excludesFile` paths, system-level config, or config includes and conditional includes.
+Use `GitStandardPolicy` when those Git-specific settings must match exactly. This portable policy
+still evaluates every discovered pattern itself; it does not launch Git.
+
+The portable precedence is user-global excludes, repository `info/exclude`, then applicable
+`.gitignore` files from the worktree root down to the target directory. Deeper `.gitignore` files
+override matching rules in their parents.
 
 ### Git-native matching and explanations
 
@@ -86,7 +98,8 @@ will be committed.
 - Relative targets are rooted at the policy root. Missing paths are allowed. Targets outside
   the root are rejected. Unknown nonexistent paths are treated as files, not guessed directories.
 - Caller `initial_excludes` are hard baseline rules evaluated with `pathspec`, not additional Git
-  config. A positive baseline match cannot be undone by a repository or global negation.
+  config. A positive baseline match cannot be undone by a repository, info/exclude, or global
+  negation.
 
 ## Errors, provenance, and consistency
 
@@ -95,7 +108,8 @@ ignore files; Git can process their bytes and still apply following valid lines.
 backend preserves undecodable output bytes with the filesystem encoding's surrogate escape and
 uses NUL-delimited input/output for unusual filenames. An unmatched native result has no
 provenance; a matching negation includes its source even though `ignored=False`. The portable
-backend retains mdrepo's legacy behavior of omitting repository-negation provenance.
+backend retains mdrepo's legacy behavior of omitting negation provenance for all of its ignore
+sources.
 
 The Git-backed backend raises on nonempty Git stderr, even when Git returned success. It never
 silently falls back to portable matching or pretends a partial response is complete. Missing

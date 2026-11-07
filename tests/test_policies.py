@@ -46,6 +46,9 @@ class RepositoryCase(unittest.TestCase):
             GIT_COMMITTER_EMAIL="test@example.invalid",
             GIT_TERMINAL_PROMPT="0",
         )
+        environment_patch = patch.dict(os.environ, self.environment, clear=True)
+        environment_patch.start()
+        self.addCleanup(environment_patch.stop)
 
     def write(self, relative: str, text: str = "content\n") -> Path:
         path = self.root / relative
@@ -79,6 +82,87 @@ class RepositoryCase(unittest.TestCase):
 
 
 class PortableTests(RepositoryCase):
+    def test_global_excludes_fall_back_to_home_config(self) -> None:
+        os.environ.pop("XDG_CONFIG_HOME")
+        global_excludes = self.home / ".config" / "git" / "ignore"
+        global_excludes.parent.mkdir(parents=True)
+        global_excludes.write_text("*.user-global\n", encoding="utf-8")
+
+        policy = GitIgnorePolicy(self.root)
+        decision = policy.explain("generated.user-global")
+        self.assertTrue(decision.ignored)
+        self.assertEqual(decision.source, f"user-global excludes {global_excludes}")
+
+    def test_default_global_excludes_and_repository_precedence(self) -> None:
+        global_excludes = self.home / "xdg" / "git" / "ignore"
+        global_excludes.parent.mkdir(parents=True)
+        global_excludes.write_text("*.tmp\n*.global\n", encoding="utf-8")
+        self.write(".gitignore", "!keep.tmp\n")
+
+        policy = GitIgnorePolicy(self.root)
+        self.assertTrue(policy.is_ignored("drop.tmp"))
+        self.assertIn(str(global_excludes), policy.explain("drop.tmp").source or "")
+        self.assertFalse(policy.is_ignored("keep.tmp"))
+        self.assertTrue(policy.is_ignored("file.global"))
+
+    def test_global_info_and_repository_ignore_precedence(self) -> None:
+        global_excludes = self.home / "xdg" / "git" / "ignore"
+        global_excludes.parent.mkdir(parents=True)
+        global_excludes.write_text(
+            "*.tmp\n!info.tmp\n/nested/global-root.tmp\n",
+            encoding="utf-8",
+        )
+        self.write(".git/info/exclude", "info.tmp\n!repo.tmp\n")
+        self.write(".gitignore", "repo.tmp\n")
+        nested_root = self.root / "nested"
+        nested_root.mkdir()
+        self.write("nested/.gitignore", "!nested.tmp\n")
+
+        policy = GitIgnorePolicy(nested_root)
+        info_decision = policy.explain("info.tmp")
+        repo_decision = policy.explain("repo.tmp")
+        nested_decision = policy.explain("nested.tmp")
+        anchored_global_decision = policy.explain("global-root.tmp")
+
+        self.assertTrue(info_decision.ignored)
+        self.assertIn("info/exclude", info_decision.source or "")
+        self.assertTrue(repo_decision.ignored)
+        self.assertIn("repository .gitignore", repo_decision.source or "")
+        self.assertFalse(nested_decision.ignored)
+        self.assertTrue(anchored_global_decision.ignored)
+        self.assertIn("user-global excludes", anchored_global_decision.source or "")
+
+    def test_upward_discovery_reads_repository_and_info_excludes(self) -> None:
+        self.write(".gitignore", "*.tmp\n!repo-keep.tmp\n")
+        self.write(".git/info/exclude", "*.cache\n!keep.cache\n")
+        nested_root = self.root / "packages" / "project"
+        nested_root.mkdir(parents=True)
+        self.write("packages/project/.gitignore", "!nested-keep.tmp\n")
+
+        policy = GitIgnorePolicy(nested_root)
+        self.assertTrue(policy.is_ignored("drop.tmp"))
+        self.assertFalse(policy.is_ignored("repo-keep.tmp"))
+        self.assertFalse(policy.is_ignored("nested-keep.tmp"))
+        self.assertTrue(policy.is_ignored("drop.cache"))
+        self.assertFalse(policy.is_ignored("keep.cache"))
+        self.assertIn("info/exclude", policy.explain("drop.cache").source or "")
+
+    def test_upward_discovery_reads_worktree_gitfile_common_excludes(self) -> None:
+        git_dir = self.base / "worktrees" / "checkout"
+        common_dir = self.base / "shared-git-dir"
+        git_dir.mkdir(parents=True)
+        (git_dir / "commondir").write_text(str(common_dir), encoding="utf-8")
+        info = common_dir / "info"
+        info.mkdir(parents=True)
+        (info / "exclude").write_text("*.worktree\n", encoding="utf-8")
+        self.write(".git", f"gitdir: {git_dir}\n")
+        nested_root = self.root / "src" / "package"
+        nested_root.mkdir(parents=True)
+
+        policy = GitIgnorePolicy(nested_root)
+        self.assertTrue(policy.is_ignored("ignored.worktree"))
+        self.assertIn("info/exclude", policy.explain("ignored.worktree").source or "")
+
     def test_point_batch_and_helpers(self) -> None:
         self.write(".gitignore", "# comment\n*.tmp\n!keep.tmp\n")
         drop = self.write("drop.tmp")
@@ -345,7 +429,7 @@ class NativeTests(RepositoryCase):
     def test_null_safe_paths_duplicates_and_empty_batch(self) -> None:
         self.write(".gitignore", "*.tmp\n")
         policy = self.native()
-        names = ["space name.tmp", "unicodé.tmp", "tab\tname.tmp", "line\nname.tmp"]
+        names = ["space name.tmp", "unicod�.tmp", "tab\tname.tmp", "line\nname.tmp"]
         self.assertEqual(policy.is_ignored_many(names + names), (True,) * 8)
         self.assertEqual(policy.explain_many([]), ())
 
@@ -576,3 +660,4 @@ class DifferentialTests(RepositoryCase):
 
 if __name__ == "__main__":
     unittest.main()
+

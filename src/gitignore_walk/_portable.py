@@ -45,12 +45,22 @@ class _LoadedIgnore:
     line_numbers: tuple[int | None, ...]
 
 
+class _RepositoryMetadata(NamedTuple):
+    root: Path
+    common_dir: Path
+
+
 class GitIgnorePolicy:
     """Evaluate repository ignore policy without invoking Git.
 
-    ``initial_excludes`` are applied as a baseline before repository ``.gitignore`` files. A
-    matching baseline exclusion remains ignored. They are useful for a caller's own transient or
-    generated-file policy and are intentionally kept separate from repository ignore files.
+    The policy reads the conventional user-global ignore file when present, a discoverable
+    repository ``info/exclude`` file, and applicable repository ``.gitignore`` files. It discovers
+    a Git worktree by walking upward from ``root``; it does not need to invoke Git. Git config
+    overrides and conditional includes are intentionally outside this portable scope.
+
+    ``initial_excludes`` are applied as a hard baseline before those sources. A matching baseline
+    exclusion remains ignored. They are useful for a caller's own transient or generated-file
+    policy and are intentionally kept separate from ignore files.
     """
 
     def __init__(
@@ -60,6 +70,12 @@ class GitIgnorePolicy:
         initial_excludes: Sequence[str] = (),
     ) -> None:
         self.root = _resolve_root(root)
+        metadata = _find_repository_metadata(self.root)
+        self._repository_root = self.root if metadata is None else metadata.root
+        self._repository_excludes = (
+            None if metadata is None else metadata.common_dir / "info" / "exclude"
+        )
+        self._global_excludes = _default_global_excludes_path()
         self._initial_excludes = _parse_loaded_ignore(
             initial_excludes,
             source="initial Git-ignore exclusions",
@@ -103,13 +119,15 @@ class GitIgnorePolicy:
         if initial_match is not None and initial_match.ignored:
             return _decision_from_match(path=target, match=initial_match)
 
-        repository_match = _gitignore_path_decision(
-            root=self.root,
+        policy_match = _gitignore_path_decision(
+            root=self._repository_root,
             target=target,
             snapshot=snapshot,
+            global_excludes=self._global_excludes,
+            repository_excludes=self._repository_excludes,
         )
-        if repository_match is not None:
-            return _decision_from_match(path=target, match=repository_match)
+        if policy_match is not None:
+            return _decision_from_match(path=target, match=policy_match)
         if initial_match is not None:
             return _decision_from_match(path=target, match=initial_match)
         return GitIgnoreDecision(path=target, ignored=False)
@@ -247,6 +265,70 @@ def _resolve_root(root: str | os.PathLike[str]) -> Path:
     return root_path
 
 
+def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
+    """Find a worktree marker at ``start`` or an ancestor without invoking Git."""
+
+    for candidate_root in (start, *start.parents):
+        marker = candidate_root / ".git"
+        if marker.is_dir():
+            try:
+                git_dir = marker.resolve()
+            except (OSError, RuntimeError):
+                continue
+        elif marker.is_file():
+            try:
+                marker_line = marker.read_text(encoding="utf-8").splitlines()[0]
+            except (OSError, UnicodeError, IndexError):
+                continue
+            prefix = "gitdir: "
+            if not marker_line.startswith(prefix):
+                continue
+            git_dir = Path(marker_line[len(prefix) :])
+            if not git_dir.is_absolute():
+                git_dir = candidate_root / git_dir
+            try:
+                git_dir = git_dir.resolve()
+            except (OSError, RuntimeError):
+                continue
+            if not git_dir.is_dir():
+                continue
+        else:
+            continue
+
+        common_dir_file = git_dir / "commondir"
+        if common_dir_file.is_file():
+            try:
+                common_dir_value = common_dir_file.read_text(encoding="utf-8").strip()
+            except (OSError, UnicodeError):
+                common_dir_value = ""
+            if common_dir_value:
+                common_dir = Path(common_dir_value)
+                if not common_dir.is_absolute():
+                    common_dir = git_dir / common_dir
+                try:
+                    common_dir = common_dir.resolve()
+                except (OSError, RuntimeError):
+                    common_dir = git_dir
+            else:
+                common_dir = git_dir
+        else:
+            common_dir = git_dir
+        return _RepositoryMetadata(candidate_root, common_dir)
+    return None
+
+
+def _default_global_excludes_path() -> Path | None:
+    """Return Git's conventional XDG/home global-ignore path, without reading Git config."""
+
+    xdg_config_home = os.environ.get("XDG_CONFIG_HOME")
+    if xdg_config_home:
+        return Path(xdg_config_home).expanduser() / "git" / "ignore"
+    try:
+        return Path.home() / ".config" / "git" / "ignore"
+    except (OSError, RuntimeError):
+        return None
+
+
 def _is_regular_directory(path: Path, *, onerror: Callable[[OSError], object] | None) -> bool:
     try:
         if path.is_symlink():
@@ -271,7 +353,7 @@ def _is_regular_file(path: Path, *, onerror: Callable[[OSError], object] | None)
         raise GitIgnoreError(f"unable to inspect Git-ignore walk entry: {path}: {error}") from error
 
 
-def _new_ignore_specs() -> dict[Path, object]:
+def _new_ignore_specs() -> dict[tuple[Path, bool], object]:
     return {}
 
 
@@ -279,12 +361,13 @@ def _new_ignore_specs() -> dict[Path, object]:
 class _IgnoreSnapshot:
     """One consistent, per-operation view of repository ignore files."""
 
-    specs: dict[Path, object] = field(default_factory=_new_ignore_specs)
+    specs: dict[tuple[Path, bool], object] = field(default_factory=_new_ignore_specs)
 
-    def load(self, path: Path) -> _LoadedIgnore | None:
-        if path not in self.specs:
-            self.specs[path] = _load_gitignore(path)
-        return cast(_LoadedIgnore | None, self.specs[path])
+    def load(self, path: Path, *, allow_symlink: bool = False) -> _LoadedIgnore | None:
+        key = path, allow_symlink
+        if key not in self.specs:
+            self.specs[key] = _load_gitignore(path, allow_symlink=allow_symlink)
+        return cast(_LoadedIgnore | None, self.specs[key])
 
 
 class _GitIgnorePattern(Protocol):
@@ -323,12 +406,13 @@ def is_gitignored(
     root: str | os.PathLike[str],
     target: str | os.PathLike[str],
 ) -> bool:
-    """Return whether ``target`` is ignored by the Git-ignore files under ``root``.
+    """Return whether ``target`` is ignored by the portable policy rooted at ``root``.
 
     ``root`` and ``target`` may be strings or path-like objects. Relative targets are interpreted
-    relative to ``root``. The target must be inside the root; passing an outside path raises
-    :class:`ValueError` rather than silently reporting a false result. Ignore-file read and parse
-    failures raise :class:`GitIgnoreError`.
+    relative to ``root``. When an enclosing Git worktree is found, its applicable ancestor
+    ``.gitignore`` files and ``info/exclude`` are considered along with the conventional user-global
+    ignore file. The target must be inside ``root``; passing an outside path raises :class:`ValueError`.
+    Ignore-file read and parse failures raise :class:`GitIgnoreError`.
     """
 
     return GitIgnorePolicy(root).is_ignored(target)
@@ -339,8 +423,10 @@ def _gitignore_path_decision(
     root: Path,
     target: Path,
     snapshot: _IgnoreSnapshot | None = None,
+    global_excludes: Path | None = None,
+    repository_excludes: Path | None = None,
 ) -> _PatternMatch | None:
-    """Return the effective repository-ignore match for one target, if ignored."""
+    """Return the effective ignore match for one target, if ignored."""
 
     directories = _ancestor_directories(root=root, target=target)
     ignored = False
@@ -356,6 +442,9 @@ def _gitignore_path_decision(
             path=directory,
             is_directory=True,
             snapshot=snapshot,
+            root=root,
+            global_excludes=global_excludes,
+            repository_excludes=repository_excludes,
         )
         if decision is not None:
             ignored = decision.ignored
@@ -368,6 +457,9 @@ def _gitignore_path_decision(
         path=target,
         is_directory=target.is_dir(),
         snapshot=snapshot,
+        root=root,
+        global_excludes=global_excludes,
+        repository_excludes=repository_excludes,
     )
     return decision if decision is not None and decision.ignored else None
 
@@ -378,10 +470,26 @@ def _gitignore_decision(
     path: Path,
     is_directory: bool,
     snapshot: _IgnoreSnapshot | None = None,
+    root: Path,
+    global_excludes: Path | None,
+    repository_excludes: Path | None,
 ) -> _PatternMatch | None:
-    """Return the last matching decision from applicable ignore files."""
+    """Return the highest-precedence matching decision for one path."""
 
     decision: _PatternMatch | None = None
+    relative_to_root = path.relative_to(root).as_posix()
+    for exclude_path in (global_excludes, repository_excludes):
+        if exclude_path is None:
+            continue
+        loaded = (
+            _load_gitignore(exclude_path, allow_symlink=True)
+            if snapshot is None
+            else snapshot.load(exclude_path, allow_symlink=True)
+        )
+        if loaded is not None:
+            matched = _match_loaded_ignore(loaded, relative_to_root, is_directory=is_directory)
+            if matched is not None:
+                decision = matched
     for ignore_root in roots:
         ignore_path = ignore_root / ".gitignore"
         loaded = _load_gitignore(ignore_path) if snapshot is None else snapshot.load(ignore_path)
@@ -394,16 +502,22 @@ def _gitignore_decision(
     return decision
 
 
-def _load_gitignore(path: Path) -> _LoadedIgnore | None:
-    """Load one non-symlink ``.gitignore`` file, if present."""
+def _load_gitignore(path: Path, *, allow_symlink: bool = False) -> _LoadedIgnore | None:
+    """Load one ignore file, if present, following symlinks only when requested."""
 
     try:
-        if not path.is_file() or path.is_symlink():
+        if not path.is_file() or (path.is_symlink() and not allow_symlink):
             return None
         lines = path.read_text(encoding="utf-8").splitlines()
     except (OSError, UnicodeError) as error:
-        raise GitIgnoreError(f"unable to read repository .gitignore: {path}: {error}") from error
-    return _parse_loaded_ignore(lines, source=f"repository .gitignore {path}")
+        raise GitIgnoreError(f"unable to read Git-ignore source: {path}: {error}") from error
+    if path.name == ".gitignore":
+        source = f"repository .gitignore {path}"
+    elif path.name == "exclude" and path.parent.name == "info":
+        source = f"repository info/exclude {path}"
+    else:
+        source = f"user-global excludes {path}"
+    return _parse_loaded_ignore(lines, source=source)
 
 
 def _parse_loaded_ignore(lines: Sequence[str], *, source: str) -> _LoadedIgnore:
