@@ -9,10 +9,16 @@ import stat
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import NamedTuple, Protocol, cast
+from typing import NamedTuple, cast
 
-from pathspec import GitIgnoreSpec
-from pathspec.patterns.gitignore import GitIgnorePatternError
+from ._patterns import (
+    GitIgnorePattern,
+    GitIgnorePatternError,
+    GitIgnoreSpec,
+)
+from ._patterns import (
+    parse_gitignore as _parse_pattern_lines,
+)
 
 
 class GitIgnoreError(RuntimeError):
@@ -42,7 +48,6 @@ class GitIgnoreWalkEntry(NamedTuple):
 class _LoadedIgnore:
     spec: GitIgnoreSpec
     source: str
-    line_numbers: tuple[int | None, ...]
 
 
 class _RepositoryMetadata(NamedTuple):
@@ -370,16 +375,6 @@ class _IgnoreSnapshot:
         return cast(_LoadedIgnore | None, self.specs[key])
 
 
-class _GitIgnorePattern(Protocol):
-    include: bool | None
-    pattern: str
-
-    def match_file(self, file: str) -> bool:
-        """Return whether this pattern matches a repository-relative path."""
-
-        ...
-
-
 @dataclass(frozen=True, slots=True)
 class _PatternMatch:
     ignored: bool
@@ -522,25 +517,16 @@ def _load_gitignore(path: Path, *, allow_symlink: bool = False) -> _LoadedIgnore
 
 
 def _parse_loaded_ignore(lines: Sequence[str], *, source: str) -> _LoadedIgnore:
-    spec = parse_gitignore(lines, source=source)
-    return _LoadedIgnore(
-        spec=spec,
-        source=source,
-        line_numbers=_pattern_line_numbers(lines=lines, spec=spec),
-    )
+    return _LoadedIgnore(spec=parse_gitignore(lines, source=source), source=source)
 
 
 def parse_gitignore(lines: Sequence[str], *, source: str) -> GitIgnoreSpec:
-    """Parse Git-ignore patterns and convert invalid syntax to a CLI-safe error."""
+    """Parse Git-ignore patterns into an ordered portable specification."""
 
     try:
-        return GitIgnoreSpec.from_lines(lines)
-    except Exception as error:
-        if not isinstance(error, GitIgnorePatternError):
-            detail = f"{type(error).__name__}: {error}"
-        else:
-            detail = str(error)
-        raise GitIgnoreError(f"invalid Git-ignore pattern in {source}: {detail}") from error
+        return _parse_pattern_lines(tuple(lines))
+    except GitIgnorePatternError as error:
+        raise GitIgnoreError(f"invalid Git-ignore pattern in {source}: {error}") from error
 
 
 def matches_gitignore(
@@ -552,7 +538,7 @@ def matches_gitignore(
     """Return the ordered Git-ignore decision for one repository-relative path."""
 
     matched = _last_gitignore_pattern(spec, relative, is_directory=is_directory)
-    return matched is not None and matched[0].include is True
+    return matched is not None and matched.include
 
 
 def _last_gitignore_pattern(
@@ -560,25 +546,14 @@ def _last_gitignore_pattern(
     relative: str,
     *,
     is_directory: bool,
-) -> tuple[_GitIgnorePattern, int] | None:
-    """Return the final matching pattern and index within one ignore file."""
+) -> GitIgnorePattern | None:
+    """Return the final matching pattern within one ignore file."""
 
-    decision: tuple[_GitIgnorePattern, int] | None = None
-    patterns = cast(Sequence[_GitIgnorePattern], cast(object, spec.patterns))
-    for index, pattern in enumerate(patterns):
-        if pattern.match_file(relative) or (
-            is_directory
-            and not _is_contents_only_pattern(pattern.pattern)
-            and pattern.match_file(f"{relative}/")
-        ):
-            decision = pattern, index
+    decision: GitIgnorePattern | None = None
+    for pattern in spec.patterns:
+        if pattern.matches(relative, is_directory=is_directory):
+            decision = pattern
     return decision
-
-
-def _is_contents_only_pattern(pattern: str) -> bool:
-    """Return whether a pattern applies below a directory, not to that directory itself."""
-
-    return pattern.rstrip().endswith("/**")
 
 
 def _match_loaded_ignore(
@@ -590,41 +565,12 @@ def _match_loaded_ignore(
     matched = _last_gitignore_pattern(loaded.spec, relative, is_directory=is_directory)
     if matched is None:
         return None
-    pattern, index = matched
-    if pattern.include is None:
-        return None
-    line = loaded.line_numbers[index] if index < len(loaded.line_numbers) else None
     return _PatternMatch(
-        ignored=pattern.include,
+        ignored=matched.include,
         source=loaded.source,
-        pattern=pattern.pattern,
-        line=line,
+        pattern=matched.pattern,
+        line=matched.source_line,
     )
-
-
-def _pattern_line_numbers(
-    *,
-    lines: Sequence[str],
-    spec: GitIgnoreSpec,
-) -> tuple[int | None, ...]:
-    """Associate compiled patterns with their original one-based source lines."""
-
-    line_numbers: list[int | None] = []
-    cursor = 0
-    patterns = cast(Sequence[_GitIgnorePattern], cast(object, spec.patterns))
-    for pattern in patterns:
-        line_number: int | None = None
-        while cursor < len(lines):
-            candidate_line = lines[cursor]
-            candidate_number = cursor + 1
-            cursor += 1
-            if candidate_line == "":
-                continue
-            if candidate_line == pattern.pattern:
-                line_number = candidate_number
-                break
-        line_numbers.append(line_number)
-    return tuple(line_numbers)
 
 
 def _decision_from_match(*, path: Path, match: _PatternMatch) -> GitIgnoreDecision:

@@ -16,7 +16,8 @@ PR #11 are separate workstreams. This package is an unreleased review candidate.
 - Benchmark realistic repositories: native point queries start one process; batches start one
   process, and filtered walks start one per visited directory. There is no parallel/persistent
   subprocess implementation in this alpha.
-- Audit the pathspec dependency floor and compare the minimum and latest allowed versions.
+- Keep the portable parser dependency-free and expand the Git differential corpus whenever matcher
+  semantics change.
 - Review external API/error stability, cancellation/timeout behavior and source provenance.
 
 ## Later mdrepo migration

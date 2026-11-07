@@ -14,6 +14,7 @@ from gitignore_walk import (
     GitIgnoreDecision,
     GitIgnoreError,
     GitIgnorePolicy,
+    GitIgnoreSpec,
     GitIgnoreWalker,
     GitStandardPolicy,
     is_gitignored,
@@ -82,6 +83,34 @@ class RepositoryCase(unittest.TestCase):
 
 
 class PortableTests(RepositoryCase):
+    def test_parser_preserves_source_lines_and_escaped_literals(self) -> None:
+        spec = parse_gitignore(
+            ["# ignored comment", "", r"\#literal", r"\!literal", "space\\ ", "*.tmp"],
+            source="test",
+        )
+        self.assertIsInstance(spec, GitIgnoreSpec)
+        self.assertEqual([pattern.source_line for pattern in spec.patterns], [3, 4, 5, 6])
+        self.assertTrue(matches_gitignore(spec, "#literal", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "!literal", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "space ", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "nested/drop.tmp", is_directory=False))
+        self.assertFalse(matches_gitignore(spec, "space", is_directory=False))
+
+    def test_parser_handles_slash_scope_double_star_and_directory_inheritance(self) -> None:
+        spec = parse_gitignore(
+            ["/root-only", "docs/draft.md", "**/generated/*.json", "cache/", "a/**/b.txt"],
+            source="test",
+        )
+        self.assertTrue(matches_gitignore(spec, "root-only", is_directory=False))
+        self.assertFalse(matches_gitignore(spec, "nested/root-only", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "docs/draft.md", is_directory=False))
+        self.assertFalse(matches_gitignore(spec, "nested/docs/draft.md", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "one/generated/data.json", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "cache/nested/file", is_directory=False))
+        self.assertFalse(matches_gitignore(spec, "cache", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "a/x/y/b.txt", is_directory=False))
+        self.assertTrue(matches_gitignore(spec, "a/b.txt", is_directory=False))
+
     def test_global_excludes_fall_back_to_home_config(self) -> None:
         os.environ.pop("XDG_CONFIG_HOME")
         global_excludes = self.home / ".config" / "git" / "ignore"
@@ -429,7 +458,7 @@ class NativeTests(RepositoryCase):
     def test_null_safe_paths_duplicates_and_empty_batch(self) -> None:
         self.write(".gitignore", "*.tmp\n")
         policy = self.native()
-        names = ["space name.tmp", "unicod�.tmp", "tab\tname.tmp", "line\nname.tmp"]
+        names = ["space name.tmp", "unicodé.tmp", "tab\tname.tmp", "line\nname.tmp"]
         self.assertEqual(policy.is_ignored_many(names + names), (True,) * 8)
         self.assertEqual(policy.explain_many([]), ())
 
@@ -645,10 +674,15 @@ class DifferentialTests(RepositoryCase):
             ("/root.tmp\n", ["root.tmp", "docs/root.tmp"]),
             ("docs/**/draft.md\n", ["docs/draft.md", "docs/a/b/draft.md", "draft.md"]),
             ("**/generated/*.md\n", ["generated/a.md", "a/generated/b.md", "generated/a.txt"]),
+            ("a/**/b.txt\n", ["a/b.txt", "a/x/b.txt", "a/x/y/b.txt", "x/a/b.txt"]),
+            ("abc/**\n", ["abc", "abc/x", "abc/x/y", "x/abc/y"]),
+            ("/build/\n", ["build", "a/build", "build/sub/file"]),
+            ("foo\n!nested/foo\n", ["foo", "a/foo", "nested/foo", "nested/a/foo"]),
             ("dir/**\n!dir/keep\n", ["dir", "dir/keep", "dir/drop", "dir/sub/file"]),
             ("dir/\n!dir/keep\n", ["dir", "dir/keep", "dir/drop"]),
             ("\\#literal\n\\!literal\n", ["#literal", "!literal", "other"]),
             ("[ab]?.tmp\n", ["a1.tmp", "b2.tmp", "c1.tmp", "a.tmp"]),
+            ("file[!0-4].txt\n", ["file5.txt", "file0.txt", "nested/file9.txt"]),
         ]
         (self.root / "dir").mkdir()
         for patterns, targets in fixtures:

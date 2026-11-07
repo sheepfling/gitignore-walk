@@ -1,9 +1,9 @@
 # gitignore-walk
 
-`gitignore-walk` supports Python 3.10-3.15 and evaluates Git ignore rules, explains matching
+`gitignore-walk` supports Python 3.10–3.15 and evaluates Git ignore rules, explains matching
 decisions, and traverses directory trees under an explicit policy. It provides two backends:
 
-- **`GitIgnorePolicy`** uses `pathspec` to read root and nested `.gitignore` files. It works
+- **`GitIgnorePolicy`** parses and evaluates root and nested `.gitignore` files in Python. It works
   without invoking Git and can discover an enclosing repository by walking upward.
 - **`GitStandardPolicy`** delegates to the installed Git executable and honors Git's configured
   ignore sources, including global excludes and repository configuration.
@@ -32,8 +32,9 @@ for path in walker.iter_files(ignored=False):
     print(path)
 ```
 
-The portable backend uses `pathspec` and works without Git. Starting at the supplied root, it walks
-upward to discover a `.git` directory or worktree `.git` file. It reads applicable `.gitignore`
+The portable backend includes its own Git-ignore parser and matcher, so it works without Git or
+third-party runtime dependencies. Starting at the supplied root, it walks upward to discover a
+`.git` directory or worktree `.git` file. It reads applicable `.gitignore`
 files from the repository root through the target's ancestors, the repository's `info/exclude` when
 discoverable, and the conventional user-global file at `$XDG_CONFIG_HOME/git/ignore` (or
 `$HOME/.config/git/ignore`).
@@ -95,7 +96,7 @@ will be committed.
 - Discovered symlinks and special files are omitted. `follow_links=True` is rejected.
 - Relative targets are rooted at the policy root. Missing paths are allowed. Targets outside
   the root are rejected. Unknown nonexistent paths are treated as files, not guessed directories.
-- Caller `initial_excludes` are hard baseline rules evaluated with `pathspec`, not additional Git
+- Caller `initial_excludes` are hard baseline rules evaluated by the portable matcher, not additional Git
   config. A positive baseline match cannot be undone by a repository, info/exclude, or global
   negation.
 
@@ -157,8 +158,9 @@ python -m twine check dist/*
 ```
 
 Tests isolate HOME, XDG and Git configuration and never alter the developer's global configuration.
-The CI matrix covers Ubuntu, macOS and Windows on Python 3.10-3.15, plus the minimum pathspec
-version. A configured workflow is not evidence those platforms have passed on the current commit.
+The CI matrix covers Ubuntu, macOS, and Windows on Python 3.10–3.15. Its differential fixtures
+compare the portable matcher with Git's own evaluator. A configured workflow is not evidence those
+platforms have passed on the current commit.
 
 ## Sources and license
 
