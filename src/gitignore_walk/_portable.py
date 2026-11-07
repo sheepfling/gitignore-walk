@@ -635,4 +635,3 @@ def _decision_from_match(*, path: Path, match: _PatternMatch) -> GitIgnoreDecisi
         pattern=match.pattern,
         line=match.line,
     )
-

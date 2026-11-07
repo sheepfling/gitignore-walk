@@ -195,4 +195,3 @@ class GitStandardPolicy(GitIgnorePolicy):
             detail = _decode_git_output(result.stderr).strip() or f"exit status {result.returncode}"
             raise GitIgnoreError(f"Git ignore policy failed: {detail}")
         return result
-

@@ -170,4 +170,3 @@ This package adds explicit Git-backed policy and package tests, not a Rust bindi
 Normative references: [gitignore](https://git-scm.com/docs/gitignore),
 [git check-ignore](https://git-scm.com/docs/git-check-ignore),
 [git config](https://git-scm.com/docs/git-config).
-
