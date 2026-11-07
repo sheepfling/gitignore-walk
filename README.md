@@ -176,7 +176,7 @@ The library is alpha; mdrepo should keep its existing implementation until the g
 
 ```sh
 python -m pip install -e '.[dev]'
-python -m unittest discover -s tests -v
+python -m pytest tests -v
 python -m ruff check .
 python -m ruff format --check .
 python -m pyright --pythonpath /absolute/path/to/your/python
@@ -190,11 +190,6 @@ compare the portable matcher with Git's own evaluator. A configured workflow is 
 platforms have passed on the current commit.
 
 ## Sources and license
-
-Portable policy and traversal originated in `mdrepo.gitignore` at
-[`78476e0`](https://github.com/sheepfling/mdrepo/blob/78476e0343f6ae3799606c17024d5aa790c6d688/src/mdrepo/gitignore.py).
-The mdrepo-specific durability classes stay in mdrepo. The original MIT notice is retained.
-This package adds explicit Git-backed policy and package tests, not a Rust binding replacement.
 
 Normative references: [gitignore](https://git-scm.com/docs/gitignore),
 [git check-ignore](https://git-scm.com/docs/git-check-ignore),

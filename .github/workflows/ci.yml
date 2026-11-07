@@ -16,7 +16,7 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e '.[dev,bench]'
-      - run: python -m unittest discover -s tests -v
+      - run: python -m pytest tests -v
       - run: python -m ruff check .
       - run: python -m ruff format --check .
       - run: python -m pyright
@@ -28,4 +28,4 @@ jobs:
         working-directory: ${{ runner.temp }}
         run: |
           python -c "import gitignore_walk; assert 'site-packages' in gitignore_walk.__file__"
-          python -m unittest discover -s "${{ github.workspace }}/tests" -v
+          python -m pytest -v "${{ github.workspace }}/tests"
