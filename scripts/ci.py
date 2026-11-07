@@ -11,18 +11,25 @@ import sys
 import tempfile
 from collections.abc import Sequence
 from pathlib import Path
+from typing import Final
+
+ROOT: Final = Path(__file__).resolve().parents[1]
+SRC: Final = ROOT / "src"
+sys.path.insert(0, str(SRC))
+
+from gitignore_walk._environment import EnvVar  # noqa: E402
 
 
 def _writable_temp_root() -> Path:
     candidates: list[Path] = []
     if os.name == "nt":
-        user_profile = os.environ.get("USERPROFILE")
+        user_profile = os.environ.get(EnvVar.USERPROFILE)
         if user_profile:
             candidates.append(Path(user_profile) / "AppData" / "Local" / "Temp")
-        local_app_data = os.environ.get("LOCALAPPDATA")
+        local_app_data = os.environ.get(EnvVar.LOCALAPPDATA)
         if local_app_data:
             candidates.append(Path(local_app_data) / "Temp")
-    for variable in ("TMPDIR", "TEMP", "TMP"):
+    for variable in (EnvVar.TMPDIR, EnvVar.TEMP, EnvVar.TMP):
         value = os.environ.get(variable)
         if value:
             candidates.append(Path(value))
@@ -39,16 +46,14 @@ def _writable_temp_root() -> Path:
     raise RuntimeError("no writable temporary directory is available")
 
 
-ROOT = Path(__file__).resolve().parents[1]
-SRC = ROOT / "src"
-TEMP_ROOT = _writable_temp_root()
-os.environ["TEMP"] = str(TEMP_ROOT)
-os.environ["TMP"] = str(TEMP_ROOT)
+TEMP_ROOT: Final = _writable_temp_root()
+os.environ[EnvVar.TEMP] = str(TEMP_ROOT)
+os.environ[EnvVar.TMP] = str(TEMP_ROOT)
 if os.name != "nt":
-    os.environ["TMPDIR"] = str(TEMP_ROOT)
-TEST_TEMP = TEMP_ROOT / "gitignore-walk-ci"
-DEFAULT_PYTHON_VERSIONS = ("3.10", "3.11", "3.12", "3.13", "3.14", "3.15")
-DEFAULT_LINUX_DOCKER_VERSIONS = ("3.10", "3.12", "3.15")
+    os.environ[EnvVar.TMPDIR] = str(TEMP_ROOT)
+TEST_TEMP: Final = TEMP_ROOT / "gitignore-walk-ci"
+DEFAULT_PYTHON_VERSIONS: Final = ("3.10", "3.11", "3.12", "3.13", "3.14", "3.15")
+DEFAULT_LINUX_DOCKER_VERSIONS: Final = ("3.10", "3.12", "3.15")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -222,7 +227,7 @@ def _prepare_windows_test_environment(base_python: str, version: str) -> str:
 def _docker_linux_matrix(docker: str, version: str) -> int:
     commands = [
         "set -eu",
-        "export DEBIAN_FRONTEND=noninteractive",
+        f"export {EnvVar.DEBIAN_FRONTEND}=noninteractive",
         "apt-get update -qq",
         "apt-get install -y -qq git libatomic1 >/dev/null",
         (
@@ -271,7 +276,7 @@ def _find_python(version: str) -> str:
     uv = shutil.which("uv")
     if uv:
         environment = os.environ.copy()
-        environment.setdefault("UV_CACHE_DIR", str(ROOT / ".uv-cache-gitignorewalk"))
+        environment.setdefault(EnvVar.UV_CACHE_DIR, str(ROOT / ".uv-cache-gitignorewalk"))
         result = subprocess.run(
             [uv, "python", "find", version],
             cwd=ROOT,
@@ -346,9 +351,9 @@ def _package() -> int:
             return result
 
         environment = os.environ.copy()
-        environment.pop("PYTHONPATH", None)
-        environment.pop("PYTHONHOME", None)
-        environment["PYTHONPATH"] = str(install_dir)
+        environment.pop(EnvVar.PYTHONPATH, None)
+        environment.pop(EnvVar.PYTHONHOME, None)
+        environment[EnvVar.PYTHONPATH] = str(install_dir)
         smoke = (
             "import gitignore_walk; "
             "path = gitignore_walk.__file__; "
@@ -375,8 +380,8 @@ def _python_version(python: str) -> str:
 def _environment_with_source() -> dict[str, str]:
     environment = os.environ.copy()
     source = str(SRC)
-    previous = environment.get("PYTHONPATH")
-    environment["PYTHONPATH"] = source + os.pathsep + previous if previous else source
+    previous = environment.get(EnvVar.PYTHONPATH)
+    environment[EnvVar.PYTHONPATH] = source + os.pathsep + previous if previous else source
     return environment
 
 

@@ -11,7 +11,9 @@ import sys
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from itertools import islice
 from pathlib import Path
+from typing import Final
 
+from ._environment import EnvVar
 from ._portable import (
     _DEFAULT_INITIAL_EXCLUDES,
     GitIgnoreDecision,
@@ -23,12 +25,12 @@ from ._portable import (
 )
 
 # Repository selection must come from root, not an unrelated invoking Git process.
-_REPOSITORY_ENVIRONMENT = (
-    "GIT_DIR",
-    "GIT_WORK_TREE",
-    "GIT_COMMON_DIR",
-    "GIT_INDEX_FILE",
-    "GIT_PREFIX",
+_REPOSITORY_ENVIRONMENT: Final = (
+    EnvVar.GIT_DIR,
+    EnvVar.GIT_WORK_TREE,
+    EnvVar.GIT_COMMON_DIR,
+    EnvVar.GIT_INDEX_FILE,
+    EnvVar.GIT_PREFIX,
 )
 
 

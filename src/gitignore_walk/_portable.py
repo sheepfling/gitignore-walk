@@ -10,8 +10,9 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal, NamedTuple, cast
+from typing import Final, Literal, NamedTuple, cast
 
+from ._environment import EnvVar
 from ._errors import GitIgnoreError
 from ._ignore_file import (
     DEFAULT_MATCHER,
@@ -30,7 +31,7 @@ from ._ignore_file import (
     match_gitignore_file as _match_loaded_ignore,
 )
 
-_DEFAULT_INITIAL_EXCLUDES = (".git",)
+_DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
 
 
 @dataclass(frozen=True, slots=True)
@@ -433,7 +434,7 @@ def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
 def _default_global_excludes_path() -> Path | None:
     """Return Git's conventional XDG/home global-ignore path, without reading Git config."""
 
-    xdg_config_home = os.environ.get("XDG_CONFIG_HOME")
+    xdg_config_home = os.environ.get(EnvVar.XDG_CONFIG_HOME)
     if xdg_config_home:
         return Path(xdg_config_home).expanduser() / "git" / "ignore"
     try:

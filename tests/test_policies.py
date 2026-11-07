@@ -23,6 +23,7 @@ from gitignore_walk import (
     matches_gitignore,
     parse_gitignore,
 )
+from gitignore_walk._environment import EnvVar
 
 
 class RepositoryCase:
@@ -34,19 +35,23 @@ class RepositoryCase:
         self.home = self.base / "home"
         self.home.mkdir()
         self.environment = {
-            key: value for key, value in os.environ.items() if not key.startswith("GIT_")
+            key: value
+            for key, value in os.environ.items()
+            if not key.startswith(EnvVar.GIT_PREFIX_FILTER)
         }
         self.environment.update(
-            HOME=str(self.home),
-            USERPROFILE=str(self.home),
-            XDG_CONFIG_HOME=str(self.home / "xdg"),
-            GIT_CONFIG_NOSYSTEM="1",
-            GIT_CONFIG_GLOBAL=str(self.home / "config"),
-            GIT_AUTHOR_NAME="Test",
-            GIT_AUTHOR_EMAIL="test@example.invalid",
-            GIT_COMMITTER_NAME="Test",
-            GIT_COMMITTER_EMAIL="test@example.invalid",
-            GIT_TERMINAL_PROMPT="0",
+            {
+                EnvVar.HOME: str(self.home),
+                EnvVar.USERPROFILE: str(self.home),
+                EnvVar.XDG_CONFIG_HOME: str(self.home / "xdg"),
+                EnvVar.GIT_CONFIG_NOSYSTEM: "1",
+                EnvVar.GIT_CONFIG_GLOBAL: str(self.home / "config"),
+                EnvVar.GIT_AUTHOR_NAME: "Test",
+                EnvVar.GIT_AUTHOR_EMAIL: "test@example.invalid",
+                EnvVar.GIT_COMMITTER_NAME: "Test",
+                EnvVar.GIT_COMMITTER_EMAIL: "test@example.invalid",
+                EnvVar.GIT_TERMINAL_PROMPT: "0",
+            }
         )
         self.environment_patch = patch.dict(os.environ, self.environment, clear=True)
         self.environment_patch.start()
@@ -186,7 +191,7 @@ class TestPortable(RepositoryCase):
         assert matches_gitignore(spec, "a/line\nbreak", is_directory=False)
 
     def test_global_excludes_fall_back_to_home_config(self) -> None:
-        os.environ.pop("XDG_CONFIG_HOME")
+        os.environ.pop(EnvVar.XDG_CONFIG_HOME)
         global_excludes = self.home / ".config" / "git" / "ignore"
         global_excludes.parent.mkdir(parents=True)
         global_excludes.write_text("*.user-global\n", encoding="utf-8")
@@ -543,7 +548,7 @@ class TestNative(RepositoryCase):
         source.write_text("*.tmp\n", encoding="utf-8")
         custom = self.home / "custom-config"
         custom.write_text(f'[core]\n excludesFile = "{source.as_posix()}"\n', encoding="utf-8")
-        self.environment["GIT_CONFIG_GLOBAL"] = str(custom)
+        self.environment[EnvVar.GIT_CONFIG_GLOBAL] = str(custom)
         assert self.native().is_ignored("drop.tmp")
 
     def test_xdg_fallback(self) -> None:
@@ -553,7 +558,7 @@ class TestNative(RepositoryCase):
         assert self.native().is_ignored("drop.tmp")
 
     def test_default_home_config_location(self) -> None:
-        self.environment.pop("GIT_CONFIG_GLOBAL")
+        self.environment.pop(EnvVar.GIT_CONFIG_GLOBAL)
         source = self.home / "patterns"
         source.write_text("*.tmp\n", encoding="utf-8")
         (self.home / ".gitconfig").write_text(
@@ -578,13 +583,15 @@ class TestNative(RepositoryCase):
         source.write_text("*.tmp\n", encoding="utf-8")
         system = self.home / "system-config"
         system.write_text(f'[core]\n excludesFile = "{source.as_posix()}"\n', encoding="utf-8")
-        self.environment.pop("GIT_CONFIG_NOSYSTEM")
-        self.environment["GIT_CONFIG_SYSTEM"] = str(system)
+        self.environment.pop(EnvVar.GIT_CONFIG_NOSYSTEM)
+        self.environment[EnvVar.GIT_CONFIG_SYSTEM] = str(system)
         assert self.native().is_ignored("drop.tmp")
         self.environment.update(
-            GIT_CONFIG_COUNT="1",
-            GIT_CONFIG_KEY_0="core.excludesFile",
-            GIT_CONFIG_VALUE_0=str(self.home / "missing"),
+            **{
+                EnvVar.GIT_CONFIG_COUNT: "1",
+                EnvVar.GIT_CONFIG_KEY_0: "core.excludesFile",
+                EnvVar.GIT_CONFIG_VALUE_0: str(self.home / "missing"),
+            },
         )
         assert not (self.native().is_ignored("drop.tmp"))
 

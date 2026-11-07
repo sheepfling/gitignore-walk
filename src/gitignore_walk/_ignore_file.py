@@ -6,9 +6,9 @@ import os
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol, cast
+from typing import Final, Protocol, cast
 
-from ._errors import GitIgnoreError
+from ._errors import GitIgnoreError, GitIgnoreParseError
 from ._patterns import (
     GitIgnorePattern,
     GitIgnorePatternError,
@@ -99,7 +99,7 @@ class RegexMatcher:
         )
 
 
-DEFAULT_MATCHER = RegexMatcher()
+DEFAULT_MATCHER: Final = RegexMatcher()
 
 
 def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
@@ -112,7 +112,7 @@ def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
             if pattern is not None:
                 patterns.append(pattern)
     except GitIgnorePatternError as error:
-        raise GitIgnoreError(f"invalid Git-ignore pattern in {source}: {error}") from error
+        raise GitIgnoreParseError(f"invalid Git-ignore pattern in {source}: {error}") from error
     return GitIgnoreSpec(tuple(patterns))
 
 

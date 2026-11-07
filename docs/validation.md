@@ -14,6 +14,7 @@ python -m pip install -e '.[dev]'
 | `python -m scripts.ci all` | Tests, lint, type checks, and package validation |
 | `python -m scripts.ci matrix` | Test locally installed Python 3.10–3.15 interpreters |
 | `python -m scripts.ci local` | Windows Python matrix and Linux Docker matrix |
+| `python -m scripts.test_python_matrix` | Windows Python matrix only; accepts `--windows-versions MAJOR.MINOR ...` |
 | `python -m scripts.ci quality` | Ruff lint/format and strict Pyright |
 | `python -m scripts.ci package` | Build wheel/sdist, run Twine, import the installed wheel |
 

@@ -1,5 +1,6 @@
 """Explain and traverse Git-ignore policies with explicit policy scope."""
 
+from ._errors import GitIgnoreError, GitIgnoreParseError
 from ._git import GitStandardPolicy
 from ._ignore_file import (
     GitIgnoreMatch,
@@ -11,7 +12,6 @@ from ._ignore_file import (
 )
 from ._portable import (
     GitIgnoreDecision,
-    GitIgnoreError,
     GitIgnorePolicy,
     GitIgnoreWalkEntry,
     GitIgnoreWalker,
@@ -23,6 +23,7 @@ __all__ = [
     "GitIgnoreDecision",
     "GitIgnoreError",
     "GitIgnoreMatch",
+    "GitIgnoreParseError",
     "GitIgnoreMatcher",
     "GitIgnorePolicy",
     "GitIgnoreSpec",
