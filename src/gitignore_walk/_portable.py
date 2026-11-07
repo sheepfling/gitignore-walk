@@ -11,18 +11,22 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import NamedTuple, cast
 
-from ._patterns import (
-    GitIgnorePattern,
-    GitIgnorePatternError,
-    GitIgnoreSpec,
+from ._errors import GitIgnoreError
+from ._ignore_file import (
+    GitIgnoreFile as _LoadedIgnore,
 )
-from ._patterns import (
-    parse_gitignore as _parse_pattern_lines,
+from ._ignore_file import (
+    GitIgnoreMatch as _PatternMatch,
 )
-
-
-class GitIgnoreError(RuntimeError):
-    """Raised when a repository ignore file cannot be interpreted safely."""
+from ._ignore_file import (
+    load_gitignore as _load_gitignore,
+)
+from ._ignore_file import (
+    match_gitignore_file as _match_loaded_ignore,
+)
+from ._ignore_file import (
+    parse_gitignore,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,12 +46,6 @@ class GitIgnoreWalkEntry(NamedTuple):
     directory: Path
     dir_names: list[str]
     file_names: list[str]
-
-
-@dataclass(frozen=True, slots=True)
-class _LoadedIgnore:
-    spec: GitIgnoreSpec
-    source: str
 
 
 class _RepositoryMetadata(NamedTuple):
@@ -81,9 +79,12 @@ class GitIgnorePolicy:
             None if metadata is None else metadata.common_dir / "info" / "exclude"
         )
         self._global_excludes = _default_global_excludes_path()
-        self._initial_excludes = _parse_loaded_ignore(
-            initial_excludes,
+        self._initial_excludes = _LoadedIgnore(
             source="initial Git-ignore exclusions",
+            spec=parse_gitignore(
+                initial_excludes,
+                source="initial Git-ignore exclusions",
+            ),
         )
 
     def is_ignored(self, target: str | os.PathLike[str]) -> bool:
@@ -375,14 +376,6 @@ class _IgnoreSnapshot:
         return cast(_LoadedIgnore | None, self.specs[key])
 
 
-@dataclass(frozen=True, slots=True)
-class _PatternMatch:
-    ignored: bool
-    source: str
-    pattern: str
-    line: int | None
-
-
 def _ancestor_directories(*, root: Path, target: Path) -> tuple[Path, ...]:
     """Return target-parent directories from the repository root outward."""
 
@@ -496,81 +489,6 @@ def _gitignore_decision(
         if matched is not None:
             decision = matched
     return decision
-
-
-def _load_gitignore(path: Path, *, allow_symlink: bool = False) -> _LoadedIgnore | None:
-    """Load one ignore file, if present, following symlinks only when requested."""
-
-    try:
-        if not path.is_file() or (path.is_symlink() and not allow_symlink):
-            return None
-        lines = path.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError) as error:
-        raise GitIgnoreError(f"unable to read Git-ignore source: {path}: {error}") from error
-    if path.name == ".gitignore":
-        source = f"repository .gitignore {path}"
-    elif path.name == "exclude" and path.parent.name == "info":
-        source = f"repository info/exclude {path}"
-    else:
-        source = f"user-global excludes {path}"
-    return _parse_loaded_ignore(lines, source=source)
-
-
-def _parse_loaded_ignore(lines: Sequence[str], *, source: str) -> _LoadedIgnore:
-    return _LoadedIgnore(spec=parse_gitignore(lines, source=source), source=source)
-
-
-def parse_gitignore(lines: Sequence[str], *, source: str) -> GitIgnoreSpec:
-    """Parse Git-ignore patterns into an ordered portable specification."""
-
-    try:
-        return _parse_pattern_lines(tuple(lines))
-    except GitIgnorePatternError as error:
-        raise GitIgnoreError(f"invalid Git-ignore pattern in {source}: {error}") from error
-
-
-def matches_gitignore(
-    spec: GitIgnoreSpec,
-    relative: str,
-    *,
-    is_directory: bool,
-) -> bool:
-    """Return the ordered Git-ignore decision for one repository-relative path."""
-
-    matched = _last_gitignore_pattern(spec, relative, is_directory=is_directory)
-    return matched is not None and matched.include
-
-
-def _last_gitignore_pattern(
-    spec: GitIgnoreSpec,
-    relative: str,
-    *,
-    is_directory: bool,
-) -> GitIgnorePattern | None:
-    """Return the final matching pattern within one ignore file."""
-
-    decision: GitIgnorePattern | None = None
-    for pattern in spec.patterns:
-        if pattern.matches(relative, is_directory=is_directory):
-            decision = pattern
-    return decision
-
-
-def _match_loaded_ignore(
-    loaded: _LoadedIgnore,
-    relative: str,
-    *,
-    is_directory: bool,
-) -> _PatternMatch | None:
-    matched = _last_gitignore_pattern(loaded.spec, relative, is_directory=is_directory)
-    if matched is None:
-        return None
-    return _PatternMatch(
-        ignored=matched.include,
-        source=loaded.source,
-        pattern=matched.pattern,
-        line=matched.source_line,
-    )
 
 
 def _decision_from_match(*, path: Path, match: _PatternMatch) -> GitIgnoreDecision:

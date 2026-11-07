@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import NamedTuple
 
 
 class GitIgnorePatternError(ValueError):
@@ -38,25 +39,14 @@ class GitIgnorePattern:
         return False
 
 
-@dataclass(frozen=True, slots=True)
-class GitIgnoreSpec:
-    """An ordered set of parsed patterns from one ignore file."""
-
-    patterns: tuple[GitIgnorePattern, ...]
+class _CharacterClass(NamedTuple):
+    expression: str
+    end_index: int
 
 
-def parse_gitignore(lines: list[str] | tuple[str, ...]) -> GitIgnoreSpec:
-    """Parse ignore-file lines into an ordered, immutable pattern specification."""
+def parse_pattern_line(line: str, *, source_line: int) -> GitIgnorePattern | None:
+    """Parse one nonempty source line into a compiled pattern, if it is active."""
 
-    patterns: list[GitIgnorePattern] = []
-    for source_line, raw_line in enumerate(lines, start=1):
-        parsed = _parse_line(raw_line, source_line=source_line)
-        if parsed is not None:
-            patterns.append(parsed)
-    return GitIgnoreSpec(tuple(patterns))
-
-
-def _parse_line(line: str, *, source_line: int) -> GitIgnorePattern | None:
     value = line.rstrip("\r\n")
     if not value or value.startswith("#"):
         return None
@@ -118,8 +108,14 @@ def _is_escaped(value: str, index: int) -> bool:
 def _glob_to_regex(pattern: str) -> str:
     chunks = ["^"]
     index = 0
+    literal_start = 0
     while index < len(pattern):
         char = pattern[index]
+        if char not in "\\*?[":
+            index += 1
+            continue
+        if literal_start < index:
+            chunks.append(re.escape(pattern[literal_start:index]))
         if char == "\\":
             index += 1
             if index == len(pattern):
@@ -144,17 +140,18 @@ def _glob_to_regex(pattern: str) -> str:
         elif char == "?":
             chunks.append("[^/]")
         elif char == "[":
-            class_expression, end = _character_class(pattern, index)
-            chunks.append(class_expression)
-            index = end
-        else:
-            chunks.append(re.escape(char))
+            character_class = _character_class(pattern, index)
+            chunks.append(character_class.expression)
+            index = character_class.end_index
         index += 1
+        literal_start = index
+    if literal_start < len(pattern):
+        chunks.append(re.escape(pattern[literal_start:]))
     chunks.append("$")
     return "".join(chunks)
 
 
-def _character_class(pattern: str, start: int) -> tuple[str, int]:
+def _character_class(pattern: str, start: int) -> _CharacterClass:
     end = start + 1
     if end < len(pattern) and pattern[end] in "!^":
         end += 1
@@ -162,7 +159,7 @@ def _character_class(pattern: str, start: int) -> tuple[str, int]:
         end += 1
     close = pattern.find("]", end)
     if close < 0:
-        return re.escape("["), start
+        return _CharacterClass(re.escape("["), start)
 
     content = pattern[start + 1 : close]
     negate = content.startswith("!")
@@ -183,4 +180,4 @@ def _character_class(pattern: str, start: int) -> tuple[str, int]:
         escaped.append(r"\]" if char == "]" else char)
         index += 1
     content = "".join(escaped)
-    return f"(?!/)[{'^' if negate else ''}{content}]", close
+    return _CharacterClass(f"(?!/)[{'^' if negate else ''}{content}]", close)
