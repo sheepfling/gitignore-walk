@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib.util
 import os
 import shutil
 import subprocess
@@ -17,6 +18,8 @@ from gitignore_walk import (
     GitIgnoreSpec,
     GitIgnoreWalker,
     GitStandardPolicy,
+    PathSpecMatcher,
+    RegexMatcher,
     is_gitignored,
     matches_gitignore,
     parse_gitignore,
@@ -691,6 +694,32 @@ class DifferentialTests(RepositoryCase):
                 self.write(".gitignore", patterns)
                 expected = self.native().is_ignored_many(targets)
                 self.assertEqual(GitIgnorePolicy(self.root).is_ignored_many(targets), expected)
+
+
+@unittest.skipUnless(
+    importlib.util.find_spec("pathspec"),
+    "optional pathspec extra is not installed",
+)
+class MatcherBackendTests(RepositoryCase):
+    def test_pathspec_simple_matches_bundled_backend(self) -> None:
+        patterns = "# comment\n\n*.tmp\n!keep.tmp\n/root.tmp\nlogs/\n"
+        self.write(".gitignore", patterns)
+        targets = (
+            "drop.tmp",
+            "keep.tmp",
+            "nested/drop.tmp",
+            "root.tmp",
+            "deep/root.tmp",
+            "logs/keep.txt",
+            "logs2/keep.txt",
+        )
+        expected = GitIgnorePolicy(self.root, matcher=RegexMatcher()).is_ignored_many(targets)
+        for backend in ("simple", "best"):
+            with self.subTest(backend=backend):
+                policy = GitIgnorePolicy(self.root, matcher=PathSpecMatcher(backend=backend))
+                self.assertEqual(policy.is_ignored_many(targets), expected)
+                decision = policy.explain("drop.tmp")
+                self.assertEqual((decision.pattern, decision.line), ("*.tmp", 3))
 
 
 if __name__ == "__main__":

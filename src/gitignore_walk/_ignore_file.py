@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Protocol, cast
 
 from ._errors import GitIgnoreError
 from ._patterns import GitIgnorePattern, GitIgnorePatternError, parse_pattern_line
@@ -22,7 +23,8 @@ class GitIgnoreFile:
     """An ignore file's source and compiled rules."""
 
     source: str
-    spec: GitIgnoreSpec
+    spec: object
+    matcher: GitIgnoreMatcher
 
 
 @dataclass(frozen=True, slots=True)
@@ -33,6 +35,65 @@ class GitIgnoreMatch:
     source: str
     pattern: str
     line: int
+
+
+class GitIgnoreMatcher(Protocol):
+    """Backend contract for compiling one ignore file and checking paths against it."""
+
+    @property
+    def name(self) -> str:
+        """Return a stable display name for the selected backend."""
+
+        ...
+
+    def parse(self, lines: Iterable[str], *, source: str) -> object:
+        """Compile the ordered rules from one ignore file."""
+
+        ...
+
+    def match(
+        self,
+        spec: object,
+        relative: str,
+        *,
+        source: str,
+        is_directory: bool,
+    ) -> GitIgnoreMatch | None:
+        """Return the final matching rule with its provenance, if any."""
+
+        ...
+
+
+@dataclass(frozen=True, slots=True)
+class RegexMatcher:
+    """The bundled Python-regex matcher."""
+
+    name: str = "regex"
+
+    def parse(self, lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
+        return parse_gitignore(lines, source=source)
+
+    def match(
+        self,
+        spec: object,
+        relative: str,
+        *,
+        source: str,
+        is_directory: bool,
+    ) -> GitIgnoreMatch | None:
+        parsed = cast(GitIgnoreSpec, spec)
+        pattern = _last_matching_pattern(parsed, relative, is_directory=is_directory)
+        if pattern is None:
+            return None
+        return GitIgnoreMatch(
+            ignored=pattern.include,
+            source=source,
+            pattern=pattern.pattern,
+            line=pattern.source_line,
+        )
+
+
+DEFAULT_MATCHER = RegexMatcher()
 
 
 def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
@@ -49,7 +110,12 @@ def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
     return GitIgnoreSpec(tuple(patterns))
 
 
-def load_gitignore(path: Path, *, allow_symlink: bool = False) -> GitIgnoreFile | None:
+def load_gitignore(
+    path: Path,
+    *,
+    matcher: GitIgnoreMatcher = DEFAULT_MATCHER,
+    allow_symlink: bool = False,
+) -> GitIgnoreFile | None:
     """Load one ignore file, if present, following symlinks only when requested."""
 
     try:
@@ -65,7 +131,7 @@ def load_gitignore(path: Path, *, allow_symlink: bool = False) -> GitIgnoreFile 
         source = f"repository info/exclude {path}"
     else:
         source = f"user-global excludes {path}"
-    return GitIgnoreFile(source=source, spec=parse_gitignore(lines, source=source))
+    return GitIgnoreFile(source=source, spec=matcher.parse(lines, source=source), matcher=matcher)
 
 
 def matches_gitignore(
@@ -76,8 +142,13 @@ def matches_gitignore(
 ) -> bool:
     """Return whether the final matching pattern in one file ignores a path."""
 
-    matched = _last_matching_pattern(spec, relative, is_directory=is_directory)
-    return matched is not None and matched.include
+    matched = DEFAULT_MATCHER.match(
+        spec,
+        relative,
+        source="",
+        is_directory=is_directory,
+    )
+    return matched is not None and matched.ignored
 
 
 def match_gitignore_file(
@@ -88,14 +159,11 @@ def match_gitignore_file(
 ) -> GitIgnoreMatch | None:
     """Combine a file's ordered rules and return its final matching rule."""
 
-    pattern = _last_matching_pattern(ignore_file.spec, relative, is_directory=is_directory)
-    if pattern is None:
-        return None
-    return GitIgnoreMatch(
-        ignored=pattern.include,
+    return ignore_file.matcher.match(
+        ignore_file.spec,
+        relative,
         source=ignore_file.source,
-        pattern=pattern.pattern,
-        line=pattern.source_line,
+        is_directory=is_directory,
     )
 
 

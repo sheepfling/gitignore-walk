@@ -102,6 +102,31 @@ will be committed.
   additional Git config. A positive baseline match cannot be undone by a repository,
   info/exclude, or global negation.
 
+## Matcher backends
+
+`GitIgnorePolicy` and `GitIgnoreWalker` default to the bundled `RegexMatcher`; the portable policy
+can accept another `GitIgnoreMatcher` implementation without changing source discovery, precedence,
+provenance, or traversal. `PathSpecMatcher` is an optional adapter for comparing PathSpec engines:
+
+```python
+from gitignore_walk import GitIgnorePolicy, PathSpecMatcher
+
+policy = GitIgnorePolicy("/path/to/project", matcher=PathSpecMatcher(backend="simple"))
+```
+
+Install `.[bench]` for PathSpec's `simple` and `best` engines, `.[bench-re2]` for RE2, or
+`.[bench-hyperscan]` for Hyperscan. These are optional development extras; the default package
+still has no runtime dependencies. Compare batched decisions and complete walks with:
+
+```sh
+python benchmarks/compare_matchers.py --files 5000 --patterns 100 \
+  --backends regex pathspec:simple pathspec:best
+```
+
+Use `pathspec:re2` or `pathspec:hyperscan` after installing the matching extra. Benchmark results
+depend on the machine, rule set, tree shape, and optional engine availability; measure on the
+workload that matters to your caller.
+
 ## Errors, provenance, and consistency
 
 `GitIgnoreError` reports read/parse/process failures. The portable backend rejects invalid UTF-8

@@ -13,6 +13,10 @@ from typing import NamedTuple, cast
 
 from ._errors import GitIgnoreError
 from ._ignore_file import (
+    DEFAULT_MATCHER,
+    GitIgnoreMatcher,
+)
+from ._ignore_file import (
     GitIgnoreFile as _LoadedIgnore,
 )
 from ._ignore_file import (
@@ -23,9 +27,6 @@ from ._ignore_file import (
 )
 from ._ignore_file import (
     match_gitignore_file as _match_loaded_ignore,
-)
-from ._ignore_file import (
-    parse_gitignore,
 )
 
 
@@ -71,7 +72,9 @@ class GitIgnorePolicy:
         root: str | os.PathLike[str],
         *,
         initial_excludes: Sequence[str] = (),
+        matcher: GitIgnoreMatcher | None = None,
     ) -> None:
+        self.matcher = DEFAULT_MATCHER if matcher is None else matcher
         self.root = _resolve_root(root)
         metadata = _find_repository_metadata(self.root)
         self._repository_root = self.root if metadata is None else metadata.root
@@ -81,10 +84,11 @@ class GitIgnorePolicy:
         self._global_excludes = _default_global_excludes_path()
         self._initial_excludes = _LoadedIgnore(
             source="initial Git-ignore exclusions",
-            spec=parse_gitignore(
+            spec=self.matcher.parse(
                 initial_excludes,
                 source="initial Git-ignore exclusions",
             ),
+            matcher=self.matcher,
         )
 
     def is_ignored(self, target: str | os.PathLike[str]) -> bool:
@@ -131,6 +135,7 @@ class GitIgnorePolicy:
             snapshot=snapshot,
             global_excludes=self._global_excludes,
             repository_excludes=self._repository_excludes,
+            matcher=self.matcher,
         )
         if policy_match is not None:
             return _decision_from_match(path=target, match=policy_match)
@@ -168,9 +173,16 @@ class GitIgnoreWalker:
         *,
         policy: GitIgnorePolicy | None = None,
         initial_excludes: Sequence[str] = (),
+        matcher: GitIgnoreMatcher | None = None,
     ) -> None:
         resolved_root = _resolve_root(root)
-        self.policy = policy or GitIgnorePolicy(resolved_root, initial_excludes=initial_excludes)
+        if policy is not None and matcher is not None:
+            raise ValueError("pass matcher to either GitIgnoreWalker or its supplied policy")
+        self.policy = policy or GitIgnorePolicy(
+            resolved_root,
+            initial_excludes=initial_excludes,
+            matcher=matcher,
+        )
         if self.policy.root != resolved_root:
             raise ValueError("GitIgnoreWalker policy must use the same repository root")
         self.root = resolved_root
@@ -369,10 +381,20 @@ class _IgnoreSnapshot:
 
     specs: dict[tuple[Path, bool], object] = field(default_factory=_new_ignore_specs)
 
-    def load(self, path: Path, *, allow_symlink: bool = False) -> _LoadedIgnore | None:
+    def load(
+        self,
+        path: Path,
+        *,
+        matcher: GitIgnoreMatcher = DEFAULT_MATCHER,
+        allow_symlink: bool = False,
+    ) -> _LoadedIgnore | None:
         key = path, allow_symlink
         if key not in self.specs:
-            self.specs[key] = _load_gitignore(path, allow_symlink=allow_symlink)
+            self.specs[key] = _load_gitignore(
+                path,
+                matcher=matcher,
+                allow_symlink=allow_symlink,
+            )
         return cast(_LoadedIgnore | None, self.specs[key])
 
 
@@ -414,6 +436,7 @@ def _gitignore_path_decision(
     snapshot: _IgnoreSnapshot | None = None,
     global_excludes: Path | None = None,
     repository_excludes: Path | None = None,
+    matcher: GitIgnoreMatcher = DEFAULT_MATCHER,
 ) -> _PatternMatch | None:
     """Return the effective ignore match for one target, if ignored."""
 
@@ -434,6 +457,7 @@ def _gitignore_path_decision(
             root=root,
             global_excludes=global_excludes,
             repository_excludes=repository_excludes,
+            matcher=matcher,
         )
         if decision is not None:
             ignored = decision.ignored
@@ -449,6 +473,7 @@ def _gitignore_path_decision(
         root=root,
         global_excludes=global_excludes,
         repository_excludes=repository_excludes,
+        matcher=matcher,
     )
     return decision if decision is not None and decision.ignored else None
 
@@ -462,6 +487,7 @@ def _gitignore_decision(
     root: Path,
     global_excludes: Path | None,
     repository_excludes: Path | None,
+    matcher: GitIgnoreMatcher,
 ) -> _PatternMatch | None:
     """Return the highest-precedence matching decision for one path."""
 
@@ -471,9 +497,9 @@ def _gitignore_decision(
         if exclude_path is None:
             continue
         loaded = (
-            _load_gitignore(exclude_path, allow_symlink=True)
+            _load_gitignore(exclude_path, matcher=matcher, allow_symlink=True)
             if snapshot is None
-            else snapshot.load(exclude_path, allow_symlink=True)
+            else snapshot.load(exclude_path, matcher=matcher, allow_symlink=True)
         )
         if loaded is not None:
             matched = _match_loaded_ignore(loaded, relative_to_root, is_directory=is_directory)
@@ -481,7 +507,11 @@ def _gitignore_decision(
                 decision = matched
     for ignore_root in roots:
         ignore_path = ignore_root / ".gitignore"
-        loaded = _load_gitignore(ignore_path) if snapshot is None else snapshot.load(ignore_path)
+        loaded = (
+            _load_gitignore(ignore_path, matcher=matcher)
+            if snapshot is None
+            else snapshot.load(ignore_path, matcher=matcher)
+        )
         if loaded is None:
             continue
         relative = path.relative_to(ignore_root).as_posix()

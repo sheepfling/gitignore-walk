@@ -23,6 +23,9 @@ classifiers = [
 
 [project.optional-dependencies]
 dev = ["build>=1.2", "ruff>=0.9", "pyright>=1.1.390", "pytest>=8.3", "twine>=6.1"]
+bench = ["pathspec>=1.1.1"]
+bench-re2 = ["pathspec[re2]>=1.1.1"]
+bench-hyperscan = ["pathspec[hyperscan]>=1.1.1"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
