@@ -30,6 +30,8 @@ from ._ignore_file import (
     match_gitignore_file as _match_loaded_ignore,
 )
 
+_DEFAULT_INITIAL_EXCLUDES = (".git",)
+
 
 @dataclass(frozen=True, slots=True)
 class GitIgnoreDecision:
@@ -62,7 +64,7 @@ class IgnorePolicy(ABC):
         self,
         root: str | os.PathLike[str],
         *,
-        initial_excludes: Sequence[str] = (),
+        initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
         matcher: GitIgnoreMatcher | None = None,
     ) -> None:
         self.matcher = DEFAULT_MATCHER if matcher is None else matcher
@@ -120,16 +122,16 @@ class GitIgnorePolicy(IgnorePolicy):
     a Git worktree by walking upward from ``root``; it does not need to invoke Git. Git config
     overrides and conditional includes are intentionally outside this portable scope.
 
-    ``initial_excludes`` are applied as a hard baseline before those sources. A matching baseline
-    exclusion remains ignored. They are useful for a caller's own transient or generated-file
-    policy and are intentionally kept separate from ignore files.
+    ``initial_excludes`` are applied as a hard baseline before those sources and default to
+    ``(".git",)``. Supplying a sequence replaces that default; use an empty sequence to remove it.
+    A matching baseline exclusion remains ignored regardless of later ignore rules.
     """
 
     def __init__(
         self,
         root: str | os.PathLike[str],
         *,
-        initial_excludes: Sequence[str] = (),
+        initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
         matcher: GitIgnoreMatcher | None = None,
     ) -> None:
         super().__init__(root, initial_excludes=initial_excludes, matcher=matcher)
@@ -153,8 +155,10 @@ class GitIgnorePolicy(IgnorePolicy):
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
         snapshot = _IgnoreSnapshot()
-        for target in targets:
-            yield self.decision(target=self.resolve_target(target), snapshot=snapshot)
+        yield from (
+            self.decision(target=self.resolve_target(target), snapshot=snapshot)
+            for target in targets
+        )
 
     def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:
         relative = target.relative_to(self.root).as_posix()
@@ -209,22 +213,24 @@ class GitIgnoreWalker:
         root: str | os.PathLike[str],
         *,
         policy: IgnorePolicy | None = None,
-        initial_excludes: Sequence[str] = (),
+        initial_excludes: Sequence[str] | None = None,
         matcher: GitIgnoreMatcher | None = None,
-        include_git: bool = False,
     ) -> None:
         resolved_root = _resolve_root(root)
-        if policy is not None and matcher is not None:
-            raise ValueError("pass matcher to either GitIgnoreWalker or its supplied policy")
-        self.policy = policy or GitIgnorePolicy(
-            resolved_root,
-            initial_excludes=initial_excludes,
-            matcher=matcher,
-        )
+        if policy is not None and (matcher is not None or initial_excludes is not None):
+            raise ValueError("configure matcher and initial_excludes on the supplied policy")
+        if policy is None:
+            policy = GitIgnorePolicy(
+                resolved_root,
+                initial_excludes=(
+                    _DEFAULT_INITIAL_EXCLUDES if initial_excludes is None else initial_excludes
+                ),
+                matcher=matcher,
+            )
+        self.policy = policy
         if self.policy.root != resolved_root:
             raise ValueError("GitIgnoreWalker policy must use the same repository root")
         self.root = resolved_root
-        self.include_git = include_git
 
     def iter_files(
         self,
@@ -263,35 +269,41 @@ class GitIgnoreWalker:
             raise ValueError(f"unknown walk selection: {selection!r}")
         ignored = None if selection == "all" else selection == "ignored"
         top_path = self.policy._walk_top(self.root if top is None else top)
-        if not self.include_git and any(
-            os.path.normcase(part) == os.path.normcase(".git")
-            for part in top_path.relative_to(self.root).parts
+        snapshot = _IgnoreSnapshot()
+        if (
+            ignored is False
+            and top_path != self.root
+            and self.policy._decisions((top_path,), snapshot)[0].ignored
         ):
             return
-        snapshot = _IgnoreSnapshot()
+
+        def included_directories(directory: str, names: list[str]) -> list[str]:
+            current = Path(directory)
+            regular = [
+                name for name in names if _is_regular_directory(current / name, onerror=onerror)
+            ]
+            paths = [self.policy.resolve_target(current / name) for name in regular]
+            decisions = self.policy._decisions(paths, snapshot)
+            return [
+                name
+                for name, decision in zip(regular, decisions, strict=True)
+                if not decision.ignored
+            ]
+
         entries = (
-            _walk_without_git_bottom_up(top_path, onerror=onerror)
-            if not topdown and not self.include_git
+            _walk_pruned_bottom_up(
+                top_path, onerror=onerror, included_directories=included_directories
+            )
+            if not topdown and ignored is False
             else os.walk(top_path, topdown=topdown, onerror=onerror, followlinks=False)
         )
         for directory, dir_names, filenames in entries:
             current = Path(directory)
-            if not self.include_git and any(
-                os.path.normcase(part) == os.path.normcase(".git")
-                for part in current.relative_to(self.root).parts
-            ):
-                continue
             safe_dir_names = [
-                name
-                for name in dir_names
-                if (self.include_git or os.path.normcase(name) != os.path.normcase(".git"))
-                and _is_regular_directory(current / name, onerror=onerror)
+                name for name in dir_names if _is_regular_directory(current / name, onerror=onerror)
             ]
             safe_filenames = [
-                name
-                for name in filenames
-                if (self.include_git or os.path.normcase(name) != os.path.normcase(".git"))
-                and _is_regular_file(current / name, onerror=onerror)
+                name for name in filenames if _is_regular_file(current / name, onerror=onerror)
             ]
             dir_names[:] = safe_dir_names
 
@@ -325,10 +337,13 @@ class GitIgnoreWalker:
             yield GitIgnoreWalkEntry(current, matching_dirs, matching_files)
 
 
-def _walk_without_git_bottom_up(
-    top: Path, *, onerror: Callable[[OSError], object] | None
+def _walk_pruned_bottom_up(
+    top: Path,
+    *,
+    onerror: Callable[[OSError], object] | None,
+    included_directories: Callable[[str, list[str]], list[str]],
 ) -> Iterator[tuple[str, list[str], list[str]]]:
-    """Yield bottom-up rows while pruning metadata before opening child directories."""
+    """Yield bottom-up rows while pruning excluded directories before descent."""
     stack: list[tuple[str, list[str] | None, list[str] | None]] = [(os.fspath(top), None, None)]
     while stack:
         directory, names, files = stack.pop()
@@ -345,7 +360,7 @@ def _walk_without_git_bottom_up(
             continue
         finally:
             walk.close()
-        names[:] = [name for name in names if os.path.normcase(name) != os.path.normcase(".git")]
+        names[:] = included_directories(directory, names)
         stack.append((directory, names, files))
         for name in reversed(names):
             child = os.path.join(directory, name)

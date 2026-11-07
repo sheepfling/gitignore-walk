@@ -13,6 +13,7 @@ from itertools import islice
 from pathlib import Path
 
 from ._portable import (
+    _DEFAULT_INITIAL_EXCLUDES,
     GitIgnoreDecision,
     GitIgnoreError,
     IgnorePolicy,
@@ -49,14 +50,15 @@ class GitStandardPolicy(IgnorePolicy):
     ``environment`` is a complete subprocess environment, not an overlay. Omit it
     to copy the current environment at construction. Repository-selection variables
     are removed; Git configuration and HOME/XDG variables remain effective.
-    Nonempty Git diagnostics raise instead of silently returning partial results.
+    Nonempty Git diagnostics raise instead of silently returning partial results. The hard
+    ``initial_excludes`` baseline defaults to ``(".git",)`` and is evaluated before invoking Git.
     """
 
     def __init__(
         self,
         root: str | os.PathLike[str],
         *,
-        initial_excludes: Sequence[str] = (),
+        initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
         git_executable: str = "git",
         environment: Mapping[str, str] | None = None,
         timeout: float = 30.0,
@@ -114,19 +116,32 @@ class GitStandardPolicy(IgnorePolicy):
         resolved = tuple(self.resolve_target(target) for target in targets)
         if not resolved:
             return []
+        decisions: dict[int, GitIgnoreDecision] = {}
+        pending: list[tuple[int, Path]] = []
+        for index, path in enumerate(resolved):
+            baseline = _match_loaded_ignore(
+                self._initial_excludes,
+                path.relative_to(self.root).as_posix(),
+                is_directory=not path.is_symlink() and path.is_dir(),
+            )
+            if baseline is not None and baseline.ignored:
+                decisions[index] = _decision_from_match(path=path, match=baseline)
+            else:
+                pending.append((index, path))
+        if not pending:
+            return [decisions[index] for index in range(len(resolved))]
         arguments = ["check-ignore", "--verbose", "--non-matching", "-z", "--stdin"]
         arguments.append("--no-index")
-        relative = tuple(os.fsencode(path.relative_to(self.root).as_posix()) for path in resolved)
+        relative = tuple(os.fsencode(path.relative_to(self.root).as_posix()) for _, path in pending)
         if any(b"\0" in path for path in relative):
             raise ValueError("Git-ignore paths cannot contain NUL")
         result = self._run(arguments, data=b"\0".join(relative) + b"\0", accepted=(0, 1))
         fields = result.stdout.split(b"\0")
-        if fields[-1] != b"" or len(fields) != 4 * len(resolved) + 1:
+        if fields[-1] != b"" or len(fields) != 4 * len(pending) + 1:
             raise GitIgnoreError("Git returned an incomplete check-ignore response")
-        decisions: list[GitIgnoreDecision] = []
-        for index, path in enumerate(resolved):
-            source, line, pattern, echoed = fields[index * 4 : index * 4 + 4]
-            if echoed != relative[index]:
+        for batch_index, (original_index, path) in enumerate(pending):
+            source, line, pattern, echoed = fields[batch_index * 4 : batch_index * 4 + 4]
+            if echoed != relative[batch_index]:
                 raise GitIgnoreError("Git returned an unexpected check-ignore path")
             if source:
                 try:
@@ -146,15 +161,8 @@ class GitStandardPolicy(IgnorePolicy):
                 raise GitIgnoreError("Git returned incomplete ignore provenance")
             else:
                 decision = GitIgnoreDecision(path=path, ignored=False)
-            baseline = _match_loaded_ignore(
-                self._initial_excludes,
-                path.relative_to(self.root).as_posix(),
-                is_directory=not path.is_symlink() and path.is_dir(),
-            )
-            if baseline is not None and baseline.ignored:
-                decision = _decision_from_match(path=path, match=baseline)
-            decisions.append(decision)
-        return decisions
+            decisions[original_index] = decision
+        return [decisions[index] for index in range(len(resolved))]
 
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256

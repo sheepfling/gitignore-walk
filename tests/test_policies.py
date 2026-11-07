@@ -359,25 +359,36 @@ class TestPortable(RepositoryCase):
         directories.remove("build")
         assert [directory.name for directory, _, _ in rows] == ["docs"]
 
-    def test_git_metadata_is_opt_in_for_all_selections(self) -> None:
-        metadata = self.write(".git/config")
+    @pytest.mark.parametrize("native", [False, True])
+    @pytest.mark.parametrize("topdown", [False, True])
+    def test_git_metadata_follows_policy_selection(self, native: bool, topdown: bool) -> None:
+        if native:
+            self.init()
+        metadata = self.write(".git/walker-probe")
         nested_marker = self.write("nested/.git", "gitdir: elsewhere\n")
         normal = self.write("normal.txt")
-        walker = GitIgnoreWalker(self.root)
-        for selection in ("included", "ignored", "all"):
-            files = set(walker.iter_files(selection=selection))
-            assert metadata not in files
-            assert nested_marker not in files
-        assert normal in set(walker.iter_files())
-        assert metadata not in set(walker.iter_files(selection="all", topdown=False))
-        assert list(walker.iter_files(self.root / ".git", selection="all")) == []
-        included = set(GitIgnoreWalker(self.root, include_git=True).iter_files(selection="all"))
-        assert {metadata, nested_marker, normal} <= included
+        policy = self.native() if native else GitIgnorePolicy(self.root)
+        walker = GitIgnoreWalker(self.root, policy=policy)
+        assert policy.is_ignored(metadata)
+        selected = set(walker.iter_files(topdown=topdown))
+        assert normal in selected
+        assert metadata not in selected and nested_marker not in selected
+        ignored = set(walker.iter_files(selection="ignored", topdown=topdown))
+        assert {metadata, nested_marker} <= ignored
+        all_files = set(walker.iter_files(selection="all", topdown=topdown))
+        assert {metadata, nested_marker, normal} <= all_files
+        assert list(walker.iter_files(self.root / ".git")) == []
+        assert metadata in set(walker.iter_files(self.root / ".git", selection="all"))
 
-    def test_bottom_up_does_not_scan_git_without_opt_in(self) -> None:
-        self.write(".git/config")
+    @pytest.mark.parametrize("native", [False, True])
+    def test_bottom_up_prunes_ignored_directories_before_scanning(self, native: bool) -> None:
+        if native:
+            self.init()
+        self.write(".git/walker-probe")
         self.write("nested/.git/config")
         self.write("nested/file.txt")
+        self.write(".gitignore", "build/\n")
+        self.write("build/output")
         scanned: list[Path] = []
         scandir = os.scandir
 
@@ -385,18 +396,30 @@ class TestPortable(RepositoryCase):
             scanned.append(Path(os.fsdecode(path)))  # type: ignore[arg-type]
             return scandir(path)  # type: ignore[call-overload]
 
+        policy = self.native() if native else GitIgnorePolicy(self.root)
+        walker = GitIgnoreWalker(self.root, policy=policy)
         with patch("os.scandir", side_effect=record_scandir):
-            list(GitIgnoreWalker(self.root).iter_files(topdown=False, selection="all"))
+            list(walker.iter_files(topdown=False))
         assert not any(".git" in path.parts for path in scanned)
+        assert not any("build" in path.parts for path in scanned)
 
         scanned.clear()
         with patch("os.scandir", side_effect=record_scandir):
-            list(
-                GitIgnoreWalker(self.root, include_git=True).iter_files(
-                    topdown=False, selection="all"
-                )
-            )
+            list(walker.iter_files(topdown=False, selection="all"))
         assert any(".git" in path.parts for path in scanned)
+        assert any("build" in path.parts for path in scanned)
+
+    @pytest.mark.parametrize("native", [False, True])
+    def test_empty_initial_excludes_allows_git_metadata(self, native: bool) -> None:
+        if native:
+            self.init()
+        metadata = self.write(".git/walker-probe")
+        policy = (
+            self.native(initial_excludes=())
+            if native
+            else GitIgnorePolicy(self.root, initial_excludes=())
+        )
+        assert metadata in set(GitIgnoreWalker(self.root, policy=policy).iter_files())
 
     def test_discovered_symlinks_and_special_files_omitted(self) -> None:
         file = self.write("real.txt")
@@ -411,11 +434,16 @@ class TestPortable(RepositoryCase):
         with pytest.raises(ValueError):
             GitIgnoreWalker(child, policy=GitIgnorePolicy(self.root))
 
-    def test_bottom_up_legacy_rows_are_documented(self) -> None:
+    def test_supplied_policy_rejects_walker_excludes(self) -> None:
+        policy = GitIgnorePolicy(self.root)
+        with pytest.raises(ValueError, match="initial_excludes"):
+            GitIgnoreWalker(self.root, policy=policy, initial_excludes=())
+
+    def test_bottom_up_prunes_ignored_rows(self) -> None:
         self.write(".gitignore", "build/\n")
         self.write("build/ignored")
         rows = list(GitIgnoreWalker(self.root).walk(topdown=False))
-        assert (self.root / "build", [], []) in rows
+        assert all(directory != self.root / "build" for directory, _, _ in rows)
 
     def test_explicit_internal_symlink_top_legacy_behavior(self) -> None:
         file = self.write("docs/keep.md")
@@ -587,6 +615,19 @@ class TestNative(RepositoryCase):
             assert run.call_count == 1
             assert [item.ignored for item in decisions] == [True, True]
             assert run.call_count == 2
+
+    def test_baseline_paths_are_not_sent_to_git(self) -> None:
+        self.write(".gitignore", "*.tmp\n")
+        policy = self.native()
+        with patch.object(policy, "_run", wraps=policy._run) as run:
+            decisions = policy.explain_many([".git/config", "file.tmp", ".git/config"])
+            assert [decision.ignored for decision in decisions] == [True, True, True]
+            assert decisions[0].source == decisions[2].source == "initial Git-ignore exclusions"
+            assert run.call_count == 1
+            assert run.call_args.kwargs["data"] == b"file.tmp\0"
+            run.reset_mock()
+            assert policy.is_ignored_many([".git/config"]) == [True]
+            run.assert_not_called()
 
     def test_tracked_paths_are_evaluated_without_index(self) -> None:
         self.write("tracked.tmp")

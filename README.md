@@ -196,9 +196,10 @@ for directory, dir_names, file_names in walker.walk():
 
 `iter_files()` provides a simpler interface when only file paths are needed.
 
-The walker skips `.git` files and directories by default, including nested repository metadata.
-Pass `include_git=True` to allow them through the selected ignore filter. Other hidden files are
-included unless the active policy excludes them.
+Policies exclude `.git` files and directories by default, including nested repository metadata.
+`initial_excludes` replaces this baseline: use `initial_excludes=()` to remove it, or include
+`.git` alongside any other hard exclusions you supply. Use `selection="all"` to bypass ignore
+filtering. Other hidden files follow the active policy.
 
 Ignored-only traversal still visits necessary unignored parents to locate ignored descendants. Its filtered directory list does not control pruning.
 
@@ -245,7 +246,7 @@ A few details are worth knowing before integrating the library:
 
 **Roots and paths.** Relative queries use the policy root. Missing targets are allowed. Targets outside that root are rejected, and unknown nonexistent targets are treated as files.
 
-**Baseline exclusions.** Portable `initial_excludes` are hard exclusions. A positive baseline match cannot be overridden by later Git-ignore negation rules.
+**Baseline exclusions.** Both policies treat `initial_excludes` as hard exclusions. A positive baseline match cannot be overridden by later Git-ignore negation rules.
 
 **Symlinks.** Discovered symlinks are omitted from traversal. Following symlinks is unsupported. Explicit point-query behavior differs between policies in certain cases.
 
