@@ -27,6 +27,7 @@ dev = [
     "ruff>=0.9",
     "pyright>=1.1.390",
     "pytest>=8.3",
+    "typing_extensions>=4.1",
     "mdrepo==0.0.1; python_version >= '3.11'",
     "rumdl>=0.2.49,<0.3",
     "twine>=6.1",
@@ -50,7 +51,7 @@ target-version = "py310"
 select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
 
 [tool.pyright]
-include = ["src"]
+include = ["src", "tests/typing"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 

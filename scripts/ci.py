@@ -321,7 +321,7 @@ def _quality() -> int:
     for label, command in (
         ("Ruff lint", [sys.executable, "-m", "ruff", "check", "."]),
         ("Ruff format", [sys.executable, "-m", "ruff", "format", "--check", "."]),
-        ("Pyright", [sys.executable, "-m", "pyright"]),
+        ("Pyright", [sys.executable, "-m", "pyright", "--pythonpath", sys.executable]),
         ("Markdown style (rumdl)", ["rumdl", "check", "."]),
     ):
         result = _run(command, label=label)
