@@ -38,7 +38,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             decision_seconds = perf_counter() - start
 
             start = perf_counter()
-            walked = tuple(GitIgnoreWalker(root, policy=policy).iter_files())
+            walked = tuple(GitIgnoreWalker(root, policy=policy).iter_files(ignored=False))
             walk_seconds = perf_counter() - start
             print(
                 f"{name}\t{decision_seconds * 1000:.2f}\t{walk_seconds * 1000:.2f}"

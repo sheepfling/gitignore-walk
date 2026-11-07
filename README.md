@@ -1,6 +1,6 @@
 # gitignore-walk
 
-`gitignore-walk` supports Python 3.10-3.15 and evaluates Git ignore rules, explains matching
+`gitignore-walk` supports Python 3.10–3.15 and evaluates Git ignore rules, explains matching
 decisions, and traverses directory trees under an explicit policy. It provides two backends:
 
 - **`GitIgnorePolicy`** parses and evaluates root and nested `.gitignore` files in Python. It works
@@ -98,6 +98,10 @@ will be committed.
 - Discovered symlinks and special files are omitted. `follow_links=True` is rejected.
 - Relative targets are rooted at the policy root. Missing paths are allowed. Targets outside
   the root are rejected. Unknown nonexistent paths are treated as files, not guessed directories.
+- Policy roots and query targets accept strings or `os.PathLike[str]` values. Query results expose
+  native `Path` objects. The standalone `matches_gitignore` helper accepts a relative string or
+  path-like value; it normalizes either slash spelling to `/` internally and rejects absolute
+  paths and `..` components that escape the ignore-file scope.
 - Caller `initial_excludes` are hard baseline rules evaluated by the portable matcher, not
   additional Git config. A positive baseline match cannot be undone by a repository,
   info/exclude, or global negation.
@@ -176,27 +180,27 @@ The library is alpha; mdrepo should keep its existing implementation until the g
 
 ```sh
 python -m pip install -e '.[dev]'
-python scripts/ci.py all
+python -m scripts.ci all
 ```
 
 The same Python runner is used by local checks and GitHub Actions. To run the suite across every
 locally installed supported interpreter:
 
 ```sh
-python scripts/ci.py matrix --backend vanilla
+python -m scripts.ci matrix --backend vanilla
 ```
 
 To check an optional matcher backend, install its extra in that interpreter and name it explicitly:
 
 ```sh
 python -m pip install -e '.[dev,bench]'
-python scripts/ci.py test --backend pathspec
+python -m scripts.ci test --backend pathspec
 
 python -m pip install -e '.[dev,bench-re2]'
-python scripts/ci.py test --backend re2
+python -m scripts.ci test --backend re2
 
 python -m pip install -e '.[dev,bench-hyperscan]'
-python scripts/ci.py test --backend hyperscan
+python -m scripts.ci test --backend hyperscan
 ```
 
 The runner checks that the requested backend is installed before pytest runs, so a missing optional

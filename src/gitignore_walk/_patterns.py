@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass
 from typing import NamedTuple
@@ -22,10 +23,10 @@ class GitIgnorePattern:
     basename_only: bool
     expression: re.Pattern[str]
 
-    def matches(self, relative: str, *, is_directory: bool) -> bool:
+    def matches(self, relative: str | os.PathLike[str], *, is_directory: bool) -> bool:
         """Return whether this rule matches a path relative to its ignore-file scope."""
 
-        path = relative.replace("\\", "/").strip("/")
+        path = normalize_relative_path(relative)
         if not path or path == ".":
             return False
         parts = path.split("/")
@@ -130,10 +131,10 @@ def _glob_to_regex(pattern: str) -> str:
             followed_by_slash = end < len(pattern) and pattern[end] == "/"
             at_segment_start = index == 0 or pattern[index - 1] == "/"
             if count >= 2 and at_segment_start and followed_by_slash:
-                chunks.append("(?:.*/)?")
+                chunks.append("(?:[\\s\\S]*/)?")
                 end += 1
             elif count >= 2 and at_segment_start and end == len(pattern):
-                chunks.append(".*")
+                chunks.append("[\\s\\S]*")
             else:
                 chunks.append("[^/]*")
             index = end - 1
@@ -152,32 +153,51 @@ def _glob_to_regex(pattern: str) -> str:
 
 
 def _character_class(pattern: str, start: int) -> _CharacterClass:
-    end = start + 1
-    if end < len(pattern) and pattern[end] in "!^":
-        end += 1
-    if end < len(pattern) and pattern[end] == "]":
-        end += 1
-    close = pattern.find("]", end)
-    if close < 0:
+    content_start = start + 1
+    negate = content_start < len(pattern) and pattern[content_start] in "!^"
+    if negate:
+        content_start += 1
+
+    close = content_start
+    if close < len(pattern) and pattern[close] == "]":
+        close += 1
+    while close < len(pattern):
+        if pattern[close] == "\\" and close + 1 < len(pattern):
+            close += 2
+            continue
+        if pattern[close] == "]":
+            break
+        close += 1
+    if close >= len(pattern):
         return _CharacterClass(re.escape("["), start)
 
-    content = pattern[start + 1 : close]
-    negate = content.startswith("!")
-    if negate:
-        content = content[1:]
-    if content.startswith("]"):
-        content = r"\]" + content[1:]
-    if content.startswith("^"):
-        content = r"\^" + content[1:]
-    escaped: list[str] = []
-    index = 0
-    while index < len(content):
-        if content[index] == "\\" and index + 1 < len(content):
-            escaped.append(re.escape(content[index + 1]))
+    content: list[str] = []
+    index = content_start
+    if index < close and pattern[index] == "]":
+        content.append(r"\]")
+        index += 1
+    while index < close:
+        char = pattern[index]
+        if char == "\\" and index + 1 < close:
+            content.append(re.escape(pattern[index + 1]))
             index += 2
             continue
-        char = content[index]
-        escaped.append(r"\]" if char == "]" else char)
+        if char == "^" and not content and not negate:
+            content.append(r"\^")
+        elif char == "[":
+            content.append(r"\[")
+        else:
+            content.append(char)
         index += 1
-    content = "".join(escaped)
-    return _CharacterClass(f"(?!/)[{'^' if negate else ''}{content}]", close)
+    return _CharacterClass(f"(?!/)[{'^' if negate else ''}{''.join(content)}]", close)
+
+
+def normalize_relative_path(relative: str | os.PathLike[str]) -> str:
+    value = os.fspath(relative)
+    path = value.replace("\\", "/")
+    if path.startswith("/") or re.match(r"^[A-Za-z]:", path):
+        raise ValueError("path must be relative to the ignore-file scope")
+    parts = path.split("/")
+    if ".." in parts:
+        raise ValueError("relative path cannot escape its ignore-file scope")
+    return "/".join(part for part in parts if part and part != ".")

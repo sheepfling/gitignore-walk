@@ -4,5 +4,5 @@ param(
 
 $ErrorActionPreference = "Stop"
 $arguments = @("matrix", "--backend", "vanilla", "--versions") + $PythonVersions
-& python (Join-Path $PSScriptRoot "ci.py") @arguments
+& python -m scripts.ci @arguments
 exit $LASTEXITCODE

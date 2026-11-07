@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
+import os
 from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol, cast
 
 from ._errors import GitIgnoreError
-from ._patterns import GitIgnorePattern, GitIgnorePatternError, parse_pattern_line
+from ._patterns import (
+    GitIgnorePattern,
+    GitIgnorePatternError,
+    normalize_relative_path,
+    parse_pattern_line,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,7 +142,7 @@ def load_gitignore(
 
 def matches_gitignore(
     spec: GitIgnoreSpec,
-    relative: str,
+    relative: str | os.PathLike[str],
     *,
     is_directory: bool,
 ) -> bool:
@@ -144,7 +150,7 @@ def matches_gitignore(
 
     matched = DEFAULT_MATCHER.match(
         spec,
-        relative,
+        normalize_relative_path(relative),
         source="",
         is_directory=is_directory,
     )
@@ -153,7 +159,7 @@ def matches_gitignore(
 
 def match_gitignore_file(
     ignore_file: GitIgnoreFile,
-    relative: str,
+    relative: str | os.PathLike[str],
     *,
     is_directory: bool,
 ) -> GitIgnoreMatch | None:
@@ -161,7 +167,7 @@ def match_gitignore_file(
 
     return ignore_file.matcher.match(
         ignore_file.spec,
-        relative,
+        normalize_relative_path(relative),
         source=ignore_file.source,
         is_directory=is_directory,
     )

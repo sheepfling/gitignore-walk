@@ -6,8 +6,8 @@ import importlib.util
 import os
 import shutil
 import subprocess
-import tempfile
-from pathlib import Path
+from collections.abc import Iterator
+from pathlib import Path, PureWindowsPath
 from unittest.mock import patch
 
 import pytest
@@ -28,9 +28,9 @@ from gitignore_walk import (
 
 
 class RepositoryCase:
-    def setup_method(self, method: object) -> None:
-        self.temp = tempfile.TemporaryDirectory()
-        self.base = Path(self.temp.name).resolve()
+    @pytest.fixture(autouse=True)
+    def setup_repository(self, tmp_path: Path) -> Iterator[None]:
+        self.base = tmp_path.resolve()
         self.root = self.base / "repo"
         self.root.mkdir()
         self.home = self.base / "home"
@@ -52,10 +52,10 @@ class RepositoryCase:
         )
         self.environment_patch = patch.dict(os.environ, self.environment, clear=True)
         self.environment_patch.start()
-
-    def teardown_method(self, method: object) -> None:
-        self.environment_patch.stop()
-        self.temp.cleanup()
+        try:
+            yield
+        finally:
+            self.environment_patch.stop()
 
     def write(self, relative: str, text: str = "content\n") -> Path:
         path = self.root / relative
@@ -116,6 +116,30 @@ class TestPortable(RepositoryCase):
         assert not (matches_gitignore(spec, "cache", is_directory=False))
         assert matches_gitignore(spec, "a/x/y/b.txt", is_directory=False)
         assert matches_gitignore(spec, "a/b.txt", is_directory=False)
+
+    def test_public_matcher_normalizes_pathlike_edges(self) -> None:
+        spec = parse_gitignore(["nested/drop.tmp"], source="test")
+        assert matches_gitignore(spec, Path("nested/drop.tmp"), is_directory=False)
+        assert matches_gitignore(spec, PureWindowsPath(r"nested\drop.tmp"), is_directory=False)
+        for path in (Path("../drop.tmp"), Path("/drop.tmp"), PureWindowsPath(r"C:\drop.tmp")):
+            with pytest.raises(ValueError):
+                matches_gitignore(spec, path, is_directory=False)
+
+    def test_character_class_negation_and_escaped_closing_bracket(self) -> None:
+        caret_negated = parse_gitignore(["[^a].txt"], source="test")
+        assert not matches_gitignore(caret_negated, "a.txt", is_directory=False)
+        assert matches_gitignore(caret_negated, "b.txt", is_directory=False)
+
+        escaped_close = parse_gitignore([r"[a\]b].txt"], source="test")
+        assert all(
+            matches_gitignore(escaped_close, name, is_directory=False)
+            for name in ("a.txt", "].txt", "b.txt")
+        )
+        assert not matches_gitignore(escaped_close, "c.txt", is_directory=False)
+
+    def test_recursive_trailing_double_star_matches_newlines(self) -> None:
+        spec = parse_gitignore(["a/**"], source="test")
+        assert matches_gitignore(spec, "a/line\nbreak", is_directory=False)
 
     def test_global_excludes_fall_back_to_home_config(self) -> None:
         os.environ.pop("XDG_CONFIG_HOME")
@@ -321,8 +345,8 @@ class TestPortable(RepositoryCase):
 
 
 class TestNative(RepositoryCase):
-    def setup_method(self, method: object) -> None:
-        super().setup_method(method)
+    @pytest.fixture(autouse=True)
+    def setup_native_repository(self, setup_repository: None) -> None:
         self.init()
 
     def global_excludes(self, text: str, filename: str = "global ignore") -> Path:
@@ -686,6 +710,7 @@ class TestDifferential(RepositoryCase):
             ("[ab]?.tmp\n", ["a1.tmp", "b2.tmp", "c1.tmp", "a.tmp"]),
             ("[]a].txt\n", ["].txt", "a.txt", "b.txt"]),
             ("file[!0-4].txt\n", ["file5.txt", "file0.txt", "nested/file9.txt"]),
+            ("[^a].txt\n", ["a.txt", "b.txt", "nested/c.txt"]),
         ],
     )
     def test_portable_pattern_corpus_against_git(self, patterns: str, targets: list[str]) -> None:
@@ -697,6 +722,14 @@ class TestDifferential(RepositoryCase):
         if importlib.util.find_spec("pathspec") is not None:
             matcher = PathSpecMatcher(backend="simple")
             assert GitIgnorePolicy(self.root, matcher=matcher).is_ignored_many(targets) == expected
+
+    def test_escaped_closing_bracket_class_matches_git(self) -> None:
+        self.init()
+        self.write(".gitignore", "[a\\]b].txt\n")
+        targets = ["a.txt", "].txt", "b.txt", "c.txt"]
+        expected = self.native().is_ignored_many(targets)
+        assert expected == (True, True, True, False)
+        assert GitIgnorePolicy(self.root).is_ignored_many(targets) == expected
 
 
 @pytest.mark.skipif(
