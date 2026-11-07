@@ -12,7 +12,6 @@ from .errors import GitIgnoreError
 
 __all__ = ["load_gitignore"]
 
-
 def load_gitignore(
     path: Path,
     *,

@@ -5,8 +5,8 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass
-from typing import Final, NamedTuple
 from pathlib import Path
+from typing import Final, NamedTuple
 
 class _PatternSyntax:
     """Named symbols for the Git-ignore syntax markers handled by this parser."""

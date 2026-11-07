@@ -14,7 +14,6 @@ if TYPE_CHECKING:
 
 __all__ = ["GitIgnoreFile", "GitIgnoreMatch", "GitIgnoreSpec"]
 
-
 @dataclass(frozen=True, slots=True)
 class GitIgnoreSpec:
     """The ordered patterns parsed from a single ignore file."""
@@ -49,7 +48,6 @@ class GitIgnoreSpec:
             candidates.extend(self._first_character_groups.get(character, ()))
         return tuple(candidates)
 
-
 @dataclass(frozen=True, slots=True)
 class GitIgnoreFile:
     """An ignore file's source and compiled rules."""
@@ -57,7 +55,6 @@ class GitIgnoreFile:
     source: str
     spec: object
     matcher: GitIgnoreMatcher
-
 
 @dataclass(frozen=True, slots=True)
 class GitIgnoreMatch:

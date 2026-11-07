@@ -25,7 +25,6 @@ from gitignore_walk import (
 )
 from gitignore_walk.environment import EnvVar
 
-
 class RepositoryCase:
     @pytest.fixture(autouse=True)
     def setup_repository(self, tmp_path: Path) -> Iterator[None]:
@@ -90,7 +89,6 @@ class RepositoryCase:
             pytest.skip(f"symlinks unavailable: {error}")
         return path
 
-
 class TestPolicyContract(RepositoryCase):
     @pytest.mark.parametrize("native", [False, True])
     def test_batch_and_lazy_contract(self, native: bool) -> None:
@@ -135,7 +133,6 @@ class TestPolicyContract(RepositoryCase):
         ignore.write_text("", encoding="utf-8")
         assert list(lazy) == [True]
         assert not policy.is_ignored("b.tmp")
-
 
 class TestPortable(RepositoryCase):
     def test_parser_preserves_source_lines_and_escaped_literals(self) -> None:
@@ -472,7 +469,6 @@ class TestPortable(RepositoryCase):
             pytest.raises(GitIgnoreError),
         ):
             GitIgnorePolicy(self.root).is_ignored("drop.tmp")
-
 
 class TestNative(RepositoryCase):
     @pytest.fixture(autouse=True)
@@ -835,7 +831,6 @@ class TestNative(RepositoryCase):
         (self.home / "config").write_text("[invalid\n", encoding="utf-8")
         with pytest.raises(GitIgnoreError):
             self.native()
-
 
 class TestDifferential(RepositoryCase):
     def test_trailing_space_paths_follow_platform_semantics(self) -> None:

@@ -63,6 +63,7 @@ results.
 
 ## Implementation notes
 
+- Keep text files UTF-8 with LF endings; `.editorconfig` and `.gitattributes` enforce this.
 - Keep the portable Python policy and Git-native policy behavior distinct; do not add silent
   fallback between them.
 - Keep type annotations compatible with Python 3.10 and pass strict Pyright.

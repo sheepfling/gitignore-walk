@@ -16,18 +16,14 @@ from typing import Final
 
 from gitignore_walk.environment import EnvVar
 
-
 def project_root() -> Path:
     return Path(__file__).resolve().parents[1]
-
 
 def project_src() -> Path:
     return project_root() / "src"
 
-
 def is_windows() -> bool:
     return os.name == "nt"
-
 
 def _writable_temp_root() -> Path:
     candidates: list[Path] = []
@@ -54,14 +50,11 @@ def _writable_temp_root() -> Path:
         return candidate
     raise RuntimeError("no writable temporary directory is available")
 
-
 def temp_root() -> Path:
     return _writable_temp_root()
 
-
 def test_temp() -> Path:
     return temp_root() / "gitignore-walk-ci"
-
 
 def setup_env() -> None:
     TEMP_ROOT = temp_root()
@@ -69,7 +62,6 @@ def setup_env() -> None:
     os.environ[EnvVar.TMP] = str(TEMP_ROOT)
     if not is_windows():
         os.environ[EnvVar.TMPDIR] = str(TEMP_ROOT)
-
 
 def main(argv: Sequence[str] | None = None) -> int:
     setup_env()
@@ -144,7 +136,6 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1
     return 2
 
-
 def _test(python: str) -> int:
     version = _python_version(python)
     TEST_TEMP: Final = test_temp()
@@ -166,7 +157,6 @@ def _test(python: str) -> int:
         environment=environment,
     )
 
-
 def _matrix(versions: Sequence[str]) -> int:
     for version in versions:
         python = _find_python(version)
@@ -175,7 +165,6 @@ def _matrix(versions: Sequence[str]) -> int:
             print(f"Python {version} failed with exit code {result}", file=sys.stderr)
             return result
     return 0
-
 
 def _local(
     *,
@@ -218,7 +207,6 @@ def _local(
                 return result
     return 0
 
-
 def _prepare_windows_test_environment(base_python: str, version: str) -> str:
     """Create and provision a reusable isolated pytest venv for one Windows interpreter."""
     environment = test_temp() / "local-venvs" / version
@@ -242,7 +230,6 @@ def _prepare_windows_test_environment(base_python: str, version: str) -> str:
     if result:
         raise RuntimeError(f"could not install pytest for Python {version}")
     return str(python)
-
 
 def _docker_linux_matrix(docker: str, version: str) -> int:
     commands = [
@@ -281,7 +268,6 @@ def _docker_linux_matrix(docker: str, version: str) -> int:
         ]
     )
 
-
 def _find_python(version: str) -> str:
     current_version = f"{sys.version_info.major}.{sys.version_info.minor}"
     if version == current_version:
@@ -316,13 +302,12 @@ def _find_python(version: str) -> str:
         "or install uv and run `uv python install <version>`."
     )
 
-
 def _quality() -> int:
     for label, command in (
-        ("Ruff lint", [sys.executable, "-m", "ruff", "check", "."]),
-        ("Ruff format", [sys.executable, "-m", "ruff", "format", "--check", "."]),
-        ("Pyright", [sys.executable, "-m", "pyright"]),
-        ("Markdown style (rumdl)", ["rumdl", "check", "."]),
+            ("Ruff lint", [sys.executable, "-m", "ruff", "check", "."]),
+            ("Ruff format", [sys.executable, "-m", "ruff", "format", "--check", "."]),
+            ("Pyright", [sys.executable, "-m", "pyright"]),
+            ("Markdown style (rumdl)", ["rumdl", "check", "."]),
     ):
         result = _run(command, label=label)
         if result:
@@ -335,7 +320,6 @@ def _quality() -> int:
         )
     print("Skipping mdrepo repository checks: mdrepo is not installed for this interpreter.")
     return 0
-
 
 def _package() -> int:
     TEST_TEMP = test_temp()
@@ -403,7 +387,6 @@ def _package() -> int:
             environment=environment,
         )
 
-
 def _python_version(python: str) -> str:
     result = subprocess.run(
         [python, "-c", "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"],
@@ -416,14 +399,12 @@ def _python_version(python: str) -> str:
         raise RuntimeError(result.stderr.strip() or f"could not run {python}")
     return result.stdout.strip()
 
-
 def _environment_with_source() -> dict[str, str]:
     environment = os.environ.copy()
     source = str(project_src())
     previous = environment.get(EnvVar.PYTHONPATH)
     environment[EnvVar.PYTHONPATH] = source + os.pathsep + previous if previous else source
     return environment
-
 
 def _run(
     command: Sequence[str],
@@ -453,7 +434,6 @@ def _run(
     else:
         print(f"PASSED: {step}", flush=True)
     return result.returncode
-
 
 if __name__ == "__main__":
     raise SystemExit(main())

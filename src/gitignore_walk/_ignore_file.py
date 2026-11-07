@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Final, cast
+from typing import Final
 
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile, GitIgnoreMatch, GitIgnoreSpec
@@ -39,12 +39,12 @@ class RegexMatcher:
         return parse_gitignore(lines, source=source)
 
     def match(
-            self,
-            spec: GitIgnoreSpec,
-            relative: str,
-            *,
-            source: str,
-            is_directory: bool,
+        self,
+        spec: GitIgnoreSpec,
+        relative: str,
+        *,
+        source: str,
+        is_directory: bool,
     ) -> GitIgnoreMatch | None:
         pattern = _last_matching_pattern(spec, relative, is_directory=is_directory)
         if pattern is None:
@@ -78,10 +78,10 @@ def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
     return GitIgnoreSpec(tuple(patterns))
 
 def matches_gitignore(
-        spec: GitIgnoreSpec,
-        relative: str | os.PathLike[str],
-        *,
-        is_directory: bool,
+    spec: GitIgnoreSpec,
+    relative: str | os.PathLike[str],
+    *,
+    is_directory: bool,
 ) -> bool:
     """Return whether the final matching pattern in one file ignores a path."""
 
@@ -94,10 +94,10 @@ def matches_gitignore(
     return matched is not None and matched.ignored
 
 def match_gitignore_file(
-        ignore_file: GitIgnoreFile,
-        relative: str | os.PathLike[str],
-        *,
-        is_directory: bool,
+    ignore_file: GitIgnoreFile,
+    relative: str | os.PathLike[str],
+    *,
+    is_directory: bool,
 ) -> GitIgnoreMatch | None:
     """Combine a file's ordered rules and return its final matching rule."""
 
@@ -109,10 +109,10 @@ def match_gitignore_file(
     )
 
 def _last_matching_pattern(
-        spec: GitIgnoreSpec,
-        relative: str,
-        *,
-        is_directory: bool,
+    spec: GitIgnoreSpec,
+    relative: str,
+    *,
+    is_directory: bool,
 ) -> GitIgnorePattern | None:
     """Return the last matching pattern in source order."""
 
@@ -123,7 +123,7 @@ def _last_matching_pattern(
     decision: GitIgnorePattern | None = None
     for pattern in spec.candidate_patterns(candidate_characters):
         if pattern.matches(normalized, is_directory=is_directory) and (
-                decision is None or pattern.source_line > decision.source_line
+            decision is None or pattern.source_line > decision.source_line
         ):
             decision = pattern
     return decision

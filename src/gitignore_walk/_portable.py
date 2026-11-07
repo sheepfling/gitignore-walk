@@ -12,13 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final, Literal, NamedTuple, cast
 
-from ._ignore_file import (
-    DEFAULT_MATCHER,
-)
-from ._ignore_file import (
-    GitIgnoreMatch as _PatternMatch,
-)
-from ._ignore_file import match_gitignore_file as _match_loaded_ignore
+from ._ignore_file import DEFAULT_MATCHER, GitIgnoreMatch as _PatternMatch, match_gitignore_file as _match_loaded_ignore
 from ._ignore_loader import load_gitignore as _load_gitignore
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile as _LoadedIgnore
@@ -26,7 +20,6 @@ from .environment import EnvVar
 from .errors import GitIgnoreError
 
 _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
-
 
 @dataclass(frozen=True, slots=True)
 class GitIgnoreDecision:
@@ -38,7 +31,6 @@ class GitIgnoreDecision:
     pattern: str | None = None
     line: int | None = None
 
-
 @dataclass(frozen=True, slots=True)
 class GitIgnoreTraceMatch:
     """One matching rule in an ignore-policy trace."""
@@ -49,7 +41,6 @@ class GitIgnoreTraceMatch:
     ignored: bool
     effective: bool
 
-
 @dataclass(frozen=True, slots=True)
 class GitIgnoreTrace:
     """Effective decision plus matching rules ordered from lowest to highest precedence."""
@@ -58,7 +49,6 @@ class GitIgnoreTrace:
     matches: tuple[GitIgnoreTraceMatch, ...]
     complete: bool = True
 
-
 class GitIgnoreWalkEntry(NamedTuple):
     """One ``os.walk``-style row with names for each returned value."""
 
@@ -66,17 +56,14 @@ class GitIgnoreWalkEntry(NamedTuple):
     dir_names: list[str]
     file_names: list[str]
 
-
 class _RepositoryMetadata(NamedTuple):
     root: Path
     common_dir: Path
-
 
 class _WalkStackEntry(NamedTuple):
     directory: str
     names: list[str] | None
     files: list[str] | None
-
 
 class IgnorePolicy(ABC):
     """Shared interface for portable and Git-backed ignore policies."""
@@ -155,7 +142,6 @@ class IgnorePolicy(ABC):
         self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
     ) -> Sequence[GitIgnoreDecision]:
         """Evaluate walker targets."""
-
 
 class GitIgnorePolicy(IgnorePolicy):
     """Evaluate repository ignore policy without invoking Git.
@@ -293,7 +279,6 @@ class GitIgnorePolicy(IgnorePolicy):
             raise ValueError(f"target must be inside repository root: {target_path}")
         return target_path
 
-
 class GitIgnoreWalker:
     """Traverse a root using the supplied policy or an automatically created portable policy."""
 
@@ -410,7 +395,7 @@ class GitIgnoreWalker:
             )
             decisions = self.policy._decisions(paths, snapshot)
             directory_decisions = decisions[: len(safe_dir_names)]
-            file_decisions = decisions[len(safe_dir_names) :]
+            file_decisions = decisions[len(safe_dir_names):]
             matching_dirs = [
                 name
                 for name, decision in zip(safe_dir_names, directory_decisions, strict=True)
@@ -428,7 +413,6 @@ class GitIgnoreWalker:
                 yield GitIgnoreWalkEntry(current, dir_names, matching_files)
                 continue
             yield GitIgnoreWalkEntry(current, matching_dirs, matching_files)
-
 
 def _walk_pruned_bottom_up(
     top: Path,
@@ -460,7 +444,6 @@ def _walk_pruned_bottom_up(
             if not os.path.islink(child):
                 stack.append(_WalkStackEntry(child, None, None))
 
-
 def _resolve_root(root: str | os.PathLike[str]) -> Path:
     try:
         root_path = Path(root).expanduser().resolve()
@@ -469,7 +452,6 @@ def _resolve_root(root: str | os.PathLike[str]) -> Path:
     except (OSError, RuntimeError) as error:
         raise GitIgnoreError(f"unable to resolve Git-ignore path: {error}") from error
     return root_path
-
 
 def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
     """Find a worktree marker at ``start`` or an ancestor without invoking Git."""
@@ -489,7 +471,7 @@ def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
             prefix = "gitdir: "
             if not marker_line.startswith(prefix):
                 continue
-            git_dir = Path(marker_line[len(prefix) :])
+            git_dir = Path(marker_line[len(prefix):])
             if not git_dir.is_absolute():
                 git_dir = candidate_root / git_dir
             try:
@@ -522,7 +504,6 @@ def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
         return _RepositoryMetadata(candidate_root, common_dir)
     return None
 
-
 def _default_global_excludes_path() -> Path | None:
     """Return Git's conventional XDG/home global-ignore path, without reading Git config."""
 
@@ -533,7 +514,6 @@ def _default_global_excludes_path() -> Path | None:
         return Path.home() / ".config" / "git" / "ignore"
     except (OSError, RuntimeError):
         return None
-
 
 def _is_regular_directory(path: Path, *, onerror: Callable[[OSError], object] | None) -> bool:
     try:
@@ -546,7 +526,6 @@ def _is_regular_directory(path: Path, *, onerror: Callable[[OSError], object] | 
             return False
         raise GitIgnoreError(f"unable to inspect Git-ignore walk entry: {path}: {error}") from error
 
-
 def _is_regular_file(path: Path, *, onerror: Callable[[OSError], object] | None) -> bool:
     try:
         if path.is_symlink():
@@ -558,10 +537,8 @@ def _is_regular_file(path: Path, *, onerror: Callable[[OSError], object] | None)
             return False
         raise GitIgnoreError(f"unable to inspect Git-ignore walk entry: {path}: {error}") from error
 
-
 def _new_ignore_specs() -> dict[tuple[Path, bool], object]:
     return {}
-
 
 @dataclass(slots=True)
 class _IgnoreSnapshot:
@@ -585,7 +562,6 @@ class _IgnoreSnapshot:
             )
         return cast(_LoadedIgnore | None, self.specs[key])
 
-
 def _ancestor_directories(*, root: Path, target: Path) -> tuple[Path, ...]:
     """Return target-parent directories from the repository root outward."""
 
@@ -598,7 +574,6 @@ def _ancestor_directories(*, root: Path, target: Path) -> tuple[Path, ...]:
         current = current.parent
     directories.reverse()
     return tuple(directories)
-
 
 def is_gitignored(
     root: str | os.PathLike[str],
@@ -615,7 +590,6 @@ def is_gitignored(
     """
 
     return GitIgnorePolicy(root).is_ignored(target)
-
 
 def _gitignore_path_decision(
     *,
@@ -639,7 +613,6 @@ def _gitignore_path_decision(
         return None
     final = matches[-1]
     return final if final.ignored else None
-
 
 def _gitignore_path_matches(
     *,
@@ -684,7 +657,6 @@ def _gitignore_path_matches(
     )
     return matches
 
-
 def _gitignore_matches_for_path(
     *,
     roots: Sequence[Path],
@@ -723,7 +695,6 @@ def _gitignore_matches_for_path(
             if matched is not None:
                 matches.append(matched)
     return matches
-
 
 def _decision_from_match(*, path: Path, match: _PatternMatch) -> GitIgnoreDecision:
     return GitIgnoreDecision(
