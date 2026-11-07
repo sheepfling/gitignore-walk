@@ -83,6 +83,8 @@ will be committed.
 - Both policies provide `is_ignored(target)`, `is_ignored_many(targets)` and `explain(target)`.
 - `GitStandardPolicy.explain_many(targets)` returns ordered, detailed results in one Git process.
 - `GitIgnoreDecision` has `path`, `ignored`, `source`, `pattern`, and one-based `line` fields.
+- `parse_gitignore(lines, source=...)` returns the immutable `GitIgnoreSpec` used by
+  `matches_gitignore(spec, relative, is_directory=...)`.
 - `GitIgnoreWalker.walk()` yields `GitIgnoreWalkEntry(directory, dir_names, file_names)`, a
   named tuple that stays compatible with `os.walk`-style unpacking.
 - **`ignored=None` is the default and does no ignore filtering.** `False` selects unignored
@@ -96,9 +98,9 @@ will be committed.
 - Discovered symlinks and special files are omitted. `follow_links=True` is rejected.
 - Relative targets are rooted at the policy root. Missing paths are allowed. Targets outside
   the root are rejected. Unknown nonexistent paths are treated as files, not guessed directories.
-- Caller `initial_excludes` are hard baseline rules evaluated by the portable matcher, not additional Git
-  config. A positive baseline match cannot be undone by a repository, info/exclude, or global
-  negation.
+- Caller `initial_excludes` are hard baseline rules evaluated by the portable matcher, not
+  additional Git config. A positive baseline match cannot be undone by a repository,
+  info/exclude, or global negation.
 
 ## Errors, provenance, and consistency
 
