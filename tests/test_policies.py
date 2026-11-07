@@ -694,6 +694,12 @@ class DifferentialTests(RepositoryCase):
                 self.write(".gitignore", patterns)
                 expected = self.native().is_ignored_many(targets)
                 self.assertEqual(GitIgnorePolicy(self.root).is_ignored_many(targets), expected)
+                if importlib.util.find_spec("pathspec") is not None:
+                    matcher = PathSpecMatcher(backend="simple")
+                    self.assertEqual(
+                        GitIgnorePolicy(self.root, matcher=matcher).is_ignored_many(targets),
+                        expected,
+                    )
 
 
 @unittest.skipUnless(

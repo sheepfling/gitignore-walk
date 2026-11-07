@@ -31,6 +31,8 @@ class _CompiledPathSpec(Protocol):
 @dataclass(frozen=True, slots=True)
 class _PathSpecFile:
     spec: _CompiledPathSpec
+    directory_spec: _CompiledPathSpec
+    directory_pattern_indexes: tuple[int, ...]
     source_lines: tuple[int | None, ...]
 
 
@@ -66,12 +68,27 @@ class PathSpecMatcher:
                 _CompiledPathSpec,
                 from_lines(source_lines, backend=self.backend),
             )
+            directory_pattern_indexes = tuple(
+                index
+                for index, pattern in enumerate(compiled.patterns)
+                if not (pattern.pattern or "").rstrip().endswith("/**")
+            )
+            constructor = cast(Callable[..., object], spec_class)
+            directory_spec = cast(
+                _CompiledPathSpec,
+                constructor(
+                    tuple(compiled.patterns[index] for index in directory_pattern_indexes),
+                    backend=self.backend,
+                ),
+            )
         except (ImportError, ValueError, TypeError) as error:
             raise GitIgnoreError(
                 f"unable to compile {source} with PathSpec backend {self.backend!r}: {error}"
             ) from error
         return _PathSpecFile(
             spec=compiled,
+            directory_spec=directory_spec,
+            directory_pattern_indexes=directory_pattern_indexes,
             source_lines=_source_line_numbers(source_lines, compiled.patterns),
         )
 
@@ -87,15 +104,19 @@ class PathSpecMatcher:
         path = relative.replace("\\", "/")
         if is_directory and not path.endswith("/"):
             path += "/"
-        result = file.spec.check_file(path)
+        spec = file.directory_spec if is_directory else file.spec
+        result = spec.check_file(path)
         if result.include is None or result.index is None:
             return None
-        pattern = file.spec.patterns[result.index]
+        pattern_index = (
+            file.directory_pattern_indexes[result.index] if is_directory else result.index
+        )
+        pattern = file.spec.patterns[pattern_index]
         return GitIgnoreMatch(
             ignored=result.include,
             source=source,
             pattern=pattern.pattern or "",
-            line=file.source_lines[result.index] or result.index + 1,
+            line=file.source_lines[pattern_index] or pattern_index + 1,
         )
 
 
