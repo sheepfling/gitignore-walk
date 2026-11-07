@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 license-files = ["LICENSE"]
-dependencies = ["pathspec>=1.0,<2"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Programming Language :: Python :: 3.10",
@@ -23,8 +22,18 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-dev = ["build>=1.2", "ruff>=0.9", "pyright>=1.1.390", "pytest>=8.3", "twine>=6.1"]
-
+dev = [
+    "build>=1.2",
+    "ruff>=0.9",
+    "pyright>=1.1.390",
+    "pytest>=8.3",
+    "typing_extensions>=4.1",
+    "mdrepo==0.0.1; python_version >= '3.11'",
+    "rumdl>=0.2.49,<0.3",
+    "twine>=6.1",
+    "setuptools>=77",
+    "setuptools-scm>=8.2",
+]
 [tool.setuptools.packages.find]
 where = ["src"]
 
@@ -42,7 +51,31 @@ target-version = "py310"
 select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
 
 [tool.pyright]
-include = ["src"]
+include = ["src", "tests/typing"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 
+[tool.rumdl]
+flavor = "gfm"
+line-length = 100
+extend-enable = ["MD029", "MD060"]
+
+[tool.rumdl.MD029]
+style = "ordered"
+
+[tool.rumdl.MD060]
+style = "aligned"
+
+[tool.rumdl.MD013]
+line-length = 100
+
+[tool.mdrepo]
+include = ["*.md", "**/*.md"]
+
+[tool.mdrepo.links]
+check-missing-targets = false
+check-case = true
+
+[tool.mdrepo.orphans]
+enabled = true
+roots = ["README.md"]

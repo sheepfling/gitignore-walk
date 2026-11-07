@@ -1,60 +1,85 @@
-# Validation record
+# Local and CI verification
 
-Date: 2026-11-07. Status: unreleased alpha review candidate.
-Repository: <https://github.com/sheepfling/gitignore-walk> (private).
-No mdrepo checkout, branch or PR was modified.
+Repository-specific coding-agent instructions are in [AGENTS.md](../AGENTS.md); Claude Code
+loads the same instructions through [CLAUDE.md](../CLAUDE.md).
 
-## Passed locally on Linux
+Create and activate a Python 3.12 virtual environment from the repository root:
 
-- 53 isolated unittest cases on Python 3.10.22 with the minimum `pathspec==1.0.0`.
-- The same 53 cases on Python 3.12.14 with `pathspec==1.1.1`.
-- Git 2.52.0 is the native oracle and executable for these runs.
-- Ruff 0.17.4 lint and formatting checks.
-- Pyright 1.1.414 strict source checking targeting Python 3.10 at that validation revision.
-- Source distribution and universal wheel builds; Twine metadata validation.
-- Installed-wheel tests outside the source tree, including `py.typed` presence.
+```sh
+python3.12 -m venv .venv
+source .venv/bin/activate
+```
 
-The tests cover portable API shape, ordered batches, provenance, hard baselines, missing targets,
-nested rules/negation, explicit filtering/pruning, baseline dependency compatibility, and documented
-legacy walk behavior. Isolated native tests cover quoted paths, includes and conditional includes,
-last-value precedence, unrelated sections, global/local/system/worktree config, environment
-configuration, tilde/relative paths, XDG fallback, missing optional excludes, info/exclude, linked
-worktrees and separate Git dirs, malformed config, timeouts, diagnostics, invalid bytes, NUL framing,
-tracked-file rule evaluation, bounded roots and final/intermediate symlinks. The portable pattern
-corpus is compared directly with Git under isolated configuration.
+In Windows PowerShell:
 
-## Latest local run
+```powershell
+py -3.12 -m venv .venv
+.venv\Scripts\Activate.ps1
+```
 
-- 58 tests passed on Python 3.15.1 using the project `.venv` and `pathspec==1.1.1`.
-- The venv lacks installed dependencies, so `pathspec` was exposed from the existing Python 3.11
-  site-packages through `PYTHONPATH`; this is not a clean-environment install check.
-- The run covers the default global-ignore path, the `$HOME/.config/git/ignore` fallback,
-  precedence against `info/exclude` and repository/nested `.gitignore` files, repository discovery
-  from a nested root, worktree `.git` files, and repository-root anchoring for global patterns.
+Install development tools into the activated environment:
 
-Independent source review identified three defects in the new native code: trimming path characters
-from unusual roots, dereferencing final symlink query targets, and classifying directory symlinks as
-directories for hard baseline patterns. These were fixed and given regression coverage. A malformed
-mock frame was also corrected so the unexpected-echo check is genuinely exercised.
+```sh
+python -m pip install -e '.[dev]'
+```
 
-## First hosted CI pass
+Before pushing, run the complete local check from the repository root:
 
-At `cc273651`, all ten Linux/macOS matrix jobs plus the minimum-dependency job passed.
-The five Windows jobs found a trailing-space pathname difference: Git for Windows normalizes
-names Win32 cannot represent as distinct ordinary files, whereas the legacy portable policy keeps
-the strings. That fixture now explicitly asserts both platform contracts instead of demanding
-false parity or dropping Windows coverage. The latest commit still needs its own hosted result.
+```sh
+python -m scripts.ci all
+```
 
-## Not yet established
+This runs, in order, `pytest tests -q`, `ruff check .`, `ruff format --check .`, `pyright`,
+`rumdl check .`, then `python -m mdrepo check .` on Python 3.11 or newer. Package validation then
+builds a wheel and source archive, checks both with Twine, installs the wheel into a temporary
+directory, and imports it there. Each step uses the active Python interpreter, and the command
+stops at the first failure. The test suite includes portable matcher tests and Git differential
+tests when Git is available.
 
-- No package release or PyPI publication has occurred.
-- Cross-platform GitHub CI must be checked for the exact review commit; local Linux results do not
-  establish Windows/macOS results. The current matrix is Python 3.10-3.15 on all three platforms.
-  The earlier Python 3.10 results predate the latest code changes and need to be rerun.
-- This is not mdrepo integration testing or approval to migrate it.
-- No performance benchmark, hostile concurrent-filesystem safety claim, persistent subprocess,
-  parallel traversal, or atomic whole-tree snapshot is included.
-- The documented legacy portable behaviors remain compatibility limitations, not fixes.
+Each phase prints a named `PASSED` or `FAILED` result and the command it ran. The run stops at the
+first failure. To narrow a failure, rerun its phase alone with `python -m scripts.ci test`,
+`python -m scripts.ci quality`, or `python -m scripts.ci package`.
 
-See [migration gates](migration.md) and the [API/defaults](../README.md) before adoption.
+When editing Markdown, apply safe fixes before the read-only check:
 
+```sh
+rumdl check --fix .
+python -m mdrepo fix .  # Python 3.11+
+python -m scripts.ci all
+```
+
+## Commands
+
+| Command                                | Checks                                                                                                           |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `python -m scripts.ci test`            | Test the active interpreter                                                                                      |
+| `python -m scripts.ci all`             | Pre-push checks on the active interpreter: pytest, Ruff, strict Pyright, Markdown checks, and package validation |
+| `python -m scripts.ci matrix`          | Test locally installed Python 3.10–3.15 interpreters                                                             |
+| `python -m scripts.ci local`           | Windows Python matrix and Linux Docker matrix                                                                    |
+| `python -m scripts.test_python_matrix` | Windows Python matrix only; accepts `--windows-versions MAJOR.MINOR ...`                                         |
+| `python -m scripts.ci quality`         | Ruff lint/format, strict Pyright, rumdl, and mdrepo (Python 3.11+)                                               |
+| `python -m scripts.ci package`         | Build wheel/sdist, run Twine, import the installed wheel                                                         |
+
+GitHub Actions uses this same coordinator: matrix entries call `test`, and the Ubuntu Python 3.12
+entry calls `all`. Thus the hosted full check and the local pre-push check use the same ordered
+steps; the other matrix entries add platform and interpreter test coverage.
+
+Narrow a matrix with `--versions`, `--windows-versions`, or `--linux-versions`. Use
+`--skip-windows` or `--skip-linux` to run one platform. The Windows environments install only
+pytest; Linux containers install Git so the Git differential tests run. Linux Python 3.12 also runs
+quality and package checks. macOS testing runs in GitHub Actions and requires a macOS host.
+
+## Previously recorded local run
+
+The 2026-11-07 run below predates the rumdl and mdrepo checks added to the shared quality phase:
+
+- Windows CPython 3.10–3.15: 74 passed and 10 platform-specific skips per interpreter.
+- Linux Docker CPython 3.10, 3.12, and 3.15: 84 passed per interpreter.
+- Linux Python 3.12: Ruff lint/format, strict Pyright (0 errors), source and wheel builds, Twine,
+  and installed-wheel import all passed.
+
+The portable matcher was compared directly with Git across the tested glob, character-class,
+escape, negation, nested-ignore, global-ignore, and info/exclude cases. This is broad differential
+coverage, not a proof of parity for every possible Git-ignore input. Portable mode intentionally
+does not read Git configuration or custom `core.excludesFile` paths; use `GitStandardPolicy` when
+Git's configured behavior is required.

@@ -1,0 +1,6 @@
+# Store text as LF and check it out with LF on every platform.
+* text=auto eol=lf
+
+# Force Python sources to text so existing CRLF files normalize on the next add.
+*.py text eol=lf
+*.pyi text eol=lf

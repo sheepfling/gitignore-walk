@@ -8,25 +8,29 @@ import math
 import os
 import subprocess
 import sys
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
+from itertools import islice
 from pathlib import Path
+from typing import Final
 
 from ._portable import (
+    _DEFAULT_INITIAL_EXCLUDES,
     GitIgnoreDecision,
     GitIgnoreError,
-    GitIgnorePolicy,
+    IgnorePolicy,
     _decision_from_match,
     _IgnoreSnapshot,
     _match_loaded_ignore,
 )
+from .environment import EnvVar
 
 # Repository selection must come from root, not an unrelated invoking Git process.
-_REPOSITORY_ENVIRONMENT = (
-    "GIT_DIR",
-    "GIT_WORK_TREE",
-    "GIT_COMMON_DIR",
-    "GIT_INDEX_FILE",
-    "GIT_PREFIX",
+_REPOSITORY_ENVIRONMENT: Final = (
+    EnvVar.GIT_DIR,
+    EnvVar.GIT_WORK_TREE,
+    EnvVar.GIT_COMMON_DIR,
+    EnvVar.GIT_INDEX_FILE,
+    EnvVar.GIT_PREFIX,
 )
 
 
@@ -36,7 +40,7 @@ def _decode_git_output(data: bytes) -> str:
     return data.decode(sys.getfilesystemencoding(), errors="surrogateescape")
 
 
-class GitStandardPolicy(GitIgnorePolicy):
+class GitStandardPolicy(IgnorePolicy):
     """Use Git's configured excludes and matching implementation explicitly.
 
     Requires Git and the root of a non-bare worktree. Global/system/local/worktree
@@ -48,18 +52,24 @@ class GitStandardPolicy(GitIgnorePolicy):
     ``environment`` is a complete subprocess environment, not an overlay. Omit it
     to copy the current environment at construction. Repository-selection variables
     are removed; Git configuration and HOME/XDG variables remain effective.
-    Nonempty Git diagnostics raise instead of silently returning partial results.
+    Nonempty Git diagnostics raise instead of silently returning partial results. The hard
+    ``initial_excludes`` baseline defaults to ``(".git",)`` and is evaluated before invoking Git.
+
+    Attributes:
+        git_executable: Executable name or path used to invoke Git.
+        timeout: Maximum duration in seconds for each Git subprocess.
     """
 
     def __init__(
         self,
         root: str | os.PathLike[str],
         *,
-        initial_excludes: Sequence[str] = (),
+        initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
         git_executable: str = "git",
         environment: Mapping[str, str] | None = None,
         timeout: float = 30.0,
     ) -> None:
+        """Create a Git-backed policy with explicit subprocess and timeout settings."""
         super().__init__(root, initial_excludes=initial_excludes)
         if not math.isfinite(timeout) or timeout <= 0:
             raise ValueError("timeout must be finite and positive")
@@ -103,7 +113,7 @@ class GitStandardPolicy(GitIgnorePolicy):
     def explain_many(
         self,
         targets: Iterable[str | os.PathLike[str]],
-    ) -> tuple[GitIgnoreDecision, ...]:
+    ) -> list[GitIgnoreDecision]:
         """Explain an ordered batch in one Git process using NUL-safe input/output.
 
         This does not freeze the filesystem. A later batch sees changed ignore files.
@@ -112,20 +122,32 @@ class GitStandardPolicy(GitIgnorePolicy):
 
         resolved = tuple(self.resolve_target(target) for target in targets)
         if not resolved:
-            return ()
-        arguments = ["check-ignore", "--verbose", "--non-matching", "-z", "--stdin"]
-        arguments.append("--no-index")
-        relative = tuple(os.fsencode(path.relative_to(self.root).as_posix()) for path in resolved)
+            return []
+        decisions: dict[int, GitIgnoreDecision] = {}
+        pending: list[tuple[int, Path]] = []
+        for index, path in enumerate(resolved):
+            baseline = _match_loaded_ignore(
+                self._initial_excludes,
+                path.relative_to(self.root).as_posix(),
+                is_directory=not path.is_symlink() and path.is_dir(),
+            )
+            if baseline is not None and baseline.ignored:
+                decisions[index] = _decision_from_match(path=path, match=baseline)
+            else:
+                pending.append((index, path))
+        if not pending:
+            return [decisions[index] for index in range(len(resolved))]
+        arguments = ["check-ignore", "--verbose", "--non-matching", "-z", "--stdin", "--no-index"]
+        relative = tuple(os.fsencode(path.relative_to(self.root).as_posix()) for _, path in pending)
         if any(b"\0" in path for path in relative):
             raise ValueError("Git-ignore paths cannot contain NUL")
         result = self._run(arguments, data=b"\0".join(relative) + b"\0", accepted=(0, 1))
         fields = result.stdout.split(b"\0")
-        if fields[-1] != b"" or len(fields) != 4 * len(resolved) + 1:
+        if fields[-1] != b"" or len(fields) != 4 * len(pending) + 1:
             raise GitIgnoreError("Git returned an incomplete check-ignore response")
-        decisions: list[GitIgnoreDecision] = []
-        for index, path in enumerate(resolved):
-            source, line, pattern, echoed = fields[index * 4 : index * 4 + 4]
-            if echoed != relative[index]:
+        for batch_index, (original_index, path) in enumerate(pending):
+            source, line, pattern, echoed = fields[batch_index * 4 : batch_index * 4 + 4]
+            if echoed != relative[batch_index]:
                 raise GitIgnoreError("Git returned an unexpected check-ignore path")
             if source:
                 try:
@@ -145,30 +167,33 @@ class GitStandardPolicy(GitIgnorePolicy):
                 raise GitIgnoreError("Git returned incomplete ignore provenance")
             else:
                 decision = GitIgnoreDecision(path=path, ignored=False)
-            baseline = _match_loaded_ignore(
-                self._initial_excludes,
-                path.relative_to(self.root).as_posix(),
-                is_directory=not path.is_symlink() and path.is_dir(),
-            )
-            if baseline is not None and baseline.ignored:
-                decision = _decision_from_match(path=path, match=baseline)
-            decisions.append(decision)
-        return tuple(decisions)
+            decisions[original_index] = decision
+        return [decisions[index] for index in range(len(resolved))]
+
+    def iter_explain(
+        self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
+    ) -> Iterator[GitIgnoreDecision]:
+        """Query bounded batches lazily; each batch observes Git's current rules."""
+        if batch_size < 1:
+            raise ValueError("batch_size must be positive")
+        iterator = iter(targets)
+        while batch := list(islice(iterator, batch_size)):
+            yield from self.explain_many(batch)
 
     def is_ignored_many(
         self,
         targets: Iterable[str | os.PathLike[str]],
-    ) -> tuple[bool, ...]:
+    ) -> list[bool]:
         """Return rule decisions in input order using one Git process."""
-
-        return tuple(decision.ignored for decision in self.explain_many(targets))
+        return [decision.ignored for decision in self.explain_many(targets)]
 
     def _decisions(
         self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
-    ) -> tuple[GitIgnoreDecision, ...]:
+    ) -> list[GitIgnoreDecision]:
         return self.explain_many(targets)
 
     def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:
+        """Implement the policy hook; Git loads its own ignore state per query."""
         # The portable walker supplies a per-operation snapshot. Native Git loads its
         # own rules per process; never pretend this is the portable snapshot contract.
         return self.explain(target)
