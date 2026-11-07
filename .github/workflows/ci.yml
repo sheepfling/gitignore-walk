@@ -10,14 +10,19 @@ jobs:
         include:
           - os: ubuntu-latest
             python: '3.10'
+            checks: test
           - os: ubuntu-latest
             python: '3.12'
+            checks: all
           - os: ubuntu-latest
             python: '3.15'
+            checks: test
           - os: windows-latest
             python: '3.12'
+            checks: test
           - os: macos-latest
             python: '3.12'
+            checks: test
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -25,8 +30,4 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e '.[dev]'
-      - run: python -m scripts.ci test
-      - if: runner.os == 'Linux' && matrix.python == '3.12'
-        run: python -m scripts.ci quality
-      - if: runner.os == 'Linux' && matrix.python == '3.12'
-        run: python -m scripts.ci package
+      - run: python -m scripts.ci ${{ matrix.checks }}

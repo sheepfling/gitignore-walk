@@ -27,6 +27,8 @@ dev = [
     "ruff>=0.9",
     "pyright>=1.1.390",
     "pytest>=8.3",
+    "mdrepo==0.0.1; python_version >= '3.11'",
+    "rumdl>=0.2.49,<0.3",
     "twine>=6.1",
     "setuptools>=77",
     "setuptools-scm>=8.2",
@@ -51,3 +53,28 @@ select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
 include = ["src"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
+
+[tool.rumdl]
+flavor = "gfm"
+line-length = 100
+extend-enable = ["MD029", "MD060"]
+
+[tool.rumdl.MD029]
+style = "ordered"
+
+[tool.rumdl.MD060]
+style = "aligned"
+
+[tool.rumdl.MD013]
+line-length = 100
+
+[tool.mdrepo]
+include = ["*.md", "**/*.md"]
+
+[tool.mdrepo.links]
+check-missing-targets = false
+check-case = true
+
+[tool.mdrepo.orphans]
+enabled = true
+roots = ["README.md"]

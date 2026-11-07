@@ -12,24 +12,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Final, Literal, NamedTuple, cast
 
-from ._environment import EnvVar
-from ._errors import GitIgnoreError
 from ._ignore_file import (
     DEFAULT_MATCHER,
-    GitIgnoreMatcher,
-)
-from ._ignore_file import (
-    GitIgnoreFile as _LoadedIgnore,
 )
 from ._ignore_file import (
     GitIgnoreMatch as _PatternMatch,
 )
-from ._ignore_file import (
-    load_gitignore as _load_gitignore,
-)
-from ._ignore_file import (
-    match_gitignore_file as _match_loaded_ignore,
-)
+from ._ignore_file import match_gitignore_file as _match_loaded_ignore
+from ._ignore_loader import load_gitignore as _load_gitignore
+from ._ignore_protocols import GitIgnoreMatcher
+from ._ignore_types import GitIgnoreFile as _LoadedIgnore
+from .environment import EnvVar
+from .errors import GitIgnoreError
 
 _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
 
@@ -45,6 +39,26 @@ class GitIgnoreDecision:
     line: int | None = None
 
 
+@dataclass(frozen=True, slots=True)
+class GitIgnoreTraceMatch:
+    """One matching rule in an ignore-policy trace."""
+
+    source: str
+    pattern: str
+    line: int
+    ignored: bool
+    effective: bool
+
+
+@dataclass(frozen=True, slots=True)
+class GitIgnoreTrace:
+    """Effective decision plus matching rules ordered from lowest to highest precedence."""
+
+    decision: GitIgnoreDecision
+    matches: tuple[GitIgnoreTraceMatch, ...]
+    complete: bool = True
+
+
 class GitIgnoreWalkEntry(NamedTuple):
     """One ``os.walk``-style row with names for each returned value."""
 
@@ -56,6 +70,12 @@ class GitIgnoreWalkEntry(NamedTuple):
 class _RepositoryMetadata(NamedTuple):
     root: Path
     common_dir: Path
+
+
+class _WalkStackEntry(NamedTuple):
+    directory: str
+    names: list[str] | None
+    files: list[str] | None
 
 
 class IgnorePolicy(ABC):
@@ -89,6 +109,28 @@ class IgnorePolicy(ABC):
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[GitIgnoreDecision]:
         """Explain targets in input order."""
         return list(self.iter_explain(targets))
+
+    def trace(self, target: str | os.PathLike[str]) -> GitIgnoreTrace:
+        """Return the decision and matching-rule trace for one target.
+
+        Backends that cannot enumerate every matching rule return their winning rule with
+        ``complete=False``.
+        """
+        decision = self.explain(target)
+        matches = (
+            ()
+            if decision.source is None
+            else (
+                GitIgnoreTraceMatch(
+                    source=decision.source,
+                    pattern=decision.pattern or "",
+                    line=decision.line or 0,
+                    ignored=decision.ignored,
+                    effective=True,
+                ),
+            )
+        )
+        return GitIgnoreTrace(decision=decision, matches=matches, complete=False)
 
     def is_ignored(self, target: str | os.PathLike[str]) -> bool:
         return self.explain(target).ignored
@@ -148,6 +190,52 @@ class GitIgnorePolicy(IgnorePolicy):
 
         resolved_target = self.resolve_target(target)
         return self.decision(target=resolved_target, snapshot=_IgnoreSnapshot())
+
+    def trace(self, target: str | os.PathLike[str]) -> GitIgnoreTrace:
+        """Return matching source rules and identify the effective overlay."""
+        resolved = self.resolve_target(target)
+        snapshot = _IgnoreSnapshot()
+        relative = resolved.relative_to(self.root).as_posix()
+        matches: list[_PatternMatch] = []
+        initial = _match_loaded_ignore(
+            self._initial_excludes, relative, is_directory=resolved.is_dir()
+        )
+        if initial is not None:
+            matches.append(initial)
+        matches.extend(
+            _gitignore_path_matches(
+                root=self._repository_root,
+                target=resolved,
+                snapshot=snapshot,
+                global_excludes=self._global_excludes,
+                repository_excludes=self._repository_excludes,
+                matcher=self.matcher,
+            )
+        )
+        effective_index = next(
+            (
+                i
+                for i, match in enumerate(matches)
+                if match.source == "initial Git-ignore exclusions" and match.ignored
+            ),
+            len(matches) - 1,
+        )
+        if matches:
+            match = matches[effective_index]
+            decision = _decision_from_match(path=resolved, match=match)
+        else:
+            decision = GitIgnoreDecision(path=resolved, ignored=False)
+        trace_matches = tuple(
+            GitIgnoreTraceMatch(
+                source=match.source,
+                pattern=match.pattern,
+                line=match.line,
+                ignored=match.ignored,
+                effective=index == effective_index,
+            )
+            for index, match in enumerate(matches)
+        )
+        return GitIgnoreTrace(decision, trace_matches)
 
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
@@ -278,16 +366,20 @@ class GitIgnoreWalker:
         ):
             return
 
-        def included_directories(directory: str, names: list[str]) -> list[str]:
-            current = Path(directory)
-            regular = [
-                name for name in names if _is_regular_directory(current / name, onerror=onerror)
+        def included_directories(parent_directory: str, child_names: list[str]) -> list[str]:
+            parent_path = Path(parent_directory)
+            regular_children = [
+                name
+                for name in child_names
+                if _is_regular_directory(parent_path / name, onerror=onerror)
             ]
-            paths = [self.policy.resolve_target(current / name) for name in regular]
-            decisions = self.policy._decisions(paths, snapshot)
+            child_paths = [
+                self.policy.resolve_target(parent_path / name) for name in regular_children
+            ]
+            child_decisions = self.policy._decisions(child_paths, snapshot)
             return [
                 name
-                for name, decision in zip(regular, decisions, strict=True)
+                for name, decision in zip(regular_children, child_decisions, strict=True)
                 if not decision.ignored
             ]
 
@@ -345,7 +437,7 @@ def _walk_pruned_bottom_up(
     included_directories: Callable[[str, list[str]], list[str]],
 ) -> Iterator[tuple[str, list[str], list[str]]]:
     """Yield bottom-up rows while pruning excluded directories before descent."""
-    stack: list[tuple[str, list[str] | None, list[str] | None]] = [(os.fspath(top), None, None)]
+    stack = [_WalkStackEntry(os.fspath(top), None, None)]
     while stack:
         directory, names, files = stack.pop()
         if names is not None and files is not None:
@@ -362,11 +454,11 @@ def _walk_pruned_bottom_up(
         finally:
             walk.close()
         names[:] = included_directories(directory, names)
-        stack.append((directory, names, files))
+        stack.append(_WalkStackEntry(directory, names, files))
         for name in reversed(names):
             child = os.path.join(directory, name)
             if not os.path.islink(child):
-                stack.append((child, None, None))
+                stack.append(_WalkStackEntry(child, None, None))
 
 
 def _resolve_root(root: str | os.PathLike[str]) -> Path:
@@ -535,59 +627,76 @@ def _gitignore_path_decision(
     matcher: GitIgnoreMatcher = DEFAULT_MATCHER,
 ) -> _PatternMatch | None:
     """Return the effective ignore match for one target, if ignored."""
+    matches = _gitignore_path_matches(
+        root=root,
+        target=target,
+        snapshot=snapshot,
+        global_excludes=global_excludes,
+        repository_excludes=repository_excludes,
+        matcher=matcher,
+    )
+    if not matches:
+        return None
+    final = matches[-1]
+    return final if final.ignored else None
 
+
+def _gitignore_path_matches(
+    *,
+    root: Path,
+    target: Path,
+    snapshot: _IgnoreSnapshot | None,
+    global_excludes: Path | None,
+    repository_excludes: Path | None,
+    matcher: GitIgnoreMatcher,
+) -> list[_PatternMatch]:
+    """Collect each applicable source's final matching rule in precedence order."""
     directories = _ancestor_directories(root=root, target=target)
-    ignored = False
-    ignored_match: _PatternMatch | None = None
+    matches: list[_PatternMatch] = []
     for index, directory in enumerate(directories):
         if directory == root:
             continue
-        if ignored:
-            # Git cannot traverse an ignored parent to discover a later negation.
-            continue
-        decision = _gitignore_decision(
-            roots=directories[:index],
-            path=directory,
-            is_directory=True,
+        matches.extend(
+            _gitignore_matches_for_path(
+                roots=directories[:index],
+                path=directory,
+                is_directory=True,
+                snapshot=snapshot,
+                root=root,
+                global_excludes=global_excludes,
+                repository_excludes=repository_excludes,
+                matcher=matcher,
+            )
+        )
+        if matches and matches[-1].ignored:
+            return matches
+    matches.extend(
+        _gitignore_matches_for_path(
+            roots=directories,
+            path=target,
+            is_directory=target.is_dir(),
             snapshot=snapshot,
             root=root,
             global_excludes=global_excludes,
             repository_excludes=repository_excludes,
             matcher=matcher,
         )
-        if decision is not None:
-            ignored = decision.ignored
-            ignored_match = decision if ignored else None
-
-    if ignored:
-        return ignored_match
-    decision = _gitignore_decision(
-        roots=directories,
-        path=target,
-        is_directory=target.is_dir(),
-        snapshot=snapshot,
-        root=root,
-        global_excludes=global_excludes,
-        repository_excludes=repository_excludes,
-        matcher=matcher,
     )
-    return decision if decision is not None and decision.ignored else None
+    return matches
 
 
-def _gitignore_decision(
+def _gitignore_matches_for_path(
     *,
     roots: Sequence[Path],
     path: Path,
     is_directory: bool,
-    snapshot: _IgnoreSnapshot | None = None,
+    snapshot: _IgnoreSnapshot | None,
     root: Path,
     global_excludes: Path | None,
     repository_excludes: Path | None,
     matcher: GitIgnoreMatcher,
-) -> _PatternMatch | None:
-    """Return the highest-precedence matching decision for one path."""
-
-    decision: _PatternMatch | None = None
+) -> list[_PatternMatch]:
+    matches: list[_PatternMatch] = []
     relative_to_root = path.relative_to(root).as_posix()
     for exclude_path in (global_excludes, repository_excludes):
         if exclude_path is None:
@@ -600,21 +709,20 @@ def _gitignore_decision(
         if loaded is not None:
             matched = _match_loaded_ignore(loaded, relative_to_root, is_directory=is_directory)
             if matched is not None:
-                decision = matched
+                matches.append(matched)
     for ignore_root in roots:
-        ignore_path = ignore_root / ".gitignore"
         loaded = (
-            _load_gitignore(ignore_path, matcher=matcher)
+            _load_gitignore(ignore_root / ".gitignore", matcher=matcher)
             if snapshot is None
-            else snapshot.load(ignore_path, matcher=matcher)
+            else snapshot.load(ignore_root / ".gitignore", matcher=matcher)
         )
-        if loaded is None:
-            continue
-        relative = path.relative_to(ignore_root).as_posix()
-        matched = _match_loaded_ignore(loaded, relative, is_directory=is_directory)
-        if matched is not None:
-            decision = matched
-    return decision
+        if loaded is not None:
+            matched = _match_loaded_ignore(
+                loaded, path.relative_to(ignore_root).as_posix(), is_directory=is_directory
+            )
+            if matched is not None:
+                matches.append(matched)
+    return matches
 
 
 def _decision_from_match(*, path: Path, match: _PatternMatch) -> GitIgnoreDecision:

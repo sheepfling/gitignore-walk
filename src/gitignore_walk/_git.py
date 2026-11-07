@@ -13,7 +13,6 @@ from itertools import islice
 from pathlib import Path
 from typing import Final
 
-from ._environment import EnvVar
 from ._portable import (
     _DEFAULT_INITIAL_EXCLUDES,
     GitIgnoreDecision,
@@ -23,6 +22,7 @@ from ._portable import (
     _IgnoreSnapshot,
     _match_loaded_ignore,
 )
+from .environment import EnvVar
 
 # Repository selection must come from root, not an unrelated invoking Git process.
 _REPOSITORY_ENVIRONMENT: Final = (
@@ -132,8 +132,7 @@ class GitStandardPolicy(IgnorePolicy):
                 pending.append((index, path))
         if not pending:
             return [decisions[index] for index in range(len(resolved))]
-        arguments = ["check-ignore", "--verbose", "--non-matching", "-z", "--stdin"]
-        arguments.append("--no-index")
+        arguments = ["check-ignore", "--verbose", "--non-matching", "-z", "--stdin", "--no-index"]
         relative = tuple(os.fsencode(path.relative_to(self.root).as_posix()) for _, path in pending)
         if any(b"\0" in path for path in relative):
             raise ValueError("Git-ignore paths cannot contain NUL")

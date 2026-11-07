@@ -11,3 +11,9 @@ dist/
 .ruff_cache/
 .uv-cache-gitignorewalk/
 .coverage
+.local/
+.tmp/
+.temp/
+tmp/
+temp/
+.rumdl_cache/

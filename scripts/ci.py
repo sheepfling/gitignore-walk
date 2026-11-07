@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import os
 import shlex
 import shutil
@@ -13,11 +14,19 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
-ROOT: Final = Path(__file__).resolve().parents[1]
-SRC: Final = ROOT / "src"
-sys.path.insert(0, str(SRC))
+from gitignore_walk.environment import EnvVar
 
-from gitignore_walk._environment import EnvVar  # noqa: E402
+
+def project_root() -> Path:
+    return Path(__file__).resolve().parents[1]
+
+
+def project_src() -> Path:
+    return project_root() / "src"
+
+
+def is_windows() -> bool:
+    return os.name == "nt"
 
 
 def _writable_temp_root() -> Path:
@@ -46,17 +55,27 @@ def _writable_temp_root() -> Path:
     raise RuntimeError("no writable temporary directory is available")
 
 
-TEMP_ROOT: Final = _writable_temp_root()
-os.environ[EnvVar.TEMP] = str(TEMP_ROOT)
-os.environ[EnvVar.TMP] = str(TEMP_ROOT)
-if os.name != "nt":
-    os.environ[EnvVar.TMPDIR] = str(TEMP_ROOT)
-TEST_TEMP: Final = TEMP_ROOT / "gitignore-walk-ci"
-DEFAULT_PYTHON_VERSIONS: Final = ("3.10", "3.11", "3.12", "3.13", "3.14", "3.15")
-DEFAULT_LINUX_DOCKER_VERSIONS: Final = ("3.10", "3.12", "3.15")
+def temp_root() -> Path:
+    return _writable_temp_root()
+
+
+def test_temp() -> Path:
+    return temp_root() / "gitignore-walk-ci"
+
+
+def setup_env() -> None:
+    TEMP_ROOT = temp_root()
+    os.environ[EnvVar.TEMP] = str(TEMP_ROOT)
+    os.environ[EnvVar.TMP] = str(TEMP_ROOT)
+    if not is_windows():
+        os.environ[EnvVar.TMPDIR] = str(TEMP_ROOT)
 
 
 def main(argv: Sequence[str] | None = None) -> int:
+    setup_env()
+    DEFAULT_PYTHON_VERSIONS: Final = ("3.10", "3.11", "3.12", "3.13", "3.14", "3.15")
+    DEFAULT_LINUX_DOCKER_VERSIONS: Final = ("3.10", "3.12", "3.15")
+
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
 
@@ -128,10 +147,11 @@ def main(argv: Sequence[str] | None = None) -> int:
 
 def _test(python: str) -> int:
     version = _python_version(python)
+    TEST_TEMP: Final = test_temp()
     basetemp = TEST_TEMP / f"pytest-{version}"
     basetemp.parent.mkdir(parents=True, exist_ok=True)
     environment = _environment_with_source()
-    print(f"Testing Python {version}", flush=True)
+    print(f"Running pytest on Python {version}", flush=True)
     return _run(
         [
             python,
@@ -142,6 +162,7 @@ def _test(python: str) -> int:
             "--basetemp",
             str(basetemp),
         ],
+        label=f"pytest on Python {version}",
         environment=environment,
     )
 
@@ -200,8 +221,7 @@ def _local(
 
 def _prepare_windows_test_environment(base_python: str, version: str) -> str:
     """Create and provision a reusable isolated pytest venv for one Windows interpreter."""
-
-    environment = TEST_TEMP / "local-venvs" / version
+    environment = test_temp() / "local-venvs" / version
     python = environment / "Scripts" / "python.exe"
     if not python.is_file():
         result = _run([base_python, "-m", "venv", str(environment)])
@@ -244,7 +264,7 @@ def _docker_linux_matrix(docker: str, version: str) -> int:
             ]
         )
     script = " && ".join(commands)
-    mount = f"type=bind,source={ROOT},target=/work"
+    mount = f"type=bind,source={project_root()},target=/work"
     return _run(
         [
             docker,
@@ -274,6 +294,7 @@ def _find_python(version: str) -> str:
             return executable
 
     uv = shutil.which("uv")
+    ROOT = project_root()
     if uv:
         environment = os.environ.copy()
         environment.setdefault(EnvVar.UV_CACHE_DIR, str(ROOT / ".uv-cache-gitignorewalk"))
@@ -297,18 +318,27 @@ def _find_python(version: str) -> str:
 
 
 def _quality() -> int:
-    for command in (
-        [sys.executable, "-m", "ruff", "check", "."],
-        [sys.executable, "-m", "ruff", "format", "--check", "."],
-        [sys.executable, "-m", "pyright"],
+    for label, command in (
+        ("Ruff lint", [sys.executable, "-m", "ruff", "check", "."]),
+        ("Ruff format", [sys.executable, "-m", "ruff", "format", "--check", "."]),
+        ("Pyright", [sys.executable, "-m", "pyright"]),
+        ("Markdown style (rumdl)", ["rumdl", "check", "."]),
     ):
-        result = _run(command)
+        result = _run(command, label=label)
         if result:
             return result
+    # The dev extra only installs mdrepo on interpreters supported by that release.
+    if importlib.util.find_spec("mdrepo") is not None:
+        return _run(
+            [sys.executable, "-m", "mdrepo", "check", "."],
+            label="Markdown repository policy (mdrepo)",
+        )
+    print("Skipping mdrepo repository checks: mdrepo is not installed for this interpreter.")
     return 0
 
 
 def _package() -> int:
+    TEST_TEMP = test_temp()
     TEST_TEMP.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="package-", dir=TEST_TEMP) as temporary:
         artifact_dir = Path(temporary)
@@ -320,7 +350,8 @@ def _package() -> int:
                 "--no-isolation",
                 "--outdir",
                 str(artifact_dir),
-            ]
+            ],
+            label="Build wheel and source archive",
         )
         if result:
             return result
@@ -329,7 +360,10 @@ def _package() -> int:
         if len(artifacts) != 2:
             raise RuntimeError(f"expected one wheel and one source archive, found {artifacts}")
 
-        result = _run([sys.executable, "-m", "twine", "check", *(str(p) for p in artifacts)])
+        result = _run(
+            [sys.executable, "-m", "twine", "check", *(str(p) for p in artifacts)],
+            label="Twine metadata validation",
+        )
         if result:
             return result
 
@@ -345,7 +379,8 @@ def _package() -> int:
                 "--target",
                 str(install_dir),
                 str(wheel),
-            ]
+            ],
+            label="Install built wheel into isolated target",
         )
         if result:
             return result
@@ -361,13 +396,18 @@ def _package() -> int:
             "for part in __import__('pathlib').Path(path).parts), path; "
             "print(path)"
         )
-        return _run([sys.executable, "-c", smoke], cwd=artifact_dir, environment=environment)
+        return _run(
+            [sys.executable, "-c", smoke],
+            label="Import installed wheel",
+            cwd=artifact_dir,
+            environment=environment,
+        )
 
 
 def _python_version(python: str) -> str:
     result = subprocess.run(
         [python, "-c", "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"],
-        cwd=ROOT,
+        cwd=project_root(),
         capture_output=True,
         text=True,
         check=False,
@@ -379,7 +419,7 @@ def _python_version(python: str) -> str:
 
 def _environment_with_source() -> dict[str, str]:
     environment = os.environ.copy()
-    source = str(SRC)
+    source = str(project_src())
     previous = environment.get(EnvVar.PYTHONPATH)
     environment[EnvVar.PYTHONPATH] = source + os.pathsep + previous if previous else source
     return environment
@@ -388,14 +428,30 @@ def _environment_with_source() -> dict[str, str]:
 def _run(
     command: Sequence[str],
     *,
-    cwd: Path = ROOT,
+    label: str | None = None,
+    cwd: Path | None = None,
     environment: dict[str, str] | None = None,
 ) -> int:
     printable_command = (
-        subprocess.list2cmdline(list(command)) if os.name == "nt" else shlex.join(command)
+        subprocess.list2cmdline(list(command)) if is_windows() else shlex.join(command)
     )
+    step = label or printable_command
+    print(f"\n==> {step}", flush=True)
     print("+ " + printable_command, flush=True)
-    result = subprocess.run(command, cwd=cwd, env=environment, check=False)
+    try:
+        result = subprocess.run(
+            command,
+            cwd=project_root() if cwd is None else cwd,
+            env=environment,
+            check=False,
+        )
+    except OSError as error:
+        print(f"FAILED: {step} (could not start command: {error})", file=sys.stderr, flush=True)
+        return 1
+    if result.returncode:
+        print(f"FAILED: {step} (exit {result.returncode})", file=sys.stderr, flush=True)
+    else:
+        print(f"PASSED: {step}", flush=True)
     return result.returncode
 
 

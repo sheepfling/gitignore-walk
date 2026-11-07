@@ -23,7 +23,7 @@ from gitignore_walk import (
     matches_gitignore,
     parse_gitignore,
 )
-from gitignore_walk._environment import EnvVar
+from gitignore_walk.environment import EnvVar
 
 
 class RepositoryCase:
@@ -209,7 +209,9 @@ class TestPortable(RepositoryCase):
 
         policy = GitIgnorePolicy(self.root)
         assert policy.is_ignored("drop.tmp")
-        assert str(global_excludes) in policy.explain("drop.tmp").source or ""
+        drop_decision = policy.explain("drop.tmp")
+        assert drop_decision.source is not None
+        assert str(global_excludes) in drop_decision.source
         assert not (policy.is_ignored("keep.tmp"))
         assert policy.is_ignored("file.global")
 
@@ -233,12 +235,15 @@ class TestPortable(RepositoryCase):
         anchored_global_decision = policy.explain("global-root.tmp")
 
         assert info_decision.ignored
-        assert "info/exclude" in info_decision.source or ""
+        assert info_decision.source is not None
+        assert "info/exclude" in info_decision.source
         assert repo_decision.ignored
-        assert "repository .gitignore" in repo_decision.source or ""
-        assert not (nested_decision.ignored)
+        assert repo_decision.source is not None
+        assert "repository .gitignore" in repo_decision.source
+        assert not nested_decision.ignored
         assert anchored_global_decision.ignored
-        assert "user-global excludes" in anchored_global_decision.source or ""
+        assert anchored_global_decision.source is not None
+        assert "user-global excludes" in anchored_global_decision.source
 
     def test_upward_discovery_reads_repository_and_info_excludes(self) -> None:
         self.write(".gitignore", "*.tmp\n!repo-keep.tmp\n")
@@ -253,7 +258,9 @@ class TestPortable(RepositoryCase):
         assert not (policy.is_ignored("nested-keep.tmp"))
         assert policy.is_ignored("drop.cache")
         assert not (policy.is_ignored("keep.cache"))
-        assert "info/exclude" in policy.explain("drop.cache").source or ""
+        cache_decision = policy.explain("drop.cache")
+        assert cache_decision.source is not None
+        assert "info/exclude" in cache_decision.source
 
     def test_upward_discovery_reads_worktree_gitfile_common_excludes(self) -> None:
         git_dir = self.base / "worktrees" / "checkout"
@@ -269,7 +276,9 @@ class TestPortable(RepositoryCase):
 
         policy = GitIgnorePolicy(nested_root)
         assert policy.is_ignored("ignored.worktree")
-        assert "info/exclude" in policy.explain("ignored.worktree").source or ""
+        worktree_decision = policy.explain("ignored.worktree")
+        assert worktree_decision.source is not None
+        assert "info/exclude" in worktree_decision.source
 
     def test_point_batch_and_helpers(self) -> None:
         self.write(".gitignore", "# comment\n*.tmp\n!keep.tmp\n")
@@ -280,7 +289,8 @@ class TestPortable(RepositoryCase):
         assert policy.is_ignored_many([drop, keep, "missing.txt"]) == [True, False, False]
         decision = policy.explain(drop)
         assert (decision.path, decision.pattern, decision.line) == (drop, "*.tmp", 2)
-        assert str(self.root / ".gitignore") in decision.source or ""
+        assert decision.source is not None
+        assert str(self.root / ".gitignore") in decision.source
         assert policy.explain(keep) == GitIgnoreDecision(path=keep, ignored=False)
         spec = parse_gitignore(["cache/"], source="test")
         assert matches_gitignore(spec, "cache", is_directory=True)
@@ -482,7 +492,7 @@ class TestNative(RepositoryCase):
         drop, keep, unmatched = policy.explain_many(["drop.tmp", "keep.tmp", "plain.txt"])
         assert drop.ignored
         assert (Path(drop.source or ""), drop.line, drop.pattern) == (source, 1, "*.tmp")
-        assert not (keep.ignored)
+        assert not keep.ignored
         assert (keep.source, keep.line, keep.pattern) == (".gitignore", 1, "!keep.tmp")
         assert unmatched == GitIgnoreDecision(self.root / "plain.txt", False)
         assert not (GitIgnorePolicy(self.root).is_ignored("drop.tmp"))
