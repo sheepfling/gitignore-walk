@@ -411,7 +411,8 @@ def is_gitignored(
     ``root`` and ``target`` may be strings or path-like objects. Relative targets are interpreted
     relative to ``root``. When an enclosing Git worktree is found, its applicable ancestor
     ``.gitignore`` files and ``info/exclude`` are considered along with the conventional user-global
-    ignore file. The target must be inside ``root``; passing an outside path raises :class:`ValueError`.
+    ignore file. The target must be inside ``root``; passing an outside path
+    raises :class:`ValueError`.
     Ignore-file read and parse failures raise :class:`GitIgnoreError`.
     """
 
