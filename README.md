@@ -1,6 +1,6 @@
 # gitignore-walk
 
-`gitignore-walk` supports Python 3.10–3.15 and evaluates Git ignore rules, explains matching
+`gitignore-walk` supports Python 3.10-3.15 and evaluates Git ignore rules, explains matching
 decisions, and traverses directory trees under an explicit policy. It provides two backends:
 
 - **`GitIgnorePolicy`** parses and evaluates root and nested `.gitignore` files in Python. It works
@@ -176,18 +176,40 @@ The library is alpha; mdrepo should keep its existing implementation until the g
 
 ```sh
 python -m pip install -e '.[dev]'
-python -m pytest tests -v
-python -m ruff check .
-python -m ruff format --check .
-python -m pyright --pythonpath /absolute/path/to/your/python
-python -m build
-python -m twine check dist/*
+python scripts/ci.py all
 ```
 
-Tests isolate HOME, XDG and Git configuration and never alter the developer's global configuration.
-The CI matrix covers Ubuntu, macOS, and Windows on Python 3.10–3.15. Its differential fixtures
-compare the portable matcher with Git's own evaluator. A configured workflow is not evidence those
-platforms have passed on the current commit.
+The same Python runner is used by local checks and GitHub Actions. To run the suite across every
+locally installed supported interpreter:
+
+```sh
+python scripts/ci.py matrix --backend vanilla
+```
+
+To check an optional matcher backend, install its extra in that interpreter and name it explicitly:
+
+```sh
+python -m pip install -e '.[dev,bench]'
+python scripts/ci.py test --backend pathspec
+
+python -m pip install -e '.[dev,bench-re2]'
+python scripts/ci.py test --backend re2
+
+python -m pip install -e '.[dev,bench-hyperscan]'
+python scripts/ci.py test --backend hyperscan
+```
+
+The runner checks that the requested backend is installed before pytest runs, so a missing optional
+engine cannot silently turn into a skipped test. `quality` runs Ruff and strict Pyright; `package`
+builds both distributions, checks them with Twine, and imports the wheel from an isolated target
+directory. `all` runs tests, quality checks, and package checks for the active interpreter.
+
+The Windows shortcut `scripts/test-python-matrix.ps1` delegates to the same Python runner. Tests
+isolate HOME, XDG and Git configuration and never alter the developer's global configuration. The
+remote matrix runs vanilla tests on Python 3.10, 3.12 and 3.15 on Ubuntu, and on Windows and macOS
+with Python 3.12. On Ubuntu/Python 3.12 it also tests PathSpec, RE2 and Hyperscan. Quality and
+package checks run once on the vanilla Ubuntu/Python 3.12 job. Differential fixtures compare the
+portable matcher with Git's own evaluator.
 
 ## Sources and license
 

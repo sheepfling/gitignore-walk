@@ -7,25 +7,47 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python: ['3.10', '3.11', '3.12', '3.13', '3.14', '3.15']
+        include:
+          - os: ubuntu-latest
+            python: '3.10'
+            backend: vanilla
+          - os: ubuntu-latest
+            python: '3.12'
+            backend: vanilla
+          - os: ubuntu-latest
+            python: '3.12'
+            backend: pathspec
+          - os: ubuntu-latest
+            python: '3.12'
+            backend: re2
+          - os: ubuntu-latest
+            python: '3.12'
+            backend: hyperscan
+          - os: ubuntu-latest
+            python: '3.15'
+            backend: vanilla
+          - os: windows-latest
+            python: '3.12'
+            backend: vanilla
+          - os: macos-latest
+            python: '3.12'
+            backend: vanilla
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - run: python -m pip install -e '.[dev,bench]'
-      - run: python -m pytest tests -v
-      - run: python -m ruff check .
-      - run: python -m ruff format --check .
-      - run: python -m pyright
-      - run: python -m build
-      - run: python -m twine check dist/*
-      - name: Install built wheel
-        run: python -c "import glob, subprocess, sys; subprocess.check_call([sys.executable, '-m', 'pip', 'install', '--force-reinstall', '--no-deps', *glob.glob('dist/*.whl')])"
-      - name: Test installed wheel outside source tree
-        working-directory: ${{ runner.temp }}
-        run: |
-          python -c "import gitignore_walk; assert 'site-packages' in gitignore_walk.__file__"
-          python -m pytest -v "${{ github.workspace }}/tests"
+      - if: matrix.backend == 'vanilla'
+        run: python -m pip install -e '.[dev]'
+      - if: matrix.backend == 'pathspec'
+        run: python -m pip install -e '.[dev,bench]'
+      - if: matrix.backend == 're2'
+        run: python -m pip install -e '.[dev,bench-re2]'
+      - if: matrix.backend == 'hyperscan'
+        run: python -m pip install -e '.[dev,bench-hyperscan]'
+      - run: python scripts/ci.py test --backend ${{ matrix.backend }}
+      - if: runner.os == 'Linux' && matrix.python == '3.12' && matrix.backend == 'vanilla'
+        run: python scripts/ci.py quality
+      - if: runner.os == 'Linux' && matrix.python == '3.12' && matrix.backend == 'vanilla'
+        run: python scripts/ci.py package

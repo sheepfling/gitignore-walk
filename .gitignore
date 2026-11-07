@@ -5,5 +5,7 @@ __pycache__/
 build/
 dist/
 .pytest_cache/
+.test-tmp/
 .ruff_cache/
+.uv-cache-gitignorewalk/
 .coverage
