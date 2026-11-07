@@ -2,6 +2,7 @@
 
 from ._git import GitStandardPolicy
 from ._ignore_file import (
+    GitIgnoreMatch,
     GitIgnoreMatcher,
     GitIgnoreSpec,
     RegexMatcher,
@@ -21,6 +22,7 @@ from ._portable import (
 __all__ = [
     "GitIgnoreDecision",
     "GitIgnoreError",
+    "GitIgnoreMatch",
     "GitIgnoreMatcher",
     "GitIgnorePolicy",
     "GitIgnoreSpec",
