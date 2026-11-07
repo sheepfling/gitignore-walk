@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=77", "setuptools-scm>=8.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gitignore-walk"
+dynamic = ["version"]
+description = "Explain and traverse Git-ignore rules with explicit portable or Git-native scope."
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+dependencies = ["pathspec>=1.0,<2"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Typing :: Typed",
+]
+
+[project.optional-dependencies]
+dev = ["build>=1.2", "ruff>=0.9", "pyright>=1.1.390", "pytest>=8.3", "twine>=6.1"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools_scm]
+fallback_version = "0.1.0a0"
+
+[tool.setuptools.package-data]
+gitignore_walk = ["py.typed"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "RUF", "SIM", "UP"]
+
+[tool.pyright]
+include = ["src"]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+
