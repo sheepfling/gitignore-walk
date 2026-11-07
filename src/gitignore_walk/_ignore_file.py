@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Final, cast
+from typing import Final, TypeVar
 
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile, GitIgnoreMatch, GitIgnoreSpec
@@ -16,6 +16,8 @@ from ._patterns import (
     parse_pattern_line,
 )
 from .errors import GitIgnoreParseError
+
+SpecT = TypeVar("SpecT")
 
 __all__ = [
     "DEFAULT_MATCHER",
@@ -32,24 +34,28 @@ __all__ = [
 
 @dataclass(frozen=True, slots=True)
 class RegexMatcher:
-    """The bundled, supported Python-regex matcher and portable default."""
+    """The bundled, supported Python-regex matcher and portable default.
+
+    Attributes:
+        name: Stable identifier reported for this matcher backend.
+    """
 
     name: str = "regex"
 
     def parse(self, lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
+        """Parse ignore-file lines into the bundled :class:`GitIgnoreSpec`."""
         return parse_gitignore(lines, source=source)
 
     def match(
         self,
-        spec: object,
+        spec: GitIgnoreSpec,
         relative: str,
         *,
         source: str,
         is_directory: bool,
     ) -> GitIgnoreMatch | None:
-        pattern = _last_matching_pattern(
-            cast(GitIgnoreSpec, spec), relative, is_directory=is_directory
-        )
+        """Return the last matching rule, including its decision and provenance."""
+        pattern = _last_matching_pattern(spec, relative, is_directory=is_directory)
         if pattern is None:
             return None
         return GitIgnoreMatch(
@@ -61,6 +67,7 @@ class RegexMatcher:
 
 
 DEFAULT_MATCHER: Final = RegexMatcher()
+"""Portable default matcher used when no backend is supplied."""
 
 
 def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
@@ -101,7 +108,7 @@ def matches_gitignore(
 
 
 def match_gitignore_file(
-    ignore_file: GitIgnoreFile,
+    ignore_file: GitIgnoreFile[SpecT],
     relative: str | os.PathLike[str],
     *,
     is_directory: bool,

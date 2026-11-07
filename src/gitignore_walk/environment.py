@@ -4,7 +4,24 @@ from typing import Final
 
 
 class EnvVar:
-    """Symbolic registry for environment variables read or written here."""
+    """Symbolic registry for environment-variable names used by the package.
+
+    Attributes:
+        DEBIAN_FRONTEND: Suppresses interactive package-manager prompts in controlled subprocesses.
+        GIT_AUTHOR_EMAIL, GIT_AUTHOR_NAME, GIT_COMMITTER_EMAIL, GIT_COMMITTER_NAME: Git identity.
+        GIT_COMMON_DIR, GIT_DIR, GIT_INDEX_FILE, GIT_PREFIX, GIT_WORK_TREE: Ambient repository
+            selection state, removed before native-policy Git queries.
+        GIT_CONFIG_COUNT, GIT_CONFIG_KEY_0, GIT_CONFIG_VALUE_0: Git's command-environment config
+            override mechanism.
+        GIT_CONFIG_GLOBAL, GIT_CONFIG_NOSYSTEM, GIT_CONFIG_SYSTEM: Git config file controls.
+        GIT_TERMINAL_PROMPT: Controls Git's terminal prompting.
+        HOME, LOCALAPPDATA, USERPROFILE: User-home locations used by Git and Windows.
+        PYTHONHOME, PYTHONPATH: Python runtime import and prefix configuration.
+        TEMP, TMP, TMPDIR: Temporary-directory environment variables.
+        UV_CACHE_DIR: Override for the UV package-cache location.
+        XDG_CONFIG_HOME: User configuration root used for Git's XDG config lookup.
+        GIT_PREFIX_FILTER: Prefix used to select Git-related variables in verification tooling.
+    """
 
     # Git process configuration and identity, used by the native policy and its fixtures.
     DEBIAN_FRONTEND: Final = "DEBIAN_FRONTEND"

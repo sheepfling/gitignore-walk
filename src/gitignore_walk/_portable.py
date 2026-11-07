@@ -10,7 +10,7 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Final, Literal, NamedTuple, cast
+from typing import Any, Final, Literal, NamedTuple, cast
 
 from ._ignore_file import DEFAULT_MATCHER
 from ._ignore_file import GitIgnoreMatch as _PatternMatch
@@ -26,7 +26,15 @@ _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
 
 @dataclass(frozen=True, slots=True)
 class GitIgnoreDecision:
-    """Explain one target's effective Git-ignore decision."""
+    """Explain one target's effective Git-ignore decision.
+
+    Attributes:
+        path: Resolved target path.
+        ignored: Whether the effective rule excludes the target.
+        source: Origin of the effective rule, or ``None`` when no rule matched.
+        pattern: Text of the effective rule, or ``None`` when no rule matched.
+        line: One-based line number of the rule, or ``None`` when unavailable.
+    """
 
     path: Path
     ignored: bool
@@ -37,7 +45,15 @@ class GitIgnoreDecision:
 
 @dataclass(frozen=True, slots=True)
 class GitIgnoreTraceMatch:
-    """One matching rule in an ignore-policy trace."""
+    """One matching rule in an ignore-policy trace.
+
+    Attributes:
+        source: Origin of the ignore file containing the rule.
+        pattern: Pattern text as written in the ignore file.
+        line: One-based source line number.
+        ignored: Whether this rule excludes the target.
+        effective: Whether this rule determines the final policy decision.
+    """
 
     source: str
     pattern: str
@@ -48,7 +64,13 @@ class GitIgnoreTraceMatch:
 
 @dataclass(frozen=True, slots=True)
 class GitIgnoreTrace:
-    """Effective decision plus matching rules ordered from lowest to highest precedence."""
+    """Effective decision plus matching rules ordered from lowest to highest precedence.
+
+    Attributes:
+        decision: Final decision for the target.
+        matches: Applicable matching rules in precedence order.
+        complete: Whether the backend could enumerate every applicable matching rule.
+    """
 
     decision: GitIgnoreDecision
     matches: tuple[GitIgnoreTraceMatch, ...]
@@ -56,7 +78,13 @@ class GitIgnoreTrace:
 
 
 class GitIgnoreWalkEntry(NamedTuple):
-    """One ``os.walk``-style row with names for each returned value."""
+    """One ``os.walk``-style row with names for each returned value.
+
+    Attributes:
+        directory: Directory represented by this row.
+        dir_names: Included child directory names, mutable for top-down pruning.
+        file_names: File names selected by the walk's policy.
+    """
 
     directory: Path
     dir_names: list[str]
@@ -75,18 +103,24 @@ class _WalkStackEntry(NamedTuple):
 
 
 class IgnorePolicy(ABC):
-    """Shared interface for portable and Git-backed ignore policies."""
+    """Shared interface for portable and Git-backed ignore policies.
+
+    Attributes:
+        root: Resolved root that bounds every target handled by the policy.
+        matcher: Backend used to parse and evaluate ignore rules.
+    """
 
     def __init__(
         self,
         root: str | os.PathLike[str],
         *,
         initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
-        matcher: GitIgnoreMatcher | None = None,
+        matcher: GitIgnoreMatcher[Any] | None = None,
     ) -> None:
+        """Set the policy root, baseline exclusions, and optional matcher backend."""
         self.matcher = DEFAULT_MATCHER if matcher is None else matcher
         self.root = _resolve_root(root)
-        self._initial_excludes = _LoadedIgnore(
+        self._initial_excludes: _LoadedIgnore[Any] = _LoadedIgnore(
             source="initial Git-ignore exclusions",
             spec=self.matcher.parse(initial_excludes, source="initial Git-ignore exclusions"),
             matcher=self.matcher,
@@ -129,14 +163,17 @@ class IgnorePolicy(ABC):
         return GitIgnoreTrace(decision=decision, matches=matches, complete=False)
 
     def is_ignored(self, target: str | os.PathLike[str]) -> bool:
+        """Return whether one target is ignored by this policy."""
         return self.explain(target).ignored
 
     def is_ignored_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[bool]:
+        """Return ignore decisions in the same order as ``targets``."""
         return [decision.ignored for decision in self.explain_many(targets)]
 
     def iter_ignored(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
     ) -> Iterator[bool]:
+        """Yield ignore decisions lazily in input order, querying bounded batches."""
         return (decision.ignored for decision in self.iter_explain(targets, batch_size=batch_size))
 
     @abstractmethod
@@ -171,8 +208,9 @@ class GitIgnorePolicy(IgnorePolicy):
         root: str | os.PathLike[str],
         *,
         initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
-        matcher: GitIgnoreMatcher | None = None,
+        matcher: GitIgnoreMatcher[Any] | None = None,
     ) -> None:
+        """Create a portable policy rooted at ``root`` with optional baseline rules and matcher."""
         super().__init__(root, initial_excludes=initial_excludes, matcher=matcher)
         metadata = _find_repository_metadata(self.root)
         self._repository_root = self.root if metadata is None else metadata.root
@@ -246,6 +284,7 @@ class GitIgnorePolicy(IgnorePolicy):
         )
 
     def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:
+        """Evaluate a resolved target using an existing per-operation ignore snapshot."""
         relative = target.relative_to(self.root).as_posix()
         initial_match = _match_loaded_ignore(
             self._initial_excludes,
@@ -278,6 +317,7 @@ class GitIgnorePolicy(IgnorePolicy):
         return self.resolve_target(target)
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
+        """Resolve a target through symlinks and reject paths outside this policy root."""
         target_path = Path(target).expanduser()
         if not target_path.is_absolute():
             target_path = self.root / target_path
@@ -291,7 +331,12 @@ class GitIgnorePolicy(IgnorePolicy):
 
 
 class GitIgnoreWalker:
-    """Traverse a root using the supplied policy or an automatically created portable policy."""
+    """Traverse a root using the supplied policy or an automatically created portable policy.
+
+    Attributes:
+        root: Resolved traversal root.
+        policy: Policy used to decide which entries are ignored.
+    """
 
     def __init__(
         self,
@@ -299,8 +344,9 @@ class GitIgnoreWalker:
         *,
         policy: IgnorePolicy | None = None,
         initial_excludes: Sequence[str] | None = None,
-        matcher: GitIgnoreMatcher | None = None,
+        matcher: GitIgnoreMatcher[Any] | None = None,
     ) -> None:
+        """Bind a root to a policy, or create a portable policy for that root."""
         resolved_root = _resolve_root(root)
         if policy is not None and (matcher is not None or initial_excludes is not None):
             raise ValueError("configure matcher and initial_excludes on the supplied policy")
@@ -555,7 +601,7 @@ def _is_regular_file(path: Path, *, onerror: Callable[[OSError], object] | None)
         raise GitIgnoreError(f"unable to inspect Git-ignore walk entry: {path}: {error}") from error
 
 
-def _new_ignore_specs() -> dict[tuple[Path, bool], object]:
+def _new_ignore_specs() -> dict[tuple[Path, bool], _LoadedIgnore[Any] | None]:
     return {}
 
 
@@ -563,15 +609,17 @@ def _new_ignore_specs() -> dict[tuple[Path, bool], object]:
 class _IgnoreSnapshot:
     """One consistent, per-operation view of repository ignore files."""
 
-    specs: dict[tuple[Path, bool], object] = field(default_factory=_new_ignore_specs)
+    specs: dict[tuple[Path, bool], _LoadedIgnore[Any] | None] = field(
+        default_factory=_new_ignore_specs
+    )
 
     def load(
         self,
         path: Path,
         *,
-        matcher: GitIgnoreMatcher = DEFAULT_MATCHER,
+        matcher: GitIgnoreMatcher[Any] = DEFAULT_MATCHER,
         allow_symlink: bool = False,
-    ) -> _LoadedIgnore | None:
+    ) -> _LoadedIgnore[Any] | None:
         key = path, allow_symlink
         if key not in self.specs:
             self.specs[key] = _load_gitignore(
@@ -579,7 +627,7 @@ class _IgnoreSnapshot:
                 matcher=matcher,
                 allow_symlink=allow_symlink,
             )
-        return cast(_LoadedIgnore | None, self.specs[key])
+        return self.specs[key]
 
 
 def _ancestor_directories(*, root: Path, target: Path) -> tuple[Path, ...]:
@@ -620,7 +668,7 @@ def _gitignore_path_decision(
     snapshot: _IgnoreSnapshot | None = None,
     global_excludes: Path | None = None,
     repository_excludes: Path | None = None,
-    matcher: GitIgnoreMatcher = DEFAULT_MATCHER,
+    matcher: GitIgnoreMatcher[Any] = DEFAULT_MATCHER,
 ) -> _PatternMatch | None:
     """Return the effective ignore match for one target, if ignored."""
     matches = _gitignore_path_matches(
@@ -644,7 +692,7 @@ def _gitignore_path_matches(
     snapshot: _IgnoreSnapshot | None,
     global_excludes: Path | None,
     repository_excludes: Path | None,
-    matcher: GitIgnoreMatcher,
+    matcher: GitIgnoreMatcher[Any],
 ) -> list[_PatternMatch]:
     """Collect each applicable source's final matching rule in precedence order."""
     directories = _ancestor_directories(root=root, target=target)
@@ -690,7 +738,7 @@ def _gitignore_matches_for_path(
     root: Path,
     global_excludes: Path | None,
     repository_excludes: Path | None,
-    matcher: GitIgnoreMatcher,
+    matcher: GitIgnoreMatcher[Any],
 ) -> list[_PatternMatch]:
     matches: list[_PatternMatch] = []
     relative_to_root = path.relative_to(root).as_posix()

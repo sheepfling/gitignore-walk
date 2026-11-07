@@ -253,6 +253,11 @@ def _character_class(pattern: str, start: int) -> _CharacterClass:
 
 
 def normalize_relative_path(relative: str | os.PathLike[str]) -> str:
+    """Normalize a relative ignore candidate to slash-separated form.
+
+    Empty paths stay empty. Absolute paths, drive-qualified paths, and parent traversal are
+    rejected so matching cannot escape the caller's policy root.
+    """
     value = os.fspath(Path(relative))
     path = value.replace(_PatternSyntax.ESCAPE, _PatternSyntax.SEPARATOR)
     if path.startswith("/") or re.match(r"^[A-Za-z]:", path):

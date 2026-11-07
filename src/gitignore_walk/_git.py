@@ -54,6 +54,10 @@ class GitStandardPolicy(IgnorePolicy):
     are removed; Git configuration and HOME/XDG variables remain effective.
     Nonempty Git diagnostics raise instead of silently returning partial results. The hard
     ``initial_excludes`` baseline defaults to ``(".git",)`` and is evaluated before invoking Git.
+
+    Attributes:
+        git_executable: Executable name or path used to invoke Git.
+        timeout: Maximum duration in seconds for each Git subprocess.
     """
 
     def __init__(
@@ -65,6 +69,7 @@ class GitStandardPolicy(IgnorePolicy):
         environment: Mapping[str, str] | None = None,
         timeout: float = 30.0,
     ) -> None:
+        """Create a Git-backed policy with explicit subprocess and timeout settings."""
         super().__init__(root, initial_excludes=initial_excludes)
         if not math.isfinite(timeout) or timeout <= 0:
             raise ValueError("timeout must be finite and positive")
@@ -180,7 +185,6 @@ class GitStandardPolicy(IgnorePolicy):
         targets: Iterable[str | os.PathLike[str]],
     ) -> list[bool]:
         """Return rule decisions in input order using one Git process."""
-
         return [decision.ignored for decision in self.explain_many(targets)]
 
     def _decisions(
@@ -189,6 +193,7 @@ class GitStandardPolicy(IgnorePolicy):
         return self.explain_many(targets)
 
     def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:
+        """Implement the policy hook; Git loads its own ignore state per query."""
         # The portable walker supplies a per-operation snapshot. Native Git loads its
         # own rules per process; never pretend this is the portable snapshot contract.
         return self.explain(target)

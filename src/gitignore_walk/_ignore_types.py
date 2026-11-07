@@ -5,19 +5,24 @@ from __future__ import annotations
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import TYPE_CHECKING
+from typing import Generic, TypeVar
 
+from ._ignore_protocols import GitIgnoreMatch, GitIgnoreMatcher
 from ._patterns import GitIgnorePattern
 
-if TYPE_CHECKING:
-    from ._ignore_protocols import GitIgnoreMatcher
+SpecT = TypeVar("SpecT")
 
 __all__ = ["GitIgnoreFile", "GitIgnoreMatch", "GitIgnoreSpec"]
 
 
 @dataclass(frozen=True, slots=True)
 class GitIgnoreSpec:
-    """The ordered patterns parsed from a single ignore file."""
+    """The ordered patterns parsed from a single ignore file.
+
+    Attributes:
+        patterns: Parsed rules in source order. Matching uses their line numbers to preserve
+            Git's last-match-wins behavior.
+    """
 
     patterns: tuple[GitIgnorePattern, ...]
     _first_character_groups: Mapping[str, tuple[GitIgnorePattern, ...]] = field(
@@ -51,19 +56,15 @@ class GitIgnoreSpec:
 
 
 @dataclass(frozen=True, slots=True)
-class GitIgnoreFile:
-    """An ignore file's source and compiled rules."""
+class GitIgnoreFile(Generic[SpecT]):
+    """An ignore file's provenance, backend-specific compiled rules, and matcher.
+
+    Attributes:
+        source: Human-readable description of the ignore-file origin.
+        spec: Compiled rule set produced by ``matcher``; its type is preserved by this generic.
+        matcher: Backend that compiled ``spec`` and can evaluate paths against it.
+    """
 
     source: str
-    spec: object
-    matcher: GitIgnoreMatcher
-
-
-@dataclass(frozen=True, slots=True)
-class GitIgnoreMatch:
-    """The final matching rule from one ignore file."""
-
-    ignored: bool
-    source: str
-    pattern: str
-    line: int
+    spec: SpecT
+    matcher: GitIgnoreMatcher[SpecT]
