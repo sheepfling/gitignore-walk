@@ -3,6 +3,6 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$arguments = @("matrix", "--backend", "vanilla", "--versions") + $PythonVersions
+$arguments = @("local", "--skip-linux", "--windows-versions") + $PythonVersions
 & python -m scripts.ci @arguments
 exit $LASTEXITCODE

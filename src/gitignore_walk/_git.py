@@ -8,13 +8,14 @@ import math
 import os
 import subprocess
 import sys
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
+from itertools import islice
 from pathlib import Path
 
 from ._portable import (
     GitIgnoreDecision,
     GitIgnoreError,
-    GitIgnorePolicy,
+    IgnorePolicy,
     _decision_from_match,
     _IgnoreSnapshot,
     _match_loaded_ignore,
@@ -36,7 +37,7 @@ def _decode_git_output(data: bytes) -> str:
     return data.decode(sys.getfilesystemencoding(), errors="surrogateescape")
 
 
-class GitStandardPolicy(GitIgnorePolicy):
+class GitStandardPolicy(IgnorePolicy):
     """Use Git's configured excludes and matching implementation explicitly.
 
     Requires Git and the root of a non-bare worktree. Global/system/local/worktree
@@ -103,7 +104,7 @@ class GitStandardPolicy(GitIgnorePolicy):
     def explain_many(
         self,
         targets: Iterable[str | os.PathLike[str]],
-    ) -> tuple[GitIgnoreDecision, ...]:
+    ) -> list[GitIgnoreDecision]:
         """Explain an ordered batch in one Git process using NUL-safe input/output.
 
         This does not freeze the filesystem. A later batch sees changed ignore files.
@@ -112,7 +113,7 @@ class GitStandardPolicy(GitIgnorePolicy):
 
         resolved = tuple(self.resolve_target(target) for target in targets)
         if not resolved:
-            return ()
+            return []
         arguments = ["check-ignore", "--verbose", "--non-matching", "-z", "--stdin"]
         arguments.append("--no-index")
         relative = tuple(os.fsencode(path.relative_to(self.root).as_posix()) for path in resolved)
@@ -153,19 +154,29 @@ class GitStandardPolicy(GitIgnorePolicy):
             if baseline is not None and baseline.ignored:
                 decision = _decision_from_match(path=path, match=baseline)
             decisions.append(decision)
-        return tuple(decisions)
+        return decisions
+
+    def iter_explain(
+        self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
+    ) -> Iterator[GitIgnoreDecision]:
+        """Query bounded batches lazily; each batch observes Git's current rules."""
+        if batch_size < 1:
+            raise ValueError("batch_size must be positive")
+        iterator = iter(targets)
+        while batch := list(islice(iterator, batch_size)):
+            yield from self.explain_many(batch)
 
     def is_ignored_many(
         self,
         targets: Iterable[str | os.PathLike[str]],
-    ) -> tuple[bool, ...]:
+    ) -> list[bool]:
         """Return rule decisions in input order using one Git process."""
 
-        return tuple(decision.ignored for decision in self.explain_many(targets))
+        return [decision.ignored for decision in self.explain_many(targets)]
 
     def _decisions(
         self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
-    ) -> tuple[GitIgnoreDecision, ...]:
+    ) -> list[GitIgnoreDecision]:
         return self.explain_many(targets)
 
     def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:

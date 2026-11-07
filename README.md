@@ -1,61 +1,65 @@
 # gitignore-walk
 
-`gitignore-walk` supports Python 3.10–3.15 and evaluates Git ignore rules, explains matching
-decisions, and traverses directory trees under an explicit policy. It provides two backends:
+**Evaluate Git-ignore rules, explain matching decisions, and traverse directory trees from Python.**
 
-- **`GitIgnorePolicy`** parses and evaluates root and nested `.gitignore` files in Python. It works
-  without invoking Git and can discover an enclosing repository by walking upward.
-- **`GitStandardPolicy`** delegates to the installed Git executable and honors Git's configured
-  ignore sources, including global excludes and repository configuration.
+`gitignore-walk` is a Python 3.10+ library for tools that need predictable, inspectable file discovery. It supports nested `.gitignore` rules, batch matching, rule provenance, and directory traversal with optional ignore filtering.
 
-Both backends support individual and batch queries, explanations, and filtered traversal through
-`GitIgnoreWalker`. The library is useful for repository analyzers, code indexers, documentation
-generators, linters, and build tools that need predictable control over file discovery.
+Two policies let applications choose whether to use the bundled evaluator or Git itself:
 
-This unreleased alpha was extracted from [mdrepo](https://github.com/sheepfling/mdrepo) without
-changing mdrepo. The distribution name remains provisional and has not been reserved on PyPI.
+- **`GitIgnorePolicy` — Portable Python.** A bundled Git-ignore parser and matcher with no third-party runtime dependencies. Works without launching Git, even outside a repository.
+- **`GitStandardPolicy` — Git-native.** Delegates matching to Git itself, respecting configured global excludes, repository configuration, and Git-specific behavior.
+
+Both work with `GitIgnoreWalker`; choose the policy that fits the application's configuration needs.
+
+Designed for repository analyzers, code indexers, documentation generators, linters, and build tools.
+
+**Status:** Unreleased alpha, extracted from [mdrepo](https://github.com/sheepfling/mdrepo) without modifying it. The PyPI distribution name remains provisional.
 
 ## Quick start
 
 ### Portable matching
 
+Use the Python-only policy when you want to avoid a Git executable dependency or need to inspect ordinary directory trees.
+
 ```python
-from gitignore_walk import GitIgnorePolicy, GitIgnoreWalker
+from gitignore_walk import GitIgnoreWalker
 
-policy = GitIgnorePolicy(
-    "/path/to/project",
-    initial_excludes=(".git/",),
-)
-walker = GitIgnoreWalker(policy.root, policy=policy)
+walker = GitIgnoreWalker("/path/to/project")
 
-for path in walker.iter_files(ignored=False):
+for path in walker.iter_files():
     print(path)
 ```
 
-The portable backend includes its own Git-ignore parser and matcher, so it works without Git or
-third-party runtime dependencies. Starting at the supplied root, it walks upward to discover a
-`.git` directory or worktree `.git` file. It reads applicable `.gitignore`
-files from the repository root through the target's ancestors, the repository's `info/exclude` when
-discoverable, and the conventional user-global file at `$XDG_CONFIG_HOME/git/ignore` (or
-`$HOME/.config/git/ignore`).
+The walker creates its portable policy automatically. Pass an existing policy when you need to
+share one or use Git-native matching; the automatically created policy is also available as
+`walker.policy` for individual queries and explanations.
 
-Portable discovery intentionally does not interpret Git config. In particular, it does not resolve
-custom `core.excludesFile` paths, system-level config, or config includes and conditional includes.
-Use `GitStandardPolicy` when those Git-specific settings must match exactly. This portable policy
-still evaluates every discovered pattern itself; it does not launch Git.
+The portable policy evaluates applicable rules from:
 
-The portable precedence is user-global excludes, repository `info/exclude`, then applicable
-`.gitignore` files from the worktree root down to the target directory. Deeper `.gitignore` files
-override matching rules in their parents.
+- Root and nested `.gitignore` files.
+- Repository `info/exclude`, when discoverable.
+- The conventional user-global Git ignore file.
+- Explicit caller-provided `initial_excludes`.
 
-### Git-native matching and explanations
+It discovers an enclosing repository by walking upward, including worktree `.git` files, but does not require a repository.
+
+The matcher evaluates the patterns itself without launching Git. It intentionally does not interpret Git configuration such as custom `core.excludesFile` paths or conditional includes.
+
+### Git-native matching
+
+When you need Git's actual configured ignore behavior:
 
 ```python
 from gitignore_walk import GitStandardPolicy, GitIgnoreWalker
 
 policy = GitStandardPolicy("/path/to/checkout")
 
-for decision in policy.explain_many(["build/output.txt", "docs/guide.md"]):
+for decision in policy.explain_many(
+    [
+        "build/output.txt",
+        "docs/guide.md",
+    ]
+):
     print(
         decision.path,
         decision.ignored,
@@ -65,158 +69,236 @@ for decision in policy.explain_many(["build/output.txt", "docs/guide.md"]):
     )
 
 walker = GitIgnoreWalker(policy.root, policy=policy)
-for path in walker.iter_files(ignored=False):
+
+for path in walker.iter_files():
     print(path)
 ```
 
-The Git-backed policy uses `git check-ignore --no-index` and honors Git's configured excludes,
-including `core.excludesFile`, `.git/info/exclude`, conditional includes, and linked-worktree
-configuration. Its root must be the root of a non-bare Git worktree.
+This policy uses `git check-ignore --no-index` and requires an installed Git executable and a non-bare working tree.
 
-A matching rule can report a tracked path as ignored because `--no-index` deliberately ignores
-index state. The result explains ignore rules; it does not predict Git status or whether a file
-will be committed.
+It honors Git configuration, including `core.excludesFile`, linked worktrees, and configuration includes.
 
-## API and traversal
+Because matching uses `--no-index`, tracked files can still match ignore rules. **Ignore-rule evaluation is not the same as Git status.**
 
-- `is_gitignored(root, target)` is the portable one-shot helper.
-- Both policies provide `is_ignored(target)`, `is_ignored_many(targets)` and `explain(target)`.
-- `GitStandardPolicy.explain_many(targets)` returns ordered, detailed results in one Git process.
-- `GitIgnoreDecision` has `path`, `ignored`, `source`, `pattern`, and one-based `line` fields.
-- `parse_gitignore(lines, source=...)` returns the immutable `GitIgnoreSpec` used by
-  `matches_gitignore(spec, relative, is_directory=...)`.
-- `GitIgnoreWalker.walk()` yields `GitIgnoreWalkEntry(directory, dir_names, file_names)`, a
-  named tuple that stays compatible with `os.walk`-style unpacking.
-- **`ignored=None` is the default and does no ignore filtering.** `False` selects unignored
-  entries, and `True` selects ignored entries while still visiting safe unignored parents.
-- `iter_files()` yields the selected file paths. Hidden files and `.git` are not automatically
-  excluded. Set an explicit caller baseline if that is desired.
-- Top-down walks with `ignored=None` or `ignored=False` support `os.walk`-style pruning: mutate
-  the yielded `dir_names` list to prevent descent into selected directories. Ignored-only walks
-  must visit unignored parents to find ignored descendants, so their returned filtered directory
-  list does not control traversal.
-- Discovered symlinks and special files are omitted. `follow_links=True` is rejected.
-- Relative targets are rooted at the policy root. Missing paths are allowed. Targets outside
-  the root are rejected. Unknown nonexistent paths are treated as files, not guessed directories.
-- Policy roots and query targets accept strings or `os.PathLike[str]` values. Query results expose
-  native `Path` objects. The standalone `matches_gitignore` helper accepts a relative string or
-  path-like value; it normalizes either slash spelling to `/` internally and rejects absolute
-  paths and `..` components that escape the ignore-file scope.
-- Caller `initial_excludes` are hard baseline rules evaluated by the portable matcher, not
-  additional Git config. A positive baseline match cannot be undone by a repository,
-  info/exclude, or global negation.
+## Understand why a path is ignored
 
-## Matcher backends
+Consider a repository with two ignore files:
 
-`GitIgnorePolicy` and `GitIgnoreWalker` default to the bundled `RegexMatcher`; the portable policy
-can accept another `GitIgnoreMatcher` implementation without changing source discovery, precedence,
-provenance, or traversal. `PathSpecMatcher` is an optional adapter for comparing PathSpec engines:
+```text
+project/
+├── .gitignore
+├── build/
+│   └── output.log
+└── src/
+    ├── .gitignore
+    ├── debug.log
+    └── keep.log
+```
+
+The root `.gitignore` contains:
+
+```gitignore
+*.log
+```
+
+And `src/.gitignore` contains:
+
+```gitignore
+!keep.log
+```
+
+The root rule ignores `.log` files. The nested rule makes `src/keep.log` eligible for inclusion again.
+
+Using the Git-native policy:
 
 ```python
-from gitignore_walk import GitIgnorePolicy, PathSpecMatcher
+policy = GitStandardPolicy("/path/to/project")
 
-policy = GitIgnorePolicy("/path/to/project", matcher=PathSpecMatcher(backend="simple"))
+for path in (
+    "build/output.log",
+    "src/debug.log",
+    "src/keep.log",
+):
+    decision = policy.explain(path)
+    print(path, decision.ignored, decision.pattern)
 ```
 
-Install `.[bench]` for PathSpec's `simple` and `best` engines, `.[bench-re2]` for RE2, or
-`.[bench-hyperscan]` for Hyperscan. These are optional development extras; the default package
-still has no runtime dependencies. Compare batched decisions and complete walks with:
+Expected results:
 
-```sh
-python benchmarks/compare_matchers.py --files 5000 --patterns 100 \
-  --backends regex pathspec:simple pathspec:best
+```text
+build/output.log True *.log
+src/debug.log True *.log
+src/keep.log False !keep.log
 ```
 
-Use `pathspec:re2` or `pathspec:hyperscan` after installing the matching extra. Benchmark results
-depend on the machine, rule set, tree shape, and optional engine availability; measure on the
-workload that matters to your caller.
+The detailed explanation also identifies the matching rule's origin:
 
-## Errors, provenance, and consistency
+| Path | Ignored | Source | Line |
+|---|---|---|---|
+| `build/output.log` | Yes | `.gitignore` | 1 |
+| `src/debug.log` | Yes | `.gitignore` | 1 |
+| `src/keep.log` | No | `src/.gitignore` | 1 |
 
-`GitIgnoreError` reports read/parse/process failures. The portable backend rejects invalid UTF-8
-ignore files; Git can process their bytes and still apply following valid lines. The native
-backend preserves undecodable output bytes with the filesystem encoding's surrogate escape and
-uses NUL-delimited input/output for unusual filenames. An unmatched native result has no
-provenance; a matching negation includes its source even though `ignored=False`. The portable
-backend retains mdrepo's legacy behavior of omitting negation provenance for all of its ignore
-sources.
+`GitIgnoreDecision` exposes the evaluated `path`, `ignored` state, `source`, matching `pattern`, and one-based `line` number.
 
-The Git-backed backend raises on nonempty Git stderr, even when Git returned success. It never
-silently falls back to portable matching or pretends a partial response is complete. Missing
-Git, malformed config, process failures and a timeout are errors. A missing optional excludes
-file has Git's normal semantics and is not itself an error.
+The portable policy evaluates the same discovered pattern hierarchy, but retains mdrepo's legacy behavior of omitting negation provenance. Git-native matching reports the negating rule.
 
-Each portable batch/walk caches ignore files on first read for that operation. This is not an
-atomic filesystem snapshot. Native batches use one Git process; a filtered native walk uses one
-batch per visited directory. Later directories can observe changed configuration or ignore files.
-Neither backend is a filesystem sandbox or safe against concurrent hostile filesystem mutations.
-Use external coordination when a stable tree/policy view is required.
+This distinction matters when explaining *why* a file was selected, not just whether it matched an ignore rule.
 
-Git configuration is inherited intentionally, including `HOME`, XDG and `GIT_CONFIG_*` variables.
-`environment=` supplies a complete copied environment instead. `GIT_DIR`, `GIT_WORK_TREE`,
-`GIT_COMMON_DIR`, `GIT_INDEX_FILE`, and `GIT_PREFIX` are removed so an unrelated invoking Git
-process cannot redirect repository selection. Environment values are captured at construction;
-configuration file changes are visible to later Git invocations. `timeout=` defaults to 30 seconds
-per Git invocation. The subprocess uses no shell and does not change Git configuration or the index.
+## Choose a matching policy
 
-## Compatibility limitations before migration
+| Capability | Portable Python | Git-native |
+|---|---|---|
+| Requires Git | No | Yes |
+| Works outside Git repositories | Yes | No |
+| Nested `.gitignore` | Yes | Yes |
+| Repository `info/exclude` | When discoverable | Yes |
+| Conventional global ignores | Yes | Yes |
+| Custom `core.excludesFile` | No | Yes |
+| Git configuration includes | No | Yes |
+| Batch matching | Yes | Yes |
+| Match explanations | Yes | Yes |
+| Filtered traversal | Yes | Yes |
 
-Legacy portable behaviors remain visible and tested rather than silently changed:
+**Choose portable** when your application needs a self-contained matcher, may run outside repositories, or needs predictable Python-only evaluation.
 
-1. Portable point queries resolve symlinks before matching. An explicitly supplied internal
-   symlink walk root also resolves to its target, even though discovered symlinks are omitted.
-   Native point queries preserve the final symlink's Git pathname, reject intermediate symlink
-   traversal, and reject a symlink walk root.
-2. Bottom-up filtered walks cannot prune descent. An ignored directory row can be yielded with
-   empty child lists. Use top-down traversal when pruning matters. This applies to both policies.
-3. Git for Windows normalizes trailing-space pathnames that Win32 cannot represent as distinct
-   ordinary files. The portable API preserves those strings. Tests assert each backend's actual
-   platform behavior rather than claiming universal parity for invalid native filenames.
+**Choose Git-native** when the user's Git configuration is part of the required behavior.
 
-See [maturity and migration gates](docs/migration.md) and [validation](docs/validation.md).
-The library is alpha; mdrepo should keep its existing implementation until the gates are met and a separate migration is reviewed.
+The policies have intentional compatibility differences. `GitStandardPolicy` never silently falls back to portable matching.
+
+## Traverse and filter directory trees
+
+`GitIgnoreWalker` supports `os.walk`-style traversal:
+
+```python
+walker = GitIgnoreWalker("/path/to/project")
+
+for directory, dir_names, file_names in walker.walk():
+    print(directory, file_names)
+```
+
+The `selection` parameter controls which entries are returned:
+
+| Value | Behavior |
+|---|---|
+| `"included"` | Select unignored entries (default) |
+| `"ignored"` | Select ignored entries |
+| `"all"` | Traverse without ignore filtering |
+
+For top-down unfiltered or unignored walks, modify `dir_names` to prevent descent:
+
+```python
+for directory, dir_names, file_names in walker.walk():
+    dir_names[:] = [name for name in dir_names if name != "generated"]
+```
+
+`walk()` yields `GitIgnoreWalkEntry` named tuples, supporting both named attributes and familiar three-value unpacking.
+
+`iter_files()` provides a simpler interface when only file paths are needed.
+
+The walker skips `.git` files and directories by default, including nested repository metadata.
+Pass `include_git=True` to allow them through the selected ignore filter. Other hidden files are
+included unless the active policy excludes them.
+
+Ignored-only traversal still visits necessary unignored parents to locate ignored descendants. Its filtered directory list does not control pruning.
+
+## Matching and lower-level APIs
+
+Both policies support individual and batch queries:
+
+```python
+policy.is_ignored("build/output.log")
+
+policy.is_ignored_many(
+    [
+        "src/main.py",
+        "build/output.log",
+        "docs/guide.md",
+    ]
+)
+
+policy.explain("build/output.log")
+```
+
+Other available interfaces include:
+
+| API | Purpose |
+|---|---|
+| `is_gitignored(root, target)` | Portable one-shot query |
+| `parse_gitignore(lines, source=...)` | Parse ignore rules into an immutable `GitIgnoreSpec` |
+| `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification |
+| `GitIgnoreWalker.walk()` | Directory traversal with optional filtering |
+| `GitIgnoreWalker.iter_files()` | File-only traversal |
+| `IgnorePolicy.explain_many()` | Return a mutable list of detailed decisions |
+| `IgnorePolicy.is_ignored_many()` | Return a mutable list of ignore decisions |
+| `IgnorePolicy.iter_explain()` | Lazily yield detailed decisions |
+| `IgnorePolicy.iter_ignored()` | Lazily yield ignore decisions |
+
+Both policies implement `IgnorePolicy`. Lazy methods consume targets as they run: the portable
+policy caches each ignore file when first read, and the Git-native policy queries up to `batch_size`
+targets per Git process (256 by default). Git can observe changes between batches. Errors are raised
+when iteration reaches the affected target or batch; neither mode freezes the filesystem.
+
+## Important behavior
+
+A few details are worth knowing before integrating the library:
+
+**Roots and paths.** Relative queries use the policy root. Missing targets are allowed. Targets outside that root are rejected, and unknown nonexistent targets are treated as files.
+
+**Baseline exclusions.** Portable `initial_excludes` are hard exclusions. A positive baseline match cannot be overridden by later Git-ignore negation rules.
+
+**Symlinks.** Discovered symlinks are omitted from traversal. Following symlinks is unsupported. Explicit point-query behavior differs between policies in certain cases.
+
+**Filesystem consistency.** Operations may cache discovered rules or execute Git in batches. They do not provide an atomic snapshot of a changing directory tree.
+
+**Errors.** Matching, decoding, configuration, and subprocess failures are reported rather than silently ignored. The Git-native policy does not automatically fall back to portable evaluation.
+
+**Platform differences.** Pathname interpretation and filesystem behavior can differ between POSIX and Windows, particularly for filenames Windows cannot ordinarily represent.
+
+These boundaries are covered by differential and platform-specific tests. See [validation](docs/validation.md)
+for local test commands and the latest verification results.
+
+The library is not a filesystem security boundary.
 
 ## Development
 
+Install development dependencies from a checkout:
+
 ```sh
 python -m pip install -e '.[dev]'
+```
+
+Run the same checks used by CI:
+
+```sh
 python -m scripts.ci all
 ```
 
-The same Python runner is used by local checks and GitHub Actions. To run the suite across every
-locally installed supported interpreter:
+Or test across supported Python interpreters installed locally:
 
 ```sh
-python -m scripts.ci matrix --backend vanilla
+python -m scripts.ci matrix
 ```
 
-To check an optional matcher backend, install its extra in that interpreter and name it explicitly:
+| Command | Purpose |
+|---|---|
+| `test` | Unit and differential verification on the active interpreter |
+| `quality` | Ruff and strict Pyright checks |
+| `package` | Wheel/sdist build, Twine validation, isolated wheel import |
+| `all` | All checks for the active interpreter |
+| `matrix` | Test across locally installed supported interpreters |
+| `local` | Windows interpreter matrix and Linux Docker matrix |
 
-```sh
-python -m pip install -e '.[dev,bench]'
-python -m scripts.ci test --backend pathspec
+GitHub Actions covers Python 3.10, 3.12, and 3.15 on Ubuntu, plus Python 3.12 on Windows and macOS.
 
-python -m pip install -e '.[dev,bench-re2]'
-python -m scripts.ci test --backend re2
+Tests isolate Git configuration and HOME/XDG settings. Differential fixtures compare portable matching with Git's own evaluator.
 
-python -m pip install -e '.[dev,bench-hyperscan]'
-python -m scripts.ci test --backend hyperscan
-```
+See [validation](docs/validation.md) for local CI details and verified results, and [migration gates](docs/migration.md) before integrating with mdrepo.
 
-The runner checks that the requested backend is installed before pytest runs, so a missing optional
-engine cannot silently turn into a skipped test. `quality` runs Ruff and strict Pyright; `package`
-builds both distributions, checks them with Twine, and imports the wheel from an isolated target
-directory. `all` runs tests, quality checks, and package checks for the active interpreter.
+## References
 
-The Windows shortcut `scripts/test-python-matrix.ps1` delegates to the same Python runner. Tests
-isolate HOME, XDG and Git configuration and never alter the developer's global configuration. The
-remote matrix runs vanilla tests on Python 3.10, 3.12 and 3.15 on Ubuntu, and on Windows and macOS
-with Python 3.12. On Ubuntu/Python 3.12 it also tests PathSpec, RE2 and Hyperscan. Quality and
-package checks run once on the vanilla Ubuntu/Python 3.12 job. Differential fixtures compare the
-portable matcher with Git's own evaluator.
+Matching behavior is informed by Git's official documentation:
 
-## Sources and license
-
-Normative references: [gitignore](https://git-scm.com/docs/gitignore),
-[git check-ignore](https://git-scm.com/docs/git-check-ignore),
-[git config](https://git-scm.com/docs/git-config).
+- [gitignore](https://git-scm.com/docs/gitignore)
+- [git check-ignore](https://git-scm.com/docs/git-check-ignore)
+- [git config](https://git-scm.com/docs/git-config)

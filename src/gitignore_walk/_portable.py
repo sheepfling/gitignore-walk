@@ -6,10 +6,11 @@ from __future__ import annotations
 # pyright: reportPrivateUsage=false
 import os
 import stat
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from abc import ABC, abstractmethod
+from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import NamedTuple, cast
+from typing import Literal, NamedTuple, cast
 
 from ._errors import GitIgnoreError
 from ._ignore_file import (
@@ -54,7 +55,64 @@ class _RepositoryMetadata(NamedTuple):
     common_dir: Path
 
 
-class GitIgnorePolicy:
+class IgnorePolicy(ABC):
+    """Shared interface for portable and Git-backed ignore policies."""
+
+    def __init__(
+        self,
+        root: str | os.PathLike[str],
+        *,
+        initial_excludes: Sequence[str] = (),
+        matcher: GitIgnoreMatcher | None = None,
+    ) -> None:
+        self.matcher = DEFAULT_MATCHER if matcher is None else matcher
+        self.root = _resolve_root(root)
+        self._initial_excludes = _LoadedIgnore(
+            source="initial Git-ignore exclusions",
+            spec=self.matcher.parse(initial_excludes, source="initial Git-ignore exclusions"),
+            matcher=self.matcher,
+        )
+
+    @abstractmethod
+    def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
+        """Explain one target."""
+
+    @abstractmethod
+    def iter_explain(
+        self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
+    ) -> Iterator[GitIgnoreDecision]:
+        """Lazily explain targets in input order."""
+
+    def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[GitIgnoreDecision]:
+        """Explain targets in input order."""
+        return list(self.iter_explain(targets))
+
+    def is_ignored(self, target: str | os.PathLike[str]) -> bool:
+        return self.explain(target).ignored
+
+    def is_ignored_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[bool]:
+        return [decision.ignored for decision in self.explain_many(targets)]
+
+    def iter_ignored(
+        self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
+    ) -> Iterator[bool]:
+        return (decision.ignored for decision in self.iter_explain(targets, batch_size=batch_size))
+
+    @abstractmethod
+    def resolve_target(self, target: str | os.PathLike[str]) -> Path:
+        """Resolve a target inside the policy root."""
+
+    def _walk_top(self, target: str | os.PathLike[str]) -> Path:
+        return self.resolve_target(target)
+
+    @abstractmethod
+    def _decisions(
+        self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
+    ) -> Sequence[GitIgnoreDecision]:
+        """Evaluate walker targets."""
+
+
+class GitIgnorePolicy(IgnorePolicy):
     """Evaluate repository ignore policy without invoking Git.
 
     The policy reads the conventional user-global ignore file when present, a discoverable
@@ -74,27 +132,13 @@ class GitIgnorePolicy:
         initial_excludes: Sequence[str] = (),
         matcher: GitIgnoreMatcher | None = None,
     ) -> None:
-        self.matcher = DEFAULT_MATCHER if matcher is None else matcher
-        self.root = _resolve_root(root)
+        super().__init__(root, initial_excludes=initial_excludes, matcher=matcher)
         metadata = _find_repository_metadata(self.root)
         self._repository_root = self.root if metadata is None else metadata.root
         self._repository_excludes = (
             None if metadata is None else metadata.common_dir / "info" / "exclude"
         )
         self._global_excludes = _default_global_excludes_path()
-        self._initial_excludes = _LoadedIgnore(
-            source="initial Git-ignore exclusions",
-            spec=self.matcher.parse(
-                initial_excludes,
-                source="initial Git-ignore exclusions",
-            ),
-            matcher=self.matcher,
-        )
-
-    def is_ignored(self, target: str | os.PathLike[str]) -> bool:
-        """Return whether one target is ignored by the configured policy."""
-
-        return self.explain(target).ignored
 
     def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
         """Return the effective decision and matching policy source for one target."""
@@ -102,22 +146,15 @@ class GitIgnorePolicy:
         resolved_target = self.resolve_target(target)
         return self.decision(target=resolved_target, snapshot=_IgnoreSnapshot())
 
-    def is_ignored_many(
-        self,
-        targets: Iterable[str | os.PathLike[str]],
-    ) -> tuple[bool, ...]:
-        """Return ignore decisions for multiple targets using one policy snapshot.
-
-        Each invocation reads the current ignore files. All targets in one invocation share that
-        snapshot, so a batch is internally consistent and does not repeatedly parse the same
-        repository ``.gitignore`` files.
-        """
-
-        resolved_targets = tuple(self.resolve_target(target) for target in targets)
+    def iter_explain(
+        self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
+    ) -> Iterator[GitIgnoreDecision]:
+        """Lazily evaluate targets against a shared per-iteration ignore snapshot."""
+        if batch_size < 1:
+            raise ValueError("batch_size must be positive")
         snapshot = _IgnoreSnapshot()
-        return tuple(
-            self.decision(target=target, snapshot=snapshot).ignored for target in resolved_targets
-        )
+        for target in targets:
+            yield self.decision(target=self.resolve_target(target), snapshot=snapshot)
 
     def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:
         relative = target.relative_to(self.root).as_posix()
@@ -165,15 +202,16 @@ class GitIgnorePolicy:
 
 
 class GitIgnoreWalker:
-    """Traverse a repository using a :class:`GitIgnorePolicy`."""
+    """Traverse a root using the supplied policy or an automatically created portable policy."""
 
     def __init__(
         self,
         root: str | os.PathLike[str],
         *,
-        policy: GitIgnorePolicy | None = None,
+        policy: IgnorePolicy | None = None,
         initial_excludes: Sequence[str] = (),
         matcher: GitIgnoreMatcher | None = None,
+        include_git: bool = False,
     ) -> None:
         resolved_root = _resolve_root(root)
         if policy is not None and matcher is not None:
@@ -186,6 +224,7 @@ class GitIgnoreWalker:
         if self.policy.root != resolved_root:
             raise ValueError("GitIgnoreWalker policy must use the same repository root")
         self.root = resolved_root
+        self.include_git = include_git
 
     def iter_files(
         self,
@@ -193,8 +232,7 @@ class GitIgnoreWalker:
         *,
         topdown: bool = True,
         onerror: Callable[[OSError], object] | None = None,
-        follow_links: bool = False,
-        ignored: bool | None = None,
+        selection: Literal["included", "ignored", "all"] = "included",
     ) -> Iterator[Path]:
         """Yield files from :meth:`walk` without exposing directory lists."""
 
@@ -202,8 +240,7 @@ class GitIgnoreWalker:
             top,
             topdown=topdown,
             onerror=onerror,
-            follow_links=follow_links,
-            ignored=ignored,
+            selection=selection,
         ):
             yield from (directory / filename for filename in filenames)
 
@@ -213,33 +250,48 @@ class GitIgnoreWalker:
         *,
         topdown: bool = True,
         onerror: Callable[[OSError], object] | None = None,
-        follow_links: bool = False,
-        ignored: bool | None = None,
+        selection: Literal["included", "ignored", "all"] = "included",
     ) -> Iterator[GitIgnoreWalkEntry]:
         """Walk regular repository entries with an ``os.walk``-style result.
 
-        ``ignored=None`` yields all regular files and directories. Set it to ``True`` or ``False``
-        to yield only ignored or only unignored entries. Symlinks and special files are always
-        omitted. ``follow_links=True`` is rejected to preserve the repository input-safety boundary.
-        An ignored-only walk still traverses unignored directories to find ignored descendants.
+        Select included entries by default, ignored entries with ``selection="ignored"``, or both
+        with ``selection="all"``. Symlinks and special files are always omitted. An ignored-only
+        walk still traverses unignored directories to find ignored descendants.
         """
 
-        if follow_links:
-            raise ValueError("GitIgnoreWalker.walk does not follow symlinks")
+        if selection not in ("included", "ignored", "all"):
+            raise ValueError(f"unknown walk selection: {selection!r}")
+        ignored = None if selection == "all" else selection == "ignored"
         top_path = self.policy._walk_top(self.root if top is None else top)
-        snapshot = _IgnoreSnapshot()
-        for directory, dir_names, filenames in os.walk(
-            top_path,
-            topdown=topdown,
-            onerror=onerror,
-            followlinks=False,
+        if not self.include_git and any(
+            os.path.normcase(part) == os.path.normcase(".git")
+            for part in top_path.relative_to(self.root).parts
         ):
+            return
+        snapshot = _IgnoreSnapshot()
+        entries = (
+            _walk_without_git_bottom_up(top_path, onerror=onerror)
+            if not topdown and not self.include_git
+            else os.walk(top_path, topdown=topdown, onerror=onerror, followlinks=False)
+        )
+        for directory, dir_names, filenames in entries:
             current = Path(directory)
+            if not self.include_git and any(
+                os.path.normcase(part) == os.path.normcase(".git")
+                for part in current.relative_to(self.root).parts
+            ):
+                continue
             safe_dir_names = [
-                name for name in dir_names if _is_regular_directory(current / name, onerror=onerror)
+                name
+                for name in dir_names
+                if (self.include_git or os.path.normcase(name) != os.path.normcase(".git"))
+                and _is_regular_directory(current / name, onerror=onerror)
             ]
             safe_filenames = [
-                name for name in filenames if _is_regular_file(current / name, onerror=onerror)
+                name
+                for name in filenames
+                if (self.include_git or os.path.normcase(name) != os.path.normcase(".git"))
+                and _is_regular_file(current / name, onerror=onerror)
             ]
             dir_names[:] = safe_dir_names
 
@@ -271,6 +323,34 @@ class GitIgnoreWalker:
                 yield GitIgnoreWalkEntry(current, dir_names, matching_files)
                 continue
             yield GitIgnoreWalkEntry(current, matching_dirs, matching_files)
+
+
+def _walk_without_git_bottom_up(
+    top: Path, *, onerror: Callable[[OSError], object] | None
+) -> Iterator[tuple[str, list[str], list[str]]]:
+    """Yield bottom-up rows while pruning metadata before opening child directories."""
+    stack: list[tuple[str, list[str] | None, list[str] | None]] = [(os.fspath(top), None, None)]
+    while stack:
+        directory, names, files = stack.pop()
+        if names is not None and files is not None:
+            yield directory, names, files
+            continue
+        walk = cast(
+            Generator[tuple[str, list[str], list[str]], None, None],
+            os.walk(directory, topdown=True, onerror=onerror, followlinks=False),
+        )
+        try:
+            _, names, files = next(walk)
+        except StopIteration:
+            continue
+        finally:
+            walk.close()
+        names[:] = [name for name in names if os.path.normcase(name) != os.path.normcase(".git")]
+        stack.append((directory, names, files))
+        for name in reversed(names):
+            child = os.path.join(directory, name)
+            if not os.path.islink(child):
+                stack.append((child, None, None))
 
 
 def _resolve_root(root: str | os.PathLike[str]) -> Path:

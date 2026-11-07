@@ -9,13 +9,13 @@ from ._ignore_file import (
     matches_gitignore,
     parse_gitignore,
 )
-from ._pathspec import PathSpecMatcher
 from ._portable import (
     GitIgnoreDecision,
     GitIgnoreError,
     GitIgnorePolicy,
     GitIgnoreWalkEntry,
     GitIgnoreWalker,
+    IgnorePolicy,
     is_gitignored,
 )
 
@@ -29,7 +29,7 @@ __all__ = [
     "GitIgnoreWalkEntry",
     "GitIgnoreWalker",
     "GitStandardPolicy",
-    "PathSpecMatcher",
+    "IgnorePolicy",
     "RegexMatcher",
     "is_gitignored",
     "matches_gitignore",

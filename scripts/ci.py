@@ -48,49 +48,64 @@ if os.name != "nt":
     os.environ["TMPDIR"] = str(TEMP_ROOT)
 TEST_TEMP = TEMP_ROOT / "gitignore-walk-ci"
 DEFAULT_PYTHON_VERSIONS = ("3.10", "3.11", "3.12", "3.13", "3.14", "3.15")
-BACKEND_MODULES = {
-    "vanilla": (),
-    "pathspec": ("pathspec",),
-    "re2": ("pathspec", "re2"),
-    "hyperscan": ("pathspec", "hyperscan"),
-}
+DEFAULT_LINUX_DOCKER_VERSIONS = ("3.10", "3.12", "3.15")
 
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     commands = parser.add_subparsers(dest="command", required=True)
 
-    test_command = commands.add_parser("test", help="run the test suite")
-    test_command.add_argument("--backend", choices=BACKEND_MODULES, default="vanilla")
+    commands.add_parser("test", help="run the test suite")
 
     matrix_command = commands.add_parser(
         "matrix", help="run tests on locally installed Python versions"
     )
-    matrix_command.add_argument("--backend", choices=BACKEND_MODULES, default="vanilla")
     matrix_command.add_argument(
         "--versions", nargs="+", default=DEFAULT_PYTHON_VERSIONS, metavar="MAJOR.MINOR"
     )
 
+    local_command = commands.add_parser(
+        "local",
+        help="run Windows interpreter and Linux Docker matrices available on this machine",
+    )
+    local_command.add_argument(
+        "--windows-versions",
+        nargs="+",
+        default=DEFAULT_PYTHON_VERSIONS,
+        metavar="MAJOR.MINOR",
+    )
+    local_command.add_argument(
+        "--linux-versions",
+        nargs="+",
+        default=DEFAULT_LINUX_DOCKER_VERSIONS,
+        metavar="MAJOR.MINOR",
+    )
+    local_command.add_argument("--skip-windows", action="store_true")
+    local_command.add_argument("--skip-linux", action="store_true")
+
     commands.add_parser("quality", help="run lint, format, and strict type checks")
     commands.add_parser("package", help="build and validate the wheel and source archive")
 
-    all_command = commands.add_parser(
-        "all", help="run tests, quality checks, and package validation"
-    )
-    all_command.add_argument("--backend", choices=BACKEND_MODULES, default="vanilla")
-
+    commands.add_parser("all", help="run tests, quality checks, and package validation")
     arguments = parser.parse_args(argv)
     try:
         if arguments.command == "test":
-            return _test(sys.executable, arguments.backend)
+            return _test(sys.executable)
         if arguments.command == "matrix":
-            return _matrix(arguments.versions, arguments.backend)
+            return _matrix(arguments.versions)
+        if arguments.command == "local":
+            return _local(
+                windows_versions=arguments.windows_versions,
+                linux_versions=arguments.linux_versions,
+                skip_windows=arguments.skip_windows,
+                skip_linux=arguments.skip_linux,
+            )
         if arguments.command == "quality":
             return _quality()
         if arguments.command == "package":
             return _package()
         if arguments.command == "all":
-            result = _test(sys.executable, arguments.backend)
+            result = _test(sys.executable)
             if result:
                 return result
             result = _quality()
@@ -106,13 +121,12 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 2
 
 
-def _test(python: str, backend: str) -> int:
-    _require_backend(python, backend)
+def _test(python: str) -> int:
     version = _python_version(python)
-    basetemp = TEST_TEMP / f"pytest-{version}-{backend}"
+    basetemp = TEST_TEMP / f"pytest-{version}"
     basetemp.parent.mkdir(parents=True, exist_ok=True)
     environment = _environment_with_source()
-    print(f"Testing Python {version}, backend {backend}", flush=True)
+    print(f"Testing Python {version}", flush=True)
     return _run(
         [
             python,
@@ -127,14 +141,120 @@ def _test(python: str, backend: str) -> int:
     )
 
 
-def _matrix(versions: Sequence[str], backend: str) -> int:
+def _matrix(versions: Sequence[str]) -> int:
     for version in versions:
         python = _find_python(version)
-        result = _test(python, backend)
+        result = _test(python)
         if result:
             print(f"Python {version} failed with exit code {result}", file=sys.stderr)
             return result
     return 0
+
+
+def _local(
+    *,
+    windows_versions: Sequence[str],
+    linux_versions: Sequence[str],
+    skip_windows: bool,
+    skip_linux: bool,
+) -> int:
+    if skip_windows and skip_linux:
+        raise ValueError("at least one local platform must be selected")
+
+    if not skip_windows:
+        if os.name != "nt":
+            print("Skipping Windows matrix: run this command on Windows to test Windows.")
+        else:
+            for version in windows_versions:
+                base_python = _find_python(version)
+                python = _prepare_windows_test_environment(base_python, version)
+                result = _test(python)
+                if result:
+                    print(
+                        f"Windows Python {version} failed with exit code {result}",
+                        file=sys.stderr,
+                    )
+                    return result
+
+    if not skip_linux:
+        docker = shutil.which("docker")
+        if not docker:
+            raise RuntimeError(
+                "Docker is required for the Linux matrix; pass --skip-linux to omit it"
+            )
+        for version in linux_versions:
+            result = _docker_linux_matrix(docker, version)
+            if result:
+                print(
+                    f"Linux Docker Python {version} failed with exit code {result}",
+                    file=sys.stderr,
+                )
+                return result
+    return 0
+
+
+def _prepare_windows_test_environment(base_python: str, version: str) -> str:
+    """Create and provision a reusable isolated pytest venv for one Windows interpreter."""
+
+    environment = TEST_TEMP / "local-venvs" / version
+    python = environment / "Scripts" / "python.exe"
+    if not python.is_file():
+        result = _run([base_python, "-m", "venv", str(environment)])
+        if result:
+            raise RuntimeError(f"could not create the local Python {version} environment")
+    if _python_version(str(python)) != version:
+        raise RuntimeError(f"the local Python {version} environment has a different interpreter")
+    result = _run(
+        [
+            str(python),
+            "-m",
+            "pip",
+            "install",
+            "--disable-pip-version-check",
+            "pytest>=8.3",
+        ]
+    )
+    if result:
+        raise RuntimeError(f"could not install pytest for Python {version}")
+    return str(python)
+
+
+def _docker_linux_matrix(docker: str, version: str) -> int:
+    commands = [
+        "set -eu",
+        "export DEBIAN_FRONTEND=noninteractive",
+        "apt-get update -qq",
+        "apt-get install -y -qq git libatomic1 >/dev/null",
+        (
+            "python -m pip install --disable-pip-version-check "
+            "-e '.[dev]' >/tmp/gitignore-walk-pip.log"
+        ),
+        "python -m scripts.ci test",
+    ]
+    if version == "3.12":
+        commands.extend(
+            [
+                "python -m scripts.ci quality",
+                "python -m scripts.ci package",
+            ]
+        )
+    script = " && ".join(commands)
+    mount = f"type=bind,source={ROOT},target=/work"
+    return _run(
+        [
+            docker,
+            "run",
+            "--rm",
+            "--mount",
+            mount,
+            "-w",
+            "/work",
+            f"python:{version}-slim",
+            "sh",
+            "-lc",
+            script,
+        ]
+    )
 
 
 def _find_python(version: str) -> str:
@@ -169,29 +289,6 @@ def _find_python(version: str) -> str:
         f"CPython {version} was not found. Install it, put python{version} on PATH, "
         "or install uv and run `uv python install <version>`."
     )
-
-
-def _require_backend(python: str, backend: str) -> None:
-    modules = BACKEND_MODULES[backend]
-    if not modules:
-        return
-    probe = (
-        "import importlib.util; "
-        f"missing = [name for name in {modules!r} "
-        "if importlib.util.find_spec(name) is None]; "
-        "print(','.join(missing))"
-    )
-    result = subprocess.run(
-        [python, "-c", probe], cwd=ROOT, capture_output=True, text=True, check=False
-    )
-    if result.returncode:
-        raise RuntimeError(result.stderr.strip() or f"could not inspect {backend} dependencies")
-    missing = result.stdout.strip()
-    if missing:
-        raise RuntimeError(
-            f"backend {backend!r} needs {missing}; install the matching optional extra "
-            f"in this interpreter before testing it"
-        )
 
 
 def _quality() -> int:

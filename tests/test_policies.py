@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import os
 import shutil
 import subprocess
@@ -19,8 +18,7 @@ from gitignore_walk import (
     GitIgnoreSpec,
     GitIgnoreWalker,
     GitStandardPolicy,
-    PathSpecMatcher,
-    RegexMatcher,
+    IgnorePolicy,
     is_gitignored,
     matches_gitignore,
     parse_gitignore,
@@ -86,6 +84,52 @@ class RepositoryCase:
         except OSError as error:
             pytest.skip(f"symlinks unavailable: {error}")
         return path
+
+
+class TestPolicyContract(RepositoryCase):
+    @pytest.mark.parametrize("native", [False, True])
+    def test_batch_and_lazy_contract(self, native: bool) -> None:
+        if native:
+            self.init()
+        self.write(".gitignore", "*.tmp\n")
+        policy: IgnorePolicy = self.native() if native else GitIgnorePolicy(self.root)
+        assert isinstance(policy, IgnorePolicy)
+        if native:
+            assert not isinstance(policy, GitIgnorePolicy)
+        targets = ["a.tmp", "keep.txt", "b.tmp"]
+        decisions = policy.explain_many(targets)
+        assert isinstance(decisions, list)
+        assert [item.ignored for item in decisions] == [True, False, True]
+        decisions.pop()
+        flags = policy.is_ignored_many(targets)
+        assert flags == [True, False, True]
+        flags.append(False)
+        consumed: list[str] = []
+
+        def source() -> Iterator[str]:
+            for target in targets:
+                consumed.append(target)
+                yield target
+
+        lazy = policy.iter_explain(source(), batch_size=2)
+        assert consumed == []
+        assert next(lazy).ignored
+        assert len(consumed) == (2 if native else 1)
+        assert [item.ignored for item in lazy] == [False, True]
+        assert list(policy.iter_ignored(iter(targets), batch_size=2)) == [True, False, True]
+        assert policy.explain_many([]) == []
+        assert policy.is_ignored_many([]) == []
+        with pytest.raises(ValueError, match="batch_size"):
+            list(policy.iter_explain([], batch_size=0))
+
+    def test_portable_lazy_iteration_shares_snapshot(self) -> None:
+        ignore = self.write(".gitignore", "*.tmp\n")
+        policy = GitIgnorePolicy(self.root)
+        lazy = policy.iter_ignored(["a.tmp", "b.tmp"])
+        assert next(lazy)
+        ignore.write_text("", encoding="utf-8")
+        assert list(lazy) == [True]
+        assert not policy.is_ignored("b.tmp")
 
 
 class TestPortable(RepositoryCase):
@@ -228,7 +272,7 @@ class TestPortable(RepositoryCase):
         keep = self.write("keep.tmp")
         policy = GitIgnorePolicy(self.root)
         assert is_gitignored(self.root, "drop.tmp")
-        assert policy.is_ignored_many([drop, keep, "missing.txt"]) == (True, False, False)
+        assert policy.is_ignored_many([drop, keep, "missing.txt"]) == [True, False, False]
         decision = policy.explain(drop)
         assert (decision.path, decision.pattern, decision.line) == (drop, "*.tmp", 2)
         assert str(self.root / ".gitignore") in decision.source or ""
@@ -265,9 +309,9 @@ class TestPortable(RepositoryCase):
     def test_fresh_batch_reads_changed_policy(self) -> None:
         ignore = self.write(".gitignore", "*.tmp\n")
         policy = GitIgnorePolicy(self.root)
-        assert policy.is_ignored_many(["file.tmp"]) == (True,)
+        assert policy.is_ignored_many(["file.tmp"]) == [True]
         ignore.write_text("!*.tmp\n", encoding="utf-8")
-        assert policy.is_ignored_many(["file.tmp"]) == (False,)
+        assert policy.is_ignored_many(["file.tmp"]) == [False]
 
     def test_invalid_encoding_raises(self) -> None:
         self.write("docs/.gitignore").write_bytes(b"\xff\n*.tmp\n")
@@ -293,23 +337,66 @@ class TestPortable(RepositoryCase):
         self.write("docs/drop.tmp")
         self.write("build/output")
         walker = GitIgnoreWalker(self.root)
-        all_files = {p.relative_to(self.root).as_posix() for p in walker.iter_files()}
-        selected = {p.relative_to(self.root).as_posix() for p in walker.iter_files(ignored=False)}
-        ignored = {p.relative_to(self.root).as_posix() for p in walker.iter_files(ignored=True)}
+        all_files = {
+            p.relative_to(self.root).as_posix() for p in walker.iter_files(selection="all")
+        }
+        selected = {p.relative_to(self.root).as_posix() for p in walker.iter_files()}
+        ignored = {
+            p.relative_to(self.root).as_posix() for p in walker.iter_files(selection="ignored")
+        }
         assert selected == {".gitignore", "docs/keep.md"}
         assert ignored == {"docs/drop.tmp", "build/output"}
         assert all_files == selected | ignored
         with pytest.raises(ValueError):
-            list(walker.walk(follow_links=True))
+            list(walker.walk(selection="invalid"))  # type: ignore[arg-type]
 
     def test_topdown_directory_pruning(self) -> None:
         self.write("docs/keep.md")
         self.write("build/output")
         walker = GitIgnoreWalker(self.root)
-        rows = walker.walk()
+        rows = walker.walk(selection="all")
         _, directories, _ = next(rows)
         directories.remove("build")
         assert [directory.name for directory, _, _ in rows] == ["docs"]
+
+    def test_git_metadata_is_opt_in_for_all_selections(self) -> None:
+        metadata = self.write(".git/config")
+        nested_marker = self.write("nested/.git", "gitdir: elsewhere\n")
+        normal = self.write("normal.txt")
+        walker = GitIgnoreWalker(self.root)
+        for selection in ("included", "ignored", "all"):
+            files = set(walker.iter_files(selection=selection))
+            assert metadata not in files
+            assert nested_marker not in files
+        assert normal in set(walker.iter_files())
+        assert metadata not in set(walker.iter_files(selection="all", topdown=False))
+        assert list(walker.iter_files(self.root / ".git", selection="all")) == []
+        included = set(GitIgnoreWalker(self.root, include_git=True).iter_files(selection="all"))
+        assert {metadata, nested_marker, normal} <= included
+
+    def test_bottom_up_does_not_scan_git_without_opt_in(self) -> None:
+        self.write(".git/config")
+        self.write("nested/.git/config")
+        self.write("nested/file.txt")
+        scanned: list[Path] = []
+        scandir = os.scandir
+
+        def record_scandir(path: object) -> object:
+            scanned.append(Path(os.fsdecode(path)))  # type: ignore[arg-type]
+            return scandir(path)  # type: ignore[call-overload]
+
+        with patch("os.scandir", side_effect=record_scandir):
+            list(GitIgnoreWalker(self.root).iter_files(topdown=False, selection="all"))
+        assert not any(".git" in path.parts for path in scanned)
+
+        scanned.clear()
+        with patch("os.scandir", side_effect=record_scandir):
+            list(
+                GitIgnoreWalker(self.root, include_git=True).iter_files(
+                    topdown=False, selection="all"
+                )
+            )
+        assert any(".git" in path.parts for path in scanned)
 
     def test_discovered_symlinks_and_special_files_omitted(self) -> None:
         file = self.write("real.txt")
@@ -327,7 +414,7 @@ class TestPortable(RepositoryCase):
     def test_bottom_up_legacy_rows_are_documented(self) -> None:
         self.write(".gitignore", "build/\n")
         self.write("build/ignored")
-        rows = list(GitIgnoreWalker(self.root).walk(ignored=False, topdown=False))
+        rows = list(GitIgnoreWalker(self.root).walk(topdown=False))
         assert (self.root / "build", [], []) in rows
 
     def test_explicit_internal_symlink_top_legacy_behavior(self) -> None:
@@ -371,7 +458,7 @@ class TestNative(RepositoryCase):
         self.write(".git/info/exclude", "*.cache\n")
         self.write(".gitignore", "!keep.cache\n")
         policy = self.native()
-        assert policy.is_ignored_many(["drop.cache", "keep.cache"]) == (True, False)
+        assert policy.is_ignored_many(["drop.cache", "keep.cache"]) == [True, False]
         assert policy.explain("drop.cache").source == ".git/info/exclude"
 
     def test_quoted_config_value_spaces(self) -> None:
@@ -414,14 +501,14 @@ class TestNative(RepositoryCase):
             f'[unrelated]\n excludesFile = "{first.as_posix()}"\n',
             encoding="utf-8",
         )
-        assert self.native().is_ignored_many(["x.first", "x.second"]) == (False, True)
+        assert self.native().is_ignored_many(["x.first", "x.second"]) == [False, True]
 
     def test_local_configuration_overrides_global(self) -> None:
         self.global_excludes("*.global\n")
         source = self.home / "local"
         source.write_text("*.local\n", encoding="utf-8")
         self.git("config", "--local", "core.excludesFile", str(source))
-        assert self.native().is_ignored_many(["x.global", "x.local"]) == (False, True)
+        assert self.native().is_ignored_many(["x.global", "x.local"]) == [False, True]
 
     def test_git_config_global_override(self) -> None:
         source = self.home / "patterns"
@@ -476,7 +563,7 @@ class TestNative(RepositoryCase):
     def test_global_anchoring_uses_root_not_process_cwd(self) -> None:
         self.global_excludes("/drop.tmp\n")
         self.write("nested/drop.tmp")
-        assert self.native().is_ignored_many(["drop.tmp", "nested/drop.tmp"]) == (True, False)
+        assert self.native().is_ignored_many(["drop.tmp", "nested/drop.tmp"]) == [True, False]
 
     def test_invalid_encoding_preserves_following_rules(self) -> None:
         self.write("nested/.gitignore").write_bytes(b"\xff\n*.tmp\n")
@@ -487,8 +574,19 @@ class TestNative(RepositoryCase):
         self.write(".gitignore", "*.tmp\n")
         policy = self.native()
         names = ["space name.tmp", "unicodé.tmp", "tab\tname.tmp", "line\nname.tmp"]
-        assert policy.is_ignored_many(names + names) == (True,) * 8
-        assert policy.explain_many([]) == ()
+        assert policy.is_ignored_many(names + names) == [True] * 8
+        assert policy.explain_many([]) == []
+
+    def test_lazy_git_queries_use_bounded_batches(self) -> None:
+        self.write(".gitignore", "*.tmp\n")
+        policy = self.native()
+        with patch.object(policy, "_run", wraps=policy._run) as run:
+            decisions = policy.iter_explain(["a.tmp", "b.tmp", "c.tmp"], batch_size=2)
+            assert run.call_count == 0
+            assert next(decisions).ignored
+            assert run.call_count == 1
+            assert [item.ignored for item in decisions] == [True, True]
+            assert run.call_count == 2
 
     def test_tracked_paths_are_evaluated_without_index(self) -> None:
         self.write("tracked.tmp")
@@ -512,7 +610,7 @@ class TestNative(RepositoryCase):
         policy = self.native(initial_excludes=[".git/", "keep.tmp"])
         assert policy.is_ignored("keep.tmp")
         with patch.object(policy, "_run", wraps=policy._run) as run:
-            files = set(GitIgnoreWalker(self.root, policy=policy).iter_files(ignored=False))
+            files = set(GitIgnoreWalker(self.root, policy=policy).iter_files())
         assert files == {self.root / ".gitignore", keep}
         assert run.call_count == 2
 
@@ -601,7 +699,7 @@ class TestNative(RepositoryCase):
         assert tuple(item.ignored for item in decisions) == (True, True)
         (self.root / ".gitignore").write_text("", encoding="utf-8")
         policy = self.native(initial_excludes=["outside-link/", "broken-link/"])
-        assert policy.is_ignored_many([outside_link, broken]) == (False, False)
+        assert policy.is_ignored_many([outside_link, broken]) == [False, False]
 
     def test_intermediate_symlink_and_symlink_walk_top_rejected(self) -> None:
         actual = self.write("docs/file")
@@ -688,8 +786,8 @@ class TestDifferential(RepositoryCase):
         targets = ["trailing", "trailing   ", "space ", "space"]
         # Win32 cannot represent the trailing-space names as distinct ordinary
         # files. Git for Windows normalizes them; the portable legacy API does not.
-        portable = (True, False, True, False)
-        native = (True, True, False, False) if os.name == "nt" else portable
+        portable = [True, False, True, False]
+        native = [True, True, False, False] if os.name == "nt" else portable
         assert GitIgnorePolicy(self.root).is_ignored_many(targets) == portable
         assert self.native().is_ignored_many(targets) == native
 
@@ -719,44 +817,11 @@ class TestDifferential(RepositoryCase):
         self.write(".gitignore", patterns)
         expected = self.native().is_ignored_many(targets)
         assert GitIgnorePolicy(self.root).is_ignored_many(targets) == expected
-        if importlib.util.find_spec("pathspec") is not None:
-            matcher = PathSpecMatcher(backend="simple")
-            assert GitIgnorePolicy(self.root, matcher=matcher).is_ignored_many(targets) == expected
 
     def test_escaped_closing_bracket_class_matches_git(self) -> None:
         self.init()
         self.write(".gitignore", "[a\\]b].txt\n")
         targets = ["a.txt", "].txt", "b.txt", "c.txt"]
         expected = self.native().is_ignored_many(targets)
-        assert expected == (True, True, True, False)
+        assert expected == [True, True, True, False]
         assert GitIgnorePolicy(self.root).is_ignored_many(targets) == expected
-
-
-@pytest.mark.skipif(
-    importlib.util.find_spec("pathspec") is None,
-    reason="optional pathspec extra is not installed",
-)
-class TestMatcherBackends(RepositoryCase):
-    @pytest.mark.parametrize(
-        "backend",
-        ["simple", "best"]
-        + (["re2"] if importlib.util.find_spec("re2") is not None else [])
-        + (["hyperscan"] if importlib.util.find_spec("hyperscan") is not None else []),
-    )
-    def test_pathspec_backend_matches_bundled_backend(self, backend: str) -> None:
-        patterns = "# comment\n\n*.tmp\n!keep.tmp\n/root.tmp\nlogs/\n"
-        self.write(".gitignore", patterns)
-        targets = (
-            "drop.tmp",
-            "keep.tmp",
-            "nested/drop.tmp",
-            "root.tmp",
-            "deep/root.tmp",
-            "logs/keep.txt",
-            "logs2/keep.txt",
-        )
-        expected = GitIgnorePolicy(self.root, matcher=RegexMatcher()).is_ignored_many(targets)
-        policy = GitIgnorePolicy(self.root, matcher=PathSpecMatcher(backend=backend))
-        assert policy.is_ignored_many(targets) == expected
-        decision = policy.explain("drop.tmp")
-        assert (decision.pattern, decision.line) == ("*.tmp", 3)

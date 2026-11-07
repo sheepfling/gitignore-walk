@@ -10,44 +10,23 @@ jobs:
         include:
           - os: ubuntu-latest
             python: '3.10'
-            backend: vanilla
           - os: ubuntu-latest
             python: '3.12'
-            backend: vanilla
-          - os: ubuntu-latest
-            python: '3.12'
-            backend: pathspec
-          - os: ubuntu-latest
-            python: '3.12'
-            backend: re2
-          - os: ubuntu-latest
-            python: '3.12'
-            backend: hyperscan
           - os: ubuntu-latest
             python: '3.15'
-            backend: vanilla
           - os: windows-latest
             python: '3.12'
-            backend: vanilla
           - os: macos-latest
             python: '3.12'
-            backend: vanilla
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
-      - if: matrix.backend == 'vanilla'
-        run: python -m pip install -e '.[dev]'
-      - if: matrix.backend == 'pathspec'
-        run: python -m pip install -e '.[dev,bench]'
-      - if: matrix.backend == 're2'
-        run: python -m pip install -e '.[dev,bench-re2]'
-      - if: matrix.backend == 'hyperscan'
-        run: python -m pip install -e '.[dev,bench-hyperscan]'
-      - run: python -m scripts.ci test --backend ${{ matrix.backend }}
-      - if: runner.os == 'Linux' && matrix.python == '3.12' && matrix.backend == 'vanilla'
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m scripts.ci test
+      - if: runner.os == 'Linux' && matrix.python == '3.12'
         run: python -m scripts.ci quality
-      - if: runner.os == 'Linux' && matrix.python == '3.12' && matrix.backend == 'vanilla'
+      - if: runner.os == 'Linux' && matrix.python == '3.12'
         run: python -m scripts.ci package

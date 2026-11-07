@@ -1,10 +1,12 @@
 .venv*/
+.idea/
 __pycache__/
 *.py[cod]
 *.egg-info/
 build/
 dist/
 .pytest_cache/
+.pytest-tmp/
 .test-tmp/
 .ruff_cache/
 .uv-cache-gitignorewalk/

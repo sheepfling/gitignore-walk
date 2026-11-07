@@ -31,10 +31,6 @@ dev = [
     "setuptools>=77",
     "setuptools-scm>=8.2",
 ]
-bench = ["pathspec>=1.1.1"]
-bench-re2 = ["pathspec[re2]>=1.1.1"]
-bench-hyperscan = ["pathspec[hyperscan]>=1.1.1"]
-
 [tool.setuptools.packages.find]
 where = ["src"]
 

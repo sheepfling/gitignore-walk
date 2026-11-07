@@ -1,65 +1,38 @@
-# Validation record
+# Local and CI verification
 
-Date: 2026-11-07. Status: dependency-removal follow-on in progress.
-Repository: <https://github.com/sheepfling/gitignore-walk> (private).
-This work branches from the merged `main`; mdrepo remains untouched.
+Install development tools from the checkout:
 
-## Current resolver follow-on
+```sh
+python -m pip install -e '.[dev]'
+```
 
-- 60 tests passed on CPython 3.15.2 on Windows. Eight cases were skipped because symlink creation
-  requires unavailable privileges and Windows disallows trailing CR/LF directory names.
-- Ruff lint, Ruff format, and strict Pyright passed.
-- The portable parser and matcher were compared directly with Git for anchored and unanchored
-  rules, negation, directory-only rules, recursive `**`, escaping, and character classes.
-- All 18 hosted CI jobs passed on resolver commit `396b2a8`, covering Python 3.10–3.15 on Ubuntu,
-  macOS, and Windows, as well as package builds, Twine validation, and installed-wheel checks.
-- An earlier isolated local build could not create its build environment because this runner
-  could not resolve `pypi.org`; a later no-isolation build passed with the development build tools
-  installed.
+## Commands
 
-## Repeatable CI runner
+| Command | Checks |
+|---|---|
+| `python -m scripts.ci test` | Test the active interpreter |
+| `python -m scripts.ci all` | Tests, lint, type checks, and package validation |
+| `python -m scripts.ci matrix` | Test locally installed Python 3.10–3.15 interpreters |
+| `python -m scripts.ci local` | Windows Python matrix and Linux Docker matrix |
+| `python -m scripts.ci quality` | Ruff lint/format and strict Pyright |
+| `python -m scripts.ci package` | Build wheel/sdist, run Twine, import the installed wheel |
 
-`python -m scripts.ci` is the shared verification entry point for local runs and GitHub Actions:
+Narrow a matrix with `--versions`, `--windows-versions`, or `--linux-versions`. Use
+`--skip-windows` or `--skip-linux` to run one platform. The Windows environments install only
+pytest; Linux containers install Git so the Git differential tests run. Linux Python 3.12 also runs
+quality and package checks. macOS testing runs in GitHub Actions and requires a macOS host.
 
-- `python -m scripts.ci test --backend vanilla` runs tests on the active interpreter.
-- `python -m scripts.ci matrix --backend vanilla` runs tests on every locally installed supported
-  interpreter. Use `--versions 3.10 3.12 3.15` to choose a smaller local matrix.
-- `python -m scripts.ci test --backend pathspec|re2|hyperscan` requires the named optional engine
-  before pytest starts, preventing an absent engine from silently skipping its parity check.
-- `python -m scripts.ci quality` runs Ruff and strict Pyright.
-- `python -m scripts.ci package` builds both distributions, runs Twine checks, and imports the
-  wheel from an isolated target directory.
-- `python -m scripts.ci all` runs tests, quality checks, and package verification for one
-  interpreter.
+## Latest local run
 
-The PowerShell matrix helper delegates to the Python module. The GitHub workflow uses its `test`,
-`quality`, and `package` commands, so local and hosted verification execute the same checks.
+On 2026-11-07, `python -m scripts.ci local` passed:
 
-### Latest local verification
+- Windows CPython 3.10–3.15: 74 passed and 10 platform-specific skips per interpreter.
+- Linux Docker CPython 3.10, 3.12, and 3.15: 84 passed per interpreter.
+- Linux Python 3.12: Ruff lint/format, strict Pyright (0 errors), source and wheel builds, Twine,
+  and installed-wheel import all passed.
 
-- `python -m scripts.ci matrix --backend vanilla` passed on Windows CPython 3.10-3.14 with 74
-  tests passing and 9 skipped on each; CPython 3.15 passed 75 tests with 9 skipped.
-- `python -m scripts.ci all` passed on Windows CPython 3.15, including Ruff lint/format, strict
-  Pyright, wheel and source builds, Twine validation, and isolated wheel import.
-- PathSpec `simple` and `best` parity checks ran across all six Python versions. Hyperscan parity
-  passed on CPython 3.15.
-- RE2 remains unverified locally because package installation cannot reach PyPI from this runner.
-- The current workflow defines Linux, Windows, and macOS coverage, but the updated remote matrix
-  needs a successful run before its cross-platform result can be claimed.
-
-## Merged-main baseline
-
-Before this branch, 58 tests passed locally and all 19 hosted CI jobs passed on the merged PR head.
-That state still used a runtime ignore-pattern library; the follow-on replaces it with the bundled
-resolver and adds a Git differential corpus.
-
-## Remaining release gates
-
-- Performance measurements on large pattern sets and realistic repositories.
-- Exact parity for all Git-ignore edge cases. The matcher remains gated by the differential suite;
-  unsupported differences should be documented and tested before merging.
-- A package release or PyPI publication.
-- mdrepo integration or approval to migrate mdrepo.
-
-The portable policy intentionally does not parse Git configuration or honor custom
-`core.excludesFile` paths. See [migration gates](migration.md) and the [API/defaults](../README.md).
+The portable matcher was compared directly with Git across the tested glob, character-class,
+escape, negation, nested-ignore, global-ignore, and info/exclude cases. This is broad differential
+coverage, not a proof of parity for every possible Git-ignore input. Portable mode intentionally
+does not read Git configuration or custom `core.excludesFile` paths; use `GitStandardPolicy` when
+Git's configured behavior is required.
