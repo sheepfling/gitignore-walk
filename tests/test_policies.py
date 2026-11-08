@@ -883,3 +883,187 @@ class TestDifferential(RepositoryCase):
         expected = self.native().is_ignored_many(targets)
         assert expected == [True, True, True, False]
         assert GitIgnorePolicy(self.root).is_ignored_many(targets) == expected
+
+
+class TestPolicySelection(RepositoryCase):
+    def select(self, **kwargs):
+        from gitignore_walk import select_policy
+
+        return select_policy(self.root, environment=self.environment, **kwargs)
+
+    def test_missing_git_fallback_is_explicit_and_quiet(self, capsys):
+        missing = str(self.base / "missing-git")
+        selection = self.select(mode="prefer-git", git_executable=missing)
+        assert selection.backend == "portable"
+        assert selection.fallback_reason == "git-executable-missing"
+        assert isinstance(selection.policy, GitIgnorePolicy)
+        assert capsys.readouterr() == ("", "")
+        with pytest.raises(GitIgnoreError):
+            self.select(mode="git", git_executable=missing)
+        with pytest.raises(GitIgnoreError):
+            GitStandardPolicy(self.root, git_executable=missing)
+
+    @pytest.mark.parametrize(
+        "error",
+        [PermissionError("denied"), subprocess.TimeoutExpired("git", 1), OSError("failed")],
+    )
+    def test_nonmissing_process_errors_propagate(self, error):
+        with patch("subprocess.run", side_effect=error), pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+
+    def test_existing_executable_with_missing_interpreter_is_not_absence(self):
+        executable = self.base / "git-script"
+        executable.write_text("#!/nonexistent/interpreter\n", encoding="utf-8")
+        executable.chmod(0o755)
+        with (
+            patch("subprocess.run", side_effect=FileNotFoundError("loader missing")),
+            pytest.raises(GitIgnoreError),
+        ):
+            self.select(mode="prefer-git", git_executable=str(executable))
+
+    def test_bad_repo_and_config_do_not_fall_back(self):
+        if not shutil.which("git"):
+            pytest.skip("Git is required")
+        with pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+        self.init()
+        (self.home / "config").write_text("[broken\n", encoding="utf-8")
+        with pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+
+    def test_selection_is_eager_and_never_changes_midstream(self):
+        self.init()
+        selection = self.select(mode="prefer-git")
+        assert selection.backend == "git"
+        assert selection.fallback_reason is None
+        decisions = selection.policy.iter_explain(["first", "second"], batch_size=1)
+        assert next(decisions).path.name == "first"
+        with (
+            patch("subprocess.run", side_effect=FileNotFoundError("removed")),
+            pytest.raises(GitIgnoreError),
+        ):
+            next(decisions)
+        assert selection.backend == "git"
+
+    def test_fallback_sources_and_complete_environment(self):
+        self.write(".git/info/exclude", "*.local\n")
+        self.write(".gitignore", "*.log\n")
+        self.write("nested/.gitignore", "!keep.log\n")
+        global_ignore = self.home / "xdg/git/ignore"
+        global_ignore.parent.mkdir(parents=True)
+        global_ignore.write_text("*.global\n", encoding="utf-8")
+        with patch.dict(os.environ, {EnvVar.XDG_CONFIG_HOME: str(self.base / "wrong")}):
+            selection = self.select(mode="prefer-git", git_executable=str(self.base / "absent"))
+        assert selection.policy.is_ignored_many(
+            ["nested/a.log", "nested/keep.log", "a.local", "a.global", "plain"]
+        ) == [True, False, True, True, False]
+
+    def test_supplied_home_is_used_without_ambient_xdg(self):
+        from gitignore_walk import select_policy
+
+        ignore = self.home / ".config/git/ignore"
+        ignore.parent.mkdir(parents=True)
+        ignore.write_text("*.home\n", encoding="utf-8")
+        selection = select_policy(
+            self.root,
+            mode="prefer-git",
+            git_executable=str(self.base / "absent"),
+            environment={EnvVar.HOME: str(self.home), EnvVar.USERPROFILE: str(self.home)},
+        )
+        assert selection.policy.is_ignored("a.home")
+        assert not select_policy(self.root, environment={}).policy.is_ignored("a.home")
+
+    def test_custom_config_difference_is_preserved(self):
+        self.init()
+        custom = self.home / "custom-ignore"
+        custom.write_text("*.custom\n", encoding="utf-8")
+        self.git("config", "core.excludesFile", str(custom))
+        native = self.select(mode="prefer-git")
+        fallback = self.select(mode="prefer-git", git_executable=str(self.base / "absent"))
+        assert native.policy.is_ignored("a.custom")
+        assert not fallback.policy.is_ignored("a.custom")
+
+    def test_portable_default_does_not_launch_git(self):
+        with patch("subprocess.run", side_effect=AssertionError("must not execute")):
+            selection = self.select()
+        assert selection.backend == "portable"
+        assert selection.fallback_reason is None
+
+    def test_invalid_selection_and_timeout(self):
+        with pytest.raises(ValueError):
+            self.select(mode="unknown")
+        with pytest.raises(ValueError):
+            self.select(mode="prefer-git", timeout=0)
+
+    def test_missing_name_uses_supplied_search_path(self):
+        from gitignore_walk import select_policy
+
+        empty_path = self.base / "empty-bin"
+        empty_path.mkdir()
+        selection = select_policy(
+            self.root,
+            mode="prefer-git",
+            git_executable="gitignore-walk-missing-test-program",
+            environment={"PATH": str(empty_path)},
+        )
+        assert selection.fallback_reason == "git-executable-missing"
+
+    def test_fallback_never_retries_git_and_keeps_baseline(self):
+        selection = self.select(
+            mode="prefer-git",
+            git_executable=str(self.base / "absent"),
+            initial_excludes=(".git", "private"),
+        )
+        with patch("subprocess.run", side_effect=AssertionError("must not retry")):
+            assert selection.policy.is_ignored("private")
+            assert not selection.policy.is_ignored("public")
+
+    def test_ancestor_rules_with_subdirectory_fallback(self):
+        from gitignore_walk import select_policy
+
+        self.write(".git/info/exclude", "*.local\n")
+        self.write(".gitignore", "*.log\n")
+        nested = self.write("nested/.gitignore", "!keep.log\n").parent
+        selection = select_policy(
+            nested, mode="prefer-git", git_executable=str(self.base / "absent"), environment={}
+        )
+        assert selection.policy.is_ignored_many(["a.log", "keep.log", "a.local"]) == [
+            True,
+            False,
+            True,
+        ]
+
+    @pytest.mark.parametrize("returncode, stderr", [(128, b"bad config"), (0, b"warning")])
+    def test_native_diagnostics_do_not_fall_back(self, returncode, stderr):
+        result = subprocess.CompletedProcess([], returncode, b"", stderr)
+        with patch("subprocess.run", return_value=result), pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+
+    def test_explicit_home_precedes_windows_userprofile(self):
+        from types import SimpleNamespace
+
+        from gitignore_walk import _portable
+
+        profile = self.base / "different-profile"
+        with patch.object(_portable, "os", SimpleNamespace(name="nt")):
+            path = _portable._default_global_excludes_path(
+                {EnvVar.HOME: str(self.home), EnvVar.USERPROFILE: str(profile)}
+            )
+        assert path == self.home / ".config/git/ignore"
+
+    def test_omitted_environment_preserves_ambient_home_discovery(self):
+        from gitignore_walk import select_policy
+
+        ignore = self.home / ".config/git/ignore"
+        ignore.parent.mkdir(parents=True)
+        ignore.write_text("*.home\n", encoding="utf-8")
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch.object(Path, "home", return_value=self.home),
+        ):
+            assert GitIgnorePolicy(self.root).is_ignored("a.home")
+            assert select_policy(self.root).policy.is_ignored("a.home")
+            assert select_policy(
+                self.root, mode="prefer-git", git_executable=str(self.base / "absent")
+            ).policy.is_ignored("a.home")
+            assert not select_policy(self.root, environment={}).policy.is_ignored("a.home")
