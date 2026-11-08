@@ -14,7 +14,19 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
-from gitignore_walk._util import EnvVar, is_windows
+
+class EnvVar:
+    """Environment-variable names used by the local CI tooling."""
+
+    DEBIAN_FRONTEND: Final = "DEBIAN_FRONTEND"
+    LOCALAPPDATA: Final = "LOCALAPPDATA"
+    PYTHONHOME: Final = "PYTHONHOME"
+    PYTHONPATH: Final = "PYTHONPATH"
+    TEMP: Final = "TEMP"
+    TMP: Final = "TMP"
+    TMPDIR: Final = "TMPDIR"
+    USERPROFILE: Final = "USERPROFILE"
+    UV_CACHE_DIR: Final = "UV_CACHE_DIR"
 
 
 def project_root() -> Path:
@@ -23,6 +35,11 @@ def project_root() -> Path:
 
 def project_src() -> Path:
     return project_root() / "src"
+
+
+def is_windows() -> bool:
+    """Return whether the current Python process runs on Windows."""
+    return os.name == "nt"
 
 
 def _writable_temp_root() -> Path:

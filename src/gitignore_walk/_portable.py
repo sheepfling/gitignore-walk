@@ -12,13 +12,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, Literal, NamedTuple, cast
 
+from ._environment import EnvVar
 from ._ignore_file import DEFAULT_MATCHER
 from ._ignore_file import GitIgnoreMatch as _PatternMatch
 from ._ignore_file import match_gitignore_file as _match_loaded_ignore
 from ._ignore_loader import load_gitignore as _load_gitignore
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile as _LoadedIgnore
-from ._util import EnvVar, is_windows
+from ._util import is_windows
 from .errors import GitIgnoreError
 
 _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
@@ -572,8 +573,7 @@ def _default_global_excludes_path(environment: Mapping[str, str] | None = None) 
     """Return Git's conventional XDG/home global-ignore path, without reading Git config."""
 
     if environment is not None:
-        xdg = environment.get(EnvVar.XDG_CONFIG_HOME)
-        if xdg:
+        if xdg := environment.get(EnvVar.XDG_CONFIG_HOME):
             return Path(xdg) / "git" / "ignore"
         home = environment.get(EnvVar.HOME)
         if is_windows():

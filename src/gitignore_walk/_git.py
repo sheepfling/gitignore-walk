@@ -13,6 +13,7 @@ from itertools import islice
 from pathlib import Path
 from typing import Final
 
+from ._environment import EnvVar
 from ._portable import (
     _DEFAULT_INITIAL_EXCLUDES,
     GitIgnoreDecision,
@@ -22,7 +23,6 @@ from ._portable import (
     _IgnoreSnapshot,
     _match_loaded_ignore,
 )
-from ._util import EnvVar
 
 # Repository selection must come from root, not an unrelated invoking Git process.
 _REPOSITORY_ENVIRONMENT: Final = (

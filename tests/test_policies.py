@@ -22,12 +22,13 @@ from gitignore_walk import (
     IgnorePolicy,
     PortablePolicyConfig,
     PreferGitPolicyConfig,
+    _portable,
     is_gitignored,
     matches_gitignore,
     parse_gitignore,
     select_policy,
 )
-from gitignore_walk._util import EnvVar
+from gitignore_walk._environment import EnvVar
 
 
 class RepositoryCase:
@@ -1051,8 +1052,6 @@ class TestPolicySelection(RepositoryCase):
             self.select(mode="prefer-git")
 
     def test_explicit_home_precedes_windows_userprofile(self):
-        from gitignore_walk import _portable
-
         profile = self.base / "different-profile"
         with patch("gitignore_walk._util.is_windows", return_value=True):
             path = _portable._default_global_excludes_path(

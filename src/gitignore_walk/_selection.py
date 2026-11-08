@@ -21,8 +21,10 @@ class PortablePolicyConfig:
     """Request portable ignore evaluation.
 
     Attributes:
-        initial_excludes: Hard baseline rules applied before ignore-file sources.
-        environment: Optional complete environment used to locate conventional global ignores.
+        initial_excludes: Hard baseline rules replacing the default ``(".git",)`` baseline.
+        environment: Optional complete environment replacing the process environment. In portable
+            mode, HOME/USERPROFILE and XDG_CONFIG_HOME locate the conventional global ignore file;
+            other variables are not consulted.
     """
 
     mode: Literal["portable"] = field(default="portable", init=False)
@@ -35,9 +37,10 @@ class GitPolicyConfig:
     """Require native Git and propagate every Git execution or configuration failure.
 
     Attributes:
-        initial_excludes: Hard baseline rules applied before invoking Git.
+        initial_excludes: Hard baseline rules replacing the default ``(".git",)`` baseline.
         git_executable: Executable name or path used to invoke Git.
-        environment: Optional complete environment for Git subprocesses.
+        environment: Optional complete environment replacing the process environment, not an
+            overlay. It is passed to Git subprocesses; include PATH and any required Git settings.
         timeout: Maximum duration in seconds for each Git subprocess.
     """
 
@@ -53,9 +56,11 @@ class PreferGitPolicyConfig:
     """Prefer native Git and allow fallback only when its executable is absent.
 
     Attributes:
-        initial_excludes: Hard baseline rules applied before either resolver.
+        initial_excludes: Hard baseline rules replacing the default ``(".git",)`` baseline.
         git_executable: Executable name or path used to invoke Git.
-        environment: Optional complete environment for Git and portable fallback.
+        environment: Optional complete environment replacing the process environment, not an
+            overlay. It is passed to Git subprocesses and supplies HOME/USERPROFILE and
+            XDG_CONFIG_HOME for portable fallback; include PATH and any required Git settings.
         timeout: Maximum duration in seconds for each Git subprocess.
     """
 
@@ -78,7 +83,8 @@ class PortablePolicySelection:
         mode: Requested selection strategy.
         backend: Actual resolver selected; always ``"portable"`` for this variant.
         policy: Portable policy used for queries and traversal.
-        fallback_reason: Why Git was unavailable, or ``None`` for portable mode.
+        fallback_reason: ``"git-executable-missing"`` when prefer-Git selected portable because
+            Git could not be found; otherwise ``None``.
     """
 
     mode: Literal["portable", "prefer-git"]
@@ -177,7 +183,9 @@ def select_policy(
 ) -> PolicySelection:
     """Resolve one policy eagerly from a tagged config; never switch during a walk.
 
-    ``PreferGitPolicyConfig`` falls back only when Git's executable is confirmed absent.
+    Inspect the returned ``backend`` and ``fallback_reason`` to see whether prefer-Git selected
+    the portable fallback. ``PreferGitPolicyConfig`` falls back only when Git's executable is
+    confirmed absent.
     Permissions, timeouts, invalid repositories, malformed configuration, missing
     interpreters/loaders, and later subprocess failures remain errors. The returned
     selection keeps the requested ``mode`` distinct from the resolved ``backend``.

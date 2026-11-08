@@ -114,7 +114,8 @@ Selection happens immediately, before iteration. The result's `mode` records the
 `backend` records the resolver actually selected. It is `"git"` or `"portable"`, and checking it
 narrows `policy` to `GitStandardPolicy` or `GitIgnorePolicy` for static type checkers. The
 `fallback_reason` is `"git-executable-missing"` only on fallback, otherwise `None`. No diagnostics
-are printed. The returned policy never switches backends during queries or walks. Permissions,
+are printed; inspect `backend` or `fallback_reason` to detect a fallback. The returned policy never
+switches backends during queries or walks. Permissions,
 timeouts, invalid repositories, broken configuration, and later subprocess failures remain errors.
 An existing executable whose interpreter/loader is missing is not a missing Git.
 
