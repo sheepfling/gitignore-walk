@@ -15,6 +15,11 @@ Two policies let applications choose whether to use the bundled evaluator or Git
 
 Both work with `GitIgnoreWalker`; choose the policy that fits the application's configuration needs.
 
+This release supports Git ignore rules only; Mercurial's `.hgignore` and other VCS ignore formats
+are not supported yet. Future formats should have their own policy and tagged config so selecting
+or falling back between resolvers never silently changes the ignore grammar. This is a built-in
+extension path, not a runtime plugin registry.
+
 Designed for repository analyzers, code indexers, documentation generators, linters, and build tools.
 
 ## Quick start
