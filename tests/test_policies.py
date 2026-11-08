@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path, PureWindowsPath
 from unittest.mock import patch
 
@@ -96,7 +96,49 @@ class RepositoryCase:
         return path
 
 
+class NonPruningPolicy(IgnorePolicy):
+    """Small scheme-neutral policy fixture whose ignored parents may have included children."""
+
+    def __init__(self, root: Path) -> None:
+        self.root = root.resolve()
+
+    def resolve_target(self, target: str | os.PathLike[str]) -> Path:
+        path = Path(target)
+        resolved = path.resolve() if path.is_absolute() else (self.root / path).resolve()
+        if not resolved.is_relative_to(self.root):
+            raise ValueError("target outside policy root")
+        return resolved
+
+    def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
+        path = self.resolve_target(target)
+        return IgnoreDecision(
+            path=path, ignored=path.relative_to(self.root).as_posix() == "ignored"
+        )
+
+    def iter_explain(
+        self,
+        targets: Iterable[str | os.PathLike[str]],
+        *,
+        batch_size: int = 256,
+    ) -> Iterator[IgnoreDecision]:
+        del batch_size
+        yield from (self.explain(target) for target in targets)
+
+
 class TestPolicyContract(RepositoryCase):
+    @pytest.mark.parametrize("topdown", [True, False])
+    def test_walker_keeps_ignored_directories_when_policy_cannot_prune(self, topdown: bool) -> None:
+        ignored = self.root / "ignored"
+        ignored.mkdir()
+        visible = ignored / "visible.txt"
+        visible.write_text("visible\n", encoding="utf-8")
+        walker = IgnoreWalker(self.root, policy=NonPruningPolicy(self.root))
+
+        assert list(walker.iter_files(topdown=topdown)) == [visible]
+        rows = list(walker.walk(topdown=topdown))
+        root_entry = next(entry for entry in rows if entry.directory == self.root)
+        assert root_entry.dir_names == ["ignored"]
+
     @pytest.mark.parametrize("native", [False, True])
     def test_batch_and_lazy_contract(self, native: bool) -> None:
         if native:

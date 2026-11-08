@@ -311,6 +311,9 @@ policy caches each ignore file when first read, and the Git-native policy querie
 targets per Git process (256 by default). Git can observe changes between batches. Errors are raised
 when iteration reaches the affected target or batch; neither mode freezes the filesystem.
 
+`IgnoreWalker` asks its policy whether an ignored directory is safe to prune. The policy contract
+defaults to keeping it traversable, since another ignore scheme may allow included descendants.
+
 ## Important behavior
 
 A few details are worth knowing before integrating the library:

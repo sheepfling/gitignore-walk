@@ -14,15 +14,15 @@ from pathlib import Path
 from typing import Final
 
 from ._environment import EnvVar
+from ._policy import IgnoreDecision
 from ._portable import (
     _DEFAULT_INITIAL_EXCLUDES,
-    GitIgnoreError,
-    IgnoreDecision,
-    IgnorePolicy,
     _decision_from_match,
+    _GitIgnorePolicyBase,
     _IgnoreSnapshot,
     _match_loaded_ignore,
 )
+from .errors import GitIgnoreError
 
 # Repository selection must come from root, not an unrelated invoking Git process.
 _REPOSITORY_ENVIRONMENT: Final = (
@@ -40,7 +40,7 @@ def _decode_git_output(data: bytes) -> str:
     return data.decode(sys.getfilesystemencoding(), errors="surrogateescape")
 
 
-class GitStandardPolicy(IgnorePolicy):
+class GitStandardPolicy(_GitIgnorePolicyBase):
     """Use Git's configured excludes and matching implementation explicitly.
 
     Requires Git and the root of a non-bare worktree. Global/system/local/worktree
