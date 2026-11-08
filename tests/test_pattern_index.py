@@ -3,7 +3,7 @@
 from pathlib import Path
 
 from gitignore_walk import GitIgnorePolicy
-from gitignore_walk._ignore_file import (
+from gitignore_walk._schemes.git._ignore_file import (
     DEFAULT_MATCHER,
     _last_matching_pattern,
     parse_gitignore,

@@ -1,10 +1,12 @@
-"""Canonical names for environment variables used by the package and tooling."""
+"""Symbolic names for environment variables used by the package."""
+
+from __future__ import annotations
 
 from typing import Final
 
 
 class EnvVar:
-    """Symbolic registry for environment-variable names used by the package.
+    """Registry of environment-variable names used by package code.
 
     Attributes:
         DEBIAN_FRONTEND: Suppresses interactive package-manager prompts in controlled subprocesses.
@@ -23,7 +25,6 @@ class EnvVar:
         GIT_PREFIX_FILTER: Prefix used to select Git-related variables in verification tooling.
     """
 
-    # Git process configuration and identity, used by the native policy and its fixtures.
     DEBIAN_FRONTEND: Final = "DEBIAN_FRONTEND"
     GIT_AUTHOR_EMAIL: Final = "GIT_AUTHOR_EMAIL"
     GIT_AUTHOR_NAME: Final = "GIT_AUTHOR_NAME"
@@ -41,8 +42,6 @@ class EnvVar:
     GIT_PREFIX: Final = "GIT_PREFIX"
     GIT_TERMINAL_PROMPT: Final = "GIT_TERMINAL_PROMPT"
     GIT_WORK_TREE: Final = "GIT_WORK_TREE"
-
-    # User locations used by Git and Windows temporary-directory discovery.
     HOME: Final = "HOME"
     LOCALAPPDATA: Final = "LOCALAPPDATA"
     PYTHONHOME: Final = "PYTHONHOME"
@@ -53,7 +52,4 @@ class EnvVar:
     USERPROFILE: Final = "USERPROFILE"
     UV_CACHE_DIR: Final = "UV_CACHE_DIR"
     XDG_CONFIG_HOME: Final = "XDG_CONFIG_HOME"
-
-    # Python runtime and verification-tool settings.
-    # GIT_ is a prefix filter used to isolate Git-related environment variables in tests.
     GIT_PREFIX_FILTER: Final = "GIT_"

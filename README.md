@@ -13,7 +13,18 @@ Two policies let applications choose whether to use the bundled evaluator or Git
 - **`GitStandardPolicy` — Git-native.** Delegates matching to Git itself, respecting configured
   global excludes, repository configuration, and Git-specific behavior.
 
-Both work with `GitIgnoreWalker`; choose the policy that fits the application's configuration needs.
+Both work with `IgnoreWalker`; choose the policy that fits the application's configuration needs.
+
+The shared API uses scheme-neutral names: `IgnorePolicy`, `IgnoreWalker`, `IgnoreDecision`,
+`IgnoreTrace`, `IgnoreTraceMatch`, and `IgnoreWalkEntry`. Git-specific behavior stays in policies
+such as `GitIgnorePolicy` and `GitStandardPolicy`.
+
+This release supports Git ignore rules only; Mercurial's `.hgignore` and other VCS ignore formats
+are not supported yet. Future formats should have their own policy and tagged config so selecting
+or falling back between resolvers never silently changes the ignore grammar. This is a built-in
+extension path, not a runtime plugin registry. The [contributor checklist for another ignore
+scheme](docs/contributing/ignore-scheme-readiness.md) records the architecture boundary and the
+conformance evidence required before adding one.
 
 Designed for repository analyzers, code indexers, documentation generators, linters, and build tools.
 
@@ -25,9 +36,9 @@ Use the Python-only policy when you want to avoid a Git executable dependency or
 ordinary directory trees.
 
 ```python
-from gitignore_walk import GitIgnoreWalker
+from gitignore_walk import IgnoreWalker
 
-walker = GitIgnoreWalker("/path/to/project")
+walker = IgnoreWalker("/path/to/project")
 
 for path in walker.iter_files():
     print(path)
@@ -55,7 +66,7 @@ interpret Git configuration such as custom `core.excludesFile` paths or conditio
 When you need Git's actual configured ignore behavior:
 
 ```python
-from gitignore_walk import GitStandardPolicy, GitIgnoreWalker
+from gitignore_walk import GitStandardPolicy, IgnoreWalker
 
 policy = GitStandardPolicy("/path/to/checkout")
 
@@ -73,7 +84,7 @@ for decision in policy.explain_many(
         decision.pattern,
     )
 
-walker = GitIgnoreWalker(policy.root, policy=policy)
+walker = IgnoreWalker(policy.root, policy=policy)
 
 for path in walker.iter_files():
     print(path)
@@ -86,6 +97,51 @@ It honors Git configuration, including `core.excludesFile`, linked worktrees, an
 
 Because matching uses `--no-index`, tracked files can still match ignore rules. **Ignore-rule
 evaluation is not the same as Git status.**
+
+### Prefer Git with an explicit fallback
+
+Fallback is opt-in. Use `PreferGitPolicyConfig` only when portable behavior is acceptable if Git is
+missing. The default `select_policy(root)` stays portable, while `GitPolicyConfig` requires Git and
+never falls back. Pass the preferred config to `select_policy` to allow the missing-Git fallback:
+
+```python
+import logging
+
+from gitignore_walk import IgnoreWalker, PreferGitPolicyConfig, select_policy
+
+selection = select_policy("/path/to/checkout", PreferGitPolicyConfig())
+if selection.fallback_reason is not None:
+    logging.getLogger(__name__).warning(
+        "Using %s after fallback: %s", selection.backend, selection.fallback_reason
+    )
+walker = IgnoreWalker(selection.policy.root, policy=selection.policy)
+```
+
+`PortablePolicyConfig` always selects the portable resolver. `GitPolicyConfig` requires Git.
+`PreferGitPolicyConfig` tries Git first and uses the portable resolver only when the executable is
+confirmed missing. All three accept `initial_excludes` and an optional complete `environment`;
+the Git configs also accept `git_executable` and `timeout`.
+
+Selection happens immediately, before iteration. The result's `mode` records the requested config;
+`backend` records the resolver actually selected. It is `"git"` or `"portable"`, and checking it
+narrows `policy` to `GitStandardPolicy` or `GitIgnorePolicy` for static type checkers. The
+`fallback_reason` is `"git-executable-missing"` only on fallback, otherwise `None`. The library
+does not log automatically; inspect `backend` or `fallback_reason` and report it at the level your
+application needs. The returned policy never switches backends during queries or walks. Permissions,
+timeouts, invalid repositories, broken configuration, and later subprocess failures remain errors.
+An existing executable whose interpreter/loader is missing is not a missing Git.
+
+Calling `select_policy(root)` is equivalent to passing `PortablePolicyConfig()`. Existing policy
+constructors and the walker's portable default are unchanged.
+
+`environment` is a complete environment, not an overlay. Both the selector and `GitIgnorePolicy`
+use supplied HOME/USERPROFILE and XDG_CONFIG_HOME for conventional global ignores without consulting
+ambient variables. An explicit environment without these locations has no conventional global file.
+Omitting the portable policy's environment retains its existing ambient discovery behavior.
+
+Fallback handles ancestor/nested `.gitignore`, discoverable `info/exclude`, and conventional global
+ignores. It **does not read Git configuration**, including custom `core.excludesFile` or includes,
+so its results can differ from native Git. Use strict Git mode when these settings are required.
 
 ## Understand why a path is ignored
 
@@ -146,14 +202,20 @@ The detailed explanation also identifies the matching rule's origin:
 | `src/debug.log`    | Yes     | `.gitignore`     | 1    |
 | `src/keep.log`     | No      | `src/.gitignore` | 1    |
 
-`GitIgnoreDecision` exposes the evaluated `path`, `ignored` state, `source`, matching `pattern`, and
-one-based `line` number.
+`IgnoreDecision` identifies the `scheme`, final `ignored` result, source and matched rule. It can
+also carry a source `line` or `property_name`, effective `scope`, policy-defined `reason`, and
+non-fatal discovery `diagnostics`. `discovery_complete` tells callers whether all applicable sources
+were found. Git policies identify their scheme as `"git"`; their source-read failures raise errors,
+so successful decisions have complete discovery.
+`ignored` describes the scheme's ignore-rule result, not version-control membership or add/commit
+eligibility. Git-native queries use `--no-index`, so tracked paths are still evaluated against rules.
 
 For overlay diagnostics, use `policy.trace(path)`. It returns the effective decision and the
 matching rule from each applicable source in precedence order, with `effective=True` on the rule
 that determined the result. The portable policy traces its configured layers and parent-directory
 blocking rules. `GitStandardPolicy` reports Git's winning rule, but sets `complete=False` because
-Git's check-ignore interface does not expose every shadowed matching rule.
+Git's check-ignore interface does not expose every shadowed matching rule. This trace completeness
+flag is separate from `decision.discovery_complete`, which describes source discovery.
 
 This distinction matters when explaining *why* a file was selected, not just whether it matched an
 ignore rule.
@@ -183,10 +245,10 @@ back to portable matching.
 
 ## Traverse and filter directory trees
 
-`GitIgnoreWalker` supports `os.walk`-style traversal:
+`IgnoreWalker` supports `os.walk`-style traversal:
 
 ```python
-walker = GitIgnoreWalker("/path/to/project")
+walker = IgnoreWalker("/path/to/project")
 
 for directory, dir_names, file_names in walker.walk():
     print(directory, file_names)
@@ -207,7 +269,7 @@ for directory, dir_names, file_names in walker.walk():
     dir_names[:] = [name for name in dir_names if name != "generated"]
 ```
 
-`walk()` yields `GitIgnoreWalkEntry` named tuples, supporting both named attributes and familiar
+`walk()` yields `IgnoreWalkEntry` named tuples, supporting both named attributes and familiar
 three-value unpacking.
 
 `iter_files()` provides a simpler interface when only file paths are needed.
@@ -245,8 +307,8 @@ Other available interfaces include:
 | `is_gitignored(root, target)`                         | Portable one-shot query                              |
 | `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec` |
 | `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                      |
-| `GitIgnoreWalker.walk()`                              | Directory traversal with optional filtering          |
-| `GitIgnoreWalker.iter_files()`                        | File-only traversal                                  |
+| `IgnoreWalker.walk()`                                 | Directory traversal with optional filtering          |
+| `IgnoreWalker.iter_files()`                           | File-only traversal                                  |
 | `IgnorePolicy.explain_many()`                         | Return a mutable list of detailed decisions          |
 | `IgnorePolicy.is_ignored_many()`                      | Return a mutable list of ignore decisions            |
 | `IgnorePolicy.iter_explain()`                         | Lazily yield detailed decisions                      |
@@ -256,6 +318,9 @@ Both policies implement `IgnorePolicy`. Lazy methods consume targets as they run
 policy caches each ignore file when first read, and the Git-native policy queries up to `batch_size`
 targets per Git process (256 by default). Git can observe changes between batches. Errors are raised
 when iteration reaches the affected target or batch; neither mode freezes the filesystem.
+
+`IgnoreWalker` asks its policy whether an ignored directory is safe to prune. The policy contract
+defaults to keeping it traversable, since another ignore scheme may allow included descendants.
 
 ## Important behavior
 
@@ -286,38 +351,27 @@ The library is not a filesystem security boundary.
 
 ## Development
 
-Create and activate a Python 3.12 virtual environment from the repository root:
+From the repository root, create a Python 3.12 virtual environment and install the development
+tools. The commands use that environment's Python directly, so activation is optional.
 
 ```sh
 python3.12 -m venv .venv
-source .venv/bin/activate
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m scripts.ci all
 ```
 
 In Windows PowerShell:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m scripts.ci all
 ```
 
-Then install development dependencies into the environment:
-
-```sh
-python -m pip install -e '.[dev]'
-```
-
-Run the same checks used by CI:
-
-```sh
-python -m scripts.ci all
-```
-
-Run this from the repository root before pushing. It uses the active Python interpreter and runs
-the pytest suite, Ruff lint and format checks, strict Pyright, Markdown formatting checks with
-rumdl, repository Markdown policy checks with mdrepo on Python 3.11+, and package validation (wheel
-and source archive builds, Twine checks, and an import smoke test against the built wheel). Install
-the development dependencies first with the command above. A successful run is the local pre-push
-check; CI also runs tests on other Python versions and operating systems.
+If `.venv` already exists, verify it uses Python 3.12 before reusing it. Run the last command before
+pushing. It runs the same full local check as CI: tests, Ruff lint and format checks, strict Pyright,
+Markdown checks, and package validation. See [local and CI verification](docs/validation.md) for the
+phases, how to diagnose a failure, and the interpreter/platform matrix used by hosted CI.
 
 GitHub Actions delegates each matrix entry to this same runner: other platform and Python entries
 run `test`, while Ubuntu Python 3.12 runs `all`. That job is the hosted counterpart to the complete

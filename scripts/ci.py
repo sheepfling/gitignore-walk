@@ -14,7 +14,19 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
-from gitignore_walk.environment import EnvVar
+
+class EnvVar:
+    """Environment-variable names used by the local CI tooling."""
+
+    DEBIAN_FRONTEND: Final = "DEBIAN_FRONTEND"
+    LOCALAPPDATA: Final = "LOCALAPPDATA"
+    PYTHONHOME: Final = "PYTHONHOME"
+    PYTHONPATH: Final = "PYTHONPATH"
+    TEMP: Final = "TEMP"
+    TMP: Final = "TMP"
+    TMPDIR: Final = "TMPDIR"
+    USERPROFILE: Final = "USERPROFILE"
+    UV_CACHE_DIR: Final = "UV_CACHE_DIR"
 
 
 def project_root() -> Path:
@@ -26,12 +38,13 @@ def project_src() -> Path:
 
 
 def is_windows() -> bool:
+    """Return whether the current Python process runs on Windows."""
     return os.name == "nt"
 
 
 def _writable_temp_root() -> Path:
     candidates: list[Path] = []
-    if os.name == "nt":
+    if is_windows():
         user_profile = os.environ.get(EnvVar.USERPROFILE)
         if user_profile:
             candidates.append(Path(user_profile) / "AppData" / "Local" / "Temp")

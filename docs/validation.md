@@ -3,50 +3,60 @@
 Repository-specific coding-agent instructions are in [AGENTS.md](../AGENTS.md); Claude Code
 loads the same instructions through [CLAUDE.md](../CLAUDE.md).
 
-Create and activate a Python 3.12 virtual environment from the repository root:
+## Quick start
+
+Run these commands from the repository root. Install Python 3.12 and Git first. The virtual
+environment keeps this project's tools separate from your system Python. These commands call its
+Python directly, so activating it is optional.
+
+macOS or Linux:
 
 ```sh
 python3.12 -m venv .venv
-source .venv/bin/activate
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m scripts.ci all
 ```
 
-In Windows PowerShell:
+Windows PowerShell:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m scripts.ci all
 ```
 
-Install development tools into the activated environment:
+If `.venv` already exists, verify it uses Python 3.12 before reusing it. If you prefer activation, run
+`source .venv/bin/activate` on macOS/Linux or `.\.venv\Scripts\Activate.ps1` in PowerShell, then
+use `python -m scripts.ci all` instead of the explicit `.venv` Python path.
+
+The development install (`.[dev]`) supplies pytest, Ruff, Pyright, rumdl, mdrepo, and package-build
+tools. Git is needed for the tests that compare results against Git's own ignore matcher.
+
+`all` is the complete local pre-push check. It runs these phases in order:
+
+1. Tests (`pytest tests -q`), including Git comparisons when Git is installed.
+2. Ruff lint (`ruff check .`) and formatting (`ruff format --check .`).
+3. Strict type checking (`pyright`).
+4. Markdown style (`rumdl check .`) and, when installed, repository policy
+   (`python -m mdrepo check .`).
+5. Package validation: build a wheel and source archive, check both with Twine, install the wheel in
+   a temporary directory, and import it there.
+
+The development extra installs mdrepo on Python 3.11 and newer. The runner uses the active Python,
+stops at the first failure, and exits nonzero on failure. Each phase prints `PASSED:` or `FAILED:`
+and the command it ran. Use the matching command below to rerun one phase by itself.
+
+When editing Markdown, run the formatters before the read-only checks:
 
 ```sh
-python -m pip install -e '.[dev]'
+.venv/bin/rumdl check --fix .
+.venv/bin/python -m mdrepo fix .
+.venv/bin/python -m scripts.ci all
 ```
 
-Before pushing, run the complete local check from the repository root:
-
-```sh
-python -m scripts.ci all
-```
-
-This runs, in order, `pytest tests -q`, `ruff check .`, `ruff format --check .`, `pyright`,
-`rumdl check .`, then `python -m mdrepo check .` on Python 3.11 or newer. Package validation then
-builds a wheel and source archive, checks both with Twine, installs the wheel into a temporary
-directory, and imports it there. Each step uses the active Python interpreter, and the command
-stops at the first failure. The test suite includes portable matcher tests and Git differential
-tests when Git is available.
-
-Each phase prints a named `PASSED` or `FAILED` result and the command it ran. The run stops at the
-first failure. To narrow a failure, rerun its phase alone with `python -m scripts.ci test`,
-`python -m scripts.ci quality`, or `python -m scripts.ci package`.
-
-When editing Markdown, apply safe fixes before the read-only check:
-
-```sh
-rumdl check --fix .
-python -m mdrepo fix .  # Python 3.11+
-python -m scripts.ci all
-```
+In PowerShell, use `.\.venv\Scripts\rumdl.exe check --fix .`, then
+`.\.venv\Scripts\python.exe -m mdrepo fix .` and
+`.\.venv\Scripts\python.exe -m scripts.ci all`.
 
 ## Commands
 
@@ -63,6 +73,9 @@ python -m scripts.ci all
 GitHub Actions uses this same coordinator: matrix entries call `test`, and the Ubuntu Python 3.12
 entry calls `all`. Thus the hosted full check and the local pre-push check use the same ordered
 steps; the other matrix entries add platform and interpreter test coverage.
+
+The commands in the table assume the virtual environment is active. If it is not, replace `python`
+with `.venv/bin/python` on macOS/Linux or `.\.venv\Scripts\python.exe` in PowerShell.
 
 Narrow a matrix with `--versions`, `--windows-versions`, or `--linux-versions`. Use
 `--skip-windows` or `--skip-linux` to run one platform. The Windows environments install only

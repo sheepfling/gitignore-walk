@@ -5,25 +5,31 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
-from collections.abc import Iterator
+from collections.abc import Iterable, Iterator
 from pathlib import Path, PureWindowsPath
 from unittest.mock import patch
 
 import pytest
 
 from gitignore_walk import (
-    GitIgnoreDecision,
     GitIgnoreError,
     GitIgnorePolicy,
     GitIgnoreSpec,
-    GitIgnoreWalker,
+    GitPolicyConfig,
     GitStandardPolicy,
+    IgnoreDecision,
+    IgnoreDiagnostic,
     IgnorePolicy,
+    IgnoreWalker,
+    PortablePolicyConfig,
+    PreferGitPolicyConfig,
     is_gitignored,
     matches_gitignore,
     parse_gitignore,
+    select_policy,
 )
-from gitignore_walk.environment import EnvVar
+from gitignore_walk._environment import EnvVar
+from gitignore_walk._schemes.git import portable as _portable
 
 
 class RepositoryCase:
@@ -91,7 +97,95 @@ class RepositoryCase:
         return path
 
 
+class NonPruningPolicy(IgnorePolicy):
+    """Small scheme-neutral policy fixture whose ignored parents may have included children."""
+
+    @property
+    def scheme(self) -> str:
+        return "test"
+
+    def __init__(self, root: Path) -> None:
+        self.root = root.resolve()
+
+    def resolve_target(self, target: str | os.PathLike[str]) -> Path:
+        path = Path(target)
+        resolved = path.resolve() if path.is_absolute() else (self.root / path).resolve()
+        if not resolved.is_relative_to(self.root):
+            raise ValueError("target outside policy root")
+        return resolved
+
+    def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
+        path = self.resolve_target(target)
+        return IgnoreDecision(
+            path=path,
+            ignored=path.relative_to(self.root).as_posix() == "ignored",
+            scheme=self.scheme,
+            source="test-ignore-property",
+            pattern="allow visible descendants",
+            property_name="test-ignore-property",
+            scope="repository-root",
+            reason="test-include-rule",
+            discovery_complete=True,
+        )
+
+    def iter_explain(
+        self,
+        targets: Iterable[str | os.PathLike[str]],
+        *,
+        batch_size: int = 256,
+    ) -> Iterator[IgnoreDecision]:
+        del batch_size
+        yield from (self.explain(target) for target in targets)
+
+
 class TestPolicyContract(RepositoryCase):
+    def test_decision_model_carries_neutral_provenance_and_diagnostics(self) -> None:
+        diagnostic = IgnoreDiagnostic(
+            code="source-unavailable",
+            message="One configured ignore source could not be read.",
+            source="working-copy ignore property",
+        )
+        decision = IgnoreDecision(
+            path=self.root / "child.txt",
+            ignored=False,
+            scheme="future-scheme",
+            source="svn:ignore",
+            property_name="svn:ignore",
+            line=None,
+            scope="parent-directory",
+            reason="no-matching-rule",
+            discovery_complete=False,
+            diagnostics=(diagnostic,),
+        )
+
+        assert decision.scheme == "future-scheme"
+        assert decision.property_name == "svn:ignore"
+        assert decision.scope == "parent-directory"
+        assert not decision.discovery_complete
+        assert decision.diagnostics == (diagnostic,)
+
+    @pytest.mark.parametrize("topdown", [True, False])
+    def test_walker_keeps_ignored_directories_when_policy_cannot_prune(self, topdown: bool) -> None:
+        ignored = self.root / "ignored"
+        ignored.mkdir()
+        visible = ignored / "visible.txt"
+        visible.write_text("visible\n", encoding="utf-8")
+        walker = IgnoreWalker(self.root, policy=NonPruningPolicy(self.root))
+
+        assert list(walker.iter_files(topdown=topdown)) == [visible]
+        rows = list(walker.walk(topdown=topdown))
+        root_entry = next(entry for entry in rows if entry.directory == self.root)
+        assert root_entry.dir_names == ["ignored"]
+        child_decision = walker.policy.explain(visible)
+        assert child_decision.scheme == "test"
+        assert child_decision.property_name == "test-ignore-property"
+        assert child_decision.discovery_complete
+        assert not child_decision.diagnostics
+        trace = walker.policy.trace(visible)
+        assert trace.matches[0].scheme == "test"
+        assert trace.matches[0].property_name == "test-ignore-property"
+        assert trace.matches[0].line is None
+
     @pytest.mark.parametrize("native", [False, True])
     def test_batch_and_lazy_contract(self, native: bool) -> None:
         if native:
@@ -289,9 +383,19 @@ class TestPortable(RepositoryCase):
         assert policy.is_ignored_many([drop, keep, "missing.txt"]) == [True, False, False]
         decision = policy.explain(drop)
         assert (decision.path, decision.pattern, decision.line) == (drop, "*.tmp", 2)
+        assert decision.scheme == policy.scheme == "git"
+        assert decision.reason == "matched-rule"
+        assert decision.discovery_complete
+        assert not decision.diagnostics
         assert decision.source is not None
         assert str(self.root / ".gitignore") in decision.source
-        assert policy.explain(keep) == GitIgnoreDecision(path=keep, ignored=False)
+        assert policy.explain(keep) == IgnoreDecision(
+            path=keep,
+            ignored=False,
+            scheme="git",
+            reason="no-matching-rule",
+            discovery_complete=True,
+        )
         spec = parse_gitignore(["cache/"], source="test")
         assert matches_gitignore(spec, "cache", is_directory=True)
         assert not (matches_gitignore(spec, "cache", is_directory=False))
@@ -306,6 +410,16 @@ class TestPortable(RepositoryCase):
         self.write(".gitignore", "build/\n!build/keep.md\n")
         self.write("build/.gitignore", "!keep.md\n")
         assert GitIgnorePolicy(self.root).is_ignored("build/keep.md")
+
+    def test_nested_rule_reports_its_effective_scope(self) -> None:
+        self.write("src/.gitignore", "*.tmp\n")
+        policy = GitIgnorePolicy(self.root)
+
+        decision = policy.explain("src/drop.tmp")
+        trace = policy.trace("src/drop.tmp")
+
+        assert decision.scope == "src"
+        assert trace.matches[-1].scope == "src"
 
     def test_nested_override_after_parent_unignored(self) -> None:
         self.write(".gitignore", "*.tmp\n")
@@ -351,7 +465,7 @@ class TestPortable(RepositoryCase):
         self.write("docs/keep.md")
         self.write("docs/drop.tmp")
         self.write("build/output")
-        walker = GitIgnoreWalker(self.root)
+        walker = IgnoreWalker(self.root)
         all_files = {
             p.relative_to(self.root).as_posix() for p in walker.iter_files(selection="all")
         }
@@ -368,7 +482,7 @@ class TestPortable(RepositoryCase):
     def test_topdown_directory_pruning(self) -> None:
         self.write("docs/keep.md")
         self.write("build/output")
-        walker = GitIgnoreWalker(self.root)
+        walker = IgnoreWalker(self.root)
         rows = walker.walk(selection="all")
         _, directories, _ = next(rows)
         directories.remove("build")
@@ -383,7 +497,7 @@ class TestPortable(RepositoryCase):
         nested_marker = self.write("nested/.git", "gitdir: elsewhere\n")
         normal = self.write("normal.txt")
         policy = self.native() if native else GitIgnorePolicy(self.root)
-        walker = GitIgnoreWalker(self.root, policy=policy)
+        walker = IgnoreWalker(self.root, policy=policy)
         assert policy.is_ignored(metadata)
         selected = set(walker.iter_files(topdown=topdown))
         assert normal in selected
@@ -412,7 +526,7 @@ class TestPortable(RepositoryCase):
             return scandir(path)  # type: ignore[call-overload]
 
         policy = self.native() if native else GitIgnorePolicy(self.root)
-        walker = GitIgnoreWalker(self.root, policy=policy)
+        walker = IgnoreWalker(self.root, policy=policy)
         with patch("os.scandir", side_effect=record_scandir):
             list(walker.iter_files(topdown=False))
         assert not any(".git" in path.parts for path in scanned)
@@ -434,36 +548,36 @@ class TestPortable(RepositoryCase):
             if native
             else GitIgnorePolicy(self.root, initial_excludes=())
         )
-        assert metadata in set(GitIgnoreWalker(self.root, policy=policy).iter_files())
+        assert metadata in set(IgnoreWalker(self.root, policy=policy).iter_files())
 
     def test_discovered_symlinks_and_special_files_omitted(self) -> None:
         file = self.write("real.txt")
         self.symlink(file, "link.txt")
         if hasattr(os, "mkfifo"):
             os.mkfifo(self.root / "fifo")
-        assert list(GitIgnoreWalker(self.root).iter_files()) == [file]
+        assert list(IgnoreWalker(self.root).iter_files()) == [file]
 
     def test_supplied_policy_root_must_match(self) -> None:
         child = self.root / "child"
         child.mkdir()
         with pytest.raises(ValueError):
-            GitIgnoreWalker(child, policy=GitIgnorePolicy(self.root))
+            IgnoreWalker(child, policy=GitIgnorePolicy(self.root))
 
     def test_supplied_policy_rejects_walker_excludes(self) -> None:
         policy = GitIgnorePolicy(self.root)
         with pytest.raises(ValueError, match="initial_excludes"):
-            GitIgnoreWalker(self.root, policy=policy, initial_excludes=())
+            IgnoreWalker(self.root, policy=policy, initial_excludes=())
 
     def test_bottom_up_prunes_ignored_rows(self) -> None:
         self.write(".gitignore", "build/\n")
         self.write("build/ignored")
-        rows = list(GitIgnoreWalker(self.root).walk(topdown=False))
+        rows = list(IgnoreWalker(self.root).walk(topdown=False))
         assert all(directory != self.root / "build" for directory, _, _ in rows)
 
     def test_explicit_internal_symlink_top_legacy_behavior(self) -> None:
         file = self.write("docs/keep.md")
         link = self.symlink(file.parent, "docs-link")
-        assert list(GitIgnoreWalker(self.root).iter_files(link)) == [file]
+        assert list(IgnoreWalker(self.root).iter_files(link)) == [file]
 
     def test_read_failure_not_silenced(self) -> None:
         self.write(".gitignore", "*.tmp\n")
@@ -485,6 +599,13 @@ class TestNative(RepositoryCase):
         self.git("config", "--global", "core.excludesFile", str(path))
         return path
 
+    def test_native_nested_rule_reports_its_effective_scope(self) -> None:
+        self.write("src/.gitignore", "*.tmp\n")
+        decision = self.native().explain("src/drop.tmp")
+
+        assert decision.scheme == "git"
+        assert decision.scope == "src"
+
     def test_global_and_repository_precedence_with_provenance(self) -> None:
         source = self.global_excludes("*.tmp\n")
         self.write(".gitignore", "!keep.tmp\n")
@@ -494,7 +615,13 @@ class TestNative(RepositoryCase):
         assert (Path(drop.source or ""), drop.line, drop.pattern) == (source, 1, "*.tmp")
         assert not keep.ignored
         assert (keep.source, keep.line, keep.pattern) == (".gitignore", 1, "!keep.tmp")
-        assert unmatched == GitIgnoreDecision(self.root / "plain.txt", False)
+        assert unmatched == IgnoreDecision(
+            self.root / "plain.txt",
+            False,
+            scheme="git",
+            reason="no-matching-rule",
+            discovery_complete=True,
+        )
         assert not (GitIgnorePolicy(self.root).is_ignored("drop.tmp"))
 
     def test_info_exclude_and_root_override(self) -> None:
@@ -668,7 +795,7 @@ class TestNative(RepositoryCase):
         policy = self.native(initial_excludes=[".git/", "keep.tmp"])
         assert policy.is_ignored("keep.tmp")
         with patch.object(policy, "_run", wraps=policy._run) as run:
-            files = set(GitIgnoreWalker(self.root, policy=policy).iter_files())
+            files = set(IgnoreWalker(self.root, policy=policy).iter_files())
         assert files == {self.root / ".gitignore", keep}
         assert run.call_count == 2
 
@@ -766,7 +893,7 @@ class TestNative(RepositoryCase):
         with pytest.raises(ValueError):
             policy.is_ignored(link / "file")
         with pytest.raises(ValueError):
-            list(GitIgnoreWalker(self.root, policy=policy).iter_files(link))
+            list(IgnoreWalker(self.root, policy=policy).iter_files(link))
 
     @pytest.mark.skipif(
         os.name == "nt", reason="Windows disallows trailing CR/LF in directory names"
@@ -883,3 +1010,190 @@ class TestDifferential(RepositoryCase):
         expected = self.native().is_ignored_many(targets)
         assert expected == [True, True, True, False]
         assert GitIgnorePolicy(self.root).is_ignored_many(targets) == expected
+
+
+class TestPolicySelection(RepositoryCase):
+    def select(self, *, mode="portable", **kwargs):
+        kwargs.setdefault("environment", self.environment)
+        config_types = {
+            "portable": PortablePolicyConfig,
+            "git": GitPolicyConfig,
+            "prefer-git": PreferGitPolicyConfig,
+        }
+        try:
+            config_type = config_types[mode]
+        except KeyError as error:
+            raise TypeError(f"unsupported policy mode: {mode}") from error
+        return select_policy(self.root, config_type(**kwargs))
+
+    def test_missing_git_fallback_is_explicit_and_quiet(self, capsys):
+        missing = str(self.base / "missing-git")
+        selection = self.select(mode="prefer-git", git_executable=missing)
+        assert selection.backend == "portable"
+        assert selection.fallback_reason == "git-executable-missing"
+        assert isinstance(selection.policy, GitIgnorePolicy)
+        assert capsys.readouterr() == ("", "")
+        with pytest.raises(GitIgnoreError):
+            self.select(mode="git", git_executable=missing)
+        with pytest.raises(GitIgnoreError):
+            GitStandardPolicy(self.root, git_executable=missing)
+
+    @pytest.mark.parametrize(
+        "error",
+        [PermissionError("denied"), subprocess.TimeoutExpired("git", 1), OSError("failed")],
+    )
+    def test_nonmissing_process_errors_propagate(self, error):
+        with patch("subprocess.run", side_effect=error), pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+
+    def test_existing_executable_with_missing_interpreter_is_not_absence(self):
+        executable = self.base / "git-script"
+        executable.write_text("#!/nonexistent/interpreter\n", encoding="utf-8")
+        executable.chmod(0o755)
+        with (
+            patch("subprocess.run", side_effect=FileNotFoundError("loader missing")),
+            pytest.raises(GitIgnoreError),
+        ):
+            self.select(mode="prefer-git", git_executable=str(executable))
+
+    def test_bad_repo_and_config_do_not_fall_back(self):
+        if not shutil.which("git"):
+            pytest.skip("Git is required")
+        with pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+        self.init()
+        (self.home / "config").write_text("[broken\n", encoding="utf-8")
+        with pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+
+    def test_selection_is_eager_and_never_changes_midstream(self):
+        self.init()
+        selection = self.select(mode="prefer-git")
+        assert selection.backend == "git"
+        assert selection.fallback_reason is None
+        decisions = selection.policy.iter_explain(["first", "second"], batch_size=1)
+        assert next(decisions).path.name == "first"
+        with (
+            patch("subprocess.run", side_effect=FileNotFoundError("removed")),
+            pytest.raises(GitIgnoreError),
+        ):
+            next(decisions)
+        assert selection.backend == "git"
+
+    def test_fallback_sources_and_complete_environment(self):
+        self.write(".git/info/exclude", "*.local\n")
+        self.write(".gitignore", "*.log\n")
+        self.write("nested/.gitignore", "!keep.log\n")
+        global_ignore = self.home / "xdg/git/ignore"
+        global_ignore.parent.mkdir(parents=True)
+        global_ignore.write_text("*.global\n", encoding="utf-8")
+        with patch.dict(os.environ, {EnvVar.XDG_CONFIG_HOME: str(self.base / "wrong")}):
+            selection = self.select(mode="prefer-git", git_executable=str(self.base / "absent"))
+        assert selection.policy.is_ignored_many(
+            ["nested/a.log", "nested/keep.log", "a.local", "a.global", "plain"]
+        ) == [True, False, True, True, False]
+
+    def test_supplied_home_is_used_without_ambient_xdg(self):
+        ignore = self.home / ".config/git/ignore"
+        ignore.parent.mkdir(parents=True)
+        ignore.write_text("*.home\n", encoding="utf-8")
+        selection = select_policy(
+            self.root,
+            PreferGitPolicyConfig(
+                git_executable=str(self.base / "absent"),
+                environment={EnvVar.HOME: str(self.home), EnvVar.USERPROFILE: str(self.home)},
+            ),
+        )
+        assert selection.policy.is_ignored("a.home")
+        assert not select_policy(self.root, PortablePolicyConfig(environment={})).policy.is_ignored(
+            "a.home"
+        )
+
+    def test_custom_config_difference_is_preserved(self):
+        self.init()
+        custom = self.home / "custom-ignore"
+        custom.write_text("*.custom\n", encoding="utf-8")
+        self.git("config", "core.excludesFile", str(custom))
+        native = self.select(mode="prefer-git")
+        fallback = self.select(mode="prefer-git", git_executable=str(self.base / "absent"))
+        assert native.policy.is_ignored("a.custom")
+        assert not fallback.policy.is_ignored("a.custom")
+
+    def test_portable_default_does_not_launch_git(self):
+        with patch("subprocess.run", side_effect=AssertionError("must not execute")):
+            selection = self.select()
+        assert selection.backend == "portable"
+        assert selection.fallback_reason is None
+
+    def test_invalid_selection_and_timeout(self):
+        with pytest.raises(TypeError):
+            select_policy(self.root, object())
+        with pytest.raises(ValueError):
+            self.select(mode="prefer-git", timeout=0)
+
+    def test_missing_name_uses_supplied_search_path(self):
+        empty_path = self.base / "empty-bin"
+        empty_path.mkdir()
+        selection = select_policy(
+            self.root,
+            PreferGitPolicyConfig(
+                git_executable="gitignore-walk-missing-test-program",
+                environment={"PATH": str(empty_path)},
+            ),
+        )
+        assert selection.fallback_reason == "git-executable-missing"
+
+    def test_fallback_never_retries_git_and_keeps_baseline(self):
+        selection = self.select(
+            mode="prefer-git",
+            git_executable=str(self.base / "absent"),
+            initial_excludes=(".git", "private"),
+        )
+        with patch("subprocess.run", side_effect=AssertionError("must not retry")):
+            assert selection.policy.is_ignored("private")
+            assert not selection.policy.is_ignored("public")
+
+    def test_ancestor_rules_with_subdirectory_fallback(self):
+        self.write(".git/info/exclude", "*.local\n")
+        self.write(".gitignore", "*.log\n")
+        nested = self.write("nested/.gitignore", "!keep.log\n").parent
+        selection = select_policy(
+            nested,
+            PreferGitPolicyConfig(git_executable=str(self.base / "absent"), environment={}),
+        )
+        assert selection.policy.is_ignored_many(["a.log", "keep.log", "a.local"]) == [
+            True,
+            False,
+            True,
+        ]
+
+    @pytest.mark.parametrize("returncode, stderr", [(128, b"bad config"), (0, b"warning")])
+    def test_native_diagnostics_do_not_fall_back(self, returncode, stderr):
+        result = subprocess.CompletedProcess([], returncode, b"", stderr)
+        with patch("subprocess.run", return_value=result), pytest.raises(GitIgnoreError):
+            self.select(mode="prefer-git")
+
+    def test_explicit_home_precedes_windows_userprofile(self):
+        profile = self.base / "different-profile"
+        with patch("gitignore_walk._util.is_windows", return_value=True):
+            path = _portable._default_global_excludes_path(
+                {EnvVar.HOME: str(self.home), EnvVar.USERPROFILE: str(profile)}
+            )
+        assert path == self.home / ".config/git/ignore"
+
+    def test_omitted_environment_preserves_ambient_home_discovery(self):
+        ignore = self.home / ".config/git/ignore"
+        ignore.parent.mkdir(parents=True)
+        ignore.write_text("*.home\n", encoding="utf-8")
+        with (
+            patch.dict(os.environ, {}, clear=True),
+            patch.object(Path, "home", return_value=self.home),
+        ):
+            assert GitIgnorePolicy(self.root).is_ignored("a.home")
+            assert select_policy(self.root).policy.is_ignored("a.home")
+            assert select_policy(
+                self.root, PreferGitPolicyConfig(git_executable=str(self.base / "absent"))
+            ).policy.is_ignored("a.home")
+            assert not select_policy(
+                self.root, PortablePolicyConfig(environment={})
+            ).policy.is_ignored("a.home")

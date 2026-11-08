@@ -10,8 +10,9 @@
 
 ## Repository map
 
-- `src/gitignore_walk/` contains the public package, portable matcher, Git-backed policy, and
-  traversal implementation.
+- `src/gitignore_walk/` contains the scheme-neutral policy contracts, resolver selection, and
+  walker. Built-in dialect implementations live under `src/gitignore_walk/_schemes/<scheme>/`;
+  Git's portable and native implementations are in `_schemes/git/`.
 - `tests/test_policies.py` covers parser, matching, explanation, traversal, and Git behavior.
 - `scripts/ci.py` coordinates local checks and is also the entry point called by hosted CI.
 - `docs/validation.md` documents the pre-push command and verification scope.
@@ -29,7 +30,7 @@ In Windows PowerShell, use:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 ```
 
 Then install the development tools into that environment:
@@ -66,6 +67,16 @@ results.
 - Keep text files UTF-8 with LF endings; `.editorconfig` and `.gitattributes` enforce this.
 - Keep the portable Python policy and Git-native policy behavior distinct; do not add silent
   fallback between them.
+- Keep the shared policy, decision, trace, and walker contracts scheme-neutral; do not add
+  Git-prefixed compatibility aliases for these shared types.
+- Every policy decision identifies its ignore scheme and can carry source, rule position or property,
+  scope, reason, and incomplete-discovery diagnostics. Keep version-control membership separate from
+  `ignored`; walker pruning is a separate policy capability and must be safe for descendants.
+- Treat future VCS ignore formats as separate policies and tagged config variants. Keep
+  `GitIgnoreMatcher` scoped to matcher implementations for Git syntax; extend the config and
+  selection unions, exhaustive resolver switch, exports, typing contract, and behavior tests as a
+  unit. A fallback must not silently change ignore schemes. `IgnorePolicy` is the built-in walker
+  seam, not a third-party scheme plugin API.
 - Keep type annotations compatible with Python 3.10 and pass strict Pyright.
 - Add or update focused tests in `tests/test_policies.py` when changing observable behavior.
 - Keep user-facing guidance in README/docs. Use this file for durable repository conventions and
