@@ -22,7 +22,9 @@ such as `GitIgnorePolicy` and `GitStandardPolicy`.
 This release supports Git ignore rules only; Mercurial's `.hgignore` and other VCS ignore formats
 are not supported yet. Future formats should have their own policy and tagged config so selecting
 or falling back between resolvers never silently changes the ignore grammar. This is a built-in
-extension path, not a runtime plugin registry.
+extension path, not a runtime plugin registry. The [contributor checklist for another ignore
+scheme](docs/contributing/ignore-scheme-readiness.md) records the architecture boundary and the
+conformance evidence required before adding one.
 
 Designed for repository analyzers, code indexers, documentation generators, linters, and build tools.
 
@@ -200,14 +202,20 @@ The detailed explanation also identifies the matching rule's origin:
 | `src/debug.log`    | Yes     | `.gitignore`     | 1    |
 | `src/keep.log`     | No      | `src/.gitignore` | 1    |
 
-`IgnoreDecision` exposes the evaluated `path`, `ignored` state, `source`, matching `pattern`, and
-one-based `line` number.
+`IgnoreDecision` identifies the `scheme`, final `ignored` result, source and matched rule. It can
+also carry a source `line` or `property_name`, effective `scope`, policy-defined `reason`, and
+non-fatal discovery `diagnostics`. `discovery_complete` tells callers whether all applicable sources
+were found. Git policies identify their scheme as `"git"`; their source-read failures raise errors,
+so successful decisions have complete discovery.
+`ignored` describes the scheme's ignore-rule result, not version-control membership or add/commit
+eligibility. Git-native queries use `--no-index`, so tracked paths are still evaluated against rules.
 
 For overlay diagnostics, use `policy.trace(path)`. It returns the effective decision and the
 matching rule from each applicable source in precedence order, with `effective=True` on the rule
 that determined the result. The portable policy traces its configured layers and parent-directory
 blocking rules. `GitStandardPolicy` reports Git's winning rule, but sets `complete=False` because
-Git's check-ignore interface does not expose every shadowed matching rule.
+Git's check-ignore interface does not expose every shadowed matching rule. This trace completeness
+flag is separate from `decision.discovery_complete`, which describes source discovery.
 
 This distinction matters when explaining *why* a file was selected, not just whether it matched an
 ignore rule.

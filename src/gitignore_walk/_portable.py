@@ -39,6 +39,11 @@ class _RepositoryMetadata(NamedTuple):
 class _GitIgnorePolicyBase(IgnorePolicy):
     """Shared Git-dialect implementation behind portable and native evaluators."""
 
+    @property
+    def scheme(self) -> str:
+        """Identify Git's ignore dialect independently of its execution backend."""
+        return "git"
+
     def __init__(
         self,
         root: str | os.PathLike[str],
@@ -116,7 +121,7 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
         relative = resolved.relative_to(self.root).as_posix()
         matches: list[_PatternMatch] = []
         initial = _match_loaded_ignore(
-            self._initial_excludes, relative, is_directory=resolved.is_dir()
+            self._initial_excludes, relative, is_directory=resolved.is_dir(), scope="."
         )
         if initial is not None:
             matches.append(initial)
@@ -142,7 +147,13 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
             match = matches[effective_index]
             decision = _decision_from_match(path=resolved, match=match)
         else:
-            decision = IgnoreDecision(path=resolved, ignored=False)
+            decision = IgnoreDecision(
+                path=resolved,
+                ignored=False,
+                scheme=self.scheme,
+                reason="no-matching-rule",
+                discovery_complete=True,
+            )
         trace_matches = tuple(
             IgnoreTraceMatch(
                 source=match.source,
@@ -150,6 +161,13 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
                 line=match.line,
                 ignored=match.ignored,
                 effective=index == effective_index,
+                scheme=self.scheme,
+                scope=match.scope,
+                reason=(
+                    "baseline-exclusion"
+                    if match.source == "initial Git-ignore exclusions"
+                    else "matched-rule"
+                ),
             )
             for index, match in enumerate(matches)
         )
@@ -174,6 +192,7 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
             self._initial_excludes,
             relative,
             is_directory=target.is_dir(),
+            scope=".",
         )
         if initial_match is not None and initial_match.ignored:
             return _decision_from_match(path=target, match=initial_match)
@@ -190,7 +209,13 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
             return _decision_from_match(path=target, match=policy_match)
         if initial_match is not None:
             return _decision_from_match(path=target, match=initial_match)
-        return IgnoreDecision(path=target, ignored=False)
+        return IgnoreDecision(
+            path=target,
+            ignored=False,
+            scheme=self.scheme,
+            reason="no-matching-rule",
+            discovery_complete=True,
+        )
 
     def _decisions(
         self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
@@ -466,7 +491,9 @@ def _gitignore_matches_for_path(
             else snapshot.load(exclude_path, matcher=matcher, allow_symlink=True)
         )
         if loaded is not None:
-            matched = _match_loaded_ignore(loaded, relative_to_root, is_directory=is_directory)
+            matched = _match_loaded_ignore(
+                loaded, relative_to_root, is_directory=is_directory, scope="."
+            )
             if matched is not None:
                 matches.append(matched)
     for ignore_root in roots:
@@ -477,7 +504,10 @@ def _gitignore_matches_for_path(
         )
         if loaded is not None:
             matched = _match_loaded_ignore(
-                loaded, path.relative_to(ignore_root).as_posix(), is_directory=is_directory
+                loaded,
+                path.relative_to(ignore_root).as_posix(),
+                is_directory=is_directory,
+                scope=ignore_root.relative_to(root).as_posix() or ".",
             )
             if matched is not None:
                 matches.append(matched)
@@ -488,7 +518,15 @@ def _decision_from_match(*, path: Path, match: _PatternMatch) -> IgnoreDecision:
     return IgnoreDecision(
         path=path,
         ignored=match.ignored,
+        scheme="git",
         source=match.source,
         pattern=match.pattern,
         line=match.line,
+        scope=match.scope,
+        reason=(
+            "baseline-exclusion"
+            if match.source == "initial Git-ignore exclusions"
+            else "matched-rule"
+        ),
+        discovery_complete=True,
     )

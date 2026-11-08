@@ -40,6 +40,20 @@ def _decode_git_output(data: bytes) -> str:
     return data.decode(sys.getfilesystemencoding(), errors="surrogateescape")
 
 
+def _scope_from_git_source(source: str, root: Path) -> str:
+    """Return the effective Git-ignore scope relative to the worktree root."""
+    source_path = Path(source)
+    if source_path.name != ".gitignore":
+        return "."
+    source_path = source_path if source_path.is_absolute() else root / source_path
+    try:
+        scope = source_path.parent.relative_to(root).as_posix()
+    except ValueError:
+        # Git's global ignore file can itself be named .gitignore; its rules apply from the root.
+        return "."
+    return scope or "."
+
+
 class GitStandardPolicy(_GitIgnorePolicyBase):
     """Use Git's configured excludes and matching implementation explicitly.
 
@@ -130,6 +144,7 @@ class GitStandardPolicy(_GitIgnorePolicyBase):
                 self._initial_excludes,
                 path.relative_to(self.root).as_posix(),
                 is_directory=not path.is_symlink() and path.is_dir(),
+                scope=".",
             )
             if baseline is not None and baseline.ignored:
                 decisions[index] = _decision_from_match(path=path, match=baseline)
@@ -159,14 +174,24 @@ class GitStandardPolicy(_GitIgnorePolicyBase):
                 decision = IgnoreDecision(
                     path=path,
                     ignored=not pattern.startswith(b"!"),
+                    scheme=self.scheme,
                     source=_decode_git_output(source),
                     pattern=_decode_git_output(pattern),
                     line=line_number,
+                    scope=_scope_from_git_source(_decode_git_output(source), self.root),
+                    reason="matched-rule",
+                    discovery_complete=True,
                 )
             elif line or pattern:
                 raise GitIgnoreError("Git returned incomplete ignore provenance")
             else:
-                decision = IgnoreDecision(path=path, ignored=False)
+                decision = IgnoreDecision(
+                    path=path,
+                    ignored=False,
+                    scheme=self.scheme,
+                    reason="no-matching-rule",
+                    discovery_complete=True,
+                )
             decisions[original_index] = decision
         return [decisions[index] for index in range(len(resolved))]
 

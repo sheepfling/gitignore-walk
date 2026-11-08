@@ -5,9 +5,26 @@ from __future__ import annotations
 import os
 from abc import ABC, abstractmethod
 from collections.abc import Iterable, Iterator
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import NamedTuple, Protocol, TypeAlias
+from typing import Literal, NamedTuple, Protocol, TypeAlias
+
+
+@dataclass(frozen=True, slots=True)
+class IgnoreDiagnostic:
+    """A non-fatal discovery or evaluation diagnostic attached to a decision.
+
+    Attributes:
+        code: Stable, policy-defined diagnostic identifier.
+        message: Human-readable description of the issue.
+        source: Source associated with the diagnostic, when known.
+        severity: Diagnostic importance, independent of whether the decision is ignored.
+    """
+
+    code: str
+    message: str
+    source: str | None = None
+    severity: Literal["info", "warning", "error"] = "warning"
 
 
 @dataclass(frozen=True, slots=True)
@@ -17,16 +34,28 @@ class IgnoreDecision:
     Attributes:
         path: Resolved target path.
         ignored: Whether the effective rule excludes the target.
+        scheme: Stable identifier of the ignore dialect, when known.
         source: Identifier for the file, property, or configuration containing the rule.
         pattern: Matched rule text or expression, or ``None`` when no rule matched.
         line: One-based source line when available; property-based rules may omit it.
+        property_name: Name of a property that supplied the rule, when applicable.
+        scope: Effective source scope, when the policy can represent it.
+        reason: Policy-defined reason for the decision, such as ``matched-rule``.
+        discovery_complete: Whether the policy found all applicable ignore sources.
+        diagnostics: Non-fatal discovery or evaluation issues.
     """
 
     path: Path
     ignored: bool
+    scheme: str = field(kw_only=True)
     source: str | None = None
     pattern: str | None = None
     line: int | None = None
+    property_name: str | None = None
+    scope: str | None = None
+    reason: str | None = None
+    discovery_complete: bool = field(kw_only=True)
+    diagnostics: tuple[IgnoreDiagnostic, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -37,6 +66,10 @@ class IgnoreTraceMatch:
         source: Identifier for the file, property, or configuration containing the rule.
         pattern: Rule text or expression as represented by the policy.
         line: One-based source line when available; property-based rules may omit it.
+        scheme: Stable identifier of the ignore dialect, when known.
+        property_name: Name of a property that supplied the rule, when applicable.
+        scope: Effective source scope, when the policy can represent it.
+        reason: Policy-defined reason this rule affected the result.
         ignored: Whether this rule excludes the target.
         effective: Whether this rule determines the final policy decision.
     """
@@ -46,6 +79,10 @@ class IgnoreTraceMatch:
     line: int | None
     ignored: bool
     effective: bool
+    scheme: str = field(kw_only=True)
+    property_name: str | None = None
+    scope: str | None = None
+    reason: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -121,9 +158,15 @@ class IgnorePolicy(ABC):
 
     Attributes:
         root: Resolved root that bounds every target handled by the policy.
+        scheme: Stable identifier for the ignore dialect implemented by the policy.
     """
 
     root: Path
+
+    @property
+    @abstractmethod
+    def scheme(self) -> str:
+        """Return the stable identifier for this policy's ignore dialect."""
 
     @abstractmethod
     def explain(self, target: _Target) -> IgnoreDecision:
@@ -160,6 +203,10 @@ class IgnorePolicy(ABC):
                     line=decision.line,
                     ignored=decision.ignored,
                     effective=True,
+                    scheme=decision.scheme,
+                    property_name=decision.property_name,
+                    scope=decision.scope,
+                    reason=decision.reason,
                 ),
             )
         )

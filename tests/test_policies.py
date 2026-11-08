@@ -18,6 +18,7 @@ from gitignore_walk import (
     GitPolicyConfig,
     GitStandardPolicy,
     IgnoreDecision,
+    IgnoreDiagnostic,
     IgnorePolicy,
     IgnoreWalker,
     PortablePolicyConfig,
@@ -99,6 +100,10 @@ class RepositoryCase:
 class NonPruningPolicy(IgnorePolicy):
     """Small scheme-neutral policy fixture whose ignored parents may have included children."""
 
+    @property
+    def scheme(self) -> str:
+        return "test"
+
     def __init__(self, root: Path) -> None:
         self.root = root.resolve()
 
@@ -112,7 +117,15 @@ class NonPruningPolicy(IgnorePolicy):
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         path = self.resolve_target(target)
         return IgnoreDecision(
-            path=path, ignored=path.relative_to(self.root).as_posix() == "ignored"
+            path=path,
+            ignored=path.relative_to(self.root).as_posix() == "ignored",
+            scheme=self.scheme,
+            source="test-ignore-property",
+            pattern="allow visible descendants",
+            property_name="test-ignore-property",
+            scope="repository-root",
+            reason="test-include-rule",
+            discovery_complete=True,
         )
 
     def iter_explain(
@@ -126,6 +139,31 @@ class NonPruningPolicy(IgnorePolicy):
 
 
 class TestPolicyContract(RepositoryCase):
+    def test_decision_model_carries_neutral_provenance_and_diagnostics(self) -> None:
+        diagnostic = IgnoreDiagnostic(
+            code="source-unavailable",
+            message="One configured ignore source could not be read.",
+            source="working-copy ignore property",
+        )
+        decision = IgnoreDecision(
+            path=self.root / "child.txt",
+            ignored=False,
+            scheme="future-scheme",
+            source="svn:ignore",
+            property_name="svn:ignore",
+            line=None,
+            scope="parent-directory",
+            reason="no-matching-rule",
+            discovery_complete=False,
+            diagnostics=(diagnostic,),
+        )
+
+        assert decision.scheme == "future-scheme"
+        assert decision.property_name == "svn:ignore"
+        assert decision.scope == "parent-directory"
+        assert not decision.discovery_complete
+        assert decision.diagnostics == (diagnostic,)
+
     @pytest.mark.parametrize("topdown", [True, False])
     def test_walker_keeps_ignored_directories_when_policy_cannot_prune(self, topdown: bool) -> None:
         ignored = self.root / "ignored"
@@ -138,6 +176,15 @@ class TestPolicyContract(RepositoryCase):
         rows = list(walker.walk(topdown=topdown))
         root_entry = next(entry for entry in rows if entry.directory == self.root)
         assert root_entry.dir_names == ["ignored"]
+        child_decision = walker.policy.explain(visible)
+        assert child_decision.scheme == "test"
+        assert child_decision.property_name == "test-ignore-property"
+        assert child_decision.discovery_complete
+        assert not child_decision.diagnostics
+        trace = walker.policy.trace(visible)
+        assert trace.matches[0].scheme == "test"
+        assert trace.matches[0].property_name == "test-ignore-property"
+        assert trace.matches[0].line is None
 
     @pytest.mark.parametrize("native", [False, True])
     def test_batch_and_lazy_contract(self, native: bool) -> None:
@@ -336,9 +383,19 @@ class TestPortable(RepositoryCase):
         assert policy.is_ignored_many([drop, keep, "missing.txt"]) == [True, False, False]
         decision = policy.explain(drop)
         assert (decision.path, decision.pattern, decision.line) == (drop, "*.tmp", 2)
+        assert decision.scheme == policy.scheme == "git"
+        assert decision.reason == "matched-rule"
+        assert decision.discovery_complete
+        assert not decision.diagnostics
         assert decision.source is not None
         assert str(self.root / ".gitignore") in decision.source
-        assert policy.explain(keep) == IgnoreDecision(path=keep, ignored=False)
+        assert policy.explain(keep) == IgnoreDecision(
+            path=keep,
+            ignored=False,
+            scheme="git",
+            reason="no-matching-rule",
+            discovery_complete=True,
+        )
         spec = parse_gitignore(["cache/"], source="test")
         assert matches_gitignore(spec, "cache", is_directory=True)
         assert not (matches_gitignore(spec, "cache", is_directory=False))
@@ -353,6 +410,16 @@ class TestPortable(RepositoryCase):
         self.write(".gitignore", "build/\n!build/keep.md\n")
         self.write("build/.gitignore", "!keep.md\n")
         assert GitIgnorePolicy(self.root).is_ignored("build/keep.md")
+
+    def test_nested_rule_reports_its_effective_scope(self) -> None:
+        self.write("src/.gitignore", "*.tmp\n")
+        policy = GitIgnorePolicy(self.root)
+
+        decision = policy.explain("src/drop.tmp")
+        trace = policy.trace("src/drop.tmp")
+
+        assert decision.scope == "src"
+        assert trace.matches[-1].scope == "src"
 
     def test_nested_override_after_parent_unignored(self) -> None:
         self.write(".gitignore", "*.tmp\n")
@@ -532,6 +599,13 @@ class TestNative(RepositoryCase):
         self.git("config", "--global", "core.excludesFile", str(path))
         return path
 
+    def test_native_nested_rule_reports_its_effective_scope(self) -> None:
+        self.write("src/.gitignore", "*.tmp\n")
+        decision = self.native().explain("src/drop.tmp")
+
+        assert decision.scheme == "git"
+        assert decision.scope == "src"
+
     def test_global_and_repository_precedence_with_provenance(self) -> None:
         source = self.global_excludes("*.tmp\n")
         self.write(".gitignore", "!keep.tmp\n")
@@ -541,7 +615,13 @@ class TestNative(RepositoryCase):
         assert (Path(drop.source or ""), drop.line, drop.pattern) == (source, 1, "*.tmp")
         assert not keep.ignored
         assert (keep.source, keep.line, keep.pattern) == (".gitignore", 1, "!keep.tmp")
-        assert unmatched == IgnoreDecision(self.root / "plain.txt", False)
+        assert unmatched == IgnoreDecision(
+            self.root / "plain.txt",
+            False,
+            scheme="git",
+            reason="no-matching-rule",
+            discovery_complete=True,
+        )
         assert not (GitIgnorePolicy(self.root).is_ignored("drop.tmp"))
 
     def test_info_exclude_and_root_override(self) -> None:

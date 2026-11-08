@@ -20,12 +20,14 @@ class GitIgnoreMatch:
         source: Human-readable origin of the ignore file.
         pattern: Pattern text as written in that file.
         line: One-based line number of the matching pattern.
+        scope: Base path that determines the rule's effective path scope.
     """
 
     ignored: bool
     source: str
     pattern: str
     line: int
+    scope: str | None = None
 
 
 class GitIgnoreMatcher(Protocol[SpecT]):

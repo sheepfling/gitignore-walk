@@ -68,6 +68,9 @@ results.
   fallback between them.
 - Keep the shared policy, decision, trace, and walker contracts scheme-neutral; do not add
   Git-prefixed compatibility aliases for these shared types.
+- Every policy decision identifies its ignore scheme and can carry source, rule position or property,
+  scope, reason, and incomplete-discovery diagnostics. Keep version-control membership separate from
+  `ignored`; walker pruning is a separate policy capability and must be safe for descendants.
 - Treat future VCS ignore formats as separate policies and tagged config variants. Keep
   `GitIgnoreMatcher` scoped to matcher implementations for Git syntax; extend the config and
   selection unions, exhaustive resolver switch, exports, typing contract, and behavior tests as a

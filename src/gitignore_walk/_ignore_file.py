@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 from collections.abc import Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Final, TypeVar
 
 from ._ignore_protocols import GitIgnoreMatcher
@@ -112,15 +112,17 @@ def match_gitignore_file(
     relative: str | os.PathLike[str],
     *,
     is_directory: bool,
+    scope: str | None = None,
 ) -> GitIgnoreMatch | None:
     """Combine a file's ordered rules and return its final matching rule."""
 
-    return ignore_file.matcher.match(
+    match = ignore_file.matcher.match(
         ignore_file.spec,
         normalize_relative_path(relative),
         source=ignore_file.source,
         is_directory=is_directory,
     )
+    return replace(match, scope=scope) if match is not None else None
 
 
 def _last_matching_pattern(

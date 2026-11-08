@@ -4,7 +4,14 @@ from ._git import GitStandardPolicy
 from ._ignore_file import RegexMatcher, matches_gitignore, parse_gitignore
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreMatch, GitIgnoreSpec
-from ._policy import IgnoreDecision, IgnorePolicy, IgnoreTrace, IgnoreTraceMatch, IgnoreWalkEntry
+from ._policy import (
+    IgnoreDecision,
+    IgnoreDiagnostic,
+    IgnorePolicy,
+    IgnoreTrace,
+    IgnoreTraceMatch,
+    IgnoreWalkEntry,
+)
 from ._portable import GitIgnorePolicy, is_gitignored
 from ._selection import (
     GitPolicyConfig,
@@ -30,6 +37,7 @@ __all__ = [
     "GitPolicySelection",
     "GitStandardPolicy",
     "IgnoreDecision",
+    "IgnoreDiagnostic",
     "IgnorePolicy",
     "IgnoreTrace",
     "IgnoreTraceMatch",
