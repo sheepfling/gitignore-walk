@@ -25,6 +25,7 @@ from gitignore_walk import (
     is_gitignored,
     matches_gitignore,
     parse_gitignore,
+    select_policy,
 )
 from gitignore_walk.environment import EnvVar
 
@@ -890,8 +891,6 @@ class TestDifferential(RepositoryCase):
 
 class TestPolicySelection(RepositoryCase):
     def select(self, *, mode="portable", **kwargs):
-        from gitignore_walk import select_policy
-
         kwargs.setdefault("environment", self.environment)
         config_types = {
             "portable": PortablePolicyConfig,
@@ -972,8 +971,6 @@ class TestPolicySelection(RepositoryCase):
         ) == [True, False, True, True, False]
 
     def test_supplied_home_is_used_without_ambient_xdg(self):
-        from gitignore_walk import select_policy
-
         ignore = self.home / ".config/git/ignore"
         ignore.parent.mkdir(parents=True)
         ignore.write_text("*.home\n", encoding="utf-8")
@@ -1006,16 +1003,12 @@ class TestPolicySelection(RepositoryCase):
         assert selection.fallback_reason is None
 
     def test_invalid_selection_and_timeout(self):
-        from gitignore_walk import select_policy
-
         with pytest.raises(TypeError):
             select_policy(self.root, object())
         with pytest.raises(ValueError):
             self.select(mode="prefer-git", timeout=0)
 
     def test_missing_name_uses_supplied_search_path(self):
-        from gitignore_walk import select_policy
-
         empty_path = self.base / "empty-bin"
         empty_path.mkdir()
         selection = select_policy(
@@ -1038,8 +1031,6 @@ class TestPolicySelection(RepositoryCase):
             assert not selection.policy.is_ignored("public")
 
     def test_ancestor_rules_with_subdirectory_fallback(self):
-        from gitignore_walk import select_policy
-
         self.write(".git/info/exclude", "*.local\n")
         self.write(".gitignore", "*.log\n")
         nested = self.write("nested/.gitignore", "!keep.log\n").parent
@@ -1060,20 +1051,16 @@ class TestPolicySelection(RepositoryCase):
             self.select(mode="prefer-git")
 
     def test_explicit_home_precedes_windows_userprofile(self):
-        from types import SimpleNamespace
-
-        from gitignore_walk import _portable
+        from gitignore_walk import _platform, _portable
 
         profile = self.base / "different-profile"
-        with patch.object(_portable, "os", SimpleNamespace(name="nt")):
+        with patch.object(_platform, "is_windows", return_value=True):
             path = _portable._default_global_excludes_path(
                 {EnvVar.HOME: str(self.home), EnvVar.USERPROFILE: str(profile)}
             )
         assert path == self.home / ".config/git/ignore"
 
     def test_omitted_environment_preserves_ambient_home_discovery(self):
-        from gitignore_walk import select_policy
-
         ignore = self.home / ".config/git/ignore"
         ignore.parent.mkdir(parents=True)
         ignore.write_text("*.home\n", encoding="utf-8")

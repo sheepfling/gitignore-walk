@@ -12,6 +12,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, Literal, NamedTuple, cast
 
+from . import _platform
 from ._ignore_file import DEFAULT_MATCHER
 from ._ignore_file import GitIgnoreMatch as _PatternMatch
 from ._ignore_file import match_gitignore_file as _match_loaded_ignore
@@ -576,7 +577,7 @@ def _default_global_excludes_path(environment: Mapping[str, str] | None = None) 
         if xdg:
             return Path(xdg) / "git" / "ignore"
         home = environment.get(EnvVar.HOME)
-        if os.name == "nt":
+        if _platform.is_windows():
             home = home or environment.get(EnvVar.USERPROFILE)
         return Path(home) / ".config" / "git" / "ignore" if home else None
     xdg_config_home = os.environ.get(EnvVar.XDG_CONFIG_HOME)
