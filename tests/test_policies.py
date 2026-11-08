@@ -23,13 +23,13 @@ from gitignore_walk import (
     IgnoreWalker,
     PortablePolicyConfig,
     PreferGitPolicyConfig,
-    _portable,
     is_gitignored,
     matches_gitignore,
     parse_gitignore,
     select_policy,
 )
 from gitignore_walk._environment import EnvVar
+from gitignore_walk._schemes.git import portable as _portable
 
 
 class RepositoryCase:

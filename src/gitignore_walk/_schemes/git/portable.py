@@ -11,22 +11,22 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, NamedTuple
 
-from ._environment import EnvVar
-from ._ignore_file import DEFAULT_MATCHER
-from ._ignore_file import GitIgnoreMatch as _PatternMatch
-from ._ignore_file import match_gitignore_file as _match_loaded_ignore
-from ._ignore_loader import load_gitignore as _load_gitignore
-from ._ignore_protocols import GitIgnoreMatcher
-from ._ignore_types import GitIgnoreFile as _LoadedIgnore
-from ._policy import (
+from ..._environment import EnvVar
+from ..._policy import (
     IgnoreDecision,
     IgnorePolicy,
     IgnoreTrace,
     IgnoreTraceMatch,
     _IgnoreWalkSession,
 )
-from ._util import is_windows
-from .errors import GitIgnoreError
+from ..._util import is_windows
+from ...errors import GitIgnoreError
+from ._ignore_file import DEFAULT_MATCHER
+from ._ignore_file import GitIgnoreMatch as _PatternMatch
+from ._ignore_file import match_gitignore_file as _match_loaded_ignore
+from ._ignore_loader import load_gitignore as _load_gitignore
+from ._ignore_protocols import GitIgnoreMatcher
+from ._ignore_types import GitIgnoreFile as _LoadedIgnore
 
 _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
 

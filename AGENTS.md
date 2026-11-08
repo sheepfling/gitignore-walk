@@ -10,8 +10,9 @@
 
 ## Repository map
 
-- `src/gitignore_walk/` contains the public package, portable matcher, Git-backed policy, and
-  traversal implementation.
+- `src/gitignore_walk/` contains the scheme-neutral policy contracts, resolver selection, and
+  walker. Built-in dialect implementations live under `src/gitignore_walk/_schemes/<scheme>/`;
+  Git's portable and native implementations are in `_schemes/git/`.
 - `tests/test_policies.py` covers parser, matching, explanation, traversal, and Git behavior.
 - `scripts/ci.py` coordinates local checks and is also the entry point called by hosted CI.
 - `docs/validation.md` documents the pre-push command and verification scope.

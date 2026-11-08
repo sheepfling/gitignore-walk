@@ -21,6 +21,13 @@ types scheme-specific. Extend the exhaustive config switch, exports, typing cont
 tests together. `IgnorePolicy` is the built-in walker boundary, not a third-party policy plugin
 promise.
 
+Built-in implementations are grouped under `src/gitignore_walk/_schemes/<scheme>/`. Shared policy
+contracts, selection, and traversal stay directly under `src/gitignore_walk/`. Keep scheme-specific
+parsers, source discovery, native adapters, and policy code inside their scheme package. For Git,
+`native.py` and `portable.py` are the execution backends; the `_ignore_*` and `_patterns.py` modules
+hold Git-dialect parsing and types. Selection remains an explicit typed union and exhaustive switch;
+it is not a dynamic registration mechanism.
+
 `IgnoreDecision.ignored` answers only whether the scheme's ignore rules match. It does not say whether
 the path is already versioned, whether an add command would accept it, or whether traversal can skip
 its subtree. Preserve provenance where available (`scheme`, `source`, line or property, scope,

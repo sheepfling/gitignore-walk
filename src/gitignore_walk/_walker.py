@@ -10,9 +10,9 @@ from collections.abc import Callable, Generator, Iterator, Sequence
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, cast
 
-from ._ignore_protocols import GitIgnoreMatcher
 from ._policy import IgnorePolicy, IgnoreWalkEntry
-from ._portable import (
+from ._schemes.git._ignore_protocols import GitIgnoreMatcher
+from ._schemes.git.portable import (
     _DEFAULT_INITIAL_EXCLUDES,
     GitIgnorePolicy,
     _resolve_root,

@@ -6,10 +6,10 @@ import os
 from pathlib import Path
 from typing import Any, TypeVar, overload
 
+from ...errors import GitIgnoreError
 from ._ignore_file import DEFAULT_MATCHER
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile, GitIgnoreSpec
-from .errors import GitIgnoreError
 
 SpecT = TypeVar("SpecT")
 

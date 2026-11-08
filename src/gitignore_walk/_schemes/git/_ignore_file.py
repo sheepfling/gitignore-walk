@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from typing import Final, TypeVar
 
+from ...errors import GitIgnoreParseError
 from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile, GitIgnoreMatch, GitIgnoreSpec
 from ._patterns import (
@@ -15,7 +16,6 @@ from ._patterns import (
     normalize_relative_path,
     parse_pattern_line,
 )
-from .errors import GitIgnoreParseError
 
 SpecT = TypeVar("SpecT")
 

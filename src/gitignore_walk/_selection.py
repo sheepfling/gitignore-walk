@@ -10,8 +10,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, NoReturn, TypeAlias, TypeGuard, overload
 
-from ._git import GitStandardPolicy
-from ._portable import _DEFAULT_INITIAL_EXCLUDES, GitIgnorePolicy
+from ._schemes.git import GitIgnorePolicy, GitStandardPolicy
+from ._schemes.git.portable import _DEFAULT_INITIAL_EXCLUDES
 from ._util import is_windows
 from .errors import GitIgnoreError
 

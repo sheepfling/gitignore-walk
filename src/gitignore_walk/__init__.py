@@ -1,9 +1,5 @@
 """Explain and traverse Git-ignore policies with explicit policy scope."""
 
-from ._git import GitStandardPolicy
-from ._ignore_file import RegexMatcher, matches_gitignore, parse_gitignore
-from ._ignore_protocols import GitIgnoreMatcher
-from ._ignore_types import GitIgnoreMatch, GitIgnoreSpec
 from ._policy import (
     IgnoreDecision,
     IgnoreDiagnostic,
@@ -12,7 +8,17 @@ from ._policy import (
     IgnoreTraceMatch,
     IgnoreWalkEntry,
 )
-from ._portable import GitIgnorePolicy, is_gitignored
+from ._schemes.git import (
+    GitIgnoreMatch,
+    GitIgnoreMatcher,
+    GitIgnorePolicy,
+    GitIgnoreSpec,
+    GitStandardPolicy,
+    RegexMatcher,
+    is_gitignored,
+    matches_gitignore,
+    parse_gitignore,
+)
 from ._selection import (
     GitPolicyConfig,
     GitPolicySelection,
