@@ -87,6 +87,39 @@ It honors Git configuration, including `core.excludesFile`, linked worktrees, an
 Because matching uses `--no-index`, tracked files can still match ignore rules. **Ignore-rule
 evaluation is not the same as Git status.**
 
+### Prefer Git with an explicit fallback
+
+Use `select_policy` when Git is preferred but a missing executable is acceptable:
+
+```python
+from gitignore_walk import GitIgnoreWalker, select_policy
+
+selection = select_policy("/path/to/checkout", mode="prefer-git")
+# Send these diagnostics to your own logging/UI, not the file-result stream:
+backend = selection.backend
+reason = selection.fallback_reason
+walker = GitIgnoreWalker(selection.policy.root, policy=selection.policy)
+```
+
+Selection happens immediately, before iteration. `backend` is `"git"` or `"portable"`;
+`fallback_reason` is `"git-executable-missing"` only on fallback, otherwise `None`.
+No diagnostics are printed. The returned policy never switches backends during queries or walks.
+Permissions, timeouts, invalid repositories, broken configuration, and later subprocess failures
+remain errors. An existing executable whose interpreter/loader is missing is not a missing Git.
+
+`mode="git"` requires Git, just like `GitStandardPolicy`. `mode="portable"` is the selector default
+and never invokes Git. Existing policy constructors and the walker's portable default are unchanged.
+The selector accepts `initial_excludes`, `git_executable`, `timeout`, and `environment`.
+
+`environment` is a complete environment, not an overlay. Both the selector and `GitIgnorePolicy`
+use supplied HOME/USERPROFILE and XDG_CONFIG_HOME for conventional global ignores without consulting
+ambient variables. An explicit environment without these locations has no conventional global file.
+Omitting the portable policy's environment retains its existing ambient discovery behavior.
+
+Fallback handles ancestor/nested `.gitignore`, discoverable `info/exclude`, and conventional global
+ignores. It **does not read Git configuration**, including custom `core.excludesFile` or includes,
+so its results can differ from native Git. Use strict Git mode when these settings are required.
+
 ## Understand why a path is ignored
 
 Consider a repository with two ignore files:
