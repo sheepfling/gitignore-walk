@@ -14,6 +14,7 @@ from ._portable import (
     IgnorePolicy,
     is_gitignored,
 )
+from ._selection import PolicySelection, select_policy
 from .errors import GitIgnoreError, GitIgnoreParseError
 
 __all__ = [
@@ -30,8 +31,10 @@ __all__ = [
     "GitIgnoreWalker",
     "GitStandardPolicy",
     "IgnorePolicy",
+    "PolicySelection",
     "RegexMatcher",
     "is_gitignored",
     "matches_gitignore",
     "parse_gitignore",
+    "select_policy",
 ]
