@@ -66,8 +66,8 @@ results.
 - Keep text files UTF-8 with LF endings; `.editorconfig` and `.gitattributes` enforce this.
 - Keep the portable Python policy and Git-native policy behavior distinct; do not add silent
   fallback between them.
-- Keep the shared policy, decision, trace, and walker contracts scheme-neutral. The Git-prefixed
-  decision, trace, walk-entry, and walker names are compatibility aliases.
+- Keep the shared policy, decision, trace, and walker contracts scheme-neutral; do not add
+  Git-prefixed compatibility aliases for these shared types.
 - Treat future VCS ignore formats as separate policies and tagged config variants. Keep
   `GitIgnoreMatcher` scoped to matcher implementations for Git syntax; extend the config and
   selection unions, exhaustive resolver switch, exports, typing contract, and behavior tests as a

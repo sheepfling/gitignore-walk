@@ -8,9 +8,7 @@ from typing import Literal
 from typing_extensions import assert_type
 
 from gitignore_walk import (
-    GitIgnoreDecision,
     GitIgnorePolicy,
-    GitIgnoreWalker,
     GitPolicyConfig,
     GitPolicySelection,
     GitStandardPolicy,
@@ -31,12 +29,8 @@ def check_policy_selection(root: Path, git_executable: str) -> None:
     assert_type(portable, PortablePolicySelection)
     assert_type(portable.policy, GitIgnorePolicy)
     assert_type(portable.policy.explain("target"), IgnoreDecision)
-    assert_type(portable.policy.explain("target"), GitIgnoreDecision)
-
     walker = IgnoreWalker(root, policy=portable.policy)
-    legacy_walker = GitIgnoreWalker(root, policy=portable.policy)
     assert_type(walker, IgnoreWalker)
-    assert_type(legacy_walker, GitIgnoreWalker)
 
     portable_config = PortablePolicyConfig()
     portable_result = select_policy(root, portable_config)

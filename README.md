@@ -16,9 +16,8 @@ Two policies let applications choose whether to use the bundled evaluator or Git
 Both work with `IgnoreWalker`; choose the policy that fits the application's configuration needs.
 
 The shared API uses scheme-neutral names: `IgnorePolicy`, `IgnoreWalker`, `IgnoreDecision`,
-`IgnoreTrace`, `IgnoreTraceMatch`, and `IgnoreWalkEntry`. The existing `GitIgnoreWalker`,
-`GitIgnoreDecision`, `GitIgnoreTrace`, `GitIgnoreTraceMatch`, and `GitIgnoreWalkEntry` names remain
-aliases for compatibility.
+`IgnoreTrace`, `IgnoreTraceMatch`, and `IgnoreWalkEntry`. Git-specific behavior stays in policies
+such as `GitIgnorePolicy` and `GitStandardPolicy`.
 
 This release supports Git ignore rules only; Mercurial's `.hgignore` and other VCS ignore formats
 are not supported yet. Future formats should have their own policy and tagged config so selecting

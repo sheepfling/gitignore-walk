@@ -12,21 +12,13 @@ from unittest.mock import patch
 import pytest
 
 from gitignore_walk import (
-    GitIgnoreDecision,
     GitIgnoreError,
     GitIgnorePolicy,
     GitIgnoreSpec,
-    GitIgnoreTrace,
-    GitIgnoreTraceMatch,
-    GitIgnoreWalkEntry,
-    GitIgnoreWalker,
     GitPolicyConfig,
     GitStandardPolicy,
     IgnoreDecision,
     IgnorePolicy,
-    IgnoreTrace,
-    IgnoreTraceMatch,
-    IgnoreWalkEntry,
     IgnoreWalker,
     PortablePolicyConfig,
     PreferGitPolicyConfig,
@@ -105,13 +97,6 @@ class RepositoryCase:
 
 
 class TestPolicyContract(RepositoryCase):
-    def test_policy_neutral_types_keep_git_compatibility_aliases(self) -> None:
-        assert GitIgnoreDecision is IgnoreDecision
-        assert GitIgnoreTrace is IgnoreTrace
-        assert GitIgnoreTraceMatch is IgnoreTraceMatch
-        assert GitIgnoreWalkEntry is IgnoreWalkEntry
-        assert GitIgnoreWalker is IgnoreWalker
-
     @pytest.mark.parametrize("native", [False, True])
     def test_batch_and_lazy_contract(self, native: bool) -> None:
         if native:
@@ -311,7 +296,7 @@ class TestPortable(RepositoryCase):
         assert (decision.path, decision.pattern, decision.line) == (drop, "*.tmp", 2)
         assert decision.source is not None
         assert str(self.root / ".gitignore") in decision.source
-        assert policy.explain(keep) == GitIgnoreDecision(path=keep, ignored=False)
+        assert policy.explain(keep) == IgnoreDecision(path=keep, ignored=False)
         spec = parse_gitignore(["cache/"], source="test")
         assert matches_gitignore(spec, "cache", is_directory=True)
         assert not (matches_gitignore(spec, "cache", is_directory=False))
@@ -371,7 +356,7 @@ class TestPortable(RepositoryCase):
         self.write("docs/keep.md")
         self.write("docs/drop.tmp")
         self.write("build/output")
-        walker = GitIgnoreWalker(self.root)
+        walker = IgnoreWalker(self.root)
         all_files = {
             p.relative_to(self.root).as_posix() for p in walker.iter_files(selection="all")
         }
@@ -388,7 +373,7 @@ class TestPortable(RepositoryCase):
     def test_topdown_directory_pruning(self) -> None:
         self.write("docs/keep.md")
         self.write("build/output")
-        walker = GitIgnoreWalker(self.root)
+        walker = IgnoreWalker(self.root)
         rows = walker.walk(selection="all")
         _, directories, _ = next(rows)
         directories.remove("build")
@@ -403,7 +388,7 @@ class TestPortable(RepositoryCase):
         nested_marker = self.write("nested/.git", "gitdir: elsewhere\n")
         normal = self.write("normal.txt")
         policy = self.native() if native else GitIgnorePolicy(self.root)
-        walker = GitIgnoreWalker(self.root, policy=policy)
+        walker = IgnoreWalker(self.root, policy=policy)
         assert policy.is_ignored(metadata)
         selected = set(walker.iter_files(topdown=topdown))
         assert normal in selected
@@ -432,7 +417,7 @@ class TestPortable(RepositoryCase):
             return scandir(path)  # type: ignore[call-overload]
 
         policy = self.native() if native else GitIgnorePolicy(self.root)
-        walker = GitIgnoreWalker(self.root, policy=policy)
+        walker = IgnoreWalker(self.root, policy=policy)
         with patch("os.scandir", side_effect=record_scandir):
             list(walker.iter_files(topdown=False))
         assert not any(".git" in path.parts for path in scanned)
@@ -454,36 +439,36 @@ class TestPortable(RepositoryCase):
             if native
             else GitIgnorePolicy(self.root, initial_excludes=())
         )
-        assert metadata in set(GitIgnoreWalker(self.root, policy=policy).iter_files())
+        assert metadata in set(IgnoreWalker(self.root, policy=policy).iter_files())
 
     def test_discovered_symlinks_and_special_files_omitted(self) -> None:
         file = self.write("real.txt")
         self.symlink(file, "link.txt")
         if hasattr(os, "mkfifo"):
             os.mkfifo(self.root / "fifo")
-        assert list(GitIgnoreWalker(self.root).iter_files()) == [file]
+        assert list(IgnoreWalker(self.root).iter_files()) == [file]
 
     def test_supplied_policy_root_must_match(self) -> None:
         child = self.root / "child"
         child.mkdir()
         with pytest.raises(ValueError):
-            GitIgnoreWalker(child, policy=GitIgnorePolicy(self.root))
+            IgnoreWalker(child, policy=GitIgnorePolicy(self.root))
 
     def test_supplied_policy_rejects_walker_excludes(self) -> None:
         policy = GitIgnorePolicy(self.root)
         with pytest.raises(ValueError, match="initial_excludes"):
-            GitIgnoreWalker(self.root, policy=policy, initial_excludes=())
+            IgnoreWalker(self.root, policy=policy, initial_excludes=())
 
     def test_bottom_up_prunes_ignored_rows(self) -> None:
         self.write(".gitignore", "build/\n")
         self.write("build/ignored")
-        rows = list(GitIgnoreWalker(self.root).walk(topdown=False))
+        rows = list(IgnoreWalker(self.root).walk(topdown=False))
         assert all(directory != self.root / "build" for directory, _, _ in rows)
 
     def test_explicit_internal_symlink_top_legacy_behavior(self) -> None:
         file = self.write("docs/keep.md")
         link = self.symlink(file.parent, "docs-link")
-        assert list(GitIgnoreWalker(self.root).iter_files(link)) == [file]
+        assert list(IgnoreWalker(self.root).iter_files(link)) == [file]
 
     def test_read_failure_not_silenced(self) -> None:
         self.write(".gitignore", "*.tmp\n")
@@ -514,7 +499,7 @@ class TestNative(RepositoryCase):
         assert (Path(drop.source or ""), drop.line, drop.pattern) == (source, 1, "*.tmp")
         assert not keep.ignored
         assert (keep.source, keep.line, keep.pattern) == (".gitignore", 1, "!keep.tmp")
-        assert unmatched == GitIgnoreDecision(self.root / "plain.txt", False)
+        assert unmatched == IgnoreDecision(self.root / "plain.txt", False)
         assert not (GitIgnorePolicy(self.root).is_ignored("drop.tmp"))
 
     def test_info_exclude_and_root_override(self) -> None:
@@ -688,7 +673,7 @@ class TestNative(RepositoryCase):
         policy = self.native(initial_excludes=[".git/", "keep.tmp"])
         assert policy.is_ignored("keep.tmp")
         with patch.object(policy, "_run", wraps=policy._run) as run:
-            files = set(GitIgnoreWalker(self.root, policy=policy).iter_files())
+            files = set(IgnoreWalker(self.root, policy=policy).iter_files())
         assert files == {self.root / ".gitignore", keep}
         assert run.call_count == 2
 
@@ -786,7 +771,7 @@ class TestNative(RepositoryCase):
         with pytest.raises(ValueError):
             policy.is_ignored(link / "file")
         with pytest.raises(ValueError):
-            list(GitIgnoreWalker(self.root, policy=policy).iter_files(link))
+            list(IgnoreWalker(self.root, policy=policy).iter_files(link))
 
     @pytest.mark.skipif(
         os.name == "nt", reason="Windows disallows trailing CR/LF in directory names"

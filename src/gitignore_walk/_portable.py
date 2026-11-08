@@ -92,16 +92,6 @@ class IgnoreWalkEntry(NamedTuple):
     file_names: list[str]
 
 
-#: Backward-compatible Git-specific name for :class:`IgnoreDecision`.
-GitIgnoreDecision = IgnoreDecision
-#: Backward-compatible Git-specific name for :class:`IgnoreTraceMatch`.
-GitIgnoreTraceMatch = IgnoreTraceMatch
-#: Backward-compatible Git-specific name for :class:`IgnoreTrace`.
-GitIgnoreTrace = IgnoreTrace
-#: Backward-compatible Git-specific name for :class:`IgnoreWalkEntry`.
-GitIgnoreWalkEntry = IgnoreWalkEntry
-
-
 class _RepositoryMetadata(NamedTuple):
     root: Path
     common_dir: Path
@@ -484,10 +474,6 @@ class IgnoreWalker:
                 yield IgnoreWalkEntry(current, dir_names, matching_files)
                 continue
             yield IgnoreWalkEntry(current, matching_dirs, matching_files)
-
-
-#: Backward-compatible Git-specific name for :class:`IgnoreWalker`.
-GitIgnoreWalker = IgnoreWalker
 
 
 def _walk_pruned_bottom_up(
