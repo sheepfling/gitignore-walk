@@ -17,8 +17,11 @@ from gitignore_walk import (
     GitIgnorePolicy,
     GitIgnoreSpec,
     GitIgnoreWalker,
+    GitPolicyConfig,
     GitStandardPolicy,
     IgnorePolicy,
+    PortablePolicyConfig,
+    PreferGitPolicyConfig,
     is_gitignored,
     matches_gitignore,
     parse_gitignore,
@@ -886,10 +889,20 @@ class TestDifferential(RepositoryCase):
 
 
 class TestPolicySelection(RepositoryCase):
-    def select(self, **kwargs):
+    def select(self, *, mode="portable", **kwargs):
         from gitignore_walk import select_policy
 
-        return select_policy(self.root, environment=self.environment, **kwargs)
+        kwargs.setdefault("environment", self.environment)
+        config_types = {
+            "portable": PortablePolicyConfig,
+            "git": GitPolicyConfig,
+            "prefer-git": PreferGitPolicyConfig,
+        }
+        try:
+            config_type = config_types[mode]
+        except KeyError as error:
+            raise TypeError(f"unsupported policy mode: {mode}") from error
+        return select_policy(self.root, config_type(**kwargs))
 
     def test_missing_git_fallback_is_explicit_and_quiet(self, capsys):
         missing = str(self.base / "missing-git")
@@ -966,12 +979,15 @@ class TestPolicySelection(RepositoryCase):
         ignore.write_text("*.home\n", encoding="utf-8")
         selection = select_policy(
             self.root,
-            mode="prefer-git",
-            git_executable=str(self.base / "absent"),
-            environment={EnvVar.HOME: str(self.home), EnvVar.USERPROFILE: str(self.home)},
+            PreferGitPolicyConfig(
+                git_executable=str(self.base / "absent"),
+                environment={EnvVar.HOME: str(self.home), EnvVar.USERPROFILE: str(self.home)},
+            ),
         )
         assert selection.policy.is_ignored("a.home")
-        assert not select_policy(self.root, environment={}).policy.is_ignored("a.home")
+        assert not select_policy(self.root, PortablePolicyConfig(environment={})).policy.is_ignored(
+            "a.home"
+        )
 
     def test_custom_config_difference_is_preserved(self):
         self.init()
@@ -990,8 +1006,10 @@ class TestPolicySelection(RepositoryCase):
         assert selection.fallback_reason is None
 
     def test_invalid_selection_and_timeout(self):
-        with pytest.raises(ValueError):
-            self.select(mode="unknown")
+        from gitignore_walk import select_policy
+
+        with pytest.raises(TypeError):
+            select_policy(self.root, object())
         with pytest.raises(ValueError):
             self.select(mode="prefer-git", timeout=0)
 
@@ -1002,9 +1020,10 @@ class TestPolicySelection(RepositoryCase):
         empty_path.mkdir()
         selection = select_policy(
             self.root,
-            mode="prefer-git",
-            git_executable="gitignore-walk-missing-test-program",
-            environment={"PATH": str(empty_path)},
+            PreferGitPolicyConfig(
+                git_executable="gitignore-walk-missing-test-program",
+                environment={"PATH": str(empty_path)},
+            ),
         )
         assert selection.fallback_reason == "git-executable-missing"
 
@@ -1025,7 +1044,8 @@ class TestPolicySelection(RepositoryCase):
         self.write(".gitignore", "*.log\n")
         nested = self.write("nested/.gitignore", "!keep.log\n").parent
         selection = select_policy(
-            nested, mode="prefer-git", git_executable=str(self.base / "absent"), environment={}
+            nested,
+            PreferGitPolicyConfig(git_executable=str(self.base / "absent"), environment={}),
         )
         assert selection.policy.is_ignored_many(["a.log", "keep.log", "a.local"]) == [
             True,
@@ -1064,6 +1084,8 @@ class TestPolicySelection(RepositoryCase):
             assert GitIgnorePolicy(self.root).is_ignored("a.home")
             assert select_policy(self.root).policy.is_ignored("a.home")
             assert select_policy(
-                self.root, mode="prefer-git", git_executable=str(self.base / "absent")
+                self.root, PreferGitPolicyConfig(git_executable=str(self.base / "absent"))
             ).policy.is_ignored("a.home")
-            assert not select_policy(self.root, environment={}).policy.is_ignored("a.home")
+            assert not select_policy(
+                self.root, PortablePolicyConfig(environment={})
+            ).policy.is_ignored("a.home")

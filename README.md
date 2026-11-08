@@ -89,27 +89,37 @@ evaluation is not the same as Git status.**
 
 ### Prefer Git with an explicit fallback
 
-Use `select_policy` when Git is preferred but a missing executable is acceptable:
+Pass a typed config to `select_policy`. Each config fixes the requested mode and only exposes
+settings that apply to that mode:
 
 ```python
-from gitignore_walk import GitIgnoreWalker, select_policy
+import logging
 
-selection = select_policy("/path/to/checkout", mode="prefer-git")
-# Send these diagnostics to your own logging/UI, not the file-result stream:
-backend = selection.backend
-reason = selection.fallback_reason
+from gitignore_walk import GitIgnoreWalker, PreferGitPolicyConfig, select_policy
+
+selection = select_policy("/path/to/checkout", PreferGitPolicyConfig())
+if selection.fallback_reason is not None:
+    logging.getLogger(__name__).warning(
+        "Using %s after fallback: %s", selection.backend, selection.fallback_reason
+    )
 walker = GitIgnoreWalker(selection.policy.root, policy=selection.policy)
 ```
 
-Selection happens immediately, before iteration. `backend` is `"git"` or `"portable"`;
-`fallback_reason` is `"git-executable-missing"` only on fallback, otherwise `None`.
-No diagnostics are printed. The returned policy never switches backends during queries or walks.
-Permissions, timeouts, invalid repositories, broken configuration, and later subprocess failures
-remain errors. An existing executable whose interpreter/loader is missing is not a missing Git.
+`PortablePolicyConfig` always selects the portable resolver. `GitPolicyConfig` requires Git.
+`PreferGitPolicyConfig` tries Git first and uses the portable resolver only when the executable is
+confirmed missing. All three accept `initial_excludes` and an optional complete `environment`;
+the Git configs also accept `git_executable` and `timeout`.
 
-`mode="git"` requires Git, just like `GitStandardPolicy`. `mode="portable"` is the selector default
-and never invokes Git. Existing policy constructors and the walker's portable default are unchanged.
-The selector accepts `initial_excludes`, `git_executable`, `timeout`, and `environment`.
+Selection happens immediately, before iteration. The result's `mode` records the requested config;
+`backend` records the resolver actually selected. It is `"git"` or `"portable"`, and checking it
+narrows `policy` to `GitStandardPolicy` or `GitIgnorePolicy` for static type checkers. The
+`fallback_reason` is `"git-executable-missing"` only on fallback, otherwise `None`. No diagnostics
+are printed. The returned policy never switches backends during queries or walks. Permissions,
+timeouts, invalid repositories, broken configuration, and later subprocess failures remain errors.
+An existing executable whose interpreter/loader is missing is not a missing Git.
+
+Calling `select_policy(root)` is equivalent to passing `PortablePolicyConfig()`. Existing policy
+constructors and the walker's portable default are unchanged.
 
 `environment` is a complete environment, not an overlay. Both the selector and `GitIgnorePolicy`
 use supplied HOME/USERPROFILE and XDG_CONFIG_HOME for conventional global ignores without consulting
