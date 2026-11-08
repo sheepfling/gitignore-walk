@@ -10,9 +10,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, NoReturn, TypeAlias, TypeGuard, overload
 
-from . import _platform
 from ._git import GitStandardPolicy
 from ._portable import _DEFAULT_INITIAL_EXCLUDES, GitIgnorePolicy
+from ._util import is_windows
 from .errors import GitIgnoreError
 
 
@@ -114,7 +114,7 @@ def _executable_missing(
     # ENOENT can also mean an existing script's interpreter or binary's loader is
     # missing. Likewise, which() conflates absence with lack of execute permission.
     # Conservatively require every candidate to be absent, including dangling links.
-    if _platform.is_windows():
+    if is_windows():
         # CreateProcess reports missing programs as ERROR_FILE_NOT_FOUND (2).
         # Missing DLLs (126), bad images (193), and access errors (5) must not fall
         # back. Also reject an identifiable existing executable or script.

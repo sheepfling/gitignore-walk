@@ -22,7 +22,7 @@ from ._portable import (
     _IgnoreSnapshot,
     _match_loaded_ignore,
 )
-from .environment import EnvVar
+from ._util import EnvVar
 
 # Repository selection must come from root, not an unrelated invoking Git process.
 _REPOSITORY_ENVIRONMENT: Final = (

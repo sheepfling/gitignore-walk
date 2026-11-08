@@ -14,7 +14,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
-from gitignore_walk.environment import EnvVar
+from gitignore_walk._util import EnvVar, is_windows
 
 
 def project_root() -> Path:
@@ -25,13 +25,9 @@ def project_src() -> Path:
     return project_root() / "src"
 
 
-def is_windows() -> bool:
-    return os.name == "nt"
-
-
 def _writable_temp_root() -> Path:
     candidates: list[Path] = []
-    if os.name == "nt":
+    if is_windows():
         user_profile = os.environ.get(EnvVar.USERPROFILE)
         if user_profile:
             candidates.append(Path(user_profile) / "AppData" / "Local" / "Temp")
