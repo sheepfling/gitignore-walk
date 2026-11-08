@@ -27,7 +27,7 @@ from gitignore_walk import (
     parse_gitignore,
     select_policy,
 )
-from gitignore_walk.environment import EnvVar
+from gitignore_walk._util import EnvVar
 
 
 class RepositoryCase:
