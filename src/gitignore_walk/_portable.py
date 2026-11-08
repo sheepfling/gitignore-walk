@@ -7,7 +7,7 @@ from __future__ import annotations
 import os
 import stat
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Generator, Iterable, Iterator, Sequence
+from collections.abc import Callable, Generator, Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Final, Literal, NamedTuple, cast
@@ -197,6 +197,8 @@ class GitIgnorePolicy(IgnorePolicy):
     repository ``info/exclude`` file, and applicable repository ``.gitignore`` files. It discovers
     a Git worktree by walking upward from ``root``; it does not need to invoke Git. Git config
     overrides and conditional includes are intentionally outside this portable scope.
+    An explicit ``environment`` supplies complete HOME/USERPROFILE and XDG_CONFIG_HOME
+    locations for global ignores; omitted values never inherit ambient environment settings.
 
     ``initial_excludes`` are applied as a hard baseline before those sources and default to
     ``(".git",)``. Supplying a sequence replaces that default; use an empty sequence to remove it.
@@ -209,6 +211,7 @@ class GitIgnorePolicy(IgnorePolicy):
         *,
         initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
         matcher: GitIgnoreMatcher[Any] | None = None,
+        environment: Mapping[str, str] | None = None,
     ) -> None:
         """Create a portable policy rooted at ``root`` with optional baseline rules and matcher."""
         super().__init__(root, initial_excludes=initial_excludes, matcher=matcher)
@@ -217,7 +220,7 @@ class GitIgnorePolicy(IgnorePolicy):
         self._repository_excludes = (
             None if metadata is None else metadata.common_dir / "info" / "exclude"
         )
-        self._global_excludes = _default_global_excludes_path()
+        self._global_excludes = _default_global_excludes_path(environment)
 
     def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
         """Return the effective decision and matching policy source for one target."""
@@ -565,9 +568,17 @@ def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
     return None
 
 
-def _default_global_excludes_path() -> Path | None:
+def _default_global_excludes_path(environment: Mapping[str, str] | None = None) -> Path | None:
     """Return Git's conventional XDG/home global-ignore path, without reading Git config."""
 
+    if environment is not None:
+        xdg = environment.get(EnvVar.XDG_CONFIG_HOME)
+        if xdg:
+            return Path(xdg) / "git" / "ignore"
+        home = environment.get(EnvVar.HOME)
+        if os.name == "nt":
+            home = home or environment.get(EnvVar.USERPROFILE)
+        return Path(home) / ".config" / "git" / "ignore" if home else None
     xdg_config_home = os.environ.get(EnvVar.XDG_CONFIG_HOME)
     if xdg_config_home:
         return Path(xdg_config_home).expanduser() / "git" / "ignore"
