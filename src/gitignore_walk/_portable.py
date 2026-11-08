@@ -589,22 +589,26 @@ def _default_global_excludes_path(environment: Mapping[str, str] | None = None) 
 
 
 def _is_regular_directory(path: Path, *, onerror: Callable[[OSError], object] | None) -> bool:
-    try:
-        if path.is_symlink():
-            return False
-        return stat.S_ISDIR(path.stat().st_mode)
-    except OSError as error:
-        if onerror is not None:
-            onerror(error)
-            return False
-        raise GitIgnoreError(f"unable to inspect Git-ignore walk entry: {path}: {error}") from error
+    return _is_regular_entry(path, kind="directory", onerror=onerror)
 
 
 def _is_regular_file(path: Path, *, onerror: Callable[[OSError], object] | None) -> bool:
+    return _is_regular_entry(path, kind="file", onerror=onerror)
+
+
+def _is_regular_entry(
+    path: Path,
+    *,
+    kind: Literal["directory", "file"],
+    onerror: Callable[[OSError], object] | None,
+) -> bool:
     try:
         if path.is_symlink():
             return False
-        return stat.S_ISREG(path.stat().st_mode) and path.is_file()
+        mode = path.stat().st_mode
+        if kind == "directory":
+            return stat.S_ISDIR(mode)
+        return stat.S_ISREG(mode) and path.is_file()
     except OSError as error:
         if onerror is not None:
             onerror(error)
