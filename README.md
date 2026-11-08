@@ -89,8 +89,9 @@ evaluation is not the same as Git status.**
 
 ### Prefer Git with an explicit fallback
 
-Pass a typed config to `select_policy`. Each config fixes the requested mode and only exposes
-settings that apply to that mode:
+Fallback is opt-in. Use `PreferGitPolicyConfig` only when portable behavior is acceptable if Git is
+missing. The default `select_policy(root)` stays portable, while `GitPolicyConfig` requires Git and
+never falls back. Pass the preferred config to `select_policy` to allow the missing-Git fallback:
 
 ```python
 import logging
@@ -113,9 +114,9 @@ the Git configs also accept `git_executable` and `timeout`.
 Selection happens immediately, before iteration. The result's `mode` records the requested config;
 `backend` records the resolver actually selected. It is `"git"` or `"portable"`, and checking it
 narrows `policy` to `GitStandardPolicy` or `GitIgnorePolicy` for static type checkers. The
-`fallback_reason` is `"git-executable-missing"` only on fallback, otherwise `None`. No diagnostics
-are printed; inspect `backend` or `fallback_reason` to detect a fallback. The returned policy never
-switches backends during queries or walks. Permissions,
+`fallback_reason` is `"git-executable-missing"` only on fallback, otherwise `None`. The library
+does not log automatically; inspect `backend` or `fallback_reason` and report it at the level your
+application needs. The returned policy never switches backends during queries or walks. Permissions,
 timeouts, invalid repositories, broken configuration, and later subprocess failures remain errors.
 An existing executable whose interpreter/loader is missing is not a missing Git.
 
