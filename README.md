@@ -330,38 +330,27 @@ The library is not a filesystem security boundary.
 
 ## Development
 
-Create and activate a Python 3.12 virtual environment from the repository root:
+From the repository root, create a Python 3.12 virtual environment and install the development
+tools. The commands use that environment's Python directly, so activation is optional.
 
 ```sh
 python3.12 -m venv .venv
-source .venv/bin/activate
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m scripts.ci all
 ```
 
 In Windows PowerShell:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
+.\.venv\Scripts\python.exe -m scripts.ci all
 ```
 
-Then install development dependencies into the environment:
-
-```sh
-python -m pip install -e '.[dev]'
-```
-
-Run the same checks used by CI:
-
-```sh
-python -m scripts.ci all
-```
-
-Run this from the repository root before pushing. It uses the active Python interpreter and runs
-the pytest suite, Ruff lint and format checks, strict Pyright, Markdown formatting checks with
-rumdl, repository Markdown policy checks with mdrepo on Python 3.11+, and package validation (wheel
-and source archive builds, Twine checks, and an import smoke test against the built wheel). Install
-the development dependencies first with the command above. A successful run is the local pre-push
-check; CI also runs tests on other Python versions and operating systems.
+If `.venv` already exists, verify it uses Python 3.12 before reusing it. Run the last command before
+pushing. It runs the same full local check as CI: tests, Ruff lint and format checks, strict Pyright,
+Markdown checks, and package validation. See [local and CI verification](docs/validation.md) for the
+phases, how to diagnose a failure, and the interpreter/platform matrix used by hosted CI.
 
 GitHub Actions delegates each matrix entry to this same runner: other platform and Python entries
 run `test`, while Ubuntu Python 3.12 runs `all`. That job is the hosted counterpart to the complete

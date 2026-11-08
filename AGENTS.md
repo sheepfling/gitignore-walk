@@ -29,7 +29,7 @@ In Windows PowerShell, use:
 
 ```powershell
 py -3.12 -m venv .venv
-.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 ```
 
 Then install the development tools into that environment:
