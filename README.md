@@ -13,7 +13,12 @@ Two policies let applications choose whether to use the bundled evaluator or Git
 - **`GitStandardPolicy` — Git-native.** Delegates matching to Git itself, respecting configured
   global excludes, repository configuration, and Git-specific behavior.
 
-Both work with `GitIgnoreWalker`; choose the policy that fits the application's configuration needs.
+Both work with `IgnoreWalker`; choose the policy that fits the application's configuration needs.
+
+The shared API uses scheme-neutral names: `IgnorePolicy`, `IgnoreWalker`, `IgnoreDecision`,
+`IgnoreTrace`, `IgnoreTraceMatch`, and `IgnoreWalkEntry`. The existing `GitIgnoreWalker`,
+`GitIgnoreDecision`, `GitIgnoreTrace`, `GitIgnoreTraceMatch`, and `GitIgnoreWalkEntry` names remain
+aliases for compatibility.
 
 This release supports Git ignore rules only; Mercurial's `.hgignore` and other VCS ignore formats
 are not supported yet. Future formats should have their own policy and tagged config so selecting
@@ -30,9 +35,9 @@ Use the Python-only policy when you want to avoid a Git executable dependency or
 ordinary directory trees.
 
 ```python
-from gitignore_walk import GitIgnoreWalker
+from gitignore_walk import IgnoreWalker
 
-walker = GitIgnoreWalker("/path/to/project")
+walker = IgnoreWalker("/path/to/project")
 
 for path in walker.iter_files():
     print(path)
@@ -60,7 +65,7 @@ interpret Git configuration such as custom `core.excludesFile` paths or conditio
 When you need Git's actual configured ignore behavior:
 
 ```python
-from gitignore_walk import GitStandardPolicy, GitIgnoreWalker
+from gitignore_walk import GitStandardPolicy, IgnoreWalker
 
 policy = GitStandardPolicy("/path/to/checkout")
 
@@ -78,7 +83,7 @@ for decision in policy.explain_many(
         decision.pattern,
     )
 
-walker = GitIgnoreWalker(policy.root, policy=policy)
+walker = IgnoreWalker(policy.root, policy=policy)
 
 for path in walker.iter_files():
     print(path)
@@ -101,14 +106,14 @@ never falls back. Pass the preferred config to `select_policy` to allow the miss
 ```python
 import logging
 
-from gitignore_walk import GitIgnoreWalker, PreferGitPolicyConfig, select_policy
+from gitignore_walk import IgnoreWalker, PreferGitPolicyConfig, select_policy
 
 selection = select_policy("/path/to/checkout", PreferGitPolicyConfig())
 if selection.fallback_reason is not None:
     logging.getLogger(__name__).warning(
         "Using %s after fallback: %s", selection.backend, selection.fallback_reason
     )
-walker = GitIgnoreWalker(selection.policy.root, policy=selection.policy)
+walker = IgnoreWalker(selection.policy.root, policy=selection.policy)
 ```
 
 `PortablePolicyConfig` always selects the portable resolver. `GitPolicyConfig` requires Git.
@@ -196,7 +201,7 @@ The detailed explanation also identifies the matching rule's origin:
 | `src/debug.log`    | Yes     | `.gitignore`     | 1    |
 | `src/keep.log`     | No      | `src/.gitignore` | 1    |
 
-`GitIgnoreDecision` exposes the evaluated `path`, `ignored` state, `source`, matching `pattern`, and
+`IgnoreDecision` exposes the evaluated `path`, `ignored` state, `source`, matching `pattern`, and
 one-based `line` number.
 
 For overlay diagnostics, use `policy.trace(path)`. It returns the effective decision and the
@@ -233,10 +238,10 @@ back to portable matching.
 
 ## Traverse and filter directory trees
 
-`GitIgnoreWalker` supports `os.walk`-style traversal:
+`IgnoreWalker` supports `os.walk`-style traversal:
 
 ```python
-walker = GitIgnoreWalker("/path/to/project")
+walker = IgnoreWalker("/path/to/project")
 
 for directory, dir_names, file_names in walker.walk():
     print(directory, file_names)
@@ -257,7 +262,7 @@ for directory, dir_names, file_names in walker.walk():
     dir_names[:] = [name for name in dir_names if name != "generated"]
 ```
 
-`walk()` yields `GitIgnoreWalkEntry` named tuples, supporting both named attributes and familiar
+`walk()` yields `IgnoreWalkEntry` named tuples, supporting both named attributes and familiar
 three-value unpacking.
 
 `iter_files()` provides a simpler interface when only file paths are needed.
@@ -295,8 +300,8 @@ Other available interfaces include:
 | `is_gitignored(root, target)`                         | Portable one-shot query                              |
 | `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec` |
 | `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                      |
-| `GitIgnoreWalker.walk()`                              | Directory traversal with optional filtering          |
-| `GitIgnoreWalker.iter_files()`                        | File-only traversal                                  |
+| `IgnoreWalker.walk()`                                 | Directory traversal with optional filtering          |
+| `IgnoreWalker.iter_files()`                           | File-only traversal                                  |
 | `IgnorePolicy.explain_many()`                         | Return a mutable list of detailed decisions          |
 | `IgnorePolicy.is_ignored_many()`                      | Return a mutable list of ignore decisions            |
 | `IgnorePolicy.iter_explain()`                         | Lazily yield detailed decisions                      |

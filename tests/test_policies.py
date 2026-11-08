@@ -16,10 +16,18 @@ from gitignore_walk import (
     GitIgnoreError,
     GitIgnorePolicy,
     GitIgnoreSpec,
+    GitIgnoreTrace,
+    GitIgnoreTraceMatch,
+    GitIgnoreWalkEntry,
     GitIgnoreWalker,
     GitPolicyConfig,
     GitStandardPolicy,
+    IgnoreDecision,
     IgnorePolicy,
+    IgnoreTrace,
+    IgnoreTraceMatch,
+    IgnoreWalkEntry,
+    IgnoreWalker,
     PortablePolicyConfig,
     PreferGitPolicyConfig,
     _portable,
@@ -97,6 +105,13 @@ class RepositoryCase:
 
 
 class TestPolicyContract(RepositoryCase):
+    def test_policy_neutral_types_keep_git_compatibility_aliases(self) -> None:
+        assert GitIgnoreDecision is IgnoreDecision
+        assert GitIgnoreTrace is IgnoreTrace
+        assert GitIgnoreTraceMatch is IgnoreTraceMatch
+        assert GitIgnoreWalkEntry is IgnoreWalkEntry
+        assert GitIgnoreWalker is IgnoreWalker
+
     @pytest.mark.parametrize("native", [False, True])
     def test_batch_and_lazy_contract(self, native: bool) -> None:
         if native:

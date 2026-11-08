@@ -16,8 +16,8 @@ from typing import Final
 from ._environment import EnvVar
 from ._portable import (
     _DEFAULT_INITIAL_EXCLUDES,
-    GitIgnoreDecision,
     GitIgnoreError,
+    IgnoreDecision,
     IgnorePolicy,
     _decision_from_match,
     _IgnoreSnapshot,
@@ -105,7 +105,7 @@ class GitStandardPolicy(IgnorePolicy):
             raise ValueError("GitStandardPolicy walks cannot start at a symlink")
         return path
 
-    def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
+    def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain one path using a fresh Git process."""
 
         return self.explain_many((target,))[0]
@@ -113,7 +113,7 @@ class GitStandardPolicy(IgnorePolicy):
     def explain_many(
         self,
         targets: Iterable[str | os.PathLike[str]],
-    ) -> list[GitIgnoreDecision]:
+    ) -> list[IgnoreDecision]:
         """Explain an ordered batch in one Git process using NUL-safe input/output.
 
         This does not freeze the filesystem. A later batch sees changed ignore files.
@@ -123,7 +123,7 @@ class GitStandardPolicy(IgnorePolicy):
         resolved = tuple(self.resolve_target(target) for target in targets)
         if not resolved:
             return []
-        decisions: dict[int, GitIgnoreDecision] = {}
+        decisions: dict[int, IgnoreDecision] = {}
         pending: list[tuple[int, Path]] = []
         for index, path in enumerate(resolved):
             baseline = _match_loaded_ignore(
@@ -156,7 +156,7 @@ class GitStandardPolicy(IgnorePolicy):
                     raise GitIgnoreError("Git returned an invalid ignore line number") from error
                 if line_number < 1 or not pattern:
                     raise GitIgnoreError("Git returned invalid ignore provenance")
-                decision = GitIgnoreDecision(
+                decision = IgnoreDecision(
                     path=path,
                     ignored=not pattern.startswith(b"!"),
                     source=_decode_git_output(source),
@@ -166,13 +166,13 @@ class GitStandardPolicy(IgnorePolicy):
             elif line or pattern:
                 raise GitIgnoreError("Git returned incomplete ignore provenance")
             else:
-                decision = GitIgnoreDecision(path=path, ignored=False)
+                decision = IgnoreDecision(path=path, ignored=False)
             decisions[original_index] = decision
         return [decisions[index] for index in range(len(resolved))]
 
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
-    ) -> Iterator[GitIgnoreDecision]:
+    ) -> Iterator[IgnoreDecision]:
         """Query bounded batches lazily; each batch observes Git's current rules."""
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
@@ -189,10 +189,10 @@ class GitStandardPolicy(IgnorePolicy):
 
     def _decisions(
         self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
-    ) -> list[GitIgnoreDecision]:
+    ) -> list[IgnoreDecision]:
         return self.explain_many(targets)
 
-    def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:
+    def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> IgnoreDecision:
         """Implement the policy hook; Git loads its own ignore state per query."""
         # The portable walker supplies a per-operation snapshot. Native Git loads its
         # own rules per process; never pretend this is the portable snapshot contract.

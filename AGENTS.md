@@ -66,13 +66,13 @@ results.
 - Keep text files UTF-8 with LF endings; `.editorconfig` and `.gitattributes` enforce this.
 - Keep the portable Python policy and Git-native policy behavior distinct; do not add silent
   fallback between them.
+- Keep the shared policy, decision, trace, and walker contracts scheme-neutral. The Git-prefixed
+  decision, trace, walk-entry, and walker names are compatibility aliases.
 - Treat future VCS ignore formats as separate policies and tagged config variants. Keep
   `GitIgnoreMatcher` scoped to matcher implementations for Git syntax; extend the config and
   selection unions, exhaustive resolver switch, exports, typing contract, and behavior tests as a
-  unit. A fallback must not silently change ignore schemes.
-- `IgnorePolicy` is the shared walker seam, not a third-party scheme plugin API. Before shipping a
-  second scheme, make its decision and trace result contract policy-neutral while preserving the
-  existing Git-named public API as needed; do not present non-Git results as Git-specific types.
+  unit. A fallback must not silently change ignore schemes. `IgnorePolicy` is the built-in walker
+  seam, not a third-party scheme plugin API.
 - Keep type annotations compatible with Python 3.10 and pass strict Pyright.
 - Add or update focused tests in `tests/test_policies.py` when changing observable behavior.
 - Keep user-facing guidance in README/docs. Use this file for durable repository conventions and

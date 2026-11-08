@@ -26,8 +26,8 @@ _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
 
 
 @dataclass(frozen=True, slots=True)
-class GitIgnoreDecision:
-    """Explain one target's effective Git-ignore decision.
+class IgnoreDecision:
+    """Explain one target's effective ignore decision.
 
     Attributes:
         path: Resolved target path.
@@ -45,7 +45,7 @@ class GitIgnoreDecision:
 
 
 @dataclass(frozen=True, slots=True)
-class GitIgnoreTraceMatch:
+class IgnoreTraceMatch:
     """One matching rule in an ignore-policy trace.
 
     Attributes:
@@ -64,7 +64,7 @@ class GitIgnoreTraceMatch:
 
 
 @dataclass(frozen=True, slots=True)
-class GitIgnoreTrace:
+class IgnoreTrace:
     """Effective decision plus matching rules ordered from lowest to highest precedence.
 
     Attributes:
@@ -73,12 +73,12 @@ class GitIgnoreTrace:
         complete: Whether the backend could enumerate every applicable matching rule.
     """
 
-    decision: GitIgnoreDecision
-    matches: tuple[GitIgnoreTraceMatch, ...]
+    decision: IgnoreDecision
+    matches: tuple[IgnoreTraceMatch, ...]
     complete: bool = True
 
 
-class GitIgnoreWalkEntry(NamedTuple):
+class IgnoreWalkEntry(NamedTuple):
     """One ``os.walk``-style row with names for each returned value.
 
     Attributes:
@@ -90,6 +90,16 @@ class GitIgnoreWalkEntry(NamedTuple):
     directory: Path
     dir_names: list[str]
     file_names: list[str]
+
+
+#: Backward-compatible Git-specific name for :class:`IgnoreDecision`.
+GitIgnoreDecision = IgnoreDecision
+#: Backward-compatible Git-specific name for :class:`IgnoreTraceMatch`.
+GitIgnoreTraceMatch = IgnoreTraceMatch
+#: Backward-compatible Git-specific name for :class:`IgnoreTrace`.
+GitIgnoreTrace = IgnoreTrace
+#: Backward-compatible Git-specific name for :class:`IgnoreWalkEntry`.
+GitIgnoreWalkEntry = IgnoreWalkEntry
 
 
 class _RepositoryMetadata(NamedTuple):
@@ -104,7 +114,7 @@ class _WalkStackEntry(NamedTuple):
 
 
 class IgnorePolicy(ABC):
-    """Shared interface for portable and Git-backed ignore policies.
+    """Shared interface for ignore-policy implementations.
 
     Attributes:
         root: Resolved root that bounds every target handled by the policy.
@@ -128,20 +138,20 @@ class IgnorePolicy(ABC):
         )
 
     @abstractmethod
-    def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
+    def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain one target."""
 
     @abstractmethod
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
-    ) -> Iterator[GitIgnoreDecision]:
+    ) -> Iterator[IgnoreDecision]:
         """Lazily explain targets in input order."""
 
-    def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[GitIgnoreDecision]:
+    def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
         """Explain targets in input order."""
         return list(self.iter_explain(targets))
 
-    def trace(self, target: str | os.PathLike[str]) -> GitIgnoreTrace:
+    def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return the decision and matching-rule trace for one target.
 
         Backends that cannot enumerate every matching rule return their winning rule with
@@ -152,7 +162,7 @@ class IgnorePolicy(ABC):
             ()
             if decision.source is None
             else (
-                GitIgnoreTraceMatch(
+                IgnoreTraceMatch(
                     source=decision.source,
                     pattern=decision.pattern or "",
                     line=decision.line or 0,
@@ -161,7 +171,7 @@ class IgnorePolicy(ABC):
                 ),
             )
         )
-        return GitIgnoreTrace(decision=decision, matches=matches, complete=False)
+        return IgnoreTrace(decision=decision, matches=matches, complete=False)
 
     def is_ignored(self, target: str | os.PathLike[str]) -> bool:
         """Return whether one target is ignored by this policy."""
@@ -187,7 +197,7 @@ class IgnorePolicy(ABC):
     @abstractmethod
     def _decisions(
         self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
-    ) -> Sequence[GitIgnoreDecision]:
+    ) -> Sequence[IgnoreDecision]:
         """Evaluate walker targets."""
 
 
@@ -223,13 +233,13 @@ class GitIgnorePolicy(IgnorePolicy):
         )
         self._global_excludes = _default_global_excludes_path(environment)
 
-    def explain(self, target: str | os.PathLike[str]) -> GitIgnoreDecision:
+    def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Return the effective decision and matching policy source for one target."""
 
         resolved_target = self.resolve_target(target)
         return self.decision(target=resolved_target, snapshot=_IgnoreSnapshot())
 
-    def trace(self, target: str | os.PathLike[str]) -> GitIgnoreTrace:
+    def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return matching source rules and identify the effective overlay."""
         resolved = self.resolve_target(target)
         snapshot = _IgnoreSnapshot()
@@ -262,9 +272,9 @@ class GitIgnorePolicy(IgnorePolicy):
             match = matches[effective_index]
             decision = _decision_from_match(path=resolved, match=match)
         else:
-            decision = GitIgnoreDecision(path=resolved, ignored=False)
+            decision = IgnoreDecision(path=resolved, ignored=False)
         trace_matches = tuple(
-            GitIgnoreTraceMatch(
+            IgnoreTraceMatch(
                 source=match.source,
                 pattern=match.pattern,
                 line=match.line,
@@ -273,11 +283,11 @@ class GitIgnorePolicy(IgnorePolicy):
             )
             for index, match in enumerate(matches)
         )
-        return GitIgnoreTrace(decision, trace_matches)
+        return IgnoreTrace(decision, trace_matches)
 
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
-    ) -> Iterator[GitIgnoreDecision]:
+    ) -> Iterator[IgnoreDecision]:
         """Lazily evaluate targets against a shared per-iteration ignore snapshot."""
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
@@ -287,7 +297,7 @@ class GitIgnorePolicy(IgnorePolicy):
             for target in targets
         )
 
-    def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> GitIgnoreDecision:
+    def decision(self, *, target: Path, snapshot: _IgnoreSnapshot) -> IgnoreDecision:
         """Evaluate a resolved target using an existing per-operation ignore snapshot."""
         relative = target.relative_to(self.root).as_posix()
         initial_match = _match_loaded_ignore(
@@ -310,11 +320,11 @@ class GitIgnorePolicy(IgnorePolicy):
             return _decision_from_match(path=target, match=policy_match)
         if initial_match is not None:
             return _decision_from_match(path=target, match=initial_match)
-        return GitIgnoreDecision(path=target, ignored=False)
+        return IgnoreDecision(path=target, ignored=False)
 
     def _decisions(
         self, targets: Sequence[Path], snapshot: _IgnoreSnapshot
-    ) -> tuple[GitIgnoreDecision, ...]:
+    ) -> tuple[IgnoreDecision, ...]:
         return tuple(self.decision(target=target, snapshot=snapshot) for target in targets)
 
     def _walk_top(self, target: str | os.PathLike[str]) -> Path:
@@ -334,8 +344,8 @@ class GitIgnorePolicy(IgnorePolicy):
         return target_path
 
 
-class GitIgnoreWalker:
-    """Traverse a root using the supplied policy or an automatically created portable policy.
+class IgnoreWalker:
+    """Traverse a root using a supplied policy or the default portable Git-ignore policy.
 
     Attributes:
         root: Resolved traversal root.
@@ -364,7 +374,7 @@ class GitIgnoreWalker:
             )
         self.policy = policy
         if self.policy.root != resolved_root:
-            raise ValueError("GitIgnoreWalker policy must use the same repository root")
+            raise ValueError("IgnoreWalker policy must use the same traversal root")
         self.root = resolved_root
 
     def iter_files(
@@ -392,7 +402,7 @@ class GitIgnoreWalker:
         topdown: bool = True,
         onerror: Callable[[OSError], object] | None = None,
         selection: Literal["included", "ignored", "all"] = "included",
-    ) -> Iterator[GitIgnoreWalkEntry]:
+    ) -> Iterator[IgnoreWalkEntry]:
         """Walk regular repository entries with an ``os.walk``-style result.
 
         Select included entries by default, ignored entries with ``selection="ignored"``, or both
@@ -447,7 +457,7 @@ class GitIgnoreWalker:
             dir_names[:] = safe_dir_names
 
             if ignored is None:
-                yield GitIgnoreWalkEntry(current, dir_names, safe_filenames)
+                yield IgnoreWalkEntry(current, dir_names, safe_filenames)
                 continue
 
             paths = tuple(
@@ -471,9 +481,13 @@ class GitIgnoreWalker:
                 # An ignored parent cannot contain an unignored descendant under Git's traversal
                 # rules, so unignored walks can prune those directories safely.
                 dir_names[:] = matching_dirs
-                yield GitIgnoreWalkEntry(current, dir_names, matching_files)
+                yield IgnoreWalkEntry(current, dir_names, matching_files)
                 continue
-            yield GitIgnoreWalkEntry(current, matching_dirs, matching_files)
+            yield IgnoreWalkEntry(current, matching_dirs, matching_files)
+
+
+#: Backward-compatible Git-specific name for :class:`IgnoreWalker`.
+GitIgnoreWalker = IgnoreWalker
 
 
 def _walk_pruned_bottom_up(
@@ -784,8 +798,8 @@ def _gitignore_matches_for_path(
     return matches
 
 
-def _decision_from_match(*, path: Path, match: _PatternMatch) -> GitIgnoreDecision:
-    return GitIgnoreDecision(
+def _decision_from_match(*, path: Path, match: _PatternMatch) -> IgnoreDecision:
+    return IgnoreDecision(
         path=path,
         ignored=match.ignored,
         source=match.source,
