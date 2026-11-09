@@ -1360,6 +1360,69 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.collapsed-unversioned-directory-membership",
+      "dimension": "collapsed-unversioned-directory-enumeration",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_status_paths": [
+        "cache"
+      ],
+      "observed_status_paths": [
+        "cache"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-js_9mm22/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "469536f50033df603939b2789a3de56acaf554c0e16aaa628c6b2a9f7eb2b8ac",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-js_9mm22/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "469536f50033df603939b2789a3de56acaf554c0e16aaa628c6b2a9f7eb2b8ac",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

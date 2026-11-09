@@ -118,7 +118,10 @@ boundary. Opt-in membership discovery uses verbose native status to classify lis
 keeping rule matches independent. The file-external case is captured on Subversion 1.15.0/macOS
 arm64, 1.14.5/Linux aarch64 and x86_64, and 1.14.5/SlikSvn Windows x86_64. Live membership tests
 pass on all four profiles. Paths omitted by sparse status remain unknown; broader status traversal
-remains open.
+remains open. A collapsed unversioned-directory fixture confirms that `svn status` reports the
+directory without enumerating its children on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04
+x86_64, and 1.14.5/SlikSvn Windows x86_64. A rule match for a physical child remains available,
+while its native membership is unknown and the walker traverses independently of status omission.
 The SVN oracle also includes newline- and tab-bearing filenames: the macOS native capture confirms
 XML numeric-reference decoding, and top-down/bottom-up policy walks preserve both paths. Windows
 skips this case because those filenames are not representable there; Subversion 1.14.5 Linux arm64

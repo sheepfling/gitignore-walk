@@ -1173,6 +1173,69 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.collapsed-unversioned-directory-membership",
+      "dimension": "collapsed-unversioned-directory-enumeration",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_status_paths": [
+        "cache"
+      ],
+      "observed_status_paths": [
+        "cache"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-al2bxoz_\\config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"cache\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "76e79725858ae4883bcdfd5a2a3c463ec3bb971cfa68b55c08c4193936179589",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-al2bxoz_\\config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"cache\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "33dfba10fd3b3d6ab6f874f9ed52764543a47d1e34cca84d73163a2f64c77fcb",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

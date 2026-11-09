@@ -1,11 +1,14 @@
 # Subversion native oracle
 
-`cases.json` contains 17 isolated local-repository probes. They cover directory `svn:ignore`,
+`cases.json` contains 18 isolated local-repository probes. They cover directory `svn:ignore`,
 inherited `svn:global-ignores` (including a property above a subtree checkout), nested properties,
 APR glob syntax, sparse depths, and working-copy boundaries. External fixtures exercise
 repository-root-relative, parent-relative, absolute, server-root-relative, and scheme-relative URLs.
 One external fixture gives the external repository its own `svn:global-ignores` property, declares a
 second external inside it, and checks that rules stay within each external working-copy boundary.
+The collapsed-unversioned-directory case records that native status reports an unversioned
+directory as one entry rather than listing its files. A rule-only decision for a known child can
+still match an ignore pattern, but the child's native membership remains unknown.
 
 Run the capture from the repository root:
 
@@ -36,10 +39,12 @@ including paths beneath some sparse working-copy depths. The default stays rule-
 run this extra status query. Sparse-depth fixtures confirm a versioned directory at depth
 `empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
 path without listing files beneath it. A switched-subtree case confirms that inherited
-`svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. All 17
-cases match on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64, and 1.14.5/SlikSvn
-Windows Server 2025 x86_64. The 16 earlier cases also match on Subversion 1.14.5/Linux aarch64 and
-x86_64. The file-external case is captured on macOS, both Linux architectures, and Windows Server
+`svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. The
+18-case corpus is captured on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64, and
+1.14.5/SlikSvn Windows Server 2025 x86_64, with platform-constrained cases recorded as skips.
+The 16 earlier cases also match on Subversion 1.14.5/Linux aarch64 and x86_64. The
+collapsed-directory case is additionally captured on Ubuntu and Windows. The
+file-external case is captured on macOS, both Linux architectures, and Windows Server
 2025 x86_64. The Windows oracle job explicitly skips the
 newline-and-tab case because those filenames are not representable there. The focused runtime
 Subversion suite, including the opt-in file-external membership and walker assertions, passes with

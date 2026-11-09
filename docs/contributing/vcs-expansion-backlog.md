@@ -93,6 +93,11 @@ that membership result. The opt-in membership-aware file-external test passes on
 The SlikSvn Windows suite passed with 99 passed and 12 skipped in the latest hosted run; the macOS
 and Linux suites pass with 107 passed and 4 skipped each. Native status paths omitted by sparse
 working-copy depth remain unknown.
+An unversioned-directory fixture also confirms that native status collapses `cache/` into one
+unversioned entry on macOS Subversion 1.15.0, hosted Ubuntu 1.14.3, and Windows SlikSvn 1.14.5.
+The policy can still match a known descendant against ignore rules while native membership stays
+unknown; physical walker traversal remains independent of that collapsed status listing. Broader
+status traversal remains open.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented. Native precedence captures cover system-to-user INI files on Debian 13 x86_64 and
 machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5; broader platform combinations,
