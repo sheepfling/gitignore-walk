@@ -12,10 +12,11 @@ python -m scripts.ci oracle-fossil --output /tmp/fossil-oracle.json
 
 Each case creates a disposable repository, checkout, and isolated home directory. It records the
 Fossil version, platform, command result, listed paths, and candidate comparison. The captures cover
-Fossil 2.28/macOS arm64 and 2.26/Linux aarch64. Ten boolean candidate cases, including hash-leading
-patterns, literal backslashes, and ignored-directory descendant suppression, match both profiles.
-Malformed-quote and escaped-separator probes are checked against captured native decisions on both
-profiles; the full tokenizer contract remains open. A missing
+Fossil 2.28/macOS arm64 and 2.26/Linux aarch64. Seventeen boolean candidate cases, including
+hash-leading patterns, literal backslashes, ignored-directory descendant suppression, quoted commas,
+single-quoted spaces, quoted trailing spaces, literal quotes, and ASCII-only whitespace separators,
+match both profiles. Malformed-quote and escaped-separator probes are checked against captured native
+decisions on both profiles; the full tokenizer contract remains open. A missing
 Fossil executable is recorded as skipped, not passed.
 
 The `fossil.directory-inheritance` case includes ignored descendants and visible siblings. The

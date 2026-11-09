@@ -238,15 +238,14 @@ for decision in selection.policy.explain_many(["build/output.tmp", "src/main.py"
     print(decision.path, decision.ignored, decision.pattern)
 ```
 
-Fossil patterns match complete workspace-relative paths; `*` may cross `/`. Whitespace and commas
-separate patterns, quoted patterns can contain those separators, `#` is ordinary pattern data, and a
-backslash does not escape those separators. Patterns are additive with no `!` negation. Ignored
-directory matches can be pruned, and the walker omits the Fossil checkout
-marker by default. Native `fossil extras` output agrees with included and ignored selections for the
-captured untracked traversal fixture. Decisions report ignore-rule matches, not tracked membership.
-This is an initial implementation measured against Fossil 2.28/macOS arm64 and
-2.26/Linux aarch64. Additional malformed-list cases and broader platform/client coverage remain
-open. See
+Fossil patterns match complete workspace-relative paths; `*` may cross `/`. ASCII whitespace and
+commas separate patterns, quoted patterns can contain those separators, `#` is ordinary pattern
+data, and a backslash does not escape those separators. Patterns are additive with no `!` negation.
+Ignored directory matches can be pruned, and the walker omits the Fossil checkout marker by default.
+Native `fossil extras` output agrees with included and ignored selections for the captured untracked
+traversal fixture. Decisions report ignore-rule matches, not tracked membership. This initial
+implementation matches 17 boolean candidates on Fossil 2.28/macOS arm64 and 2.26/Linux aarch64.
+Malformed-list behavior and broader platform/client coverage remain open. See
 the [Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md) and
 [oracle notes](tests/oracles/fossil/README.md).
 

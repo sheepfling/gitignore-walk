@@ -435,6 +435,211 @@
         0
       ],
       "setup_failed": false
+    },
+    {
+      "id": "fossil.quoted-comma",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "two,words.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.single-quoted-spaces",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "two words.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.non-ascii-space-is-data",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "one\u00a0two",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.non-ascii-space-does-not-separate",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "two",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "two"
+        ],
+        "stdout_sha256": "27dd8ed44a83ff94d557f9fd0412ed5a8cbca69ea04922d88c01184a07300a5a",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.quoted-trailing-space",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "name ",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.opposite-quote-inside-quoted-pattern",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "name'part",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.quote-is-literal-after-pattern-start",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "pre\"fix",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
     }
   ]
 }

@@ -151,6 +151,76 @@
       "query": "cache/a.tmp",
       "expected_candidate": true,
       "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.quoted-comma",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\"two,words.tmp\""
+      },
+      "query": "two,words.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.single-quoted-spaces",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "'two words.tmp'"
+      },
+      "query": "two words.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.non-ascii-space-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one two"
+      },
+      "query": "one two",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.non-ascii-space-does-not-separate",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one two"
+      },
+      "query": "two",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.quoted-trailing-space",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\"name \""
+      },
+      "query": "name ",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.opposite-quote-inside-quoted-pattern",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\"name'part\""
+      },
+      "query": "name'part",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.quote-is-literal-after-pattern-start",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "pre\"fix"
+      },
+      "query": "pre\"fix",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
     }
   ]
 }
