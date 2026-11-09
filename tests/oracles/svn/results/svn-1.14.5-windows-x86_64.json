@@ -61,7 +61,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-o0gnigwl\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-93h6jdxw\\config",
             "status",
             "--xml"
           ],
@@ -83,7 +83,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-o0gnigwl\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-93h6jdxw\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -158,7 +158,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-4yj34p4_\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-y1pf6zmv\\config",
             "status",
             "--xml"
           ],
@@ -167,16 +167,16 @@
             "pkg/visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"pkg\\visible.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"pkg\\visible.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "bb1443b277e279254901883cd80a7a62290457bb0f53509e3bd97656d3b05190",
+          "stdout_sha256": "5d6963db57a6ce23b7704ecbb215fe73078ce398ff9615894fca0afe65bf7434",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-4yj34p4_\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-y1pf6zmv\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -227,7 +227,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-rmx5upis\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-8ccb27y9\\config",
             "status",
             "--xml"
           ],
@@ -236,16 +236,16 @@
             "pkg"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"pkg\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"pkg\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "b7257c44112fb3259e3e8606397334f21cd6137d5e4f52e3396f9e5fd3c28380",
+          "stdout_sha256": "0b8a630671b318d07d7cd0b3ba4fd7507d7eb340cbcff4c4474853462060f87f",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-rmx5upis\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-8ccb27y9\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -293,7 +293,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-4ru797dx\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-vyd2lgrh\\config",
             "status",
             "--xml"
           ],
@@ -312,7 +312,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-4ru797dx\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-vyd2lgrh\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -323,9 +323,9 @@
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"child\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"child\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "eb227524bd8e578a5707496dc6b640d0684cb3e7e261bd44f33ba3f85422003a",
+          "stdout_sha256": "61eb940c6619eee2ee1e774a14910752bd88ffcffca2d784f5aad0c454c7c64a",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -386,7 +386,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-nivdimaz\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-lyx9g24k\\config",
             "status",
             "--xml"
           ],
@@ -408,16 +408,16 @@
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"ext\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\external.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\ignored.tmp\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\\absolute.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\\operative.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\\parent.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\\peg.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\\server-root.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"ext\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\external.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\ignored.tmp\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\\absolute.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\\operative.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\\parent.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\\peg.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\\server-root.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "a6b6e35bcc665e67bd11f6a22d06ca5ffba5494c68ba98b15b1f2c9f36753cbe",
+          "stdout_sha256": "979ac93bb112a6f2104afec8e03eb49f1a2f818af21442481cb52965eff41b60",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-nivdimaz\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-lyx9g24k\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -440,9 +440,9 @@
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"ext\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\external.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\ignored.tmp\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\\absolute.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\\operative.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\\parent.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\\peg.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\\server-root.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"ext\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"external\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\">\r\n<wc-status\r\n   item=\"external\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\external.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext\\ignored.tmp\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-absolute\\absolute.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-operative\\operative.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-parent\\parent.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-peg\\peg.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"ext-server-root\\server-root.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "ff9ad72c34a27de1dc77990b4d67b2543930bbf2378117176d71289428675b74",
+          "stdout_sha256": "fefb61b70af439d44e80ca57e0b896289cc23bffafe1146d3611250791a510f9",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -487,7 +487,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-8v8jpvjw\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-76f58x5q\\config",
             "status",
             "--xml"
           ],
@@ -505,7 +505,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-8v8jpvjw\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-76f58x5q\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -564,7 +564,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-q3rc3qti\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-jdj1od2m\\config",
             "status",
             "--xml"
           ],
@@ -582,7 +582,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-q3rc3qti\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-jdj1od2m\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -595,9 +595,9 @@
           "ignored_paths": [
             "x"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"a\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"x\">\r\n<wc-status\r\n   item=\"ignored\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"a\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"x\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"ignored\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "8407d352bfa4272a11173abb1992de3dcb1980166fc3b13e7e78d4440efa65db",
+          "stdout_sha256": "03a3c52dbf382e130473305b2789a8d9968321e6230b87c535347fad45c0c8a2",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -633,7 +633,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-rsszv9io\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-rp6cywrd\\config",
             "status",
             "--xml"
           ],
@@ -642,16 +642,16 @@
             "a"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"a\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"a\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "44bb3fc714815ada44acf50e56c6e5da0995bb7cb901ecc5f1a233ee266d6b16",
+          "stdout_sha256": "285f72105a8efa3993e1b892d21b3b88cd2a9c325b91fbb945b7a9bdc505acab",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-rsszv9io\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-rp6cywrd\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -702,7 +702,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-1aopfvbj\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-y50iz94f\\config",
             "status",
             "--xml"
           ],
@@ -720,7 +720,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-1aopfvbj\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-y50iz94f\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -767,7 +767,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-xa65eghu\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-8y4itk75\\config",
             "status",
             "--xml"
           ],
@@ -786,7 +786,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-xa65eghu\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-8y4itk75\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -841,7 +841,7 @@
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-fjb8lxxr\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-ez4fdold\\config",
             "status",
             "--xml"
           ],
@@ -853,16 +853,16 @@
             "a.tmp"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"a.bak\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"a.cache\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"a.log\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"a.tmp\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"a.bak\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"a.cache\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"a.log\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"a.tmp\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
-          "stdout_sha256": "232afd8108aaa6a7ed99e1b0f5247bee3ab228c4e797184008059408a225c319",
+          "stdout_sha256": "5225973dfc53ca0e74b75ef429def79d947175a994f8d31d7be8142fc718b8ad",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
             "--config-dir",
-            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-fjb8lxxr\\config",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-ez4fdold\\config",
             "status",
             "--xml",
             "--no-ignore"
@@ -887,6 +887,81 @@
         }
       },
       "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.global-ignores-above-checkout-root",
+      "dimension": "inherited-property-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "root.tmp"
+      ],
+      "observed_ignored_paths": [
+        "root.tmp"
+      ],
+      "expected_status_paths": [
+        "root.tmp",
+        "visible.txt"
+      ],
+      "observed_status_paths": [
+        "root.tmp",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-7uroz13f\\config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "3ad3b77defb1acd16d91b2d6393bd757cc49128e7dabd84a1df5a9ed8020af18",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-7uroz13f\\config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "root.tmp",
+            "visible.txt"
+          ],
+          "ignored_paths": [
+            "root.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"root.tmp\">\r\n<wc-status\r\n   item=\"ignored\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "4669331e0f7db571955d7f11d9e091e63e0e4112167d46b35b18e00d043d9d63",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
         0,
         0,
         0,
