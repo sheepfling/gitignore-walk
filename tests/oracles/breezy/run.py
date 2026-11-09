@@ -127,6 +127,11 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 anchor = target.parent / ".oracle-walk-anchor"
                 anchor.parent.mkdir(parents=True, exist_ok=True)
                 anchor.write_text("native walker anchor\n", encoding="utf-8")
+                anchor_root = _invoke(
+                    [executable, "root", "--no-plugins"],
+                    cwd=anchor.parent,
+                    environment=environment,
+                )
                 anchor_add = _invoke(
                     [executable, "add", "--no-plugins", anchor.name],
                     cwd=anchor.parent,
@@ -162,6 +167,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "root_stderr": root.stderr,
             "anchor_add_exit_code": anchor_add.returncode if anchor_add else None,
             "anchor_add_stderr": anchor_add.stderr if anchor_add else "",
+            "anchor_root_exit_code": anchor_root.returncode if anchor_add else None,
+            "anchor_root_stdout": anchor_root.stdout if anchor_add else "",
+            "anchor_root_stderr": anchor_root.stderr if anchor_add else "",
             "ignored_command": ["brz", "ignored", "--no-plugins", "--verbose"],
             "ignored_exit_code": ignored.returncode,
             "status_command": ["brz", "status", "--no-plugins", "--short", "--no-classify"],
