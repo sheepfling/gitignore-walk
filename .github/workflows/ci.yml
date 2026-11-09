@@ -130,13 +130,12 @@ jobs:
             -ArgumentList @('/i', "`"$installer`"", '/qn', '/norestart') `
             -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw "SlikSVN installer failed: $($install.ExitCode)" }
-          $svn = Get-ChildItem -Path $env:ProgramFiles -Filter svn.exe -Recurse |
-            Select-Object -First 1
-          if (-not $svn) { throw 'SlikSVN installation did not contain svn.exe.' }
-          $svnBin = $svn.Directory.FullName
+          $svnBin = Join-Path $env:ProgramFiles 'SlikSvn\bin'
+          $svnPath = Join-Path $svnBin 'svn.exe'
+          if (-not (Test-Path $svnPath)) { throw "SlikSVN installation did not contain $svnPath." }
           if (-not (Test-Path (Join-Path $svnBin 'svnadmin.exe'))) { throw 'SlikSVN installation did not contain svnadmin.exe.' }
           $svnBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-          & $svn.FullName --version --quiet
+          & $svnPath --version --quiet
       - run: python -m pip install -e '.[dev]'
       - run: python -m pytest tests/test_subversion_unit.py -q
       - run: >-
