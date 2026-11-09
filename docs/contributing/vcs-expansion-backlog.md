@@ -35,7 +35,10 @@ One other query prints an ignored decision, then exits with a
 formatting error; that `subinclude` behavior is independently confirmed by a matching native
 `status --ignored` walk fixture on all three profiles. The include-cycle case is a documented safe
 divergence: the native client recurses and errors, while the library detects the cycle and reports
-incomplete discovery. Results are recorded
+incomplete discovery. Additional source-boundary probes confirm that Mercurial follows an include
+through a symlinked directory outside the workspace and warns when the symlink target is dangling;
+the policy follows the former and marks discovery incomplete for the latter. Both new probes match
+Mercurial 7.2.4/macOS arm64 and 7.0.1/Debian 13 Linux x86_64. Results are recorded
 under `tests/oracles/hg/`. The initial SVN property policy evaluates `svn:ignore`, inherited
 `svn:global-ignores`, Subversion's built-in default global patterns, patterns from an explicit
 `config_dir/config` runtime file, and additional caller-supplied global patterns after native
@@ -313,10 +316,12 @@ captured platform profiles, including named global entries and repository-local 
 probes confirm warnings for missing `include` and configured `ui.ignore` files; Mercurial silently
 skips a missing `subinclude`, while the policy conservatively reports incomplete discovery. A
 symlinked `include` to a file outside the workspace is followed natively and by the policy, with
-canonical source and workspace-root scope preserved. POSIX ownership trust is captured by the
-Linux oracle: untrusted repository `.hg/hgrc` settings are ignored by both Mercurial and opt-in policy
-discovery. Native probes also confirm unreadable included files are warned about and skipped; the
-policy preserves the false match result while marking source discovery incomplete. Broader platform
+canonical source and workspace-root scope preserved. The policy also matches native behavior for an
+include through a symlinked directory outside the workspace and marks a dangling symlink source as
+incomplete; both cases are captured on macOS and Linux x86_64. POSIX ownership trust is captured by
+the Linux oracle: untrusted repository `.hg/hgrc` settings are ignored by both Mercurial and opt-in
+policy discovery. Native probes also confirm unreadable included files are warned about and skipped;
+the policy preserves the false match result while marking source discovery incomplete. Broader platform
 and configuration-precedence profiles remain open.
 
 Document Mercurial root `.hgignore`, configured `ui.ignore` files, explicit `include` and
@@ -464,7 +469,8 @@ Mercurial references: [ignore-file syntax](https://www.mercurial-scm.org/help/to
 
 For Mercurial, Windows case-sensitive glob behavior is now captured. Remaining probes include regex
 features beyond the captured unanchored search, start anchor, inline flags, and newline matching;
-and additional include-source symlink boundary forms. Mercurial's command-line `include:` notation
+additional include-source symlink boundaries, including loops and Windows behavior. Mercurial's
+command-line `include:` notation
 reads patterns from a file; it does not execute a command. That file-selection feature is separate
 from this ignore-policy expansion. Native help documents regex/glob/rootglob and says an ignore
 rule may match a path or any prefix directory. Pattern-file `include:` and directory-scoped

@@ -27,7 +27,11 @@ matching, Unicode normalization-form sensitivity, missing-source behavior, an ex
 symlink, an undecodable byte in a glob pattern, and trailing-space behavior: glob rules trim trailing
 spaces, while regexp
 rules keep them. Regex cases also capture unanchored search, explicit start anchoring, and scoped
-inline flags. An unreadable
+inline flags. Two additional source-boundary cases capture an include through a directory symlink
+outside the workspace and a dangling symlink include. Mercurial follows the first; the second warns
+and skips the source. The policy follows the valid external source and reports incomplete discovery
+for the dangling source. These two cases are captured on macOS arm64 and Debian 13 Linux x86_64.
+An unreadable
 included file is skipped by native Mercurial with a warning; the
 policy reports `discovery_complete=False` with a source-unavailable diagnostic. Config discovery
 fixtures cover named entries, home-relative paths, repository configuration, and an included

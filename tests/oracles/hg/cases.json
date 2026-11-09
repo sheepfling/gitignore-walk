@@ -838,6 +838,55 @@
       "expected_policy_scope": "."
     },
     {
+      "id": "hg.include-through-symlinked-directory",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:alias/rules.ignore\n"
+        },
+        "outside_files": {
+          ".oracle-outside/rules.ignore": "syntax: glob\n*.tmp\n"
+        },
+        "symlinks": {
+          "alias": "../.oracle-outside"
+        }
+      },
+      "query": "file.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.include-dangling-symlink-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:alias/rules.ignore\n"
+        },
+        "symlinks": {
+          "alias": "../.oracle-missing"
+        }
+      },
+      "query": "file.tmp",
+      "expected_candidate": false,
+      "expected_policy_discovery_complete": false,
+      "expected_policy_diagnostics": [
+        "source-unavailable"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and incomplete-discovery diagnostic."
+    },
+    {
       "id": "hg.include-missing-source",
       "profile": "hg",
       "dimension": "source-discovery",

@@ -2017,6 +2017,76 @@
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "raw_stdout": "\u00e9 is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-phcabzf3/repo/.hgignore, line 2: '??')\n",
       "raw_stderr": ""
+    },
+    {
+      "id": "hg.include-through-symlinked-directory",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "command": [
+        "/usr/local/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "file.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "file.tmp is ignored\n(ignore rule in <repo>/.hgignore, line 1: ':alias/rules.ignore')\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "b75895bcf2a0a92c8d5813cd5c5034434e79754337de12e08b0f91009215fad0",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "file.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-53ae92m4/repo/.hgignore, line 1: ':alias/rules.ignore')\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.include-dangling-symlink-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "command": [
+        "/usr/local/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "file.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "file.tmp is not ignored\n",
+      "stderr": "skipping unreadable pattern file 'alias/rules.ignore': No such file or directory\n",
+      "configuration": null,
+      "normalized_stdout_sha256": "c3200f570067db45e532f906b928146ce266b6fcd05a831edbb84cb0e67426d1",
+      "normalized_stderr_sha256": "93ed8863436a2ae6b727fb17060f2a91fd89e961e54bbf7fc82fae5891b2f02a",
+      "raw_stdout": "file.tmp is not ignored\n",
+      "raw_stderr": "skipping unreadable pattern file 'alias/rules.ignore': No such file or directory\n"
     }
   ]
 }
