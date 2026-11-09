@@ -30,6 +30,41 @@ MALFORMED_CASE = next(case for case in CASES if case["id"] == "fossil.malformed-
 MALFORMED_PROBES = MALFORMED_CASE["setup"]["probes"]
 
 
+def _windows_unrepresentable_query_reason(query: str) -> str | None:
+    """Return why Win32 cannot create an oracle query as a filesystem entry."""
+    components = query.split("/")
+    if any("\\" in component for component in components):
+        return "Windows paths cannot represent a POSIX filename containing backslash"
+    if any(any(ord(character) < 32 for character in component) for component in components):
+        return "Windows filenames cannot contain ASCII control characters"
+    if any(
+        any(character in component for character in '<>:"|?*') or component.endswith((" ", "."))
+        for component in components
+    ):
+        return "Windows cannot represent this Fossil oracle filename"
+    return None
+
+
+def _skip_unrepresentable_windows_query(query: str) -> None:
+    """Skip oracle paths that Win32 cannot create as filesystem entries."""
+    if os.name == "nt":
+        reason = _windows_unrepresentable_query_reason(query)
+        if reason is not None:
+            pytest.skip(reason)
+
+
+@pytest.mark.parametrize(
+    ("query", "reason"),
+    [
+        ("one\x1ctwo", "Windows filenames cannot contain ASCII control characters"),
+        (r"one\two", "Windows paths cannot represent a POSIX filename containing backslash"),
+        ("visible.txt", None),
+    ],
+)
+def test_windows_oracle_query_representability(query: str, reason: str | None) -> None:
+    assert _windows_unrepresentable_query_reason(query) == reason
+
+
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
 def test_fossil_capture_matches_known_candidate(profile: str, case: dict[str, Any]) -> None:
@@ -74,15 +109,7 @@ def test_fossil_policy_matches_captured_ignore_decisions(
     profile: str,
     case: dict[str, Any],
 ) -> None:
-    if os.name == "nt":
-        components = case["query"].split("/")
-        if any("\\" in component for component in components):
-            pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
-        if any(
-            any(character in component for character in '<>:"|?*') or component.endswith((" ", "."))
-            for component in components
-        ):
-            pytest.skip("Windows cannot represent this Fossil oracle filename")
+    _skip_unrepresentable_windows_query(case["query"])
     setup = case["setup"]
     setting = setup.get(
         "versioned_ignore_glob",
@@ -126,12 +153,7 @@ def test_fossil_policy_matches_captured_malformed_token_decisions(
     profile: str,
     probe: dict[str, Any],
 ) -> None:
-    if os.name == "nt":
-        components = probe["query"].split("/")
-        if any("\\" in component for component in components):
-            pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
-        if any(any(character in component for character in '<>:"|?*') for component in components):
-            pytest.skip("Windows cannot represent this Fossil oracle filename")
+    _skip_unrepresentable_windows_query(probe["query"])
     captured = next(
         case for case in CAPTURES[profile]["cases"] if case["id"] == MALFORMED_CASE["id"]
     )
