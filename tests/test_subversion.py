@@ -25,6 +25,9 @@ PROPERTY_SPACE_CASE = next(
 INHERITED_PROPERTY_CASE = next(
     case for case in CASES if case["id"] == "svn.global-ignores-above-checkout-root"
 )
+SWITCHED_INHERITED_CASE = next(
+    case for case in CASES if case["id"] == "svn.switched-subtree-inherits-global-ignores"
+)
 PATH_ROUND_TRIP_CASE = next(
     case for case in CASES if case["id"] == "svn.path-newline-and-tab-round-trip"
 )
@@ -211,6 +214,25 @@ def _create_working_copy(
                 [*svn_prefix, "propset", name, value, target], cwd=root, environment=environment
             )
     _run_svn([*svn_prefix, "commit", "-m", "fixture"], cwd=root, environment=environment)
+    for copy in setup.get("repository_copies", []):
+        _run_svn(
+            [
+                *svn_prefix,
+                "copy",
+                f"{repository_url}/{copy['source']}",
+                f"{repository_url}/{copy['destination']}",
+                "-m",
+                copy.get("message", "repository copy"),
+            ],
+            cwd=tmp_path,
+            environment=environment,
+        )
+    for switch in setup.get("switches", []):
+        _run_svn(
+            [*svn_prefix, "switch", f"{repository_url}/{switch['url']}", switch["path"]],
+            cwd=root,
+            environment=environment,
+        )
     if setup.get("external_files"):
         _run_svn([*svn_prefix, "update"], cwd=root, environment=environment)
     for relative, depth in setup.get("sparse_depths", {}).items():
@@ -293,7 +315,13 @@ def test_subversion_properties_keep_local_inherited_and_membership_scopes(
 
 @pytest.mark.parametrize(
     "case",
-    [*APR_GLOB_CASES, PROPERTY_SPACE_CASE, PATH_ROUND_TRIP_CASE, INHERITED_PROPERTY_CASE],
+    [
+        *APR_GLOB_CASES,
+        PROPERTY_SPACE_CASE,
+        PATH_ROUND_TRIP_CASE,
+        INHERITED_PROPERTY_CASE,
+        SWITCHED_INHERITED_CASE,
+    ],
     ids=lambda case: case["id"],
 )
 def test_subversion_policy_matches_native_status(tmp_path: Path, case: dict[str, Any]) -> None:
@@ -320,6 +348,30 @@ def test_subversion_policy_matches_native_status(tmp_path: Path, case: dict[str,
 
     assert native_ignored == expected
     assert {path for path in fixture_paths if policy.is_ignored(path)} == expected
+
+
+@pytest.mark.parametrize("topdown", [True, False])
+def test_subversion_walk_scopes_inherited_rules_to_switched_subtree(
+    tmp_path: Path, topdown: bool
+) -> None:
+    case = SWITCHED_INHERITED_CASE
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    policy = SubversionIgnorePolicy(root, config_dir=config_dir, environment=environment)
+    walker = IgnoreWalker(root, policy=policy)
+
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+
+    assert ignored == {"pkg/ignored.branchtmp"}
+    assert included == {"outside.branchtmp", "pkg/base.txt"}
 
 
 def test_subversion_file_external_keeps_rule_matching_separate_from_membership(

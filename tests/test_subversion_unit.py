@@ -116,6 +116,8 @@ def test_policy_parses_native_property_snapshot_without_a_client(
             INFO_XML.replace(b"{root}", str(tmp_path).encode())
             if operation == "info"
             else PROPLIST_XML
+            if operation == "proplist"
+            else b"<status/>"
         )
         return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr=b"")
 
@@ -133,8 +135,10 @@ def test_policy_parses_native_property_snapshot_without_a_client(
         "info",
         "info",
         "proplist",
+        "status",
         "info",
         "proplist",
+        "status",
     ]
 
 
@@ -159,6 +163,8 @@ def test_policy_loads_inherited_global_ignores_above_the_working_copy(
             INFO_XML.replace(b"{root}", str(tmp_path).encode())
             if operation == "info"
             else inherited_xml
+            if operation == "proplist"
+            else b"<status/>"
         )
         return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr=b"")
 
@@ -187,12 +193,16 @@ def test_explicit_runtime_config_patterns_keep_provenance_and_reach_svn_commands
 
     def run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         del kwargs
-        operation = next(argument for argument in command if argument in ("info", "proplist"))
+        operation = next(
+            argument for argument in command if argument in ("info", "proplist", "status")
+        )
         commands.append(tuple(command))
         stdout = (
             INFO_XML.replace(b"{root}", str(tmp_path).encode())
             if operation == "info"
             else b"<properties/>"
+            if operation == "proplist"
+            else b"<status/>"
         )
         return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr=b"")
 
@@ -205,9 +215,23 @@ def test_explicit_runtime_config_patterns_keep_provenance_and_reach_svn_commands
     )
     assert policy.trace("artifact.runtime-temp").complete
     assert [
-        next(argument for argument in command if argument in ("info", "proplist"))
+        next(argument for argument in command if argument in ("info", "proplist", "status"))
         for command in commands
-    ] == ["info", "info", "proplist", "info", "proplist", "info", "proplist", "info", "proplist"]
+    ] == [
+        "info",
+        "info",
+        "proplist",
+        "status",
+        "info",
+        "proplist",
+        "status",
+        "info",
+        "proplist",
+        "status",
+        "info",
+        "proplist",
+        "status",
+    ]
     for command in commands:
         config_dir_index = command.index("--config-dir")
         assert command[config_dir_index + 1] == str(config_dir.resolve())

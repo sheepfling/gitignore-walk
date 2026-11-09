@@ -301,6 +301,38 @@ def _capture_case(
                     )
             commit_command = [svn, "--config-dir", str(config_dir), "commit", "-m", "fixture"]
             commit = _command(commit_command, cwd=working_copy, environment=environment)
+            repository_copy_results = [
+                _command(
+                    [
+                        svn,
+                        "--config-dir",
+                        str(config_dir),
+                        "copy",
+                        f"{repository_url}/{copy['source']}",
+                        f"{repository_url}/{copy['destination']}",
+                        "-m",
+                        copy.get("message", "repository copy"),
+                    ],
+                    cwd=temp,
+                    environment=environment,
+                )
+                for copy in setup.get("repository_copies", [])
+            ]
+            switch_results = [
+                _command(
+                    [
+                        svn,
+                        "--config-dir",
+                        str(config_dir),
+                        "switch",
+                        f"{repository_url}/{switch['url']}",
+                        switch["path"],
+                    ],
+                    cwd=working_copy,
+                    environment=environment,
+                )
+                for switch in setup.get("switches", [])
+            ]
             external_update = None
             if setup.get("external_files"):
                 external_update = _command(
@@ -383,6 +415,8 @@ def _capture_case(
                 add,
                 *property_results,
                 commit,
+                *repository_copy_results,
+                *switch_results,
                 *([external_update] if external_update is not None else []),
                 *sparse_updates,
                 *nested_results,

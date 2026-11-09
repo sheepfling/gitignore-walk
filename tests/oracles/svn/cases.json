@@ -391,5 +391,42 @@
       "expected_status_paths": ["root.tmp", "visible.txt"],
       "evidence_status": "native-observed"
     }
+    ,
+    {
+      "id": "svn.switched-subtree-inherits-global-ignores",
+      "dimension": "switched-working-copy-property-inheritance",
+      "setup": {
+        "repository_directories": ["branches"],
+        "repository_subdirectories": ["pkg"],
+        "repository_properties": {
+          "branches": {
+            "svn:global-ignores": "*.branchtmp\n"
+          }
+        },
+        "versioned_files": {
+          "pkg/base.txt": "base\n"
+        },
+        "repository_copies": [
+          {
+            "source": "trunk/pkg",
+            "destination": "branches/pkg",
+            "message": "create switched branch"
+          }
+        ],
+        "switches": [
+          {
+            "path": "pkg",
+            "url": "branches/pkg"
+          }
+        ],
+        "unversioned_files": {
+          "pkg/ignored.branchtmp": "ignored by inherited branch property\n",
+          "outside.branchtmp": "not under switched branch\n"
+        }
+      },
+      "expected_ignored_paths": ["pkg/ignored.branchtmp"],
+      "expected_status_paths": ["outside.branchtmp", "pkg", "pkg/ignored.branchtmp"],
+      "evidence_status": "native-observed"
+    }
   ]
 }

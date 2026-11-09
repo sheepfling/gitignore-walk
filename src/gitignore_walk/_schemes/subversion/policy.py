@@ -478,6 +478,60 @@ class SubversionIgnorePolicy(IgnorePolicy):
                             pattern=pattern,
                         )
                     )
+        # Recursive property discovery does not report inherited properties at
+        # switched paths. Ask the native client at each switched working-copy
+        # root and keep those rules scoped to that subtree.
+        status_output = self._run(
+            ("status", "--xml", "--no-ignore", "--depth", "infinity", "."), cwd=query_root
+        )
+        try:
+            status_document = ET.fromstring(status_output)
+        except ET.ParseError as error:
+            raise SubversionIgnoreError(
+                f"Subversion returned invalid switched-path status XML: {error}",
+                operation="status",
+                path=str(query_root),
+            ) from error
+        for entry in status_document.findall("./target/entry"):
+            status = entry.find("wc-status")
+            if status is None or status.attrib.get("switched") != "true":
+                continue
+            relative = entry.attrib.get("path", ".").replace("\\", "/")
+            relative_path = Path(relative)
+            if relative_path.is_absolute() or ".." in relative_path.parts:
+                raise SubversionIgnoreError(
+                    "Subversion returned a switched path outside the working copy.",
+                    operation="status",
+                    path=relative,
+                )
+            switched_path = relative_path.as_posix() if relative not in ("", ".") else "."
+            inherited_output = self._run(
+                ("proplist", "--xml", "--verbose", "--show-inherited-props", switched_path),
+                cwd=query_root,
+            )
+            try:
+                inherited_document = ET.fromstring(inherited_output)
+            except ET.ParseError as error:
+                raise SubversionIgnoreError(
+                    f"Subversion returned invalid switched-path property XML: {error}",
+                    operation="proplist",
+                    path=switched_path,
+                ) from error
+            for target in inherited_document.findall("./target"):
+                source = target.attrib.get("path", "")
+                for prop in target.findall("./inherited_property"):
+                    name = prop.attrib.get("name", "")
+                    if name != _GLOBAL_IGNORE_PROPERTY:
+                        continue
+                    for pattern in split_svn_property_patterns(prop.text or ""):
+                        rules.append(
+                            _SvnRule(
+                                source=source,
+                                scope=switched_path,
+                                property_name=name,
+                                pattern=pattern,
+                            )
+                        )
         runtime_ignores = load_runtime_global_ignores(
             config_dir=self.config_dir,
             environment=self._environment,
