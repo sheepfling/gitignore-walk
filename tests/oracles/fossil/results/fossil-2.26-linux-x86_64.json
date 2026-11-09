@@ -6,8 +6,8 @@
       "executable": "/usr/bin/fossil",
       "version": "This is fossil version 2.26 [611144ddd9] 2025-05-16 13:52:48 UTC"
     },
-    "platform": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
-    "runner_python": "3.12.16"
+    "platform": "Linux-7.0.12-linuxkit-x86_64-with-glibc2.41",
+    "runner_python": "3.13.5"
   },
   "cases": [
     {
@@ -683,6 +683,306 @@
       "observed_ignored": true,
       "candidate_matches": true,
       "query": "pre\"fix",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.range-class-hit",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "b.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.range-class-miss",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "z.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "z.tmp"
+        ],
+        "stdout_sha256": "206ae8f9376ac505108b8d138fcbb87b8aad448afab3c01e95727cebf3c5bdd1",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.question-mark-unicode",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "caf\u00e9.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.case-sensitive",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "file.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "file.tmp"
+        ],
+        "stdout_sha256": "62c70297463a29399d35b1ab4359e015d3567238bb81f76e752c86912599666f",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.class-bang-matches-a",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "a.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.class-bang-does-not-match-b",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "b.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "b.tmp"
+        ],
+        "stdout_sha256": "b61050d6438392ab49e870b046010d60d749e9983ce05435d74c737abda50dd2",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.class-caret-negates",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "b.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.class-caret-excludes",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "a.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "a.tmp"
+        ],
+        "stdout_sha256": "88e95ec428cf81c51183f12290eff2fa95411da01188ba20cfc569c8a307fc31",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.unmatched-open-class",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "file[",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "file["
+        ],
+        "stdout_sha256": "7d9aef90acf7d8174914ea440ff6a11a26a1ba4ac7d1541375c4039fa5ca2dd0",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.unmatched-close-class",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "file]",
       "extras": {
         "command": [
           "fossil",

@@ -251,6 +251,106 @@
       "query": "pre\"fix",
       "expected_candidate": true,
       "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.range-class-hit",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "[a-c].tmp"
+      },
+      "query": "b.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.range-class-miss",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "[a-c].tmp"
+      },
+      "query": "z.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.question-mark-unicode",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "caf?.tmp"
+      },
+      "query": "café.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.case-sensitive",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "*.TMP"
+      },
+      "query": "file.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.class-bang-matches-a",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "[!a].tmp"
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.class-bang-does-not-match-b",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "[!a].tmp"
+      },
+      "query": "b.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.class-caret-negates",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "[^a].tmp"
+      },
+      "query": "b.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.class-caret-excludes",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "[^a].tmp"
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unmatched-open-class",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "file["
+      },
+      "query": "file[",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unmatched-close-class",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "file]"
+      },
+      "query": "file]",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
     }
   ]
 }
