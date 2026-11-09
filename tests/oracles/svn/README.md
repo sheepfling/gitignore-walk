@@ -105,6 +105,14 @@ parent-relative, absolute, server-root-relative, and scheme-relative URLs, with 
 revisions. Each listed external working copy supplies its own versioned property snapshot, including
 nested externals reported by recursive native status. Versioned rules stop at each external boundary;
 runtime global patterns remain active throughout.
-Sparse `empty`-depth properties and excluded directory traversal barriers are covered. Broader
-configuration precedence, additional client/platform versions, and a reusable cross-scheme oracle
+Sparse `empty`-depth properties and excluded directory traversal barriers are covered. Additional
+configuration precedence profiles, client/platform versions, and a reusable cross-scheme oracle
 contract remain open before calling this mature support.
+
+The ambient configuration precedence probe runs in a disposable Debian 13 x86_64 Docker container.
+It gives `/etc/subversion/config` a system-only pattern and the isolated user's
+`~/.subversion/config` a different pattern. Native status and the policy both select only the user
+pattern, confirming that the user value replaces the system value for this captured Subversion
+1.14.5 profile. Run `python -m scripts.ci oracle-svn-config`; its normalized capture is
+`results/svn-config-precedence-debian-13-x86_64.json`. The temporary `/etc` file lives only inside
+the container, so the host's Subversion files are not modified.

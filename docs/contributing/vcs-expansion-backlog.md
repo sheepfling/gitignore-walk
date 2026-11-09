@@ -90,8 +90,9 @@ The SlikSvn Windows suite passed with 99 passed and 12 skipped in the latest hos
 and Linux suites pass with 107 passed and 4 skipped each. Native status paths omitted by sparse
 working-copy depth remain unknown.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
-are implemented; Windows Registry precedence needs native confirmation, while versioned directory
-membership and broader traversal/path behavior remain open. Fossil's 42-case
+are implemented. Native precedence captures cover system-to-user INI files on Debian 13 x86_64 and
+machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5; broader platform combinations,
+versioned directory membership, and traversal/path behavior remain open. Fossil's 42-case
 ignore-glob corpus is captured on 2.28/macOS arm64, 2.26/Linux aarch64 and x86_64, and 2.23/Ubuntu
 24.04 x86_64: all 41 boolean
 candidates agree, including range classes, Unicode `?`, case sensitivity, class-negation markers,

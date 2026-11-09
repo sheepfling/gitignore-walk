@@ -78,3 +78,40 @@ def test_subversion_status_transition_capture_matches_expected_states() -> None:
         hashlib.sha256(case["normalized_stdout"].encode()).hexdigest()
         == case["normalized_stdout_sha256"]
     )
+
+
+def test_subversion_system_user_config_precedence_capture() -> None:
+    """Keep native precedence evidence separate from the standard status corpus."""
+    path = ORACLE_ROOT / "results" / "svn-config-precedence-debian-13-x86_64.json"
+    capture = json.loads(path.read_text(encoding="utf-8"))
+    assert capture["status"] == "captured"
+    assert capture["client"]["svn_version"] == "1.14.5"
+    assert capture["system_pattern"] == "*.system-only-hide"
+    assert capture["user_pattern"] == "*.user-only-hide"
+    assert (
+        capture["system_config_sha256"]
+        == hashlib.sha256(b"[miscellany]\nglobal-ignores = *.system-only-hide\n").hexdigest()
+    )
+    assert (
+        capture["user_config_sha256"]
+        == hashlib.sha256(b"[miscellany]\nglobal-ignores = *.user-only-hide\n").hexdigest()
+    )
+    assert capture["native_status_command"] == [
+        "svn",
+        "status",
+        "--xml",
+        "--no-ignore",
+        ".",
+    ]
+    assert capture["native_status_exit_code"] == 0
+    assert (
+        capture["native_status_stdout_sha256"]
+        == hashlib.sha256(capture["native_status_stdout"].encode()).hexdigest()
+    )
+    assert capture["expected_ignored_paths"] == ["candidate.user-only-hide"]
+    assert capture["native_ignored_paths"] == capture["expected_ignored_paths"]
+    assert capture["policy_ignored_paths"] == capture["expected_ignored_paths"]
+    assert capture["policy_source"] == (
+        "Subversion runtime configuration: <isolated-home>/.subversion/config"
+    )
+    assert capture["candidate_matches"]

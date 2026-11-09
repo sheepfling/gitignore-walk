@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "svn_version": "1.14.5",
+    "platform": "Linux-7.0.12-linuxkit-x86_64-with-glibc2.41"
+  },
+  "system_config": "/etc/subversion/config",
+  "system_config_sha256": "7355e49ab797c207fe45ba1d7348ccbf3970100100bcf45e64cf2a945aa9c1e6",
+  "system_pattern": "*.system-only-hide",
+  "user_config": "<isolated-home>/.subversion/config",
+  "user_config_sha256": "020a1cbadb2c1282c5d1b9d45c40019497044b04b7fc63e7b2d000e6bd0e3143",
+  "user_pattern": "*.user-only-hide",
+  "native_status_command": [
+    "svn",
+    "status",
+    "--xml",
+    "--no-ignore",
+    "."
+  ],
+  "native_status_exit_code": 0,
+  "native_status_stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"candidate.system-only-hide\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"candidate.user-only-hide\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+  "native_status_stderr": "",
+  "native_status_stdout_sha256": "34548d17c82e5047f7fd4923b676964ce769a103d97ed65930182a08d65e417f",
+  "expected_ignored_paths": [
+    "candidate.user-only-hide"
+  ],
+  "native_ignored_paths": [
+    "candidate.user-only-hide"
+  ],
+  "policy_ignored_paths": [
+    "candidate.user-only-hide"
+  ],
+  "policy_source": "Subversion runtime configuration: <isolated-home>/.subversion/config",
+  "candidate_matches": true
+}

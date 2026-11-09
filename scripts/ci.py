@@ -164,6 +164,24 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="path for the native observation capture",
     )
 
+    svn_config_oracle_command = commands.add_parser(
+        "oracle-svn-config",
+        help="capture isolated native Subversion system/user config precedence in Docker",
+    )
+    svn_config_oracle_command.add_argument(
+        "--output",
+        type=Path,
+        default=(
+            project_root()
+            / "tests"
+            / "oracles"
+            / "svn"
+            / "results"
+            / "svn-config-precedence-debian-13-x86_64.json"
+        ),
+        help="path for the native precedence capture",
+    )
+
     fossil_oracle_command = commands.add_parser(
         "oracle-fossil", help="capture Fossil ignore-glob behavior in an isolated checkout"
     )
@@ -276,6 +294,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         if arguments.command == "oracle-svn":
             return _oracle_svn(arguments.svn, arguments.svnadmin, arguments.output)
+        if arguments.command == "oracle-svn-config":
+            return _oracle_svn_config(arguments.output)
         if arguments.command == "oracle-fossil":
             return _oracle_fossil(arguments.fossil, arguments.output)
         if arguments.command == "oracle-brz":
@@ -565,6 +585,44 @@ def _oracle_svn(executable: str, svnadmin: str, output: Path) -> int:
             str(transition_output),
         ],
         label="Capture native Subversion status transitions",
+    )
+
+
+def _oracle_svn_config(output: Path) -> int:
+    """Capture system/user precedence with a disposable Debian client container."""
+    docker = shutil.which("docker")
+    if docker is None:
+        raise RuntimeError("Docker is required for the isolated Subversion config oracle")
+    output = output.expanduser().resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    script = (
+        "set -eu; apt-get update -qq; "
+        "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq subversion python3 >/dev/null; "
+        "mkdir -p /etc/subversion; "
+        "printf '[miscellany]\\nglobal-ignores = *.system-only-hide\\n' "
+        "> /etc/subversion/config; "
+        "PYTHONPATH=src python3 tests/oracles/svn/ambient_precedence.py "
+        f"--output {shlex.quote('/output/' + output.name)}"
+    )
+    return _run(
+        [
+            docker,
+            "run",
+            "--rm",
+            "--platform",
+            "linux/amd64",
+            "--mount",
+            f"type=bind,source={project_root()},target=/work",
+            "--mount",
+            f"type=bind,source={output.parent},target=/output",
+            "-w",
+            "/work",
+            "debian:13-slim",
+            "sh",
+            "-lc",
+            script,
+        ],
+        label="Capture isolated Subversion system/user configuration precedence",
     )
 
 

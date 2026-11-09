@@ -78,6 +78,11 @@ jobs:
       - name: Run native-backed policy tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: python -m scripts.ci test
+      - name: Capture isolated Subversion config precedence in Debian
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/native"
+          python -m scripts.ci oracle-svn-config --output "$RUNNER_TEMP/native/svn-config-precedence.json"
       - name: Capture Darcs oracle in Debian 13
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |
