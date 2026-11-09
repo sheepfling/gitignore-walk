@@ -192,6 +192,8 @@ def test_policy_matches_captured_native_observation(
         pytest.skip(observation["skip_reason"])
     if os.name == "nt" and case["setup"].get("file_modes"):
         pytest.skip("Windows cannot reproduce POSIX unreadable-file permissions")
+    if os.name == "nt" and case["setup"].get("files_bytes_hex"):
+        pytest.skip("Windows cannot reproduce POSIX raw-byte ignore-file fixtures")
     if os.name == "nt" and "\\" in case["query"]:
         pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
     if os.name == "nt" and any(character in case["query"] for character in '<>:"|?*'):
@@ -209,15 +211,17 @@ def test_policy_matches_captured_native_observation(
             return original_open(path, *args, **kwargs)
 
         monkeypatch.setattr(Path, "open", deny_unreadable_source)
-    expected = observation["observed_ignored"]
     decision = policy.explain(query)
-
-    candidate = _expected_candidate_for_os(case, os.name)
-    if isinstance(candidate, bool):
+    profile_os = "nt" if "windows" in profile else "posix"
+    profile_candidate = _expected_candidate_for_os(case, profile_os)
+    current_candidate = _expected_candidate_for_os(case, os.name)
+    if isinstance(profile_candidate, bool):
         assert observation["candidate_matches"]
-        assert expected is candidate
-    if expected is not None:
-        assert decision.ignored is expected
+        assert observation["observed_ignored"] is profile_candidate
+    if not isinstance(current_candidate, bool):
+        current_candidate = observation["observed_ignored"]
+    if current_candidate is not None:
+        assert decision.ignored is current_candidate
     if "expected_policy_discovery_complete" in case:
         assert decision.discovery_complete is case["expected_policy_discovery_complete"]
         assert [item.code for item in decision.diagnostics] == case["expected_policy_diagnostics"]
@@ -331,6 +335,8 @@ def test_unicode_regex_flag_is_rejected_by_native_and_policy(tmp_path: Path) -> 
 
 def test_glob_matching_preserves_unicode_normalization_form(tmp_path: Path) -> None:
     """Mercurial compares the code-point spelling of a path without Unicode normalization."""
+    if os.name == "nt":
+        pytest.skip("Windows Mercurial matches local-code-page paths against UTF-8 ignore bytes")
     (tmp_path / ".hg").mkdir()
     (tmp_path / ".hgignore").write_text("syntax: glob\ncafé.tmp\n", encoding="utf-8")
     policy = MercurialIgnorePolicy(tmp_path)
@@ -723,6 +729,7 @@ def test_invalid_regexp_fails_with_source_context(tmp_path: Path) -> None:
     assert error.value.source is not None
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows cannot represent POSIX undecodable path bytes")
 def test_undecodable_ignore_bytes_match_surrogateescaped_path(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     (root / ".hg").mkdir(parents=True)
