@@ -103,8 +103,10 @@ def _capture_status(svn: str, svnadmin: str) -> dict[str, Any]:
         for name, content in initial_files.items():
             (root / name).write_text(content, encoding="utf-8")
         _run([*svn_prefix, "add", "--force", "."], cwd=root, environment=environment)
+        ignore_file = temporary / "svn-ignore.txt"
+        ignore_file.write_text("*.tmp\n", encoding="utf-8")
         _run(
-            [*svn_prefix, "propset", "svn:ignore", "*.tmp", "."],
+            [*svn_prefix, "propset", "svn:ignore", "--file", str(ignore_file), "."],
             cwd=root,
             environment=environment,
         )
