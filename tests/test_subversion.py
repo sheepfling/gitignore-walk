@@ -31,6 +31,9 @@ SWITCHED_INHERITED_CASE = next(
 COLLAPSED_DIRECTORY_CASE = next(
     case for case in CASES if case["id"] == "svn.collapsed-unversioned-directory-membership"
 )
+IGNORED_DIRECTORY_CASE = next(
+    case for case in CASES if case["id"] == "svn.ignored-unversioned-directory-collapses"
+)
 PATH_ROUND_TRIP_CASE = next(
     case for case in CASES if case["id"] == "svn.path-newline-and-tab-round-trip"
 )
@@ -431,6 +434,65 @@ def test_subversion_collapsed_unversioned_directory_keeps_child_membership_unkno
     }
     assert ignored == {"cache/a.tmp"}
     assert included == {"cache/visible.txt"}
+
+
+@pytest.mark.parametrize("topdown", [True, False])
+def test_subversion_ignored_directory_keeps_descendant_rules_and_membership_distinct(
+    tmp_path: Path, topdown: bool
+) -> None:
+    root, environment, config_dir = _create_working_copy(tmp_path, IGNORED_DIRECTORY_CASE)
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_entries = {
+        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    assert native_entries == {".": "normal", "cache": "ignored", "visible.txt": "unversioned"}
+
+    parent = policy.explain("cache")
+    child = policy.explain("cache/a.tmp")
+    assert parent.ignored
+    assert parent.membership == "unversioned"
+    assert child.ignored
+    assert child.membership is None
+
+    walker = IgnoreWalker(root, policy=policy)
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    assert ignored == {"cache/a.tmp", "cache/nested/b.txt"}
+    assert included == {"visible.txt"}
 
 
 def test_subversion_file_external_keeps_rule_matching_separate_from_membership(

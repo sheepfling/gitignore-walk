@@ -1504,6 +1504,78 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.ignored-unversioned-directory-collapses",
+      "dimension": "ignored-directory-status-traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "cache"
+      ],
+      "observed_ignored_paths": [
+        "cache"
+      ],
+      "expected_status_paths": [
+        "cache",
+        "visible.txt"
+      ],
+      "observed_status_paths": [
+        "cache",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-n7nk21rc/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "db084a4243808d901763423df1a6f728930d43ab0e660a93354e1a36ef057ce0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-n7nk21rc/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache",
+            "visible.txt"
+          ],
+          "ignored_paths": [
+            "cache"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "c6051d2acce1bb5acac6ee7cb61ea1c538275fb8f9287218077e89bbace3bd09",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

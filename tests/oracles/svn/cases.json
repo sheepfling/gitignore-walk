@@ -464,6 +464,25 @@
       "expected_ignored_paths": [],
       "expected_status_paths": ["cache"],
       "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.ignored-unversioned-directory-collapses",
+      "dimension": "ignored-directory-status-traversal",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:global-ignores": "cache\n"
+          }
+        },
+        "unversioned_files": {
+          "cache/a.tmp": "under an ignored directory\n",
+          "cache/nested/b.txt": "under a nested ignored directory\n",
+          "visible.txt": "outside the ignored directory\n"
+        }
+      },
+      "expected_ignored_paths": ["cache"],
+      "expected_status_paths": ["cache", "visible.txt"],
+      "evidence_status": "native-observed"
     }
   ]
 }

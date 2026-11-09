@@ -103,7 +103,11 @@ An unversioned-directory fixture also confirms that native status collapses `cac
 unversioned entry on macOS Subversion 1.15.0, hosted Ubuntu 1.14.3, and Windows SlikSvn 1.14.5.
 The policy can still match a known descendant against ignore rules while native membership stays
 unknown; physical walker traversal remains independent of that collapsed status listing. Broader
-status traversal remains open.
+status traversal remains open. A second fixture gives `cache` an inherited ignore rule: default
+status omits that directory, while `--no-ignore` reports it once without its descendants. Direct
+descendant decisions still apply the inherited rule, their membership stays unknown, and the
+membership-aware walker traverses them conservatively. The macOS native status and walker assertions
+pass; matching Ubuntu and Windows captures are pending.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented. Native precedence captures cover system-to-user INI files on Debian 13 x86_64 and
 machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5; broader platform combinations,
