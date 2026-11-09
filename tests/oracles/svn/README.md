@@ -13,6 +13,10 @@ Run the capture from the repository root:
 python -m scripts.ci oracle-svn --output /tmp/svn-oracle.json
 ```
 
+The command also writes `/tmp/svn-oracle.transitions.json`, a separate disposable-working-copy
+capture for native membership transitions. The `scripts.ci native --backends svn` command checks
+both outputs and retains them as CI artifacts.
+
 The runner creates a temporary repository and working copy, writes an isolated Subversion config,
 and records both native status listings, the client versions, commands, and exit codes. The
 scheme-relative URL case starts `svnserve` on loopback with anonymous access limited to that
@@ -56,9 +60,9 @@ descend into the excluded subtree. The directory-external membership check confi
 working copy reports the external root as `external`; the policy treats that root as versioned and
 reads descendant status from the external working copy itself.
 This live transition test passed locally with Subversion 1.15.0 and runs in the hosted Ubuntu
-Subversion 1.14.3 and Windows SlikSvn 1.14.5 integration jobs. The transition sequence is asserted
-against native status and policy membership, but is not yet stored as a separate versioned oracle
-capture.
+Subversion 1.14.3 and Windows SlikSvn 1.14.5 integration jobs. The native status sequence is also
+stored in `results/svn-status-transitions-1.15.0-macos-arm64.json`; each native CI run writes its
+own transition capture alongside the standard Subversion oracle artifact.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then

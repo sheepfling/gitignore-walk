@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any
 
 import pytest
+
+from tests.oracles.svn.transitions import EXPECTED_STATUS_ITEMS
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "svn"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
@@ -57,3 +60,21 @@ def test_subversion_captured_profiles_agree() -> None:
     for observation in observations[1:]:
         shared_cases = baseline.keys() & observation.keys()
         assert all(baseline[case_id] == observation[case_id] for case_id in shared_cases)
+
+
+def test_subversion_status_transition_capture_matches_expected_states() -> None:
+    """Keep the committed native status-transition evidence complete and internally consistent."""
+    path = ORACLE_ROOT / "results" / "svn-status-transitions-1.15.0-macos-arm64.json"
+    capture = json.loads(path.read_text(encoding="utf-8"))
+    assert capture["status"] == "captured"
+    assert capture["client"]["svn"]["version"] == "1.15.0"
+    assert len(capture["cases"]) == 1
+    case = capture["cases"][0]
+    assert case["id"] == "svn.status-membership-transitions"
+    assert case["candidate_matches"]
+    assert case["expected_status_items"] == EXPECTED_STATUS_ITEMS
+    assert case["observed_status_items"] == EXPECTED_STATUS_ITEMS
+    assert (
+        hashlib.sha256(case["normalized_stdout"].encode()).hexdigest()
+        == case["normalized_stdout_sha256"]
+    )

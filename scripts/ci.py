@@ -546,20 +546,25 @@ def _oracle_hg(
 
 
 def _oracle_svn(executable: str, svnadmin: str, output: Path) -> int:
-    """Delegate Subversion capture to its isolated, scheme-specific oracle runner."""
-    runner = project_root() / "tests" / "oracles" / "svn" / "run.py"
+    """Capture Subversion ignore rules and working-copy status transitions."""
+    oracle_dir = project_root() / "tests" / "oracles" / "svn"
+    common = ["--svn", executable, "--svnadmin", svnadmin]
+    result = _run(
+        [sys.executable, str(oracle_dir / "run.py"), *common, "--output", str(output)],
+        label="Capture native Subversion ignore observations",
+    )
+    if result:
+        return result
+    transition_output = output.with_name(f"{output.stem}.transitions.json")
     return _run(
         [
             sys.executable,
-            str(runner),
-            "--svn",
-            executable,
-            "--svnadmin",
-            svnadmin,
+            str(oracle_dir / "transitions.py"),
+            *common,
             "--output",
-            str(output),
+            str(transition_output),
         ],
-        label="Capture native Subversion ignore observations",
+        label="Capture native Subversion status transitions",
     )
 
 

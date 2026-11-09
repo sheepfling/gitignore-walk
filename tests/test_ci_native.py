@@ -101,6 +101,15 @@ def test_hg_captures_matching_walking_and_trust(tmp_path: Path) -> None:
     assert "--trust-output" in arguments
 
 
+def test_svn_captures_rule_cases_and_status_transitions(tmp_path: Path) -> None:
+    arguments, paths = ci_native.capture_arguments("svn", tmp_path)
+    assert arguments == ["oracle-svn", "--output", str(tmp_path / "svn-oracle.json")]
+    assert paths == [
+        tmp_path / "svn-oracle.json",
+        tmp_path / "svn-oracle.transitions.json",
+    ]
+
+
 def test_native_continues_after_failure_and_uses_fresh_captures(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -147,10 +156,13 @@ def test_summary_distinguishes_pass_with_skips(
     monkeypatch.setattr(ci_native.shutil, "which", lambda tool: tool)
 
     def run(command: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
-        write_capture(
-            Path(command[command.index("--output") + 1]),
-            cases=[{"id": "platform-only", "native_status": "skipped"}],
-        )
+        output = Path(command[command.index("--output") + 1])
+        paths = [output, output.with_name(f"{output.stem}.transitions.json")]
+        for path in paths:
+            write_capture(
+                path,
+                cases=[{"id": "platform-only", "native_status": "skipped"}],
+            )
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(ci_native.subprocess, "run", run)

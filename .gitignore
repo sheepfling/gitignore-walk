@@ -20,6 +20,7 @@ temp/
 tests/oracles/hg/capture.local.json
 tests/oracles/hg/capture.walk.local.json
 tests/oracles/svn/capture.local.json
+tests/oracles/svn/capture.local.transitions.json
 
 # macOS metadata
 .DS_Store

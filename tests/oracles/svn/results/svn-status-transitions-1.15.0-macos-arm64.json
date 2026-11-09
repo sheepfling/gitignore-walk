@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "svn": {
+      "executable": "/opt/homebrew/bin/svn",
+      "version": "1.15.0"
+    },
+    "svnadmin": {
+      "executable": "/opt/homebrew/bin/svnadmin",
+      "version": "1.15.0"
+    },
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "runner_python": "3.12.16"
+  },
+  "cases": [
+    {
+      "id": "svn.status-membership-transitions",
+      "dimension": "working-copy-status-membership",
+      "native_status": "captured",
+      "expected_status_items": {
+        "normal.tmp": "normal",
+        "modified.tmp": "modified",
+        "added.tmp": "added",
+        "deleted.tmp": "deleted",
+        "missing.tmp": "missing",
+        "replaced.tmp": "replaced",
+        "obstructed.tmp": "obstructed",
+        "conflicted.tmp": "conflicted",
+        "loose.tmp": "ignored"
+      },
+      "observed_status_items": {
+        "normal.tmp": "normal",
+        "modified.tmp": "modified",
+        "added.tmp": "added",
+        "deleted.tmp": "deleted",
+        "missing.tmp": "missing",
+        "replaced.tmp": "replaced",
+        "obstructed.tmp": "obstructed",
+        "conflicted.tmp": "conflicted",
+        "loose.tmp": "ignored"
+      },
+      "candidate_matches": true,
+      "command": [
+        "/opt/homebrew/bin/svn",
+        "--config-dir",
+        "<config>",
+        "status",
+        "--xml",
+        "--verbose",
+        "--no-ignore",
+        "--depth",
+        "infinity",
+        "."
+      ],
+      "environment": {
+        "HOME": "<isolated-home>",
+        "LC_ALL": "C",
+        "LANG": "C",
+        "config_dir": "<isolated-config>"
+      },
+      "exit_code": 0,
+      "normalized_stdout_sha256": "fb7f9b37c615f61b24e1f55fdb720921125aec801fd410c124000162f1f4cf1d",
+      "raw_stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\".\">\n<wc-status\n   item=\"normal\"\n   revision=\"3\"\n   props=\"normal\">\n<commit\n   revision=\"3\">\n<author>rick</author>\n<date>2026-11-09T16:54:50.089418Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"added.tmp\">\n<wc-status\n   item=\"added\"\n   revision=\"-1\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp\">\n<wc-status\n   item=\"conflicted\"\n   revision=\"3\"\n   props=\"none\">\n<commit\n   revision=\"3\">\n<author>rick</author>\n<date>2026-11-09T16:54:50.089418Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp.mine\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp.r2\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp.r3\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"deleted.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"deleted\"\n   revision=\"3\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"loose.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"missing.tmp\">\n<wc-status\n   item=\"missing\"\n   revision=\"3\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"modified.tmp\">\n<wc-status\n   item=\"modified\"\n   revision=\"3\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"normal.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"normal\"\n   revision=\"3\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"obstructed.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"obstructed\"\n   revision=\"3\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"replaced.tmp\">\n<wc-status\n   item=\"replaced\"\n   revision=\"3\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+      "normalized_stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\".\">\n<wc-status\n   item=\"normal\"\n   revision=\"3\"\n   props=\"normal\">\n<commit\n   revision=\"3\">\n<author>rick</author>\n<date>2026-11-09T16:54:50.089418Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"added.tmp\">\n<wc-status\n   item=\"added\"\n   revision=\"-1\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp\">\n<wc-status\n   item=\"conflicted\"\n   revision=\"3\"\n   props=\"none\">\n<commit\n   revision=\"3\">\n<author>rick</author>\n<date>2026-11-09T16:54:50.089418Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp.mine\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp.r2\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"conflicted.tmp.r3\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"deleted.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"deleted\"\n   revision=\"3\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"loose.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"missing.tmp\">\n<wc-status\n   item=\"missing\"\n   revision=\"3\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"modified.tmp\">\n<wc-status\n   item=\"modified\"\n   revision=\"3\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"normal.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"normal\"\n   revision=\"3\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"obstructed.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"obstructed\"\n   revision=\"3\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T16:54:48.118318Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"replaced.tmp\">\n<wc-status\n   item=\"replaced\"\n   revision=\"3\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+      "stderr": ""
+    }
+  ]
+}

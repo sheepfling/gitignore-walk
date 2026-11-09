@@ -53,6 +53,8 @@ def capture_arguments(
         outputs.extend([walk, trust])
         if not include_trust:
             arguments.append("--skip-trust")
+    elif backend == "svn":
+        outputs.append(directory / "svn-oracle.transitions.json")
     return arguments, outputs
 
 
