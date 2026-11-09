@@ -4,7 +4,8 @@
   "client": {
     "svn": {
       "executable": "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
-      "version": "1.14.5-SlikSvn"
+      "version": "1.14.5-SlikSvn",
+      "apr_build": "APR 1.7.5 (compiled with 1.7.5)"
     },
     "svnadmin": {
       "executable": "C:\\Program Files\\SlikSvn\\bin\\svnadmin.EXE",
@@ -562,6 +563,86 @@
           "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"external-file.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"normal\"\r\n   revision=\"2\"\r\n   file-external=\"true\">\r\n<commit\r\n   revision=\"2\">\r\n<author>runneradmin</author>\r\n<date>2026-11-09T12:45:19.965641Z</date>\r\n</commit>\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"loose.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
           "stderr": "",
           "stdout_sha256": "1117c4d1cd1361f8b385720500d5b65cfd02988a653668ee4bf360c74083a30d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.glob-apr-default-flags",
+      "dimension": "apr-glob-flags",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp"
+      ],
+      "observed_ignored_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp"
+      ],
+      "expected_status_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp",
+        "upper/CASE.TMP"
+      ],
+      "observed_status_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp",
+        "upper/CASE.TMP"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-ooohb8gf\\config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "upper/CASE.TMP"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"upper\\CASE.TMP\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "a2492f7477776c1e9a61003f330bfe462a0fd1b13b021cd7fdbfc929e87a62bc",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-ooohb8gf\\config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "hidden/.hidden.tmp",
+            "lower/case.tmp",
+            "upper/CASE.TMP"
+          ],
+          "ignored_paths": [
+            "hidden/.hidden.tmp",
+            "lower/case.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"hidden\\.hidden.tmp\">\r\n<wc-status\r\n   item=\"ignored\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"lower\\case.tmp\">\r\n<wc-status\r\n   item=\"ignored\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"upper\\CASE.TMP\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "a73e884761cbd206666dc54c127f2a87af21f633238c8d7e914e03b1684b78d7",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },

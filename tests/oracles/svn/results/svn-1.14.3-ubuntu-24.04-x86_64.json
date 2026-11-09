@@ -4,7 +4,8 @@
   "client": {
     "svn": {
       "executable": "/usr/bin/svn",
-      "version": "1.14.3"
+      "version": "1.14.3",
+      "apr_build": "APR 1.7.2 (compiled with 1.7.2)"
     },
     "svnadmin": {
       "executable": "/usr/bin/svnadmin",
@@ -626,6 +627,86 @@
           "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   props=\"none\"\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\">\n<commit\n   revision=\"2\">\n<author>runner</author>\n<date>2026-11-09T19:55:41.654506Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"loose.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
           "stdout_sha256": "d5bdc6e8edd82aa85de757d2d8b9edf8e75f61a1e1bc6d8a0ee2cdb96b3c5b1e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.glob-apr-default-flags",
+      "dimension": "apr-glob-flags",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp"
+      ],
+      "observed_ignored_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp"
+      ],
+      "expected_status_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp",
+        "upper/CASE.TMP"
+      ],
+      "observed_status_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp",
+        "upper/CASE.TMP"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-t1_qhao2/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "upper/CASE.TMP"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"upper/CASE.TMP\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "b82dc244c444fe9a7f3498855519287711f8d9c9bc926934449e320992849a5f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-t1_qhao2/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "hidden/.hidden.tmp",
+            "lower/case.tmp",
+            "upper/CASE.TMP"
+          ],
+          "ignored_paths": [
+            "hidden/.hidden.tmp",
+            "lower/case.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"hidden/.hidden.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"lower/case.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"upper/CASE.TMP\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "199bbd0cbb8e389250affe5f2ba7bddc7120b19e0edf3236ebda3de3c607ca0b",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },

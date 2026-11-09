@@ -74,8 +74,10 @@ the policy now queries each native-reported switched root and scopes its inherit
 Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64, and 1.14.5/SlikSvn Windows x86_64.
 The APR glob-flags question has source evidence in both the 1.14.5 and 1.15.0 `string.c` tags:
 the common helper calls `apr_fnmatch` with flags `0`, and status passes a basename to the helper.
-The native 1.15.0/macOS case confirms leading-period wildcard matching and case sensitivity with
-APR 1.7.6; equivalent captures on Linux and Windows remain open.
+The native default-flags case confirms leading-period wildcard matching and case sensitivity on
+Subversion 1.15.0/macOS arm64 (APR 1.7.6), 1.14.3/Ubuntu 24.04 x86_64 (APR 1.7.2), and
+1.14.5/SlikSvn Windows x86_64 (APR 1.7.5). The three client results agree on the ignored paths and
+the visible uppercase control.
 The SVN corpus now also covers newline- and tab-bearing filenames: Subversion 1.15.0/macOS arm64
 captures their XML numeric-reference round trip, and top-down and bottom-up policy walks preserve
 the decoded paths. Windows records an explicit skip because it cannot represent these filenames;

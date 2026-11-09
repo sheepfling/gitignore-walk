@@ -43,10 +43,10 @@ run this extra status query. Sparse-depth fixtures confirm a versioned directory
 `empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
 path without listing files beneath it. A switched-subtree case confirms that inherited
 `svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. The
-19-case corpus is captured on Subversion 1.15.0/macOS arm64. The Ubuntu 1.14.3 and SlikSvn
-Windows 1.14.5 profiles contain the preceding 18 cases; their APR default-flags captures are
-pending. Platform-constrained cases are recorded as skips. The 16 earlier cases also match on
-Subversion 1.14.5/Linux aarch64 and x86_64. The
+19-case corpus is captured on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64, and
+1.14.5/SlikSvn Windows Server 2025 x86_64, with platform-constrained cases recorded as skips. The
+APR build lines are retained for these profiles: 1.7.6, 1.7.2, and 1.7.5, respectively. The 16
+earlier cases also match on Subversion 1.14.5/Linux aarch64 and x86_64. The
 file-external case is captured on macOS, both Linux architectures, and Windows Server
 2025 x86_64. The Windows oracle job explicitly skips the
 newline-and-tab case because those filenames are not representable there. The focused runtime
