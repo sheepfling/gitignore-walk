@@ -24,7 +24,12 @@ The property fixtures cover local, inherited, nested, and external-working-copy 
 configuration; Git-style negation; ignored directories; and versioned files whose names match ignore
 rules. A file external appears in native status as a normal versioned file with `file-external="true"`;
 even when `svn:ignore` matches its name, it is not reported as ignored. The policy reports rule matches
-separately from versioned membership. Sparse-depth fixtures confirm a versioned directory at depth
+separately from versioned membership. Set `membership_aware=True` on `SubversionPolicyConfig` to
+query `svn status --xml --verbose --no-ignore --depth infinity`; known versioned and unversioned
+entries populate `IgnoreDecision.membership`, and the walker selects known versioned entries as
+included even when their rules match. Membership remains `None` for paths omitted by native status,
+including paths beneath some sparse working-copy depths. The default stays rule-only and does not
+run this extra status query. Sparse-depth fixtures confirm a versioned directory at depth
 `empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
 path without listing files beneath it. All 16 cases match on Subversion 1.15.0/macOS arm64 and
 1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS and both Linux
@@ -64,10 +69,10 @@ Server 2025 x86_64 is committed as `results/svn-1.14.5-windows-x86_64.json`; uns
 and server cases are explicitly skipped. The separate Registry capture is committed as
 `results/svn-1.14.5-windows-registry.json`: native status and the policy both honor the Registry-only
 pattern, then both honor the user INI pattern over the Registry value.
-The policy does not
-determine versioned membership or claim add/status command equivalence beyond these fixtures. It
-keeps ignored directories traversable, stops at unrelated nested `.svn` working copies,
-and follows external roots reported by native status across repository-root-relative,
+Membership-aware decisions use native status item values for listed entries and leave unlisted paths
+unknown; they do not claim add/status command equivalence beyond these fixtures. The default policy
+does not query membership. It keeps ignored directories traversable, stops at unrelated nested
+`.svn` working copies, and follows external roots reported by native status across repository-root-relative,
 parent-relative, absolute, server-root-relative, and scheme-relative URLs, with and without pinned
 revisions. Each listed external working copy supplies its own versioned property snapshot, including
 nested externals reported by recursive native status. Versioned rules stop at each external boundary;

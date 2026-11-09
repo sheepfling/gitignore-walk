@@ -43,6 +43,8 @@ class IgnoreDecision:
         reason: Policy-defined reason for the decision, such as ``matched-rule``.
         discovery_complete: Whether the policy found all applicable ignore sources.
         diagnostics: Non-fatal discovery or evaluation issues.
+        membership: Known version-control membership, independent of ``ignored``. ``None`` means
+            the policy did not query or could not determine membership.
     """
 
     path: Path
@@ -56,6 +58,7 @@ class IgnoreDecision:
     reason: str | None = None
     discovery_complete: bool = field(kw_only=True)
     diagnostics: tuple[IgnoreDiagnostic, ...] = ()
+    membership: Literal["versioned", "unversioned"] | None = None
 
 
 @dataclass(frozen=True, slots=True)

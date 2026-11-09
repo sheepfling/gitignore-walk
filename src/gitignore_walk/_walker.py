@@ -10,7 +10,7 @@ from collections.abc import Callable, Generator, Iterator, Sequence
 from pathlib import Path
 from typing import Any, Literal, NamedTuple, cast
 
-from ._policy import IgnorePolicy, IgnoreWalkEntry
+from ._policy import IgnoreDecision, IgnorePolicy, IgnoreWalkEntry
 from ._schemes.git._ignore_protocols import GitIgnoreMatcher
 from ._schemes.git.portable import (
     _DEFAULT_INITIAL_EXCLUDES,
@@ -24,6 +24,11 @@ class _WalkStackEntry(NamedTuple):
     directory: str
     names: list[str] | None
     files: list[str] | None
+
+
+def _is_policy_ignored(decision: IgnoreDecision) -> bool:
+    """Classify membership-aware decisions without changing their rule-match result."""
+    return decision.ignored and decision.membership != "versioned"
 
 
 def _is_regular_directory(path: Path, *, onerror: Callable[[OSError], object] | None) -> bool:
@@ -126,6 +131,8 @@ class IgnoreWalker:
         with ``selection="all"``. Symlinks and special files are always omitted. An ignored-only
         walk still traverses unignored directories to find ignored descendants. For included walks,
         ``dir_names`` may include ignored directories when the policy cannot safely prune them.
+        If a policy reports membership, known versioned entries are selected as included even when
+        their ignore rules match; the policy decision itself remains unchanged.
         """
 
         if selection not in ("included", "ignored", "all"):
@@ -137,7 +144,9 @@ class IgnoreWalker:
             return
         if ignored is False and top_path != self.root and top_path.is_dir():
             top_decision = session.explain_many((top_path,))[0]
-            if top_decision.ignored and session.can_prune_ignored_directory(top_path, top_decision):
+            if _is_policy_ignored(top_decision) and session.can_prune_ignored_directory(
+                top_path, top_decision
+            ):
                 return
 
         def traversable_directories(
@@ -168,7 +177,7 @@ class IgnoreWalker:
                 for name, child_path, decision in zip(
                     regular_children, child_paths, child_decisions, strict=True
                 )
-                if not decision.ignored
+                if not _is_policy_ignored(decision)
                 or not session.can_prune_ignored_directory(child_path, decision)
             ]
 
@@ -209,7 +218,7 @@ class IgnoreWalker:
             matching_files = [
                 name
                 for name, decision in zip(safe_filenames, file_decisions, strict=True)
-                if decision.ignored is ignored
+                if _is_policy_ignored(decision) is ignored
             ]
             if not ignored:
                 traversable_dirs = [
@@ -220,7 +229,7 @@ class IgnoreWalker:
                         directory_decisions,
                         strict=True,
                     )
-                    if not decision.ignored
+                    if not _is_policy_ignored(decision)
                     or not session.can_prune_ignored_directory(path, decision)
                 ]
                 dir_names[:] = traversable_dirs
@@ -230,7 +239,7 @@ class IgnoreWalker:
             matching_dirs = [
                 name
                 for name, decision in zip(safe_dir_names, directory_decisions, strict=True)
-                if decision.ignored
+                if _is_policy_ignored(decision)
             ]
             yield IgnoreWalkEntry(current, matching_dirs, matching_files)
 

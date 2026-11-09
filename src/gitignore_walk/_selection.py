@@ -135,6 +135,7 @@ class SubversionPolicyConfig:
             per-user files are discovered from ``environment``.
         environment: Optional complete environment passed to ``svn``.
         timeout: Maximum duration in seconds for each Subversion command.
+        membership_aware: Query native status to report whether each path is versioned.
         global_ignores: Additional runtime ``global-ignores`` patterns supplied by the caller.
         initial_excludes: Walker baseline exclusions, defaulting to Subversion's ``.svn`` metadata.
     """
@@ -144,6 +145,7 @@ class SubversionPolicyConfig:
     config_dir: str | os.PathLike[str] | None = None
     environment: Mapping[str, str] | None = None
     timeout: float = 30.0
+    membership_aware: bool = False
     global_ignores: Sequence[str] = ()
     initial_excludes: Sequence[str] = (".svn",)
 
@@ -586,6 +588,7 @@ def select_policy(
                 config_dir=selected.config_dir,
                 environment=selected.environment,
                 timeout=selected.timeout,
+                membership_aware=selected.membership_aware,
                 global_ignores=selected.global_ignores,
                 initial_excludes=selected.initial_excludes,
             )

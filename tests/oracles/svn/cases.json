@@ -219,10 +219,13 @@
         },
         "external_files": {
           "external-file.txt": "external file content\n"
+        },
+        "unversioned_files": {
+          "loose.txt": "not versioned\n"
         }
       },
       "expected_ignored_paths": [],
-      "expected_status_paths": ["external-file.txt"],
+      "expected_status_paths": ["external-file.txt", "loose.txt"],
       "evidence_status": "native-observed"
     },
     {

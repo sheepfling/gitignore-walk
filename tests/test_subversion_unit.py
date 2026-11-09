@@ -224,11 +224,12 @@ def test_malformed_runtime_config_reports_config_file_context(
 
     def run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
         del kwargs
-        stdout = (
-            INFO_XML.replace(b"{root}", str(tmp_path).encode())
-            if "info" in command
-            else b"<properties/>"
-        )
+        if "info" in command:
+            stdout = INFO_XML.replace(b"{root}", str(tmp_path).encode())
+        elif "proplist" in command:
+            stdout = b"<properties/>"
+        else:
+            stdout = b"<status/>"
         return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr=b"")
 
     monkeypatch.setattr("gitignore_walk._schemes.subversion.policy.subprocess.run", run)
@@ -426,7 +427,8 @@ def test_selector_builds_the_tagged_subversion_policy(
     config_dir = tmp_path / "svn-config"
     config_dir.mkdir()
     selection = select_policy(
-        tmp_path, SubversionPolicyConfig(config_dir=config_dir, environment={})
+        tmp_path,
+        SubversionPolicyConfig(config_dir=config_dir, environment={}, membership_aware=True),
     )
 
     assert isinstance(selection, SubversionPolicySelection)
@@ -435,6 +437,7 @@ def test_selector_builds_the_tagged_subversion_policy(
     assert selection.fallback_reason is None
     assert isinstance(selection.policy, SubversionIgnorePolicy)
     assert selection.policy.config_dir == config_dir.resolve()
+    assert selection.policy.membership_aware
 
 
 def test_native_property_discovery_errors_keep_operation_context(

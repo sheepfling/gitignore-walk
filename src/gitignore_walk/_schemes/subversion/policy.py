@@ -12,6 +12,7 @@ from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import islice
 from pathlib import Path
+from typing import Literal
 
 from ..._policy import (
     IgnoreDecision,
@@ -62,10 +63,12 @@ class _SvnRule:
 
 @dataclass(frozen=True, slots=True)
 class _SvnPropertySnapshot:
-    """All supported directory properties observed in one working-copy query."""
+    """Ignore properties and optional membership observed in one working-copy query."""
 
     workspace_root: Path
     rules: tuple[_SvnRule, ...]
+    versioned_paths: frozenset[Path] = frozenset()
+    unversioned_paths: frozenset[Path] = frozenset()
     excluded_roots: frozenset[Path] = frozenset()
     discovery_complete: bool = True
     diagnostics: tuple[IgnoreDiagnostic, ...] = ()
@@ -116,13 +119,17 @@ class SubversionIgnorePolicy(IgnorePolicy):
     supplied environment. On Windows, machine Registry values, machine INI files, user Registry
     values, and user INI files are read in that precedence order; inaccessible Registry sources are
     reported as incomplete. Ignore decisions describe rule matches, not whether paths are already
-    versioned. It never prunes ignored directories, because it does not query versioned membership.
+    versioned. By default it does not query versioned membership and never prunes ignored
+    directories. Set ``membership_aware=True`` to include native status membership in decisions;
+    the rule result remains available separately as ``IgnoreDecision.ignored`` and the walker
+    treats known versioned entries as included.
 
     Attributes:
         root: Caller traversal root, bounded to this policy's targets.
         workspace_root: Discovered Subversion working-copy root.
         scheme: Stable ``"subversion"`` identifier.
         config_dir: Optional explicit Subversion runtime config directory.
+        membership_aware: Whether to query verbose native status and report known membership.
     """
 
     @property
@@ -138,6 +145,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
         config_dir: str | os.PathLike[str] | None = None,
         environment: Mapping[str, str] | None = None,
         timeout: float = 30.0,
+        membership_aware: bool = False,
         global_ignores: Sequence[str] = (),
         initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
     ) -> None:
@@ -162,6 +170,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
         except (OSError, RuntimeError) as error:
             raise ValueError(f"unable to resolve Subversion config directory: {error}") from error
         self.timeout = timeout
+        self.membership_aware = membership_aware
         self._environment = dict(os.environ if environment is None else environment)
         self._global_ignores = tuple(global_ignores)
         self._initial_excludes = tuple(
@@ -493,13 +502,68 @@ class SubversionIgnorePolicy(IgnorePolicy):
                         pattern=pattern,
                     )
                 )
+        versioned_paths: frozenset[Path] = frozenset()
+        unversioned_paths: frozenset[Path] = frozenset()
+        if self.membership_aware:
+            versioned_paths, unversioned_paths = self._load_membership(query_root)
         return _SvnPropertySnapshot(
             workspace_root=query_root,
             rules=tuple(rules),
+            versioned_paths=versioned_paths,
+            unversioned_paths=unversioned_paths,
             excluded_roots=frozenset(excluded_roots),
             discovery_complete=runtime_ignores.discovery_complete,
             diagnostics=runtime_ignores.diagnostics,
         )
+
+    def _load_membership(self, query_root: Path) -> tuple[frozenset[Path], frozenset[Path]]:
+        """Read native versioned and unversioned entries without changing ignore decisions."""
+        output = self._run(
+            ("status", "--xml", "--verbose", "--no-ignore", "--depth", "infinity", "."),
+            cwd=query_root,
+        )
+        try:
+            document = ET.fromstring(output)
+        except ET.ParseError as error:
+            raise SubversionIgnoreError(
+                f"Subversion returned invalid membership status XML: {error}",
+                operation="status",
+                path=str(query_root),
+            ) from error
+        versioned: set[Path] = set()
+        unversioned: set[Path] = set()
+        versioned_items = {
+            "normal",
+            "modified",
+            "added",
+            "deleted",
+            "replaced",
+            "conflicted",
+            "obstructed",
+            "incomplete",
+            "external",
+            "missing",
+            "excluded",
+        }
+        for entry in document.findall("./target/entry"):
+            status = entry.find("wc-status")
+            if status is None:
+                continue
+            relative = entry.attrib.get("path", ".").replace("\\", "/")
+            relative_path = Path(relative)
+            if relative_path.is_absolute() or ".." in relative_path.parts:
+                raise SubversionIgnoreError(
+                    "Subversion returned a membership path outside the working copy.",
+                    operation="status",
+                    path=relative,
+                )
+            path = query_root if relative in ("", ".") else query_root / relative_path
+            item = status.attrib.get("item")
+            if item in versioned_items:
+                versioned.add(path)
+            elif item in {"unversioned", "ignored"}:
+                unversioned.add(path)
+        return frozenset(versioned), frozenset(unversioned)
 
     def _run(self, arguments: Sequence[str], *, cwd: Path) -> bytes:
         command = [self.svn_executable, "--non-interactive"]
@@ -593,6 +657,11 @@ class SubversionIgnorePolicy(IgnorePolicy):
             None,
         )
         diagnostics = snapshot.diagnostics
+        membership: Literal["versioned", "unversioned"] | None = None
+        if path in snapshot.versioned_paths:
+            membership = "versioned"
+        elif path in snapshot.unversioned_paths:
+            membership = "unversioned"
         if excluded_root is not None:
             diagnostics += (
                 IgnoreDiagnostic(
@@ -616,6 +685,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
                 reason="baseline-exclusion",
                 discovery_complete=discovery_complete,
                 diagnostics=diagnostics,
+                membership=membership,
             )
         return IgnoreDecision(
             path=path,
@@ -628,6 +698,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
             reason="matched-rule" if rule else "no-matching-rule",
             discovery_complete=discovery_complete,
             diagnostics=diagnostics,
+            membership=membership,
         )
 
 

@@ -353,9 +353,26 @@ def test_subversion_file_external_keeps_rule_matching_separate_from_membership(
     }
     assert "external-file.txt" not in native_ignored
 
-    # Ignore decisions report matching rules, even for versioned file externals.
+    # Default decisions preserve rule matching and leave membership unknown.
     assert policy.is_ignored("external-file.txt")
     assert root / "external-file.txt" in set(walker.iter_files(selection="ignored"))
+    assert policy.explain("external-file.txt").membership is None
+
+    membership_policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    membership_walker = IgnoreWalker(root, policy=membership_policy)
+    file_external_decision = membership_policy.explain("external-file.txt")
+    loose_decision = membership_policy.explain("loose.txt")
+
+    assert file_external_decision.ignored
+    assert file_external_decision.membership == "versioned"
+    assert loose_decision.membership == "unversioned"
+    assert root / "external-file.txt" not in set(membership_walker.iter_files(selection="ignored"))
+    assert root / "external-file.txt" in set(membership_walker.iter_files(selection="included"))
 
 
 @pytest.mark.parametrize("topdown", [True, False])

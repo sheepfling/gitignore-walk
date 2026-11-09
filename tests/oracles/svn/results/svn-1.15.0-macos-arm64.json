@@ -1215,10 +1215,12 @@
       "expected_ignored_paths": [],
       "observed_ignored_paths": [],
       "expected_status_paths": [
-        "external-file.txt"
+        "external-file.txt",
+        "loose.txt"
       ],
       "observed_status_paths": [
-        "external-file.txt"
+        "external-file.txt",
+        "loose.txt"
       ],
       "candidate_matches": true,
       "versioned_files": [
@@ -1229,37 +1231,39 @@
           "command": [
             "/opt/homebrew/bin/svn",
             "--config-dir",
-            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-v8te8ice/config",
+            "/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-6noavib9/config",
             "status",
             "--xml"
           ],
           "exit_code": 0,
           "paths": [
-            "external-file.txt"
+            "external-file.txt",
+            "loose.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T11:38:41.138714Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T11:52:59.135112Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"loose.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "ea039f549102924b7252faa3d84b9ffa58e68045edbac36233e2e39559e763cd",
+          "stdout_sha256": "a307aebc63e16f4b716a35027fcc46f401390a3af9459eb5e108381b460c1ba9",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/opt/homebrew/bin/svn",
             "--config-dir",
-            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-v8te8ice/config",
+            "/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-6noavib9/config",
             "status",
             "--xml",
             "--no-ignore"
           ],
           "exit_code": 0,
           "paths": [
-            "external-file.txt"
+            "external-file.txt",
+            "loose.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T11:38:41.138714Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>rick</author>\n<date>2026-11-09T11:52:59.135112Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"loose.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "ea039f549102924b7252faa3d84b9ffa58e68045edbac36233e2e39559e763cd",
+          "stdout_sha256": "a307aebc63e16f4b716a35027fcc46f401390a3af9459eb5e108381b460c1ba9",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },

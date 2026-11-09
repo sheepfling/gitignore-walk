@@ -1215,10 +1215,12 @@
       "expected_ignored_paths": [],
       "observed_ignored_paths": [],
       "expected_status_paths": [
-        "external-file.txt"
+        "external-file.txt",
+        "loose.txt"
       ],
       "observed_status_paths": [
-        "external-file.txt"
+        "external-file.txt",
+        "loose.txt"
       ],
       "candidate_matches": true,
       "versioned_files": [
@@ -1229,37 +1231,39 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-1xoccolw/config",
+            "/tmp/gitignore-walk-svn-oracle-bu5lzfha/config",
             "status",
             "--xml"
           ],
           "exit_code": 0,
           "paths": [
-            "external-file.txt"
+            "external-file.txt",
+            "loose.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>root</author>\n<date>2026-11-09T11:39:39.866590Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>root</author>\n<date>2026-11-09T11:53:16.390675Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"loose.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "cb003b40ba7e93dbc3179e8afb5da7792ec48dfd27efe4b5703d4450081334c7",
+          "stdout_sha256": "2b5eecd768d5a0dfd598062ac16759fc32bf853707db449aaabf6edd16ce8959",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-1xoccolw/config",
+            "/tmp/gitignore-walk-svn-oracle-bu5lzfha/config",
             "status",
             "--xml",
             "--no-ignore"
           ],
           "exit_code": 0,
           "paths": [
-            "external-file.txt"
+            "external-file.txt",
+            "loose.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>root</author>\n<date>2026-11-09T11:39:39.866590Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>root</author>\n<date>2026-11-09T11:53:16.390675Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"loose.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "cb003b40ba7e93dbc3179e8afb5da7792ec48dfd27efe4b5703d4450081334c7",
+          "stdout_sha256": "68d120eae0807844f404fea92a7f3807e36845d81459a282ac429257fba8b1a3",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },

@@ -156,9 +156,13 @@ setting disables those defaults. Additional runtime patterns can be supplied thr
 `$HOME/.subversion/config` (using the supplied `environment`); a per-user setting overrides a
 system setting. On Windows it reads machine and user Registry settings along with the standard
 `PROGRAMDATA` and `APPDATA` config files, following [Subversion's documented source precedence](https://svnbook.red-bean.com/en/1.7/svn-book.html#svn.advanced.confarea.windows-registry).
-It reports inaccessible Registry sources as incomplete. It also does not query versioned
-membership. Its ignore decisions mean only that a rule matches; the walker keeps ignored
-directories traversable and excludes `.svn` metadata by default. Walks stop at unrelated
+It reports inaccessible Registry sources as incomplete. By default, it does not query versioned
+membership. Set `membership_aware=True` to query verbose native status and add known `"versioned"`
+or `"unversioned"` membership to each `IgnoreDecision`; paths absent from the status listing remain
+unknown. The `ignored` field continues to report the rule match. In membership-aware walks, known
+versioned entries are selected as included even if a rule matches. This option adds a native status
+command for each discovered working-copy snapshot. The walker keeps ignored directories traversable
+and excludes `.svn` metadata by default. Walks stop at unrelated
 nested `.svn` working
 copies and follow externals that native `svn status` identifies. It loads versioned ignore
 properties within each listed external working copy, including nested externals; properties from an
@@ -399,9 +403,10 @@ The detailed explanation also identifies the matching rule's origin:
 | `src/keep.log`     | No      | `src/.gitignore` | 1    |
 
 `IgnoreDecision` identifies the `scheme`, final `ignored` result, source and matched rule. It can
-also carry a source `line` or `property_name`, effective `scope`, policy-defined `reason`, and
-non-fatal discovery `diagnostics`. `discovery_complete` tells callers whether all applicable sources
-were found. Git policies identify their scheme as `"git"`; Mercurial uses `"mercurial"`. Mercurial
+also carry a source `line` or `property_name`, effective `scope`, policy-defined `reason`, optional
+`membership` (`"versioned"`, `"unversioned"`, or `None` when unknown), and non-fatal discovery
+`diagnostics`. `discovery_complete` tells callers whether all applicable sources were found. Git
+policies identify their scheme as `"git"`; Mercurial uses `"mercurial"`. Mercurial
 source discovery failures remain visible as diagnostics and incomplete discovery.
 `ignored` describes the scheme's ignore-rule result, not version-control membership or add/commit
 eligibility. Git-native queries use `--no-index`, so tracked paths are still evaluated against rules.
