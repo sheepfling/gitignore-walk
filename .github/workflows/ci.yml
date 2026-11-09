@@ -102,10 +102,10 @@ jobs:
           python-version: '3.12'
       - run: sudo apt-get update && sudo apt-get install -y subversion
       - run: python -m pip install -e '.[dev]'
+      - run: python -m scripts.ci oracle-svn --output "$RUNNER_TEMP/svn-oracle.json"
       - run: >-
           python -m pytest tests/test_subversion.py tests/test_subversion_unit.py
           tests/test_svn_oracle.py -q
-      - run: python -m scripts.ci oracle-svn --output "$RUNNER_TEMP/svn-oracle.json"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -139,10 +139,10 @@ jobs:
           $svnBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           & $svnPath --version --quiet
       - run: python -m pip install -e '.[dev]'
+      - run: python -m scripts.ci oracle-svn --output "$env:RUNNER_TEMP/svn-oracle.json"
       - run: >-
           python -m pytest tests/test_subversion.py tests/test_subversion_unit.py
           tests/test_svn_oracle.py -q
-      - run: python -m scripts.ci oracle-svn --output "$env:RUNNER_TEMP/svn-oracle.json"
       - run: >-
           python tests/oracles/svn/windows_registry.py
           --allow-registry-mutation
