@@ -347,7 +347,15 @@ class SubversionIgnorePolicy(IgnorePolicy):
                 self.workspace_root if relative in ("", ".") else self.workspace_root / relative
             )
         output = self._run(
-            ("proplist", "--xml", "--verbose", "--depth", "infinity", "."),
+            (
+                "proplist",
+                "--xml",
+                "--verbose",
+                "--depth",
+                "infinity",
+                "--show-inherited-props",
+                ".",
+            ),
             cwd=self.workspace_root,
         )
         try:
@@ -361,15 +369,17 @@ class SubversionIgnorePolicy(IgnorePolicy):
         rules: list[_SvnRule] = []
         for target in document.findall("./target"):
             relative = target.attrib.get("path", ".").replace("\\", "/")
-            if relative.startswith("/") or ".." in Path(relative).parts:
+            inherited = target.findall("./inherited_property")
+            explicit = target.findall("./property")
+            if explicit and (relative.startswith("/") or ".." in Path(relative).parts):
                 raise SubversionIgnoreError(
                     "Subversion returned a property path outside the working copy.",
                     operation="proplist",
                     path=relative,
                 )
-            scope_path = Path() if relative in ("", ".") else Path(relative)
+            scope_path = Path() if relative in ("", ".") or inherited else Path(relative)
             scope = scope_path.as_posix() or "."
-            for prop in target.findall("./property"):
+            for prop in explicit:
                 name = prop.attrib.get("name", "")
                 if name not in (_IGNORE_PROPERTY, _GLOBAL_IGNORE_PROPERTY):
                     continue
@@ -378,6 +388,24 @@ class SubversionIgnorePolicy(IgnorePolicy):
                         _SvnRule(
                             source=str(self.workspace_root / scope_path),
                             scope=scope,
+                            property_name=name,
+                            pattern=pattern,
+                        )
+                    )
+            for prop in inherited:
+                name = prop.attrib.get("name", "")
+                if name not in (_GLOBAL_IGNORE_PROPERTY,):
+                    continue
+                if not relative:
+                    raise SubversionIgnoreError(
+                        "Subversion returned an inherited property without its source path.",
+                        operation="proplist",
+                    )
+                for pattern in split_svn_property_patterns(prop.text or ""):
+                    rules.append(
+                        _SvnRule(
+                            source=relative,
+                            scope=".",
                             property_name=name,
                             pattern=pattern,
                         )

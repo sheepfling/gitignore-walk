@@ -138,6 +138,41 @@ def test_policy_parses_native_property_snapshot_without_a_client(
     ]
 
 
+def test_policy_loads_inherited_global_ignores_above_the_working_copy(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / ".svn").mkdir()
+    source_url = "https://example.invalid/repo/trunk"
+    inherited_xml = (
+        '<properties><target path="'
+        + source_url
+        + '"><inherited_property name="svn:global-ignores">*.tmp</inherited_property>'
+        "</target></properties>"
+    ).encode()
+    commands: list[list[str]] = []
+
+    def run(command: list[str], **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+        del kwargs
+        commands.append(command)
+        operation = command[2]
+        stdout = (
+            INFO_XML.replace(b"{root}", str(tmp_path).encode())
+            if operation == "info"
+            else inherited_xml
+        )
+        return subprocess.CompletedProcess(command, 0, stdout=stdout, stderr=b"")
+
+    monkeypatch.setattr("gitignore_walk._schemes.subversion.policy.subprocess.run", run)
+    policy = SubversionIgnorePolicy(tmp_path, environment={})
+    trace = policy.trace("root.tmp")
+
+    assert trace.decision.ignored
+    assert trace.decision.source == source_url
+    assert trace.decision.property_name == "svn:global-ignores"
+    assert trace.decision.scope == "."
+    assert any("--show-inherited-props" in command for command in commands)
+
+
 def test_explicit_runtime_config_patterns_keep_provenance_and_reach_svn_commands(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

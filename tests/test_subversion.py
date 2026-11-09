@@ -22,6 +22,9 @@ APR_GLOB_CASES = [case for case in CASES if case["dimension"].startswith("apr-gl
 PROPERTY_SPACE_CASE = next(
     case for case in CASES if case["id"] == "svn.property-space-delimited-pattern-is-single-glob"
 )
+INHERITED_PROPERTY_CASE = next(
+    case for case in CASES if case["id"] == "svn.global-ignores-above-checkout-root"
+)
 
 
 def _run_svn(
@@ -127,7 +130,40 @@ def _create_working_copy(
     _run_svn(
         [*svn_prefix, "mkdir", *mkdir_targets, "-m", "init"], cwd=tmp_path, environment=environment
     )
-    _run_svn([*svn_prefix, "checkout", url, str(root)], cwd=tmp_path, environment=environment)
+    for relative in setup.get("repository_subdirectories", []):
+        _run_svn(
+            [*svn_prefix, "mkdir", f"{url}/{relative}", "-m", "nested repository directory"],
+            cwd=tmp_path,
+            environment=environment,
+        )
+    checkout_subpath = setup.get("checkout_subpath")
+    if checkout_subpath:
+        parent_working_copy = tmp_path / "parent-working-copy"
+        _run_svn(
+            [*svn_prefix, "checkout", url, str(parent_working_copy)],
+            cwd=tmp_path,
+            environment=environment,
+        )
+        for relative, properties in setup.get("repository_properties", {}).items():
+            target = "." if relative == "." else relative
+            for name, value in properties.items():
+                _run_svn(
+                    [*svn_prefix, "propset", name, value, target],
+                    cwd=parent_working_copy,
+                    environment=environment,
+                )
+        _run_svn(
+            [*svn_prefix, "commit", "-m", "repository parent properties", "."],
+            cwd=parent_working_copy,
+            environment=environment,
+        )
+        _run_svn(
+            [*svn_prefix, "checkout", f"{url}/{checkout_subpath}", str(root)],
+            cwd=tmp_path,
+            environment=environment,
+        )
+    else:
+        _run_svn([*svn_prefix, "checkout", url, str(root)], cwd=tmp_path, environment=environment)
     for relative in setup.get("directories", []):
         (root / relative).mkdir(parents=True, exist_ok=True)
     for relative, content in setup.get("versioned_files", {}).items():
@@ -230,10 +266,10 @@ def test_subversion_properties_keep_local_inherited_and_membership_scopes(
 
 @pytest.mark.parametrize(
     "case",
-    [*APR_GLOB_CASES, PROPERTY_SPACE_CASE],
+    [*APR_GLOB_CASES, PROPERTY_SPACE_CASE, INHERITED_PROPERTY_CASE],
     ids=lambda case: case["id"],
 )
-def test_subversion_policy_globs_match_native_status(tmp_path: Path, case: dict[str, Any]) -> None:
+def test_subversion_policy_matches_native_status(tmp_path: Path, case: dict[str, Any]) -> None:
     if os.name == "nt" and case.get("windows_skip_reason"):
         pytest.skip(case["windows_skip_reason"])
     root, environment, config_dir = _create_working_copy(tmp_path, case)

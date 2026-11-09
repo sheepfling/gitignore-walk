@@ -149,15 +149,84 @@ def _capture_case(
                 "init",
             ]
             mkdir = _command(mkdir_command, cwd=temp, environment=environment)
-            checkout_command = [
-                svn,
-                "--config-dir",
-                str(config_dir),
-                "checkout",
-                url,
-                str(working_copy),
-            ]
-            checkout = _command(checkout_command, cwd=temp, environment=environment)
+            setup_results = [create, mkdir]
+            for relative in setup.get("repository_subdirectories", []):
+                setup_results.append(
+                    _command(
+                        [
+                            svn,
+                            "--config-dir",
+                            str(config_dir),
+                            "mkdir",
+                            f"{url}/{relative}",
+                            "-m",
+                            "nested repository directory",
+                        ],
+                        cwd=temp,
+                        environment=environment,
+                    )
+                )
+            checkout_subpath = setup.get("checkout_subpath")
+            if checkout_subpath:
+                parent_working_copy = temp / "parent-working-copy"
+                setup_results.append(
+                    _command(
+                        [
+                            svn,
+                            "--config-dir",
+                            str(config_dir),
+                            "checkout",
+                            url,
+                            str(parent_working_copy),
+                        ],
+                        cwd=temp,
+                        environment=environment,
+                    )
+                )
+                parent_property_results = []
+                for relative, properties in setup.get("repository_properties", {}).items():
+                    target = "." if relative == "." else relative
+                    for name, value in properties.items():
+                        parent_property_results.append(
+                            _command(
+                                [
+                                    svn,
+                                    "--config-dir",
+                                    str(config_dir),
+                                    "propset",
+                                    name,
+                                    value,
+                                    target,
+                                ],
+                                cwd=parent_working_copy,
+                                environment=environment,
+                            )
+                        )
+                setup_results.extend(parent_property_results)
+                setup_results.append(
+                    _command(
+                        [
+                            svn,
+                            "--config-dir",
+                            str(config_dir),
+                            "commit",
+                            "-m",
+                            "repository parent properties",
+                            ".",
+                        ],
+                        cwd=parent_working_copy,
+                        environment=environment,
+                    )
+                )
+                checkout_url = f"{url}/{checkout_subpath}"
+            else:
+                checkout_url = url
+            checkout = _command(
+                [svn, "--config-dir", str(config_dir), "checkout", checkout_url, str(working_copy)],
+                cwd=temp,
+                environment=environment,
+            )
+            setup_results.append(checkout)
             for relative in setup.get("directories", []):
                 (working_copy / relative).mkdir(parents=True, exist_ok=True)
             _write_files(working_copy, setup.get("versioned_files", {}))
@@ -260,9 +329,7 @@ def _capture_case(
             expected_status_paths = case.get("expected_status_paths")
             observed_status_paths = observations["no_ignore"]["paths"]
             command_results = [
-                create,
-                mkdir,
-                checkout,
+                *setup_results,
                 add,
                 *property_results,
                 commit,

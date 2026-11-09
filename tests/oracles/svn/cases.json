@@ -308,6 +308,26 @@
       },
       "expected_ignored_paths": ["two words.cache", "two words.tmp"],
       "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.global-ignores-above-checkout-root",
+      "dimension": "inherited-property-discovery",
+      "setup": {
+        "repository_subdirectories": ["subtree"],
+        "repository_properties": {
+          ".": {
+            "svn:global-ignores": "*.tmp\n"
+          }
+        },
+        "checkout_subpath": "subtree",
+        "unversioned_files": {
+          "root.tmp": "matched by property on repository parent of the checkout\n",
+          "visible.txt": "not ignored\n"
+        }
+      },
+      "expected_ignored_paths": ["root.tmp"],
+      "expected_status_paths": ["root.tmp", "visible.txt"],
+      "evidence_status": "native-observed"
     }
   ]
 }

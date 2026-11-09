@@ -11,8 +11,10 @@ a slice to a GitHub issue when it is ready to start and keep its acceptance evid
 The shared `IgnorePolicy`/`IgnoreWalker` seam, conservative pruning capability, tagged selection
 types, and per-scheme package layout are in place. Git and an initial portable Mercurial evaluator
 are implemented; Mercurial remains under conformance development. An initial native-discovery
-Subversion property policy is implemented, and its first expanded matching corpus passes on both
-captured profiles; broader discovery and working-copy conformance remain open. The
+Subversion property policy is implemented, and its expanded matching corpus passes on captured
+profiles. Native discovery now includes `svn:global-ignores` inherited from repository ancestors
+above the checkout root; this is captured on macOS and both Linux architectures, with the Windows
+capture still pending. Broader discovery and working-copy conformance remain open. The
 implementation research handoff records 94 native assertions against Git 2.47.3 and ripgrep 14.1.1
 on Linux, plus one malformed-input observation. It also supplies 88 non-Git candidate cases: 67
 documentation/source-derived and 21 open questions. The Mercurial native corpus has 48 path
@@ -417,7 +419,8 @@ checks are green.
 **Priority:** P2 · **Depends on:** VCS-08
 
 **Next scheme:** SVN, following the research ranking above. Its current property policy is an initial
-implementation; versioned membership and broader path behavior remain open.
+implementation; inherited `svn:global-ignores` above the working-copy root are now discovered, while
+versioned membership and broader path behavior remain open.
 
 Repeat VCS-00 through VCS-08 for each additional system. Reuse the conformance harness and shared
 contracts, but keep each scheme's source discovery, semantics, configuration, and limitations
@@ -429,7 +432,8 @@ repeated need.
 The chosen system's probe list in the checkpoint is the starting corpus. Preserve its named edge
 cases: Mercurial regex/glob/rootglob and scoped subinclude (keeping command-line file-selection
 patterns separate from ignore policy); Perforce default versus explicit
-`P4IGNORE`, order and `P4CONFIG`; SVN inherited properties and sparse working copies; TFVC nested
+`P4IGNORE`, order and `P4CONFIG`; SVN inherited properties above the checkout root and sparse working
+copies; TFVC nested
 `.tfignore`; Fossil's separate ignore/clean/keep behavior; Breezy exception and regex forms; the
 remaining Darcs boring-file lexical cases; and Sapling/Jujutsu global excludes and
 mode discovery beyond the captured in-tree `.gitignore` subset. These remain research questions

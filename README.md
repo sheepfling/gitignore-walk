@@ -253,6 +253,8 @@ The property behavior follows Subversion's documented distinction: `svn:ignore` 
 children of its directory, while `svn:global-ignores` applies through the directory's subtree. Both
 properties use additive filename globs; they do not use Git's `!` negation syntax. See the
 [Subversion ignore-property documentation](https://subversion.apache.org/blog/2013-06-26-repository-dictated-configuration-part-3-global-ignores.html).
+The policy also asks `svn proplist --show-inherited-props` for `svn:global-ignores` inherited from
+repository ancestors above the working-copy root; the source URL is retained in each decision.
 
 ```python
 from gitignore_walk import IgnoreWalker, SubversionPolicyConfig, select_policy
