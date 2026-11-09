@@ -1133,10 +1133,12 @@
       "dimension": "regex-byte-semantics",
       "setup": {
         "files": {
-          ".hgignore": "^\\d+$\n"
+          ".hgignore": "^\\d+$\n",
+          "\u0661": "untracked candidate\n"
         }
       },
       "query": "\u0661",
+      "native_observation_fallback": "status-membership",
       "expected_candidate": false,
       "expected_candidate_by_os": {"nt": null},
       "evidence_status": "native-observed",

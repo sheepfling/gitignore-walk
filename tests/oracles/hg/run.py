@@ -95,6 +95,49 @@ def _expected_candidate(case: Mapping[str, Any]) -> Any:
     return case.get("expected_candidate_by_os", {}).get(os.name, expected)
 
 
+def _status_observation(
+    executable: str,
+    root: Path,
+    environment: Mapping[str, str],
+    query: str,
+) -> dict[str, Any]:
+    """Determine an untracked path's ignore state from Mercurial's NUL status lists."""
+    observations: dict[str, dict[str, Any]] = {}
+    for selection in ("ignored", "unknown"):
+        command = [executable, "status", f"--{selection}", "--no-status", "-0"]
+        result = subprocess.run(
+            command,
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        paths = sorted(
+            path.decode("utf-8", errors="surrogateescape").replace("\\", "/")
+            for path in result.stdout.split(b"\0")
+            if path
+        )
+        observations[selection] = {
+            "command": command,
+            "exit_code": result.returncode,
+            "paths": paths,
+            "stdout": result.stdout.decode("utf-8", errors="backslashreplace"),
+            "stderr": result.stderr.decode("utf-8", errors="backslashreplace"),
+            "stdout_sha256": hashlib.sha256(result.stdout).hexdigest(),
+            "stderr_sha256": hashlib.sha256(result.stderr).hexdigest(),
+        }
+    ignored = observations["ignored"]
+    unknown = observations["unknown"]
+    observed: bool | None = None
+    if ignored["exit_code"] == 0 and unknown["exit_code"] == 0:
+        if query in ignored["paths"]:
+            observed = True
+        elif query in unknown["paths"]:
+            observed = False
+    return {"observed_ignored": observed, "status": observations}
+
+
 def _has_surrogateescaped_bytes(value: str) -> bool:
     """Return whether text contains a POSIX surrogateescape byte placeholder."""
     return any(0xDC80 <= ord(character) <= 0xDCFF for character in value)
@@ -251,6 +294,12 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         normalized_stdout = raw_stdout.replace(str(root), "<repo>").replace(str(home), "<home>")
         normalized_stderr = raw_stderr.replace(str(root), "<repo>").replace(str(home), "<home>")
         observed = _ignored(normalized_stdout)
+        fallback_observation: dict[str, Any] | None = None
+        observation_method = "debugignore"
+        if observed is None and case.get("native_observation_fallback") == "status-membership":
+            fallback_observation = _status_observation(executable, root, env, query)
+            observed = fallback_observation["observed_ignored"]
+            observation_method = "status-membership"
         expected = _expected_candidate(case)
         candidate = expected.get("ignored") if isinstance(expected, dict) else expected
         matches_candidate = (
@@ -265,6 +314,8 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "expected_candidate": expected,
             "observed_ignored": observed,
             "candidate_matches": matches_candidate,
+            "observation_method": observation_method,
+            "fallback_observation": fallback_observation,
             "command": command,
             "working_directory": "<repo>",
             "environment": {

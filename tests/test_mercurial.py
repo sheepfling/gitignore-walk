@@ -22,7 +22,12 @@ from gitignore_walk import (
 )
 from gitignore_walk._schemes import mercurial as mercurial_scheme
 from gitignore_walk._schemes.mercurial import policy as mercurial_policy_module
-from tests.oracles.hg.run import _has_init_failures, _ignored, _query_skip_reason
+from tests.oracles.hg.run import (
+    _has_init_failures,
+    _ignored,
+    _query_skip_reason,
+    _status_observation,
+)
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "hg"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
@@ -267,7 +272,10 @@ def test_pattern_semantics_match_installed_native_client(
         [hg, "init", str(root)], env=environment, capture_output=True, check=False, timeout=30
     )
     assert initialized.returncode == 0, initialized.stderr.decode(errors="replace")
-    (root / ".hgignore").write_text(case["setup"]["files"][".hgignore"], encoding="utf-8")
+    for relative, content in case["setup"]["files"].items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
 
     native = subprocess.run(
         [hg, "debugignore", "-v", "--", case["query"]],
@@ -282,11 +290,16 @@ def test_pattern_semantics_match_installed_native_client(
     )
     assert native.returncode == 0, native.stderr
     native_ignored = _ignored(native.stdout)
-    policy = MercurialIgnorePolicy(root)
-
+    if native_ignored is None and case.get("native_observation_fallback") == "status-membership":
+        native_ignored = _status_observation(hg, root, environment, case["query"])[
+            "observed_ignored"
+        ]
     expected = _expected_candidate_for_os(case, os.name)
+    policy = MercurialIgnorePolicy(root)
     if expected is None:
-        pytest.skip("Mercurial debugignore returned no parseable candidate decision")
+        assert native_ignored is not None, "native debugignore and status gave no candidate result"
+        assert policy.explain(case["query"]).ignored is native_ignored
+        pytest.skip("the native Windows result is live-checked but not yet in the captured profile")
     assert native_ignored is expected
     assert policy.explain(case["query"]).ignored is expected
 
