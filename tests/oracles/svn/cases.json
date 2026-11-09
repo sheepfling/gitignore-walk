@@ -483,6 +483,27 @@
       "expected_ignored_paths": ["cache"],
       "expected_status_paths": ["cache", "visible.txt"],
       "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.versioned-directory-ignore-membership",
+      "dimension": "versioned-directory-membership",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:global-ignores": "cache\n"
+          }
+        },
+        "versioned_files": {
+          "cache/tracked.tmp": "tracked despite matching ancestor rule\n"
+        },
+        "unversioned_files": {
+          "cache/new.tmp": "unversioned child of a versioned directory\n",
+          "visible.txt": "outside the matching ancestor\n"
+        }
+      },
+      "expected_ignored_paths": [],
+      "expected_status_paths": ["cache/new.tmp", "visible.txt"],
+      "evidence_status": "native-observed"
     }
   ]
 }

@@ -678,21 +678,22 @@ class SubversionIgnorePolicy(IgnorePolicy):
         except ValueError:
             return ()
         components = () if relative in ("", ".") else tuple(relative.split("/"))
+        if not components:
+            return ()
+        basename = components[-1]
+        parent_parts = components[:-1]
         matched: list[_SvnRule] = []
         for rule in snapshot.rules:
             scope_parts = () if rule.scope == "." else tuple(rule.scope.split("/"))
-            for index, basename in enumerate(components):
-                parent_parts = components[:index]
-                if rule.property_name == _IGNORE_PROPERTY:
-                    applies = parent_parts == scope_parts
-                else:
-                    applies = (
-                        len(parent_parts) >= len(scope_parts)
-                        and parent_parts[: len(scope_parts)] == scope_parts
-                    )
-                if applies and matches_svn_glob(basename, rule.pattern):
-                    matched.append(rule)
-                    break
+            if rule.property_name == _IGNORE_PROPERTY:
+                applies = parent_parts == scope_parts
+            else:
+                applies = (
+                    len(parent_parts) >= len(scope_parts)
+                    and parent_parts[: len(scope_parts)] == scope_parts
+                )
+            if applies and matches_svn_glob(basename, rule.pattern):
+                matched.append(rule)
         caller_relative = target.relative_to(self.root).as_posix()
         if any(_matches_prefix(caller_relative, pattern) for pattern in self._initial_excludes):
             return ()

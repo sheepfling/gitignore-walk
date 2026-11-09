@@ -34,6 +34,9 @@ COLLAPSED_DIRECTORY_CASE = next(
 IGNORED_DIRECTORY_CASE = next(
     case for case in CASES if case["id"] == "svn.ignored-unversioned-directory-collapses"
 )
+VERSIONED_DIRECTORY_CASE = next(
+    case for case in CASES if case["id"] == "svn.versioned-directory-ignore-membership"
+)
 PATH_ROUND_TRIP_CASE = next(
     case for case in CASES if case["id"] == "svn.path-newline-and-tab-round-trip"
 )
@@ -300,7 +303,7 @@ def test_subversion_properties_keep_local_inherited_and_membership_scopes(
     assert policy.is_ignored("pkg/deeper/a.deep")
     assert policy.is_ignored("configured.oracle-default")
     assert policy.is_ignored("tracked.tmp")
-    assert policy.is_ignored("ignored.tmp/child.txt")
+    assert not policy.is_ignored("ignored.tmp/child.txt")
     assert not policy.is_ignored("pkg/child.tmp")
     assert not policy.is_ignored("pkg/keep.tmp")
     assert not policy.is_ignored("pkg/visible.txt")
@@ -327,6 +330,7 @@ def test_subversion_properties_keep_local_inherited_and_membership_scopes(
         PATH_ROUND_TRIP_CASE,
         INHERITED_PROPERTY_CASE,
         SWITCHED_INHERITED_CASE,
+        VERSIONED_DIRECTORY_CASE,
     ],
     ids=lambda case: case["id"],
 )
@@ -477,7 +481,7 @@ def test_subversion_ignored_directory_keeps_descendant_rules_and_membership_dist
     child = policy.explain("cache/a.tmp")
     assert parent.ignored
     assert parent.membership == "unversioned"
-    assert child.ignored
+    assert not child.ignored
     assert child.membership is None
 
     walker = IgnoreWalker(root, policy=policy)
@@ -491,8 +495,42 @@ def test_subversion_ignored_directory_keeps_descendant_rules_and_membership_dist
         for path in walker.iter_files(selection="included", topdown=topdown)
         if ".svn" not in path.relative_to(root).parts
     }
-    assert ignored == {"cache/a.tmp", "cache/nested/b.txt"}
-    assert included == {"visible.txt"}
+    assert ignored == set()
+    assert included == {"cache/a.tmp", "cache/nested/b.txt", "visible.txt"}
+
+
+@pytest.mark.parametrize("topdown", [True, False])
+def test_subversion_versioned_directory_keeps_matching_rules_separate_from_membership(
+    tmp_path: Path, topdown: bool
+) -> None:
+    root, environment, config_dir = _create_working_copy(tmp_path, VERSIONED_DIRECTORY_CASE)
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+
+    directory = policy.explain("cache")
+    tracked = policy.explain("cache/tracked.tmp")
+    unversioned = policy.explain("cache/new.tmp")
+    assert directory.ignored and directory.membership == "versioned"
+    assert not tracked.ignored and tracked.membership == "versioned"
+    assert not unversioned.ignored and unversioned.membership == "unversioned"
+
+    walker = IgnoreWalker(root, policy=policy)
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    assert ignored == set()
+    assert included == {"cache/new.tmp", "cache/tracked.tmp", "visible.txt"}
 
 
 def test_subversion_file_external_keeps_rule_matching_separate_from_membership(
@@ -655,7 +693,7 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         for path in walker.iter_files(selection="included")
         if path.relative_to(root).parts[0] != ".svn"
     }
-    assert ignored_paths == {"loose.tmp", "obstructed.tmp/child.txt"}
+    assert ignored_paths == {"loose.tmp"}
     assert {
         "normal.tmp",
         "modified.tmp",
@@ -663,6 +701,7 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         "deleted.tmp",
         "replaced.tmp",
         "conflicted.tmp",
+        "obstructed.tmp/child.txt",
     } <= included_paths
 
 
@@ -926,6 +965,7 @@ def test_subversion_walk_keeps_membership_separate_and_does_not_prune(
     included = {
         "visible.txt",
         "case.only",
+        "ignored.tmp/child.txt",
         "pkg/child.tmp",
         "pkg/keep.tmp",
         "pkg/visible.txt",

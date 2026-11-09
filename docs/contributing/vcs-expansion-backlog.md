@@ -101,13 +101,15 @@ and Linux suites pass with 107 passed and 4 skipped each. Native status paths om
 working-copy depth remain unknown.
 An unversioned-directory fixture also confirms that native status collapses `cache/` into one
 unversioned entry on macOS Subversion 1.15.0, hosted Ubuntu 1.14.3, and Windows SlikSvn 1.14.5.
-The policy can still match a known descendant against ignore rules while native membership stays
-unknown; physical walker traversal remains independent of that collapsed status listing. Broader
-status traversal remains open. A second fixture gives `cache` an inherited ignore rule: default
-status omits that directory, while `--no-ignore` reports it once without its descendants. Direct
-descendant decisions still apply the inherited rule, their membership stays unknown, and the
-membership-aware walker traverses them conservatively. Native captures now match on macOS 1.15.0,
-Ubuntu 1.14.3, and Windows SlikSvn 1.14.5; policy assertions pass locally and in hosted CI.
+The policy keeps rule matching separate from native membership when status collapses an
+unversioned directory. Broader status traversal remains open. A second fixture gives `cache` an
+inherited ignore rule: default status omits that directory, while `--no-ignore` reports it once
+without its descendants. The walker continues through it and evaluates descendant basenames against
+applicable rules; membership remains unknown for descendants omitted from status. A third fixture
+shows a `cache` pattern matches the versioned directory name but not the different basename of its
+child: tracked files remain included and the unversioned child is not ignored. This exposed and fixed
+an ancestor-component false positive in the policy. Native status and membership captures match on
+macOS 1.15.0; Ubuntu 1.14.3 and Windows SlikSvn 1.14.5 captures are pending for this fixture.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented. Native precedence captures cover system-to-user INI files on Debian 13 x86_64 and
 machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5; broader platform combinations,
