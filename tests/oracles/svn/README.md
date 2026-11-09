@@ -50,10 +50,11 @@ then a native update. The test also checks that ignored versioned files remain i
 `included` selection, while the ignored unversioned file appears in its `ignored` selection. The
 obstructed directory case confirms that the walker traverses the directory and reports its ignored
 child. This exercises the tested status values without claiming that every Subversion working-copy
-status is covered. A
-separate excluded-depth check
-confirms that a child omitted from verbose native status remains membership-unknown, that discovery
-remains incomplete, and that the walker does not descend into the excluded subtree.
+status is covered. A separate excluded-depth check confirms that a child omitted from verbose native
+status remains membership-unknown, that discovery remains incomplete, and that the walker does not
+descend into the excluded subtree. The directory-external membership check confirms the containing
+working copy reports the external root as `external`; the policy treats that root as versioned and
+reads descendant status from the external working copy itself.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then

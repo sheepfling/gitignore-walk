@@ -844,6 +844,57 @@ def test_subversion_walk_follows_native_listed_externals(tmp_path: Path, topdown
     }
 
 
+def test_subversion_directory_external_membership_uses_its_own_status_scope(
+    tmp_path: Path,
+) -> None:
+    case = next(case for case in CASES if case["id"] == "svn.walk-descends-into-externals")
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    svn = shutil.which("svn")
+    assert svn is not None
+    arguments = [
+        svn,
+        "--config-dir",
+        str(config_dir),
+        "status",
+        "--xml",
+        "--verbose",
+        "--no-ignore",
+        "--depth",
+        "infinity",
+        ".",
+    ]
+    parent_status = _run_svn(arguments, cwd=root, environment=environment)
+    parent_document = ET.fromstring(parent_status.stdout)
+    parent_items: dict[str, set[str]] = {}
+    for entry in parent_document.findall("./target/entry"):
+        if (status := entry.find("wc-status")) is not None:
+            parent_items.setdefault(entry.attrib["path"], set()).add(status.attrib["item"])
+    external_status = _run_svn(arguments, cwd=root / "ext", environment=environment)
+    external_document = ET.fromstring(external_status.stdout)
+    external_items = {
+        entry.attrib["path"]: status.attrib["item"]
+        for entry in external_document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    external_root, external_file, external_ignored = policy.explain_many(
+        ("ext", "ext/external.txt", "ext/ignored.tmp")
+    )
+
+    assert "external" in parent_items["ext"]
+    assert external_items["external.txt"] == "unversioned"
+    assert external_items["ignored.tmp"] == "ignored"
+    assert external_root.membership == "versioned"
+    assert external_file.membership == "unversioned"
+    assert external_ignored.ignored
+    assert external_ignored.membership == "unversioned"
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_subversion_walk_follows_scheme_relative_external(
     tmp_path: Path, request: pytest.FixtureRequest, topdown: bool

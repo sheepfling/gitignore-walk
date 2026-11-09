@@ -204,8 +204,9 @@ obstructed, and conflicted entries, alongside ignored-unversioned files. The con
 working copies and overlapping edits. It checks native status membership, membership-aware walk
 selection, and traversal through an obstructed directory. A separate check
 confirms that an excluded-depth child omitted from verbose native status stays membership-unknown
-and that the walker does not descend there. These new cases are not yet confirmed on hosted platform
-clients. Broader status traversal remains open.
+and that the walker does not descend there. A directory-external check confirms outer `external`
+status and membership scope from the external working copy. These new cases are not yet confirmed on
+hosted platform clients. Broader status traversal remains open.
 
 Reorder this list when user demand, supported client automation, or native probe results justify it.
 Do not implement a candidate merely because a CLI is installed. Each implementation starts with a
