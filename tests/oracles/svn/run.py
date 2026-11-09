@@ -295,6 +295,18 @@ def _capture_case(
                 server_process.wait(timeout=5)
 
 
+def _skip_case(case: Mapping[str, Any], reason: str) -> dict[str, Any]:
+    """Record an oracle case that this client profile cannot execute."""
+    return {
+        "id": case["id"],
+        "dimension": case["dimension"],
+        "evidence_status": case["evidence_status"],
+        "native_status": "skipped",
+        "skip_reason": reason,
+        "candidate_matches": None,
+    }
+
+
 def capture(
     cases_path: Path,
     output_path: Path,
@@ -320,32 +332,28 @@ def capture(
         output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         return 0
 
-    needs_svnserve = any(
-        case["setup"].get("repository_protocol") == "svnserve" for case in cases_data["cases"]
-    )
-    if needs_svnserve and shutil.which(svnserve_name) is None:
-        result = {
-            "schema_version": 1,
-            "status": "skipped",
-            "reason": f"Subversion server executable not found: {svnserve_name}",
-            "client": None,
-            "cases": [],
-        }
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        return 0
-
     version_result = _command([svn, "--version", "--quiet"], cwd=None, environment=os.environ)
     admin_version_result = _command(
         [svnadmin, "--version", "--quiet"], cwd=None, environment=os.environ
     )
     svn_version = version_result.stdout.decode("utf-8", errors="replace").strip()
     admin_version = admin_version_result.stdout.decode("utf-8", errors="replace").strip()
-    captured = [_capture_case(case, svn, svnadmin, svnserve_name) for case in cases_data["cases"]]
+    svnserve_available = shutil.which(svnserve_name) is not None
+    captured = [
+        (
+            _skip_case(case, f"Subversion server executable not found: {svnserve_name}")
+            if case["setup"].get("repository_protocol") == "svnserve" and not svnserve_available
+            else _capture_case(case, svn, svnadmin, svnserve_name)
+        )
+        for case in cases_data["cases"]
+    ]
     failed = any(
-        any(code != 0 for code in case["setup_exit_codes"])
-        or case["observations"]["default"]["exit_code"] != 0
-        or case["observations"]["no_ignore"]["exit_code"] != 0
+        case["native_status"] == "captured"
+        and (
+            any(code != 0 for code in case["setup_exit_codes"])
+            or case["observations"]["default"]["exit_code"] != 0
+            or case["observations"]["no_ignore"]["exit_code"] != 0
+        )
         for case in captured
     )
     result = {
@@ -361,9 +369,12 @@ def capture(
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    matched = sum(case["candidate_matches"] for case in captured)
-    print(f"Captured {len(captured)} Subversion cases: {result['status']}")
-    print(f"Candidate ignored-path lists matching: {matched}/{len(captured)}")
+    matched = sum(case.get("candidate_matches") is True for case in captured)
+    compared = sum(case.get("candidate_matches") is not None for case in captured)
+    skipped = sum(case["native_status"] == "skipped" for case in captured)
+    print(f"Processed {len(captured)} Subversion cases: {result['status']}")
+    print(f"Candidate ignored-path lists matching: {matched}/{compared}")
+    print(f"Cases skipped for this client profile: {skipped}")
     print(f"Capture: {output_path}")
     return 1 if failed else 0
 

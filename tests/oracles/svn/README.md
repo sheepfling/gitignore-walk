@@ -44,8 +44,10 @@ The policy reads machine and user Windows Registry values during ambient discove
 `windows_registry.py` probe sets and restores the current user's `global-ignores` value on an
 ephemeral Windows runner, compares registry-only behavior with native status, then checks that the
 user INI file overrides the Registry value. Run it only with `--allow-registry-mutation`; it is
-wired into the Windows CI job. That job also runs the full Subversion integration suite and captures
-the six-case disposable status corpus with SlikSvn. The reviewed Subversion 1.14.5 Registry capture
+wired into the Windows CI job. That job also runs the full Subversion integration suite and attempts
+the six-case disposable status corpus with SlikSvn. If the client package lacks `svnserve`, the five
+local-repository cases are captured and only the scheme-relative external case is recorded as skipped.
+The reviewed Subversion 1.14.5 Registry capture
 on Windows Server 2025 x86_64 is committed as `results/svn-1.14.5-windows-registry.json`: native
 status and the policy both honor the Registry-only pattern, then both honor the user INI pattern over
 the Registry value. The current Windows status capture is exploratory until its client profile and
