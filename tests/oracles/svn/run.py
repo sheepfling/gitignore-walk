@@ -48,6 +48,15 @@ def _status_paths(stdout: bytes) -> tuple[list[str], list[str]]:
     return sorted(paths), sorted(ignored)
 
 
+def _apr_build_line(version_output: bytes) -> str | None:
+    """Return Subversion's reported APR build line from ``--version --verbose`` output."""
+    for line in version_output.decode("utf-8", errors="replace").splitlines():
+        normalized = line.strip()
+        if normalized.startswith("- APR "):
+            return normalized[2:]
+    return None
+
+
 def _write_files(root: Path, files: Mapping[str, str]) -> None:
     for relative, content in files.items():
         target = (root / relative).resolve()
@@ -487,8 +496,12 @@ def capture(
     admin_version_result = _command(
         [svnadmin, "--version", "--quiet"], cwd=None, environment=os.environ
     )
+    verbose_version_result = _command(
+        [svn, "--version", "--verbose"], cwd=None, environment=os.environ
+    )
     svn_version = version_result.stdout.decode("utf-8", errors="replace").strip()
     admin_version = admin_version_result.stdout.decode("utf-8", errors="replace").strip()
+    apr_build = _apr_build_line(verbose_version_result.stdout)
     svnserve_available = shutil.which(svnserve_name) is not None
     captured = [
         (
@@ -515,7 +528,7 @@ def capture(
         "schema_version": 1,
         "status": "failed" if failed else "captured",
         "client": {
-            "svn": {"executable": svn, "version": svn_version},
+            "svn": {"executable": svn, "version": svn_version, "apr_build": apr_build},
             "svnadmin": {"executable": svnadmin, "version": admin_version},
             "platform": platform.platform(),
             "runner_python": sys.version.split()[0],

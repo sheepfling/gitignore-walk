@@ -1,6 +1,6 @@
 # Subversion native oracle
 
-`cases.json` contains 18 isolated local-repository probes. They cover directory `svn:ignore`,
+`cases.json` contains 19 isolated local-repository probes. They cover directory `svn:ignore`,
 inherited `svn:global-ignores` (including a property above a subtree checkout), nested properties,
 APR glob syntax, sparse depths, and working-copy boundaries. External fixtures exercise
 repository-root-relative, parent-relative, absolute, server-root-relative, and scheme-relative URLs.
@@ -9,6 +9,8 @@ second external inside it, and checks that rules stay within each external worki
 The collapsed-unversioned-directory case records that native status reports an unversioned
 directory as one entry rather than listing its files. A rule-only decision for a known child can
 still match an ignore pattern, but the child's native membership remains unknown.
+The APR default-flags fixture verifies that `*.tmp` matches `.hidden.tmp` and that `case.tmp` does
+not match `CASE.TMP`.
 
 Run the capture from the repository root:
 
@@ -40,10 +42,10 @@ run this extra status query. Sparse-depth fixtures confirm a versioned directory
 `empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
 path without listing files beneath it. A switched-subtree case confirms that inherited
 `svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. The
-18-case corpus is captured on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64, and
-1.14.5/SlikSvn Windows Server 2025 x86_64, with platform-constrained cases recorded as skips.
-The 16 earlier cases also match on Subversion 1.14.5/Linux aarch64 and x86_64. The
-collapsed-directory case is additionally captured on Ubuntu and Windows. The
+19-case corpus is captured on Subversion 1.15.0/macOS arm64. The Ubuntu 1.14.3 and SlikSvn
+Windows 1.14.5 profiles contain the preceding 18 cases; their APR default-flags captures are
+pending. Platform-constrained cases are recorded as skips. The 16 earlier cases also match on
+Subversion 1.14.5/Linux aarch64 and x86_64. The
 file-external case is captured on macOS, both Linux architectures, and Windows Server
 2025 x86_64. The Windows oracle job explicitly skips the
 newline-and-tab case because those filenames are not representable there. The focused runtime
@@ -88,7 +90,15 @@ that the policy walk preserves the decoded names; it matches on Subversion 1.15.
 collects working-copy ignore patterns, and
 [`util.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/util.c) delegates
 their matching to the Subversion glob helper. The committed native captures remain the behavior
-evidence. The policy reads the selected config file's
+evidence. In both source tags, `svn_cstring_match_glob_list` calls `apr_fnmatch` with flags `0`
+([1.14.5](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_subr/string.c#L3586-L3601),
+[1.15.0](https://github.com/apache/subversion/blob/1.15.0/subversion/libsvn_subr/string.c#L3586-L3601)).
+Status passes the basename to that helper, so `APR_FNM_PATHNAME` is irrelevant to status ignore
+matching ([`status.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/status.c#L3727-L3756)).
+The macOS 1.15.0 native case confirms leading-period wildcard matching and case sensitivity with
+APR 1.7.6; the capture records this under `client.svn.apr_build`. Equivalent cases have not yet
+been captured on the other platform profiles. The
+policy reads the selected config file's
 `[miscellany] global-ignores`, uses the built-in defaults when that setting is absent, and honors an
 explicit empty value. A live native comparison covers those built-in defaults on the installed
 client. The default list follows Apache Subversion's

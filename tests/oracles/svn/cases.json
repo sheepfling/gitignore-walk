@@ -229,6 +229,25 @@
       "evidence_status": "native-observed"
     },
     {
+      "id": "svn.glob-apr-default-flags",
+      "dimension": "apr-glob-flags",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "*.tmp\ncase.tmp\n"
+          }
+        },
+        "unversioned_files": {
+          ".hidden.tmp": "wildcard matches a leading period\n",
+          "visible.tmp": "ordinary wildcard match\n",
+          "case.tmp": "exact case-sensitive match\n",
+          "CASE.TMP": "case mismatch remains visible\n"
+        }
+      },
+      "expected_ignored_paths": [".hidden.tmp", "case.tmp", "visible.tmp"],
+      "evidence_status": "native-observed"
+    },
+    {
       "id": "svn.glob-apr-backslash-escape",
       "dimension": "apr-glob-escaping",
       "setup": {

@@ -9,6 +9,7 @@ from typing import Any
 
 import pytest
 
+from tests.oracles.svn.run import _apr_build_line
 from tests.oracles.svn.transitions import EXPECTED_STATUS_ITEMS
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "svn"
@@ -26,6 +27,22 @@ CAPTURES: dict[str, dict[str, Any]] = {
 }
 
 
+@pytest.mark.parametrize(
+    ("output", "expected"),
+    [
+        (
+            b"svn, version 1.15.0\n\n   - APR 1.7.6 (compiled with 1.7.6)\n",
+            "APR 1.7.6 (compiled with 1.7.6)",
+        ),
+        (b"   - APR-Util 1.6.6 (compiled with 1.6.5)\n", None),
+        (b"svn, version 1.15.0\n", None),
+    ],
+)
+def test_subversion_apr_build_parser(output: bytes, expected: str | None) -> None:
+    """Retain the linked APR line when the native client reports it."""
+    assert _apr_build_line(output) == expected
+
+
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
 def test_subversion_capture_matches_candidate(profile: str, case: dict[str, Any]) -> None:
@@ -38,6 +55,8 @@ def test_subversion_capture_matches_candidate(profile: str, case: dict[str, Any]
         pytest.skip(observation["skip_reason"])
 
     assert observation["native_status"] == "captured"
+    if case["dimension"] == "apr-glob-flags":
+        assert capture["client"]["svn"]["apr_build"]
     assert observation["candidate_matches"]
     assert set(observation["observed_ignored_paths"]) == set(case["expected_ignored_paths"])
     if "expected_status_paths" in case:
