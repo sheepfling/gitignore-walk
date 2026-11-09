@@ -33,7 +33,17 @@ x86_64; the scheme-relative external is also captured on these profiles. Capture
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then
-evaluates the supported glob rules in Python. It reads the selected config file's
+evaluates the supported glob rules in Python. Its matcher follows captured SVN/APR behavior for
+backslash quoting, both `!` and `^` character-class negation markers, malformed opening brackets,
+and unsupported POSIX character classes. Native cases also confirm that spaces in `svn:ignore` and
+`svn:global-ignores` property values are not list separators; each CR/LF-delimited line remains one
+pattern. These cases are captured on Subversion 1.15.0/macOS arm64 and 1.14.5/Linux x86_64; the
+escaped-wildcard filename case is not representable on Windows. In Subversion 1.14.5,
+[`status.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/status.c)
+collects working-copy ignore patterns, and
+[`util.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/util.c) delegates
+their matching to the Subversion glob helper. The committed native captures remain the behavior
+evidence. The policy reads the selected config file's
 `[miscellany] global-ignores`, uses the built-in defaults when that setting is absent, and honors an
 explicit empty value. A live native comparison covers those built-in defaults on the installed
 client. The default list follows Apache Subversion's

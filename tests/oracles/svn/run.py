@@ -341,9 +341,13 @@ def capture(
     svnserve_available = shutil.which(svnserve_name) is not None
     captured = [
         (
-            _skip_case(case, f"Subversion server executable not found: {svnserve_name}")
-            if case["setup"].get("repository_protocol") == "svnserve" and not svnserve_available
-            else _capture_case(case, svn, svnadmin, svnserve_name)
+            _skip_case(case, case["windows_skip_reason"])
+            if os.name == "nt" and case.get("windows_skip_reason")
+            else (
+                _skip_case(case, f"Subversion server executable not found: {svnserve_name}")
+                if case["setup"].get("repository_protocol") == "svnserve" and not svnserve_available
+                else _capture_case(case, svn, svnadmin, svnserve_name)
+            )
         )
         for case in cases_data["cases"]
     ]

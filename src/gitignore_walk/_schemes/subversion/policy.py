@@ -4,7 +4,6 @@ from __future__ import annotations
 
 # Private walk-session hooks are shared by the built-in policies.
 # pyright: reportPrivateUsage=false
-import fnmatch
 import math
 import os
 import subprocess
@@ -23,6 +22,7 @@ from ..._policy import (
     _IgnoreWalkSession,
 )
 from ._config import load_runtime_global_ignores
+from ._glob import matches_svn_glob, split_svn_property_patterns
 from .errors import SubversionIgnoreError
 
 _DEFAULT_INITIAL_EXCLUDES = (".svn",)
@@ -373,16 +373,15 @@ class SubversionIgnorePolicy(IgnorePolicy):
                 name = prop.attrib.get("name", "")
                 if name not in (_IGNORE_PROPERTY, _GLOBAL_IGNORE_PROPERTY):
                     continue
-                for pattern in (prop.text or "").splitlines():
-                    if pattern:
-                        rules.append(
-                            _SvnRule(
-                                source=str(self.workspace_root / scope_path),
-                                scope=scope,
-                                property_name=name,
-                                pattern=pattern,
-                            )
+                for pattern in split_svn_property_patterns(prop.text or ""):
+                    rules.append(
+                        _SvnRule(
+                            source=str(self.workspace_root / scope_path),
+                            scope=scope,
+                            property_name=name,
+                            pattern=pattern,
                         )
+                    )
         runtime_ignores = load_runtime_global_ignores(
             config_dir=self.config_dir,
             environment=self._environment,
@@ -474,7 +473,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
                         len(parent_parts) >= len(scope_parts)
                         and parent_parts[: len(scope_parts)] == scope_parts
                     )
-                if applies and fnmatch.fnmatchcase(basename, rule.pattern):
+                if applies and matches_svn_glob(basename, rule.pattern):
                     matched.append(rule)
                     break
         caller_relative = target.relative_to(self.root).as_posix()

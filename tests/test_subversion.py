@@ -18,6 +18,10 @@ from gitignore_walk import IgnoreWalker, SubversionIgnorePolicy
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "svn"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
+APR_GLOB_CASES = [case for case in CASES if case["dimension"].startswith("apr-glob-")]
+PROPERTY_SPACE_CASE = next(
+    case for case in CASES if case["id"] == "svn.property-space-delimited-pattern-is-single-glob"
+)
 
 
 def _run_svn(
@@ -222,6 +226,37 @@ def test_subversion_properties_keep_local_inherited_and_membership_scopes(
     assert configured_trace.decision.source == (
         f"Subversion runtime configuration: {policy.config_dir / 'config'}"
     )
+
+
+@pytest.mark.parametrize(
+    "case",
+    [*APR_GLOB_CASES, PROPERTY_SPACE_CASE],
+    ids=lambda case: case["id"],
+)
+def test_subversion_policy_globs_match_native_status(tmp_path: Path, case: dict[str, Any]) -> None:
+    if os.name == "nt" and case.get("windows_skip_reason"):
+        pytest.skip(case["windows_skip_reason"])
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    policy = SubversionIgnorePolicy(root, config_dir=config_dir, environment=environment)
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [svn, "--config-dir", str(config_dir), "status", "--xml", "--no-ignore", "."],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_ignored = {
+        entry.attrib["path"].replace("\\", "/")
+        for entry in document.findall(".//entry")
+        if (status := entry.find("wc-status")) is not None
+        and status.attrib.get("item") == "ignored"
+    }
+    fixture_paths = set(case["setup"]["unversioned_files"])
+    expected = set(case["expected_ignored_paths"])
+
+    assert native_ignored == expected
+    assert {path for path in fixture_paths if policy.is_ignored(path)} == expected
 
 
 def test_subversion_builtin_global_ignores_match_native_status(tmp_path: Path) -> None:

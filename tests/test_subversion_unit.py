@@ -18,6 +18,10 @@ from gitignore_walk import (
     select_policy,
 )
 from gitignore_walk._schemes.subversion import _config
+from gitignore_walk._schemes.subversion._glob import (
+    matches_svn_glob,
+    split_svn_property_patterns,
+)
 
 INFO_XML = b"<info><entry><wc-info><wcroot-abspath>{root}</wcroot-abspath></wc-info></entry></info>"
 PROPLIST_XML = b"""<properties><target path=".">
@@ -27,6 +31,36 @@ PROPLIST_XML = b"""<properties><target path=".">
 </target></properties>"""
 _MACHINE_HIVE = object()
 _USER_HIVE = object()
+
+
+@pytest.mark.parametrize(
+    ("pattern", "name", "expected"),
+    [
+        (r"\a", "a", True),
+        (r"\*", "*", True),
+        ("[!a]", "x", True),
+        ("[!a]", "a", False),
+        ("[^a]", "x", True),
+        ("[^a]", "a", False),
+        ("file[", "file[", True),
+        ("[[:digit:]]", "1", False),
+    ],
+)
+def test_subversion_glob_matches_observed_apr_forms(
+    pattern: str, name: str, expected: bool
+) -> None:
+    assert matches_svn_glob(name, pattern) is expected
+
+
+def test_subversion_property_patterns_split_only_cr_and_lf() -> None:
+    assert split_svn_property_patterns("first\r\nsecond\rthird\n") == (
+        "first",
+        "second",
+        "third",
+    )
+    assert split_svn_property_patterns("two words\tremain\vone pattern\u2028still data") == (
+        "two words\tremain\vone pattern\u2028still data",
+    )
 
 
 def _install_fake_winreg(

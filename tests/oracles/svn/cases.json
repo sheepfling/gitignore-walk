@@ -183,6 +183,131 @@
         "visible.txt"
       ],
       "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.glob-apr-backslash-escape",
+      "dimension": "apr-glob-escaping",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "\\a"
+          }
+        },
+        "unversioned_files": {
+          "a": "escaped literal\n",
+          "b": "unmatched control\n"
+        }
+      },
+      "expected_ignored_paths": ["a"],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.glob-apr-escaped-wildcard",
+      "dimension": "apr-glob-escaping",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "\\*"
+          }
+        },
+        "unversioned_files": {
+          "*": "escaped wildcard\n",
+          "a": "unmatched control\n"
+        }
+      },
+      "expected_ignored_paths": ["*"],
+      "windows_skip_reason": "Windows cannot represent a filename containing '*'",
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.glob-apr-bang-class-negation",
+      "dimension": "apr-glob-character-class",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "[!a]"
+          }
+        },
+        "unversioned_files": {
+          "a": "class control\n",
+          "x": "negated match\n"
+        }
+      },
+      "expected_ignored_paths": ["x"],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.glob-apr-caret-class-negation",
+      "dimension": "apr-glob-character-class",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "[^a]"
+          }
+        },
+        "unversioned_files": {
+          "a": "class control\n",
+          "x": "negated match\n"
+        }
+      },
+      "expected_ignored_paths": ["x"],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.glob-apr-malformed-class-is-literal",
+      "dimension": "apr-glob-character-class",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "file["
+          }
+        },
+        "unversioned_files": {
+          "file[": "malformed class literal\n",
+          "filex": "unmatched control\n"
+        }
+      },
+      "expected_ignored_paths": ["file["],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.glob-apr-posix-class-not-supported",
+      "dimension": "apr-glob-character-class",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "[[:digit:]]"
+          }
+        },
+        "unversioned_files": {
+          "1": "not a POSIX character class\n",
+          "x": "unmatched control\n"
+        }
+      },
+      "expected_ignored_paths": [],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.property-space-delimited-pattern-is-single-glob",
+      "dimension": "property-lexer",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "two words.tmp\n*.tmp *.bak\n",
+            "svn:global-ignores": "two words.cache\n*.cache *.log\n"
+          }
+        },
+        "unversioned_files": {
+          "two words.tmp": "whole-line property pattern\n",
+          "two words.cache": "whole-line inheritable pattern\n",
+          "a.tmp": "not split into a pattern list\n",
+          "a.bak": "not split into a pattern list\n",
+          "a.cache": "not split into a pattern list\n",
+          "a.log": "not split into a pattern list\n"
+        }
+      },
+      "expected_ignored_paths": ["two words.cache", "two words.tmp"],
+      "evidence_status": "native-observed"
     }
   ]
 }

@@ -37,7 +37,11 @@ files and machine/user Registry values are discovered on Windows. Registry read 
 diagnostics; the dedicated disposable Windows Registry/native comparison has been reviewed and
 captured against Subversion 1.14.5 SlikSvn on Windows Server 2025 x86_64. Live native status
 comparisons on the development client cover built-in defaults and per-user file precedence; the
-dedicated SVN job runs the same policy integration tests
+native APR probes now reproduce backslash quoting, both class-negation markers, malformed opening
+brackets, and the absence of POSIX character classes. They also confirm spaces do not split
+`svn:ignore` or `svn:global-ignores` property lines. The seven new cases match on Subversion
+1.15.0/macOS arm64 and 1.14.5/Linux x86_64; Windows skips the escaped-wildcard filename because
+Windows cannot represent `*` in a filename. The dedicated SVN job runs the same policy integration tests
 on its Linux client before capturing the broader oracle fixture.
 The initial SVN property fixture covers seven ignored paths and local, inherited, nested, runtime,
 negation, case, and tracked-file distinctions; native results match on Subversion 1.15.0/macOS arm64
