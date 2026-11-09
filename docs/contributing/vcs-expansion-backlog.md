@@ -200,8 +200,9 @@ handoff; revisit it if native feasibility or project priorities change.
 | adjacent, opt-in          | ripgrep and Docker                                        | Scanner/context policies outside the VCS scheme set                                               | Handoff has 16 native ripgrep cases. Keep opt-in and separate from VCS selection; Docker context rules need their own profile.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 
 SVN now has a live status-transition test for normal, modified, added, deleted, missing, replaced,
-and obstructed entries, alongside ignored-unversioned files. It checks native status membership,
-membership-aware walk selection, and traversal through an obstructed directory. A separate check
+obstructed, and conflicted entries, alongside ignored-unversioned files. The conflict uses two
+working copies and overlapping edits. It checks native status membership, membership-aware walk
+selection, and traversal through an obstructed directory. A separate check
 confirms that an excluded-depth child omitted from verbose native status stays membership-unknown
 and that the walker does not descend there. These new cases are not yet confirmed on hosted platform
 clients. Broader status traversal remains open.

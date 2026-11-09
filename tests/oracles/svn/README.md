@@ -44,11 +44,13 @@ Captures are stored in `results/`.
 
 A live membership transition test creates and mutates a disposable working copy, then compares the
 policy with `svn status --xml --verbose --no-ignore --depth infinity`. It covers `normal`, `modified`,
-`added`, `deleted`, `missing`, `replaced`, and `obstructed` entries alongside an ignored unversioned
-entry. It also checks that ignored versioned files remain in the walker's `included` selection, while
-the ignored unversioned file appears in its `ignored` selection. The obstructed directory case
-confirms that the walker traverses the directory and reports its ignored child. This exercises the
-tested status values without claiming that every Subversion working-copy status is covered. A
+`added`, `deleted`, `missing`, `replaced`, `obstructed`, and `conflicted` entries alongside an ignored
+unversioned entry. The conflict is produced by overlapping edits in two disposable working copies,
+then a native update. The test also checks that ignored versioned files remain in the walker's
+`included` selection, while the ignored unversioned file appears in its `ignored` selection. The
+obstructed directory case confirms that the walker traverses the directory and reports its ignored
+child. This exercises the tested status values without claiming that every Subversion working-copy
+status is covered. A
 separate excluded-depth check
 confirms that a child omitted from verbose native status remains membership-unknown, that discovery
 remains incomplete, and that the walker does not descend into the excluded subtree.

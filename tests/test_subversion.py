@@ -386,6 +386,7 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
                 "missing.tmp": "missing\n",
                 "replaced.tmp": "replaced\n",
                 "obstructed.tmp": "obstructed\n",
+                "conflicted.tmp": "base\n",
             },
             "unversioned_files": {"loose.tmp": "unversioned and ignored\n"},
         }
@@ -399,10 +400,29 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
     _run_svn([svn, "delete", "--keep-local", "deleted.tmp"], cwd=root, environment=environment)
     _run_svn([svn, "delete", "--keep-local", "replaced.tmp"], cwd=root, environment=environment)
     _run_svn([svn, "add", "replaced.tmp"], cwd=root, environment=environment)
+    repository_url = (
+        _run_svn([svn, "info", "--show-item", "url", "."], cwd=root, environment=environment)
+        .stdout.decode("utf-8")
+        .strip()
+    )
+    other_working_copy = tmp_path / "other-working-copy"
+    _run_svn(
+        [svn, "checkout", repository_url, str(other_working_copy)],
+        cwd=tmp_path,
+        environment=environment,
+    )
+    (other_working_copy / "conflicted.tmp").write_text("theirs\n", encoding="utf-8")
+    _run_svn(
+        [svn, "commit", "-m", "conflict fixture change", "conflicted.tmp"],
+        cwd=other_working_copy,
+        environment=environment,
+    )
+    (root / "conflicted.tmp").write_text("ours\n", encoding="utf-8")
+    _run_svn([svn, "update", "."], cwd=root, environment=environment)
+    (root / "missing.tmp").unlink()
     (root / "obstructed.tmp").unlink()
     (root / "obstructed.tmp").mkdir()
     (root / "obstructed.tmp" / "child.txt").write_text("beneath obstruction\n", encoding="utf-8")
-    (root / "missing.tmp").unlink()
 
     native = _run_svn(
         [
@@ -434,6 +454,7 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         "missing.tmp": "missing",
         "replaced.tmp": "replaced",
         "obstructed.tmp": "obstructed",
+        "conflicted.tmp": "conflicted",
         "loose.tmp": "ignored",
     }
     assert {path: native_items.get(path) for path in expected_items} == expected_items
@@ -468,6 +489,7 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         "added.tmp",
         "deleted.tmp",
         "replaced.tmp",
+        "conflicted.tmp",
     } <= included_paths
 
 
