@@ -248,14 +248,16 @@ for decision in selection.policy.explain_many(["build/output.tmp", "src/main.py"
 ```
 
 Fossil patterns match complete workspace-relative paths; `*` may cross `/`. ASCII whitespace and
-commas separate patterns, quoted patterns can contain those separators, `#` is ordinary pattern
+commas separate patterns; Unicode whitespace remains pattern data. Quoted patterns can contain
+those separators, `#` is ordinary pattern
 data, and a backslash does not escape those separators. Patterns are additive with no `!` negation.
 Ignored directory matches can be pruned, and the walker omits the Fossil checkout marker by default.
 Native `fossil extras` output agrees with included and ignored selections for the captured untracked
 traversal fixture. Decisions report ignore-rule matches, not tracked membership. This initial
-implementation matches 29 boolean candidates on Fossil 2.28/macOS arm64, 2.26/Linux aarch64 and
+implementation matches 41 boolean candidates on Fossil 2.28/macOS arm64, 2.26/Linux aarch64 and
 x86_64, and 2.23/Ubuntu 24.04 x86_64. Captured probes cover range classes, Unicode `?`, case
-sensitivity, class-negation markers, and unmatched brackets. Other tokenizer boundaries and broader
+sensitivity, class-negation markers, unmatched brackets, and Unicode whitespace inside and around
+patterns. Other tokenizer boundaries and broader
 platform/client coverage remain open. See
 the [Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md) and
 [oracle notes](tests/oracles/fossil/README.md).

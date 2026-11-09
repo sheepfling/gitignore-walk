@@ -127,12 +127,13 @@ See the [Subversion oracle
 notes](../../tests/oracles/svn/README.md).
 
 The initial Fossil policy asks the native client for effective `ignore-glob` settings and evaluates
-whole workspace-relative paths with SQLite `GLOB`. Its 30-case corpus was captured against Fossil
+whole workspace-relative paths with SQLite `GLOB`. Its 42-case corpus was captured against Fossil
 2.28/macOS arm64, 2.26/Linux aarch64 and x86_64, and 2.23/Ubuntu 24.04 x86_64. Native-backed
 policy tests cover separator and quote forms, hash-leading patterns, literal backslashes, range
 classes, Unicode `?`, case
-sensitivity, class-negation markers, unmatched brackets, no-negation behavior, effective-setting
-discovery, and ignored-directory pruning. A captured extras fixture checks included and ignored walk
+sensitivity, class-negation markers, unmatched brackets, ASCII-only token separators, preservation
+of Unicode whitespace, no-negation behavior, effective-setting discovery, and ignored-directory
+pruning. A captured extras fixture checks included and ignored walk
 results against native output across macOS and both Linux profiles, including exclusion of the
 Fossil workspace marker. Other tokenizer boundaries and broader native/platform profiles remain
 open.

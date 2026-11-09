@@ -248,8 +248,7 @@ def _find_workspace_root(root: Path) -> Path:
 
 
 def _parse_glob_list(value: str) -> tuple[str, ...]:
-    """Split Fossil's whitespace/comma list, honoring quote-delimited patterns."""
-    value = " ".join(value.splitlines())
+    """Split Fossil's ASCII whitespace/comma list while preserving quote-delimited patterns."""
     patterns: list[str] = []
     token: list[str] = []
     quote: str | None = None
@@ -267,13 +266,13 @@ def _parse_glob_list(value: str) -> tuple[str, ...]:
             quote = character
         elif character == "," or character in "\t\n\v\f\r ":
             if token:
-                patterns.append("".join(token).strip())
+                patterns.append("".join(token))
                 token.clear()
         else:
             token.append(character)
         index += 1
     if token:
-        patterns.append("".join(token).strip())
+        patterns.append("".join(token))
     elif quote is not None:
         patterns.append("")
     return tuple(pattern for pattern in patterns if pattern)

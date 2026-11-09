@@ -27,6 +27,15 @@ def test_fossil_glob_list_uses_quotes_and_separators() -> None:
     assert _parse_glob_list(r"\#literal") == (r"\#literal",)
 
 
+def test_fossil_glob_list_splits_only_ascii_separators() -> None:
+    separators = ("\u0085", "\u001c", "\u2028", "\u2029", "\u00a0")
+    for separator in separators:
+        pattern = f"one{separator}two"
+        assert _parse_glob_list(pattern) == (pattern,)
+        assert _parse_glob_list(f"{separator}name") == (f"{separator}name",)
+        assert _parse_glob_list(f"name{separator}") == (f"name{separator}",)
+
+
 @pytest.mark.parametrize(
     ("setting", "target", "expected"),
     [

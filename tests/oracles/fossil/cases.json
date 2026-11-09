@@ -206,9 +206,9 @@
       "id": "fossil.non-ascii-space-is-data",
       "dimension": "lexing",
       "setup": {
-        "ignore_glob": "one two"
+        "ignore_glob": "one\u00a0two"
       },
-      "query": "one two",
+      "query": "one\u00a0two",
       "expected_candidate": true,
       "evidence_status": "native-observed"
     },
@@ -216,7 +216,7 @@
       "id": "fossil.non-ascii-space-does-not-separate",
       "dimension": "lexing",
       "setup": {
-        "ignore_glob": "one two"
+        "ignore_glob": "one\u00a0two"
       },
       "query": "two",
       "expected_candidate": false,
@@ -278,7 +278,7 @@
       "setup": {
         "ignore_glob": "caf?.tmp"
       },
-      "query": "café.tmp",
+      "query": "caf\u00e9.tmp",
       "expected_candidate": true,
       "evidence_status": "native-observed"
     },
@@ -350,6 +350,126 @@
       },
       "query": "file]",
       "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-line-separator-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u2028two"
+      },
+      "query": "one\u2028two",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-line-separator-does-not-split",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u2028two"
+      },
+      "query": "two",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-paragraph-separator-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u2029two"
+      },
+      "query": "one\u2029two",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-paragraph-separator-does-not-split",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u2029two"
+      },
+      "query": "two",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-next-line-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u0085two"
+      },
+      "query": "one\u0085two",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-next-line-does-not-split",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u0085two"
+      },
+      "query": "two",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-file-separator-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u001ctwo"
+      },
+      "query": "one\u001ctwo",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.unicode-file-separator-does-not-split",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "one\u001ctwo"
+      },
+      "query": "two",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.nonascii-space-leading-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\u00a0name"
+      },
+      "query": "\u00a0name",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.nonascii-space-leading-not-trimmed",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\u00a0name"
+      },
+      "query": "name",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.nonascii-space-trailing-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "name\u00a0"
+      },
+      "query": "name\u00a0",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.nonascii-space-trailing-not-trimmed",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "name\u00a0"
+      },
+      "query": "name",
+      "expected_candidate": false,
       "evidence_status": "native-observed"
     }
   ]
