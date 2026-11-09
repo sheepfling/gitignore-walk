@@ -390,8 +390,7 @@
       "expected_ignored_paths": ["root.tmp"],
       "expected_status_paths": ["root.tmp", "visible.txt"],
       "evidence_status": "native-observed"
-    }
-    ,
+    },
     {
       "id": "svn.switched-subtree-inherits-global-ignores",
       "dimension": "switched-working-copy-property-inheritance",
@@ -426,6 +425,24 @@
       },
       "expected_ignored_paths": ["pkg/ignored.branchtmp"],
       "expected_status_paths": ["outside.branchtmp", "pkg", "pkg/ignored.branchtmp"],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.collapsed-unversioned-directory-membership",
+      "dimension": "collapsed-unversioned-directory-enumeration",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:global-ignores": "*.tmp\n"
+          }
+        },
+        "unversioned_files": {
+          "cache/a.tmp": "ignored by the workspace global rule\n",
+          "cache/visible.txt": "visible descendant\n"
+        }
+      },
+      "expected_ignored_paths": [],
+      "expected_status_paths": ["cache"],
       "evidence_status": "native-observed"
     }
   ]

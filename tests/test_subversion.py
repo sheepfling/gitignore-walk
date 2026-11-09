@@ -28,6 +28,9 @@ INHERITED_PROPERTY_CASE = next(
 SWITCHED_INHERITED_CASE = next(
     case for case in CASES if case["id"] == "svn.switched-subtree-inherits-global-ignores"
 )
+COLLAPSED_DIRECTORY_CASE = next(
+    case for case in CASES if case["id"] == "svn.collapsed-unversioned-directory-membership"
+)
 PATH_ROUND_TRIP_CASE = next(
     case for case in CASES if case["id"] == "svn.path-newline-and-tab-round-trip"
 )
@@ -372,6 +375,62 @@ def test_subversion_walk_scopes_inherited_rules_to_switched_subtree(
 
     assert ignored == {"pkg/ignored.branchtmp"}
     assert included == {"outside.branchtmp", "pkg/base.txt"}
+
+
+@pytest.mark.parametrize("topdown", [True, False])
+def test_subversion_collapsed_unversioned_directory_keeps_child_membership_unknown(
+    tmp_path: Path, topdown: bool
+) -> None:
+    root, environment, config_dir = _create_working_copy(tmp_path, COLLAPSED_DIRECTORY_CASE)
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_entries = {
+        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    child = policy.explain("cache/a.tmp")
+
+    assert native_entries == {".": "normal", "cache": "unversioned"}
+    assert child.ignored
+    assert child.membership is None
+
+    walker = IgnoreWalker(root, policy=policy)
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    assert ignored == {"cache/a.tmp"}
+    assert included == {"cache/visible.txt"}
 
 
 def test_subversion_file_external_keeps_rule_matching_separate_from_membership(
