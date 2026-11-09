@@ -22,7 +22,8 @@ GitHub Actions runs this command in Ubuntu and Windows jobs with Mercurial insta
 separate workflow artifacts. It records single-path `debugignore` observations and
 `status --ignored` plus `status --unknown` file walks. The committed captures cover macOS arm64
 Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows Server 2025
-x86_64 Mercurial 7.1.2. The original 48 path cases include case-sensitive glob
+x86_64 Mercurial 7.1.2. A hosted Ubuntu x86_64 capture records Mercurial 6.7.2 from the native
+Linux CI job. The original 48 path cases include case-sensitive glob
 matching, Unicode normalization-form sensitivity, missing-source behavior, an external include
 symlink, an undecodable byte in a glob pattern, and trailing-space behavior: glob rules trim trailing
 spaces, while regexp
@@ -31,6 +32,9 @@ inline flags. Two additional source-boundary cases capture an include through a 
 outside the workspace and a dangling symlink include. Mercurial follows the first; the second warns
 and skips the source. The policy follows the valid external source and reports incomplete discovery
 for the dangling source. These two cases are captured on macOS arm64 and Debian 13 Linux x86_64.
+The hosted Linux 6.7.2 profile has 64 matching boolean comparisons and a matching structured
+invalid-syntax result; the nested-subinclude and include-cycle behaviors remain open native errors.
+Its six captured walk fixtures all match.
 Seven regex probes cover lookahead, lookbehind, word boundaries, and backreferences. Captures on
 macOS arm64 and Debian Linux aarch64 and x86_64 agree with the byte-regex evaluator; the live-client
 differential test also exercises these cases.
@@ -42,13 +46,17 @@ fixtures cover named entries, home-relative paths, repository configuration, and
 and Mercurial 7.0.1/Debian 13 Linux aarch64 and x86_64. They show regex character classes and case
 folding are byte-oriented, UTF-8 literals still match, and glob `?` consumes one byte of a multi-byte
 UTF-8 path. The test suite also compares these patterns directly with the installed native client on
-each client-enabled CI profile. The Windows capture now contains all 65 path cases, including the
-additional byte-semantics probes.
+each client-enabled CI profile. The Windows capture now contains all 67 path cases, including the
+additional byte-semantics and nested-subinclude failure probes.
 The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
-The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: 59 boolean
-comparisons and the structured invalid-syntax result match, with no differing closed result. The
-include-cycle observation remains the documented safe divergence. The Unicode digit-class query
+The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: 60 closed
+boolean comparisons and the structured invalid-syntax result match, with no differing closed
+result; four path probes skip for platform constraints. The include-cycle observation remains the
+documented safe divergence. The nested-subinclude case is also captured here: Mercurial raises
+`AssertionError` when a `subinclude:` is reached through an included source, as it does on macOS
+7.2.4 and hosted Linux 6.7.2. The portable policy still evaluates the nested source correctly. The
+Unicode digit-class query
 has no parseable
 `debugignore` output on Windows, so the capture uses NUL-delimited native status membership to
 confirm the unignored result. Four path probes remain explicitly skipped for POSIX-only byte names,
@@ -88,8 +96,9 @@ comparison, and hashes of the normalized stdout/stderr. Normalization only repla
 temporary repository and home paths. Raw local output is retained by the runner for auditing that
 normalization.
 
-`walk_cases.json` defines native ignored-file enumerations captured on macOS with Mercurial 7.2.4
-and Debian 13 Linux on aarch64 and x86_64 with Mercurial 7.0.1. The corpus includes a nested
+`walk_cases.json` defines native ignored-file enumerations captured on macOS with Mercurial 7.2.4,
+hosted Ubuntu x86_64 with Mercurial 6.7.2, and Debian 13 Linux on aarch64 and x86_64 with
+Mercurial 7.0.1. The corpus includes a nested
 repository: parent-repository status does not enumerate files inside the child `.hg` workspace, so
 the shared walker must stop at that boundary. The policy also treats the workspace root's `.hg`
 metadata directory as non-traversable. The library comparison in `tests/test_mercurial.py` compares

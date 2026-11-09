@@ -35,6 +35,7 @@ ORACLE_ROOT = Path(__file__).parent / "oracles" / "hg"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
 MATCHING_CAPTURE_FILES = (
     "hg-7.2.4-macos-arm64.json",
+    "hg-6.7.2-linux-x86_64.json",
     "hg-7.0.1-linux-aarch64.json",
     "hg-7.0.1-linux-x86_64.json",
     "hg-7.1.2-windows-x86_64.json",
@@ -61,6 +62,7 @@ CAPTURED_CASE_PROFILE_PARAMS = [
 WALK_CASES = json.loads((ORACLE_ROOT / "walk_cases.json").read_text(encoding="utf-8"))["cases"]
 WALK_CAPTURE_FILES = (
     "hg-walk-7.2.4-macos-arm64.json",
+    "hg-walk-6.7.2-linux-x86_64.json",
     "hg-walk-7.0.1-linux-aarch64.json",
     "hg-walk-7.0.1-linux-x86_64.json",
     "hg-walk-7.1.2-windows-x86_64.json",
@@ -259,12 +261,17 @@ def test_policy_matches_captured_native_observation(
 def test_nested_subinclude_preserves_portable_result_when_native_matcher_fails(
     tmp_path: Path,
 ) -> None:
-    """Retain the native nested-subinclude assertion as a known client divergence."""
+    """Retain native nested-subinclude failures across captured Mercurial clients."""
     case = next(case for case in CASES if case["id"] == "hg.nested-subinclude-from-included-source")
-    observation = MATCHING_OBSERVATIONS["hg-7.2.4-macos-arm64.json"][case["id"]]
-    assert observation["native_status"] == "captured"
-    assert observation["exit_code"] == 1
-    assert "AssertionError" in observation["stderr"]
+    for profile in (
+        "hg-7.2.4-macos-arm64.json",
+        "hg-6.7.2-linux-x86_64.json",
+        "hg-7.1.2-windows-x86_64.json",
+    ):
+        observation = MATCHING_OBSERVATIONS[profile][case["id"]]
+        assert observation["native_status"] == "captured"
+        assert observation["exit_code"] == 1
+        assert "AssertionError" in observation["stderr"]
 
     policy, query = _make_case(tmp_path / "repo", case)
     decision = policy.explain(query)

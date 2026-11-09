@@ -2468,6 +2468,43 @@
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "raw_stdout": "\udce9 is not ignored\n",
       "raw_stderr": ""
+    },
+    {
+      "id": "hg.nested-subinclude-from-included-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": null,
+      "observed_ignored": null,
+      "candidate_matches": null,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "C:\\Program Files\\Mercurial\\hg.EXE",
+        "debugignore",
+        "-v",
+        "--",
+        "config/config.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 1,
+      "result": "command-error-or-unparsed",
+      "stdout": "",
+      "stderr": "** unknown exception encountered, please report by visiting\n** https://foss.heptapod.net/mercurial/mercurial-devel/-/issues\n** Python 3.9.6 (default, Jul 24 2021, 23:35:14) [MSC v.1929 64 bit (AMD64)]\n** Mercurial Distributed SCM (version 7.1.2)\n** Extensions loaded: \nTraceback (most recent call last):\n  File \"<string>\", line 40, in <module>\n  File \"mercurial.dispatch\", line 144, in run\n  File \"mercurial.dispatch\", line 233, in dispatch\n  File \"mercurial.dispatch\", line 278, in _rundispatch\n  File \"mercurial.dispatch\", line 468, in _runcatch\n  File \"mercurial.dispatch\", line 478, in _callcatch\n  File \"mercurial.scmutil\", line 182, in callcatch\n  File \"mercurial.dispatch\", line 458, in _runcatchfunc\n  File \"mercurial.dispatch\", line 1106, in _dispatch\n  File \"mercurial.dispatch\", line 1362, in _dispatch_post_cwd\n  File \"mercurial.dispatch\", line 975, in runcommand\n  File \"mercurial.dispatch\", line 1374, in _runcommand\n  File \"mercurial.dispatch\", line 1360, in <lambda>\n  File \"mercurial.util\", line 1979, in check\n  File \"mercurial.debugcommands\", line 1814, in debugignore\n  File \"mercurial.match\", line 467, in __call__\n  File \"mercurial.match\", line 1533, in matchsubinclude\n  File \"mercurial.match\", line 285, in match\nAssertionError\n",
+      "configuration": null,
+      "normalized_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalized_stderr_sha256": "a361c0b6bc5671cfcb8abb2ed959097fa07969e4a93d4c085a1ffa8293aafae1",
+      "raw_stdout": "",
+      "raw_stderr": "** unknown exception encountered, please report by visiting\n** https://foss.heptapod.net/mercurial/mercurial-devel/-/issues\n** Python 3.9.6 (default, Jul 24 2021, 23:35:14) [MSC v.1929 64 bit (AMD64)]\n** Mercurial Distributed SCM (version 7.1.2)\n** Extensions loaded: \nTraceback (most recent call last):\n  File \"<string>\", line 40, in <module>\n  File \"mercurial.dispatch\", line 144, in run\n  File \"mercurial.dispatch\", line 233, in dispatch\n  File \"mercurial.dispatch\", line 278, in _rundispatch\n  File \"mercurial.dispatch\", line 468, in _runcatch\n  File \"mercurial.dispatch\", line 478, in _callcatch\n  File \"mercurial.scmutil\", line 182, in callcatch\n  File \"mercurial.dispatch\", line 458, in _runcatchfunc\n  File \"mercurial.dispatch\", line 1106, in _dispatch\n  File \"mercurial.dispatch\", line 1362, in _dispatch_post_cwd\n  File \"mercurial.dispatch\", line 975, in runcommand\n  File \"mercurial.dispatch\", line 1374, in _runcommand\n  File \"mercurial.dispatch\", line 1360, in <lambda>\n  File \"mercurial.util\", line 1979, in check\n  File \"mercurial.debugcommands\", line 1814, in debugignore\n  File \"mercurial.match\", line 467, in __call__\n  File \"mercurial.match\", line 1533, in matchsubinclude\n  File \"mercurial.match\", line 285, in match\nAssertionError\n"
     }
   ]
 }
