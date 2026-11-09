@@ -1136,6 +1136,76 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.path-newline-and-tab-round-trip",
+      "dimension": "path-round-trip",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "line\nbreak.tmp",
+        "tab\tname.tmp"
+      ],
+      "observed_ignored_paths": [
+        "line\nbreak.tmp",
+        "tab\tname.tmp"
+      ],
+      "expected_status_paths": null,
+      "observed_status_paths": [
+        "line\nbreak.tmp",
+        "tab\tname.tmp"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-cgpx71n9/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "640be739402b5cb013b6a715e3626f385dfeb2110be226cbad86151873f82504",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-cgpx71n9/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "line\nbreak.tmp",
+            "tab\tname.tmp"
+          ],
+          "ignored_paths": [
+            "line\nbreak.tmp",
+            "tab\tname.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"line&#10;break.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"tab&#9;name.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "64aa927f23d395cd55367e5a47834d05eee39b7aae88e4a0acc71abb971982d7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

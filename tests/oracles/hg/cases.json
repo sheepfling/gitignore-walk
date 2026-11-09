@@ -929,6 +929,150 @@
       "expected_policy_diagnostics": [
         "source-unavailable"
       ]
+    },
+    {
+      "id": "hg.regex-ascii-word-class",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "^\\w+$\n"
+        }
+      },
+      "query": "ascii_12",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+    },
+    {
+      "id": "hg.regex-unicode-word-class-is-byte-oriented",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "^\\w+$\n"
+        }
+      },
+      "query": "\u00e9",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+    },
+    {
+      "id": "hg.regex-unicode-digit-class-is-byte-oriented",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "^\\d+$\n"
+        }
+      },
+      "query": "\u0661",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+    },
+    {
+      "id": "hg.regex-unicode-ignorecase-is-byte-oriented",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "(?i)^\u00e9$\n"
+        }
+      },
+      "query": "\u00c9",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+    },
+    {
+      "id": "hg.regex-unicode-literal-matches-utf8-bytes",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "^\u00e9$\n"
+        }
+      },
+      "query": "\u00e9",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+    },
+    {
+      "id": "hg.regex-ascii-ignorecase",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "(?i)^foo$\n"
+        }
+      },
+      "query": "FOO",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+    },
+    {
+      "id": "hg.glob-one-character-matches-one-byte",
+      "profile": "hg",
+      "dimension": "glob-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n?\n"
+        }
+      },
+      "query": "\u00e9",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+    },
+    {
+      "id": "hg.glob-two-characters-match-two-byte-utf8-path",
+      "profile": "hg",
+      "dimension": "glob-byte-semantics",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n??\n"
+        }
+      },
+      "query": "\u00e9",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
     }
   ]
 }

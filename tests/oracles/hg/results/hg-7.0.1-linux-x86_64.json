@@ -41,7 +41,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "246e5946a58cbd54c70c6b633e5d1dc997ede909a76b6f8c5ad0263f62df21da",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a/b.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-c90dtwjn/repo/.hgignore, line 1: '\\.tmp$')\n",
+      "raw_stdout": "a/b.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-s_qbc2sq/repo/.hgignore, line 1: '\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -111,7 +111,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "0097eafbb6837804672304820301b09c772a0b224b0f023561fbefbb43ead328",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "bad\udcff.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-xs224dqs/repo/.hgignore, line 2: 'bad\udcff.tmp')\n",
+      "raw_stdout": "bad\udcff.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-adrlhg15/repo/.hgignore, line 2: 'bad\udcff.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -146,7 +146,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "9464e0c5103ac39ec53c252e6424d771218f113fb36320f1cc148f2d153c13f2",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-qvkfb0e4/repo/.hgignore, line 2: '*.tmp')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-kap_nltb/repo/.hgignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -181,7 +181,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "bae17015921d20f45f0cedc64c59c0eb5705e72834d768f013ad7e916d81e6ac",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo#bar is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-njvhknbt/repo/.hgignore, line 2: 'foo#bar')\n",
+      "raw_stdout": "foo#bar is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-bjfd0vf8/repo/.hgignore, line 2: 'foo#bar')\n",
       "raw_stderr": ""
     },
     {
@@ -216,7 +216,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "85650446c9f1fd0a078c49c4497c163575b2c64cc7af231a8adbdf3b6408c810",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-_f4wwlyc/repo/.hgignore, line 2: 'foo')\n",
+      "raw_stdout": "foo is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-23p71sbu/repo/.hgignore, line 2: 'foo')\n",
       "raw_stderr": ""
     },
     {
@@ -251,7 +251,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "85650446c9f1fd0a078c49c4497c163575b2c64cc7af231a8adbdf3b6408c810",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-u4e04ju5/repo/.hgignore, line 2: 'foo')\n",
+      "raw_stdout": "foo is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-yn95dz_e/repo/.hgignore, line 2: 'foo')\n",
       "raw_stderr": ""
     },
     {
@@ -286,7 +286,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "a1b1ef3d5882a9412f24387a292a7369d302ec5a6763460114963a0432f984c1",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo    is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-dwcnl3qn/repo/.hgignore, line 1: '^foo   $')\n",
+      "raw_stdout": "foo    is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-ohvitcph/repo/.hgignore, line 1: '^foo   $')\n",
       "raw_stderr": ""
     },
     {
@@ -321,7 +321,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "9464e0c5103ac39ec53c252e6424d771218f113fb36320f1cc148f2d153c13f2",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-equ1f3v3/repo/.hgignore, line 2: '*.tmp')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-cqvu1tgo/repo/.hgignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -461,7 +461,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "4b6d612849ea34344ff9dde58f025c67e80ee1da0832f7910dd3c48729924b2a",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "keep.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-e1fgn3ti/repo/.hgignore, line 2: '*.tmp')\n",
+      "raw_stdout": "keep.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-yivc_zpc/repo/.hgignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -531,7 +531,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "2152ebf26643355b29ed3d96da41d826347378f9c14a0bd1aca34cbcd8ef8428",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "build/file is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-77h2wwc7/repo/.hgignore, line 1: ':config/rules')\n",
+      "raw_stdout": "build/file is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-f3o5s6zx/repo/.hgignore, line 1: ':config/rules')\n",
       "raw_stderr": ""
     },
     {
@@ -566,7 +566,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "2152ebf26643355b29ed3d96da41d826347378f9c14a0bd1aca34cbcd8ef8428",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "build/file is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-8ayfd_k9/repo/.hgignore, line 1: ':config/rules')\n",
+      "raw_stdout": "build/file is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-s4du61oo/repo/.hgignore, line 1: ':config/rules')\n",
       "raw_stderr": ""
     },
     {
@@ -706,7 +706,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "de4775fa0a9be9b4cf4c1701140200d23936ed32b5fff2b296307c1d8fda3fbe",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-s9014hlh/repo/.hgignore, line 2: ':rules')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-228jfs8n/repo/.hgignore, line 2: ':rules')\n",
       "raw_stderr": ""
     },
     {
@@ -741,7 +741,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "62ac92cbc2e8861d67ea25f9412bf810f0e67ec19f88fd8b7d279fa342a8c10d",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.py is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-7269cg5c/repo/.hgignore, line 2: '*.{py,txt}')\n",
+      "raw_stdout": "a.py is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-iwlswida/repo/.hgignore, line 2: '*.{py,txt}')\n",
       "raw_stderr": ""
     },
     {
@@ -776,7 +776,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "55542336264ef8120ac1e9135b066d19fdea80396d31cc7a87c7c748bea9ebdc",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "test/deep/a.txt is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-yvpddzuy/repo/.hgignore, line 2: 'test/**.txt')\n",
+      "raw_stdout": "test/deep/a.txt is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-3q4s9_c1/repo/.hgignore, line 2: 'test/**.txt')\n",
       "raw_stderr": ""
     },
     {
@@ -811,7 +811,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "8d46806c14273b7dea9bcdc4364da791ad5183ba6754fd08a50905d5a7cd5e1b",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a/b is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-20k74s4h/repo/.hgignore, line 2: 'a?b')\n",
+      "raw_stdout": "a/b is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-_89i2n_l/repo/.hgignore, line 2: 'a?b')\n",
       "raw_stderr": ""
     },
     {
@@ -846,7 +846,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "55ca97f8f9c173d3632d1cbba8dc8a0c73a8bc5c7d5a79dba34c06f2813c34ba",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "file[ is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-5ka2nntt/repo/.hgignore, line 2: 'file[')\n",
+      "raw_stdout": "file[ is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-ooym8xqo/repo/.hgignore, line 2: 'file[')\n",
       "raw_stderr": ""
     },
     {
@@ -881,7 +881,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "5c82f009061c049695136cfae0fe176e9893b9736776a34e19b74c67159e8c62",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "cache/file is ignored because of containing directory cache\n(ignore rule in /tmp/gitignore-walk-hg-oracle-4sqx72jl/repo/.hgignore, line 1: '^cache$')\n",
+      "raw_stdout": "cache/file is ignored because of containing directory cache\n(ignore rule in /tmp/gitignore-walk-hg-oracle-zpgn97k5/repo/.hgignore, line 1: '^cache$')\n",
       "raw_stderr": ""
     },
     {
@@ -916,7 +916,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "73b3bc0fdb0a848b694dcf35457ab7f2789c9cedd2107f32b727249052ccad91",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-r0lxqgqa/home/work.ignore, line 2: '*.tmp')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-n6of2h70/home/work.ignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -962,7 +962,7 @@
       },
       "normalized_stdout_sha256": "a5dcc0a2d8883413148fbf5b3b6418e0220f3375525842990b2657df16dc48d4",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "shared.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-o6b5vmg9/home/first.ignore, line 1: '^shared\\.tmp$')\n",
+      "raw_stdout": "shared.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-dh2np1n5/home/first.ignore, line 1: '^shared\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1008,7 +1008,7 @@
       },
       "normalized_stdout_sha256": "45abfd43733c74492ab36d14ff14dd21a1ead760fa53d762bb0389e9afa33c95",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "workspace.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-0v1zvuv3/repo/workspace.ignore, line 1: '^workspace\\.tmp$')\n",
+      "raw_stdout": "workspace.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-6s_yuntq/repo/workspace.ignore, line 1: '^workspace\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1054,7 +1054,7 @@
       },
       "normalized_stdout_sha256": "0337799e176d16ab0977998753461edafe9cea1d79ff2fa721babf8cfef9e5c4",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "home.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-5d74ownb/home/.project-ignore, line 1: '^home\\.tmp$')\n",
+      "raw_stdout": "home.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-qthby16b/home/.project-ignore, line 1: '^home\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1100,7 +1100,7 @@
       },
       "normalized_stdout_sha256": "9de236343d672d19fc5a229d679db376ab64c159f90a75111d2758394f13cd4d",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "included.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-n8kmu_hy/home/included.ignore, line 1: '^included\\.tmp$')\n",
+      "raw_stdout": "included.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-u2klzo4q/home/included.ignore, line 1: '^included\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1138,8 +1138,8 @@
       "configuration": null,
       "normalized_stdout_sha256": "e2bac0665d5fbe6d2b8dac9dd4fca1cdbcbf96b35724bb11a939ad0a6d52e327",
       "normalized_stderr_sha256": "b44d4399f8ba1aac2175679be475d04f27d9822fee80a343f277a38fb6cad1bb",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-12i90x2a/repo/.hgignore, line 2: '.*\\.tmp$')\n",
-      "raw_stderr": "/tmp/gitignore-walk-hg-oracle-12i90x2a/repo/.hgignore: ignoring invalid syntax 'nonsense'\n/tmp/gitignore-walk-hg-oracle-12i90x2a/repo/.hgignore: ignoring invalid syntax 'nonsense'\n"
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-27h_21c7/repo/.hgignore, line 2: '.*\\.tmp$')\n",
+      "raw_stderr": "/tmp/gitignore-walk-hg-oracle-27h_21c7/repo/.hgignore: ignoring invalid syntax 'nonsense'\n/tmp/gitignore-walk-hg-oracle-27h_21c7/repo/.hgignore: ignoring invalid syntax 'nonsense'\n"
     },
     {
       "id": "hg.regex-inline-flags-newline",
@@ -1173,7 +1173,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "25fbd7bfd7b2128ec41871ea62647300ce0a6b62c0cbb5f7f3ff0e40a2a63224",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a\nb is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-y3p_lhkk/repo/.hgignore, line 1: '(?s)^a.*b$')\n",
+      "raw_stdout": "a\nb is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-ufoatlu0/repo/.hgignore, line 1: '(?s)^a.*b$')\n",
       "raw_stderr": ""
     },
     {
@@ -1208,7 +1208,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "608269b5c7d4fba12e1186a1b13fe2e3c79dfc375485286a6a4c7352ee68dab9",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "xfooy is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-jlgyr_u_/repo/.hgignore, line 1: 'foo')\n",
+      "raw_stdout": "xfooy is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-3mcvzk5l/repo/.hgignore, line 1: 'foo')\n",
       "raw_stderr": ""
     },
     {
@@ -1278,7 +1278,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "2bdd2de596ab4463e56c594b243306aa2e0efc9e1742242eb1a6705053895d59",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "FOO is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-c5_eq20_/repo/.hgignore, line 1: '(?i-m:foo)')\n",
+      "raw_stdout": "FOO is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-5q68g6nu/repo/.hgignore, line 1: '(?i-m:foo)')\n",
       "raw_stderr": ""
     },
     {
@@ -1350,7 +1350,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "fdf07d06460edbf90c2b794c28e90017fbf43577e5f5980bfab69fe309e0ae5d",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "literal*.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-qn4aogzt/repo/.hgignore, line 2: 'literal\\*.tmp')\n",
+      "raw_stdout": "literal*.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-z7nqkhk0/repo/.hgignore, line 2: 'literal\\*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -1385,7 +1385,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "86adf9b59dbc185e88d139d4a3fbf328084679ef933cda94bd8ecf9cbeef6cf0",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "b.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-w03o2q2c/repo/.hgignore, line 2: '[!a].tmp')\n",
+      "raw_stdout": "b.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-hr7lre5z/repo/.hgignore, line 2: '[!a].tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -1490,7 +1490,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "0b007085952e7cf935ca86d5025e69cd782ffdeca904d8985ac6073a41db06a3",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo\\#bar is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-2rasjxmr/repo/.hgignore, line 2: 'foo\\\\#bar')\n",
+      "raw_stdout": "foo\\#bar is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-w4fjvz9j/repo/.hgignore, line 2: 'foo\\\\#bar')\n",
       "raw_stderr": ""
     },
     {
@@ -1525,7 +1525,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "eebf1dee72470287f3543b5ddb807340f973e3286f3b55aa5b85e7a9ac5c2db7",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "shared.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-elo6j2pu/home/first.ignore, line 1: 'shared\\.tmp$')\n",
+      "raw_stdout": "shared.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-2g9qqhbx/home/first.ignore, line 1: 'shared\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1595,7 +1595,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "38d5b6ef39a26e87bb1e175aa75423ccbc0b87e32349dbaafee8e87f5cc0d616",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-9j87oydb/repo/.hgignore, line 1: ':external.ignore')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-gwg5snz4/repo/.hgignore, line 1: ':external.ignore')\n",
       "raw_stderr": ""
     },
     {
@@ -1701,7 +1701,7 @@
       "normalized_stdout_sha256": "4978b2491af6a81565dca8592f1a9c5c8e0eb305b9e41a0674789e6a0e73c42d",
       "normalized_stderr_sha256": "a677665c6b89496f1c2f2a97b04f66d76f90ab9a92ad560b96270cb8a8c91578",
       "raw_stdout": "x.tmp is not ignored\n",
-      "raw_stderr": "skipping unreadable pattern file '/tmp/gitignore-walk-hg-oracle-0j2_c7hx/repo/does-not-exist.ignore': No such file or directory\n"
+      "raw_stderr": "skipping unreadable pattern file '/tmp/gitignore-walk-hg-oracle-gpb8ib2z/repo/does-not-exist.ignore': No such file or directory\n"
     },
     {
       "id": "hg.include-unreadable-source",
@@ -1737,6 +1737,286 @@
       "normalized_stderr_sha256": "1b0a2c7893249be0035da530bd12e00200af959c4b608c72384069d1af24d253",
       "raw_stdout": "a.tmp is not ignored\n",
       "raw_stderr": "skipping unreadable pattern file 'rules.ignore': Permission denied\n"
+    },
+    {
+      "id": "hg.regex-ascii-word-class",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "ascii_12"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "ascii_12 is ignored\n(ignore rule in <repo>/.hgignore, line 1: '^\\w+$')\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "9937cae66b24ac13d49b99d744c665c307336fb7c0e99368e1c5e10ce95ff204",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "ascii_12 is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-tlhkfkk_/repo/.hgignore, line 1: '^\\w+$')\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-unicode-word-class-is-byte-oriented",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u00e9"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "\u00e9 is not ignored\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "36e2af79002382fad41d48e2968ed248bacd81530b96f6ab202b85bb2fdad99d",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u00e9 is not ignored\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-unicode-digit-class-is-byte-oriented",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u0661"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "\u0661 is not ignored\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "49faea66d495fe4ba39b6c4b90dfa92cb958b0fb522df114978f730b1340d9e0",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u0661 is not ignored\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-unicode-ignorecase-is-byte-oriented",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u00c9"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "\u00c9 is not ignored\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "fd0863481e7684986f54b22e390c5477db9d6e7d700a06d33187ce6265853e3a",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u00c9 is not ignored\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-unicode-literal-matches-utf8-bytes",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u00e9"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "\u00e9 is ignored\n(ignore rule in <repo>/.hgignore, line 1: '^\u00e9$')\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "3b07c481efced9f753a868628687e33baea6e324f897364140d85b74d837f28a",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u00e9 is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-0nfqculu/repo/.hgignore, line 1: '^\u00e9$')\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-ascii-ignorecase",
+      "profile": "hg",
+      "dimension": "regex-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "FOO"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "FOO is ignored\n(ignore rule in <repo>/.hgignore, line 1: '(?i)^foo$')\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "7d50bac59199abe4a3f2fc70dc8840700812b9b6b3a8c67657e58cf26c0ad9a6",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "FOO is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-0yo42dqe/repo/.hgignore, line 1: '(?i)^foo$')\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.glob-one-character-matches-one-byte",
+      "profile": "hg",
+      "dimension": "glob-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u00e9"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "\u00e9 is not ignored\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "36e2af79002382fad41d48e2968ed248bacd81530b96f6ab202b85bb2fdad99d",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u00e9 is not ignored\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.glob-two-characters-match-two-byte-utf8-path",
+      "profile": "hg",
+      "dimension": "glob-byte-semantics",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u00e9"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "\u00e9 is ignored\n(ignore rule in <repo>/.hgignore, line 2: '??')\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "dfa23c6f3fd21b23ca6d05098d003e3ec3d13056b05e9908f38a73407a42d6b2",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u00e9 is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-phcabzf3/repo/.hgignore, line 2: '??')\n",
+      "raw_stderr": ""
     }
   ]
 }

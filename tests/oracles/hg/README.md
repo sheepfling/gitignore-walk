@@ -22,7 +22,7 @@ GitHub Actions runs this command in Ubuntu and Windows jobs with Mercurial insta
 separate workflow artifacts. It records single-path `debugignore` observations and
 `status --ignored` plus `status --unknown` file walks. The committed captures cover macOS arm64
 Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows Server 2025
-x86_64 Mercurial 7.1.2. The 48 path cases include case-sensitive glob
+x86_64 Mercurial 7.1.2. The original 48 path cases include case-sensitive glob
 matching, Unicode normalization-form sensitivity, missing-source behavior, an external include
 symlink, an undecodable byte in a glob pattern, and trailing-space behavior: glob rules trim trailing
 spaces, while regexp
@@ -31,7 +31,12 @@ inline flags. An unreadable
 included file is skipped by native Mercurial with a warning; the
 policy reports `discovery_complete=False` with a source-unavailable diagnostic. Config discovery
 fixtures cover named entries, home-relative paths, repository configuration, and an included
-`.hg/hgrc` file.
+`.hg/hgrc` file. Eight additional byte-semantics cases are captured on Mercurial 7.2.4/macOS arm64
+and Mercurial 7.0.1/Debian 13 Linux aarch64 and x86_64. They show regex character classes and case
+folding are byte-oriented, UTF-8 literals still match, and glob `?` consumes one byte of a multi-byte
+UTF-8 path. The test suite also compares these patterns directly with the installed native client on
+each client-enabled CI profile; the Windows committed capture still contains the original 48 cases.
+The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
 The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: all 42
 candidate comparisons match, with no differing candidate results. The include-cycle observation
@@ -85,7 +90,8 @@ separately because the policy reports ignore matching and does not query Mercuri
 This oracle asks `hg debugignore` whether a single path matches ignore rules. It does not establish
 tracked-file behavior, add/status behavior, traversal output, or compatibility with other Mercurial
 versions. Forty-six boolean expectations and the structured invalid-syntax expectation agree on
-each captured profile. The include-cycle case has
+each original captured profile. The eight added byte-semantics expectations also match in both
+expanded captures. The include-cycle case has
 no native candidate boolean because the client recurses until failure; the library detects the cycle
 and returns an incomplete-discovery diagnostic as a safe divergence. In particular,
 `hg.subinclude-rebases` reports the path as ignored and then exits with a source-formatting error.

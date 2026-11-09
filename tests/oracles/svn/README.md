@@ -1,6 +1,6 @@
 # Subversion native oracle
 
-`cases.json` contains 14 isolated local-repository probes. They cover directory `svn:ignore`,
+`cases.json` contains 15 isolated local-repository probes. They cover directory `svn:ignore`,
 inherited `svn:global-ignores` (including a property above a subtree checkout), nested properties,
 APR glob syntax, sparse depths, and working-copy boundaries. External fixtures exercise
 repository-root-relative, parent-relative, absolute, server-root-relative, and scheme-relative URLs.
@@ -24,8 +24,9 @@ The property fixtures cover local, inherited, nested, and external-working-copy 
 configuration; Git-style negation; ignored directories; and a versioned file whose name matches an
 ignore rule. Sparse-depth fixtures confirm a versioned directory at depth `empty` retains its
 `svn:ignore` property, while an excluded directory is reported as one unversioned path without
-listing files beneath it. The complete 14-case corpus matches on Subversion 1.15.0/macOS arm64 and
-1.14.5/Linux aarch64 and x86_64. Captures are stored in `results/`.
+listing files beneath it. All 15 cases match on Subversion 1.15.0/macOS arm64 and 1.14.5/Linux
+aarch64 and x86_64. The Windows oracle job explicitly skips the newline-and-tab case because those
+filenames are not representable there. Captures are stored in `results/`.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then
@@ -35,7 +36,10 @@ and unsupported POSIX character classes. Native cases also confirm that spaces i
 `svn:global-ignores` property values are not list separators; each CR/LF-delimited line remains one
 pattern. These cases are captured on Subversion 1.15.0/macOS arm64 and 1.14.5/Linux x86_64. The
 Windows SlikSvn 1.14.5 profile skips the escaped-wildcard filename, which Windows cannot represent,
-and the scheme-relative external because the installer does not include `svnserve`. In Subversion 1.14.5,
+and the scheme-relative external because the installer does not include `svnserve`. A separate
+newline-and-tab path case confirms that XML status encodes both characters as numeric references and
+that the policy walk preserves the decoded names; it matches on Subversion 1.15.0/macOS arm64 and
+1.14.5/Linux aarch64 and x86_64. Windows skips these unrepresentable filenames. In Subversion 1.14.5,
 [`status.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/status.c)
 collects working-copy ignore patterns, and
 [`util.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/util.c) delegates

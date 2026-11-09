@@ -19,11 +19,14 @@ nested externals, and keeps outer-working-copy rules outside each nested boundar
 discovery and working-copy conformance remain open. The
 implementation research handoff records 94 native assertions against Git 2.47.3 and ripgrep 14.1.1
 on Linux, plus one malformed-input observation. It also supplies 88 non-Git candidate cases: 67
-documentation/source-derived and 21 open questions. The Mercurial native corpus has 48 path
+documentation/source-derived and 21 open questions. The original Mercurial native corpus has 48 path
 probes and six traversal fixtures, captured with Mercurial 7.2.4 on macOS arm64 and 7.0.1 on Linux
-aarch64 and x86_64. All 46 boolean expectations and the structured invalid-syntax expectation agree
-across all three profiles, as do all six walk fixtures; parent walks stop at nested `.hg`
-workspaces and root walks stop at `.hg` metadata.
+aarch64 and x86_64. Eight additional regex/glob byte-semantics probes now match native results on
+macOS arm64 and Debian 13 Linux aarch64 and x86_64; the client-enabled test also compares them with
+the installed Mercurial on each platform. The full Mercurial test module passes in both Debian Linux
+containers. All 46 original boolean expectations and the structured
+invalid-syntax expectation agree across the original profiles, as do all six walk fixtures. Parent
+walks stop at nested `.hg` workspaces, and root walks stop at `.hg` metadata.
 An undecodable glob pattern matches native `debugignore` on all three profiles, and actual byte-path
 walks match native status on both Linux architectures; the walk test skips macOS because its
 filesystem rejects such names. Mercurial also compares Unicode paths by exact code-point spelling: an
@@ -47,6 +50,10 @@ brackets, and the absence of POSIX character classes. They also confirm spaces d
 1.15.0/macOS arm64, 1.14.5/Linux aarch64 and x86_64, and 1.14.5/SlikSvn Windows x86_64. Windows
 skips the escaped-wildcard filename because Windows cannot represent `*` in a filename. The new
 inherited-property case also matches native status on all four captured profiles.
+The SVN corpus now also covers newline- and tab-bearing filenames: Subversion 1.15.0/macOS arm64
+captures their XML numeric-reference round trip, and top-down and bottom-up policy walks preserve
+the decoded paths. Windows records an explicit skip because it cannot represent these filenames;
+Subversion 1.14.5 Linux aarch64 and x86_64 captures also match all 15 cases, including both walks.
 The initial SVN property fixture covers seven ignored paths and local, inherited, nested, runtime,
 negation, case, and tracked-file distinctions; native results match on Subversion 1.15.0/macOS arm64
 and 1.14.5/Linux aarch64. A sparse-depth `empty` fixture confirms directory properties remain
@@ -157,7 +164,7 @@ handoff; revisit it if native feasibility or project priorities change.
 
 | Order                     | VCS                                                       | Intended feature slice                                                                            | Main oracle questions and gate                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
 | ------------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1 (recommended)           | Mercurial                                                 | `.hgignore` regex, glob, root/configured sources; nested `include`/`subinclude`; explain and walk | Captured 48 `debugignore` cases and six status walk fixtures on 7.2.4/macOS arm64 and 7.0.1/Linux aarch64 and x86_64, plus Mercurial 7.1.2/Windows Server 2025 x86_64. On Windows, 42 candidate comparisons match with no differences; the include-cycle observation remains a documented safe divergence. Five path cases and one symlink-dependent walk are explicitly skipped, while five walk fixtures match. On the other profiles, all 46 boolean expectations and the structured invalid-syntax expectation agree. Include cycles are a documented safe divergence: the native client recurses, while the library returns an incomplete-discovery diagnostic. Linux byte-path walking matches native status, and `.hg` metadata is a traversal boundary. Windows evidence and skips are retained under `tests/oracles/hg/results/`; broader syntax remains open.                                                                                                                                                                                  |
+| 1 (recommended)           | Mercurial                                                 | `.hgignore` regex, glob, root/configured sources; nested `include`/`subinclude`; explain and walk | The original 48 `debugignore` cases and six status-walk fixtures remain captured on macOS, Linux aarch64/x86_64, and Windows. Eight new byte-semantics cases now also match Mercurial 7.2.4/macOS arm64 and 7.0.1/Debian 13 Linux aarch64 and x86_64. The full Mercurial test module passes in both Linux containers. The Windows profile's 42 original candidate comparisons have no differences; five path cases and one symlink walk remain explicit skips. Live-client tests compare the new regex/glob cases on client-enabled platforms. Include cycles remain a documented safe divergence; Linux byte-path walking matches native status, and `.hg` metadata remains a traversal boundary. See `tests/oracles/hg/results/`; broader syntax remains open.                                                                                                                                                                                                                                                                                         |
 | 2                         | [SVN](../../tests/oracles/svn/README.md)                  | Bounded property-driven working-copy policy, including inherited directory properties             | The expanded status corpus matches native behavior on Subversion 1.15.0/macOS arm64, 1.14.5/Linux aarch64 and x86_64, and 1.14.5/SlikSvn Windows x86_64. This includes inherited `svn:global-ignores` above the checkout root and rules from listed externals, including nested externals. Versioned property rules stop at each external working-copy boundary. Sparse `empty` and `exclude` depths, nested working-copy boundaries, and native-listed externals with repository-root-relative, parent-relative, absolute, server-root-relative, and scheme-relative URLs are covered. Windows skips the escaped-wildcard filename, which cannot be represented there, and the scheme-relative external because SlikSvn lacks `svnserve`. Captures and Registry evidence are retained under `tests/oracles/svn/results/`. Versioned membership and broader path behavior remain open. Handoff has 13 status and 2 import-reference cases.                                                                                                               |
 | 3                         | Fossil and [Breezy](../../tests/oracles/breezy/README.md) | Mature Fossil and Breezy conformance; broaden regex, source, and traversal coverage               | Fossil has an initial effective-setting evaluator and eighteen oracle cases on 2.28/macOS arm64 and 2.26/Linux aarch64. Seventeen boolean case-level candidates match native results, including quoted commas and spaces, non-ASCII whitespace, hash-leading patterns, literal backslashes, and ignored-directory descendant suppression. Eight captured malformed/escaped token decisions are also asserted against both native profiles and the evaluator. Its included/ignored walker selections match native `extras` for the captured directory fixture, including checkout-marker exclusion. Other tokenizer boundaries and broader workspace profiles remain open; Fossil `clean-glob`/`keep-glob` remain out of scope. Breezy has an initial typed policy that matches all 27 boolean candidates on two 3.3.24 profiles, including `BRZ_HOME`, exact-path strong exclusions, exception-aware traversal, negative lookahead, and scoped inline flags. Resolve broader RE behavior, platform configuration, source precedence, and pruning safety. |
 | 4                         | [Perforce](../../tests/oracles/perforce/README.md)        | Mature the initial `P4IGNORE` evaluator and opt-in `P4CONFIG` resolution                          | Three disposable local `p4d`/client profiles (macOS arm64, Debian 13 x86_64, Ubuntu 24.04 x86_64) match all 30 boolean candidates plus a platform-dependent case. Native rule checks capture `p4 ignores -i -v` separately from `p4 add -n`, including built-in configured `P4CONFIG` filename and `.p4root` exclusions. Opt-in config resolution uses `p4 set` and covers config discovery, config-over-environment precedence, and nested config selection. Root-anchored rules resolve against the containing ignore file, including nested rules. Broaden paths and configuration edge cases.                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -176,8 +183,10 @@ scope record and reproducible oracle fixtures.
 **Priority:** P0 · **Depends on:** none · **Status:** initial Mercurial capture complete; implementation
 gate open
 
-The runner in `tests/oracles/hg/` captures 48 cases on Mercurial 7.2.4/macOS arm64 and 7.0.1/Debian
-13 Linux aarch64 and x86_64. All 46 boolean expectations and the structured invalid-syntax
+The runner in `tests/oracles/hg/` captures the original 48 cases on Mercurial 7.2.4/macOS arm64 and
+7.0.1/Debian 13 Linux aarch64 and x86_64. Eight additional regex/glob byte-semantics cases are
+captured on all three Unix profiles and are compared with each installed client by the native
+integration test. All 46 original boolean expectations and the structured invalid-syntax
 expectation match each native profile, and 46 `debugignore` queries exit normally.
 `hg.subinclude-rebases` prints an ignored decision before
 exiting with a source-formatting error; its rule behavior is independently corroborated by the
@@ -319,7 +328,11 @@ with the native client for the supported profile; all unsupported discovery path
 
 **Priority:** P1 · **Depends on:** VCS-01, VCS-02, VCS-03
 
-**Status:** Initial portable evaluator and captured-profile tests are implemented. Include loading now
+**Status:** The portable evaluator and captured-profile tests are implemented. The full test module
+passes on macOS and with 409 passed, 11 skipped on each Debian 13 Linux aarch64/x86_64 container.
+Regex rules compile and match UTF-8 path bytes with `surrogateescape`, matching native ASCII
+character-class and
+case-folding behavior; glob `?` byte width is also confirmed by native captures. Include loading
 uses bounded regular-file reads and reports non-regular sources as unavailable; broader dialect and
 platform conformance remains open.
 
@@ -454,8 +467,8 @@ Native captures confirm an undecodable byte in a glob pattern on macOS and Linux
 undecodable filename walk is verified on Linux and skipped on the tested macOS filesystem, which
 rejects those names.
 
-The versioned 48-case captures on all three profiles confirm root `.hgignore` `include:` loads
-patterns without rebasing, `subinclude:` scopes them to its directory, nested `.hgignore` files are
+The original versioned 48-case captures confirm root `.hgignore` `include:` loads patterns without
+rebasing, `subinclude:` scopes them to its directory, nested `.hgignore` files are
 not auto-loaded, and syntax switches reset in included sources. They also confirm prefix-directory
 matches, glob braces, embedded `**`, question-mark matching across separators, the client's
 invalid-syntax warning behavior, unanchored regex search, start-anchor behavior, and scoped inline

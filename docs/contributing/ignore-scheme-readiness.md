@@ -72,10 +72,13 @@ have a separate captured inventory; see the [Git oracle notes](../../tests/oracl
 [ripgrep oracle notes](../../tests/oracles/ripgrep/README.md). These cases confirmed parent blocking
 versus contents-only exceptions, recursive `**/` behavior, last-match precedence, and the difference
 between ordinary tracked-file handling and `--no-index` ignore-rule matching. The current Mercurial
-capture covers 48 `hg debugignore` cases and six native status walk fixtures on macOS arm64 with
-Mercurial 7.2.4, Linux aarch64 and x86_64 with Mercurial 7.0.1, and Windows Server 2025 x86_64
-with Mercurial 7.1.2. The differential library tests now replay the captured observations from all
-four profiles for matching and walking, while native-skipped observations remain test skips. The
+capture covers the original 48 `hg debugignore` cases and six native status walk fixtures on macOS
+arm64 with Mercurial 7.2.4, Linux aarch64 and x86_64 with Mercurial 7.0.1, and Windows Server 2025
+x86_64 with Mercurial 7.1.2. Eight regex/glob byte-semantics cases are now captured on macOS and
+Linux aarch64/x86_64; tests compare them against the installed client on client-enabled profiles.
+The full Mercurial test module passes in Debian 13 Linux containers on both architectures. The
+differential library tests replay captured observations for each profile, while native-skipped
+observations remain test skips. The
 Windows oracle capture has 42 matching candidate comparisons, five explicit path skips, and one
 documented include-cycle divergence; its walk capture has five matching fixtures and one
 symlink-dependent skip. See the
@@ -109,6 +112,10 @@ and direct decisions beneath it report incomplete property discovery. The policy
 at unrelated nested `.svn` roots and follows native-listed externals. It queries properties from
 each listed external working-copy root and stops containing-working-copy property rules at that
 boundary. Broader runtime-config discovery, versioned membership, and status traversal remain open.
+The SVN oracle also includes newline- and tab-bearing filenames: the macOS native capture confirms
+XML numeric-reference decoding, and top-down/bottom-up policy walks preserve both paths. Windows
+skips this case because those filenames are not representable there; Subversion 1.14.5 Linux arm64
+and x86_64 captures also confirm the paths and walks.
 See the [Subversion oracle
 notes](../../tests/oracles/svn/README.md).
 

@@ -41,6 +41,16 @@ MATCHING_OBSERVATIONS = {
     }
     for path in MATCHING_CAPTURE_FILES
 }
+CAPTURED_CASE_PROFILE_PARAMS = [
+    pytest.param(
+        case,
+        profile,
+        id=f"{Path(profile).stem.removeprefix('hg-')}:{case['id']}",
+    )
+    for profile in MATCHING_CAPTURE_FILES
+    for case in CASES
+    if case["id"] in MATCHING_OBSERVATIONS[profile]
+]
 WALK_CASES = json.loads((ORACLE_ROOT / "walk_cases.json").read_text(encoding="utf-8"))["cases"]
 WALK_CAPTURE_FILES = (
     "hg-walk-7.2.4-macos-arm64.json",
@@ -165,10 +175,7 @@ def _make_walk_case(root: Path, case: dict[str, Any]) -> MercurialIgnorePolicy:
     return MercurialIgnorePolicy(root)
 
 
-@pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
-@pytest.mark.parametrize(
-    "profile", MATCHING_CAPTURE_FILES, ids=lambda name: name.removesuffix(".json")
-)
+@pytest.mark.parametrize(("case", "profile"), CAPTURED_CASE_PROFILE_PARAMS)
 def test_policy_matches_captured_native_observation(
     tmp_path: Path,
     case: dict[str, Any],
@@ -214,6 +221,103 @@ def test_policy_matches_captured_native_observation(
     if case["id"] == "hg.include-cycle":
         assert not decision.discovery_complete
         assert {item.code for item in decision.diagnostics} == {"include-cycle"}
+
+
+BYTE_PATTERN_SEMANTIC_CASES = [
+    case for case in CASES if case["dimension"] in {"regex-byte-semantics", "glob-byte-semantics"}
+]
+
+
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("case", BYTE_PATTERN_SEMANTIC_CASES, ids=lambda case: case["id"])
+def test_pattern_byte_semantics_match_installed_native_client(
+    tmp_path: Path, case: dict[str, Any]
+) -> None:
+    """Compare UTF-8 regex and glob matching with the installed Mercurial client."""
+    hg = shutil.which("hg")
+    assert hg is not None
+    root = tmp_path / "repo"
+    root.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(tmp_path),
+            "USERPROFILE": str(tmp_path),
+            "HGRCPATH": str(hgrc),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+            "PYTHONIOENCODING": "utf-8",
+        }
+    )
+    initialized = subprocess.run(
+        [hg, "init", str(root)], env=environment, capture_output=True, check=False, timeout=30
+    )
+    assert initialized.returncode == 0, initialized.stderr.decode(errors="replace")
+    (root / ".hgignore").write_text(case["setup"]["files"][".hgignore"], encoding="utf-8")
+
+    native = subprocess.run(
+        [hg, "debugignore", "-v", "--", case["query"]],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        check=False,
+        timeout=30,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+    assert native.returncode == 0, native.stderr
+    native_ignored = " is ignored\n" in native.stdout
+    policy = MercurialIgnorePolicy(root)
+
+    assert native_ignored is case["expected_candidate"]
+    assert policy.explain(case["query"]).ignored is case["expected_candidate"]
+
+
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+def test_unicode_regex_flag_is_rejected_by_native_and_policy(tmp_path: Path) -> None:
+    """Mercurial's byte regex engine rejects Python's Unicode-only ``(?u)`` flag."""
+    hg = shutil.which("hg")
+    assert hg is not None
+    root = tmp_path / "repo"
+    root.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(tmp_path),
+            "USERPROFILE": str(tmp_path),
+            "HGRCPATH": str(hgrc),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+            "PYTHONIOENCODING": "utf-8",
+        }
+    )
+    initialized = subprocess.run(
+        [hg, "init", str(root)], env=environment, capture_output=True, check=False, timeout=30
+    )
+    assert initialized.returncode == 0, initialized.stderr.decode(errors="replace")
+    source = root / ".hgignore"
+    source.write_text(r"(?u)^\w+$" + "\n", encoding="utf-8")
+    native = subprocess.run(
+        [hg, "debugignore", "-v", "--", "é"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        check=False,
+        timeout=30,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    )
+
+    assert native.returncode != 0
+    assert "invalid pattern" in native.stderr
+    with pytest.raises(MercurialIgnoreError, match="cannot use 'u' flag with a bytes pattern"):
+        MercurialIgnorePolicy(root)
 
 
 def test_glob_matching_preserves_unicode_normalization_form(tmp_path: Path) -> None:

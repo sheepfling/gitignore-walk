@@ -330,6 +330,24 @@
       "evidence_status": "native-observed"
     },
     {
+      "id": "svn.path-newline-and-tab-round-trip",
+      "dimension": "path-round-trip",
+      "setup": {
+        "properties": {
+          ".": {
+            "svn:ignore": "*.tmp"
+          }
+        },
+        "unversioned_files": {
+          "line\nbreak.tmp": "newline-bearing filename\n",
+          "tab\tname.tmp": "tab-bearing filename\n"
+        }
+      },
+      "expected_ignored_paths": ["line\nbreak.tmp", "tab\tname.tmp"],
+      "windows_skip_reason": "Windows cannot represent filenames containing control characters",
+      "evidence_status": "native-observed"
+    },
+    {
       "id": "svn.global-ignores-above-checkout-root",
       "dimension": "inherited-property-discovery",
       "setup": {

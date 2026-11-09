@@ -25,6 +25,9 @@ PROPERTY_SPACE_CASE = next(
 INHERITED_PROPERTY_CASE = next(
     case for case in CASES if case["id"] == "svn.global-ignores-above-checkout-root"
 )
+PATH_ROUND_TRIP_CASE = next(
+    case for case in CASES if case["id"] == "svn.path-newline-and-tab-round-trip"
+)
 
 
 def _run_svn(
@@ -287,7 +290,7 @@ def test_subversion_properties_keep_local_inherited_and_membership_scopes(
 
 @pytest.mark.parametrize(
     "case",
-    [*APR_GLOB_CASES, PROPERTY_SPACE_CASE, INHERITED_PROPERTY_CASE],
+    [*APR_GLOB_CASES, PROPERTY_SPACE_CASE, PATH_ROUND_TRIP_CASE, INHERITED_PROPERTY_CASE],
     ids=lambda case: case["id"],
 )
 def test_subversion_policy_matches_native_status(tmp_path: Path, case: dict[str, Any]) -> None:
@@ -314,6 +317,34 @@ def test_subversion_policy_matches_native_status(tmp_path: Path, case: dict[str,
 
     assert native_ignored == expected
     assert {path for path in fixture_paths if policy.is_ignored(path)} == expected
+
+
+@pytest.mark.parametrize("topdown", [True, False])
+def test_subversion_walk_round_trips_control_character_paths(tmp_path: Path, topdown: bool) -> None:
+    if os.name == "nt":
+        pytest.skip(PATH_ROUND_TRIP_CASE["windows_skip_reason"])
+    case = PATH_ROUND_TRIP_CASE
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    policy = SubversionIgnorePolicy(root, config_dir=config_dir, environment=environment)
+    walker = IgnoreWalker(root, policy=policy)
+    expected_ignored = set(case["expected_ignored_paths"])
+
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    all_paths = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+
+    assert expected_ignored <= ignored
+    assert expected_ignored.isdisjoint(included)
+    assert expected_ignored <= all_paths
 
 
 def test_subversion_builtin_global_ignores_match_native_status(tmp_path: Path) -> None:

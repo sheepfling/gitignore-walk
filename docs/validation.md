@@ -115,8 +115,9 @@ with `.venv/bin/python` on macOS/Linux or `.\.venv\Scripts\python.exe` in PowerS
 
 Narrow a matrix with `--versions`, `--windows-versions`, or `--linux-versions`. Use
 `--skip-windows` or `--skip-linux` to run one platform. The Windows environments install only
-pytest; Linux containers install Git so the Git differential tests run. Linux Python 3.12 also runs
-quality and package checks. macOS testing runs in GitHub Actions and requires a macOS host.
+pytest; Linux containers install Git, Mercurial, and Subversion so their native-backed tests run.
+Linux Python 3.12 also runs quality and package checks. macOS testing runs in GitHub Actions and
+requires a macOS host.
 
 ## Previously recorded local run
 

@@ -370,7 +370,7 @@ def _docker_linux_matrix(docker: str, version: str) -> int:
         "set -eu",
         f"export {EnvVar.DEBIAN_FRONTEND}=noninteractive",
         "apt-get update -qq",
-        "apt-get install -y -qq git libatomic1 subversion >/dev/null",
+        "apt-get install -y -qq git libatomic1 mercurial subversion >/dev/null",
         (
             "python -m pip install --disable-pip-version-check "
             "-e '.[dev]' >/tmp/gitignore-walk-pip.log"

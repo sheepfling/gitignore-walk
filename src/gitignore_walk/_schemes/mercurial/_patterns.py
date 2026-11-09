@@ -20,11 +20,12 @@ class HgRule:
     line: int
     syntax: HgSyntax
     matcher_root: Path
-    expression: re.Pattern[str]
+    expression: re.Pattern[bytes]
 
     def matches(self, relative_path: str) -> bool:
         """Match one path relative to ``matcher_root`` using Mercurial regex semantics."""
-        return self.expression.match(relative_path) is not None
+        path_bytes = relative_path.encode("utf-8", errors="surrogateescape")
+        return self.expression.match(path_bytes) is not None
 
 
 @dataclass(frozen=True, slots=True)
@@ -98,17 +99,18 @@ def compile_rule(
     if syntax == "regexp":
         flags = re.match(r"^\(\?([aiLmsux]+)\)(.*)$", pattern)
         if flags is None:
-            expression = pattern if pattern.startswith("^") else ".*" + pattern
+            expression_text = pattern if pattern.startswith("^") else ".*" + pattern
         else:
             flag_text, expression_body = flags.groups()
             if not expression_body.startswith("^"):
                 expression_body = ".*" + expression_body
-            expression = f"(?{flag_text}:{expression_body})"
+            expression_text = f"(?{flag_text}:{expression_body})"
     else:
-        expression = _glob_to_regex(pattern)
+        expression_text = _glob_to_regex(pattern)
         if syntax == "glob":
-            expression = "(?:|.*/)" + expression
-    if len(expression.encode("utf-8", errors="surrogateescape")) > 20_000:
+            expression_text = "(?:|.*/)" + expression_text
+    expression = expression_text.encode("utf-8", errors="surrogateescape")
+    if len(expression) > 20_000:
         raise ValueError(
             f"compiled Mercurial pattern exceeds the 20000-byte limit at {source}:{line}"
         )

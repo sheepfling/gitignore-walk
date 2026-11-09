@@ -327,6 +327,12 @@ support inclusion exceptions, an ignored directory can be pruned safely. Missing
 produce diagnostics and set `discovery_complete=False`; include cycles are reported without
 recursing indefinitely. Unsupported or malformed patterns raise `MercurialIgnoreError`.
 
+Mercurial's matcher treats regexes and glob wildcards as bytes. The portable evaluator encodes paths
+as UTF-8 with `surrogateescape`: regex `\w`/`\d` classes and case-insensitive matching stay
+byte-oriented, and glob `?` consumes one byte. For example, a single `?` does not match the
+two-byte UTF-8 spelling of `é`, while `??` does; literal UTF-8 patterns still match. Python's
+Unicode-only `(?u)` regex flag is rejected, matching Mercurial's byte regex mode.
+
 The implementation is compared with captured Mercurial 7.2.4/macOS arm64, 7.0.1/Linux aarch64 and
 x86_64, and 7.1.2/Windows Server 2025 x86_64 profiles for path matching and ignored-file walking.
 The Windows capture has five path skips and one symlink-dependent walk skip; those cases are not
