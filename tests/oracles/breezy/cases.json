@@ -406,6 +406,44 @@
       "release_gate": "Verify the native status walk enters an ignored parent for a child exception."
     },
     {
+      "id": "brz.regex-exception-opens-ignored-parent",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache\ncache/**\n!RE:^cache/keep\\.tmp$\n",
+          "cache/drop.tmp": "ignored sibling\n",
+          "cache/sibling.tmp": "ignored sibling\n",
+          "cache/keep.tmp": "regex exception\n"
+        }
+      },
+      "query": "cache/keep.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "release_gate": "Compare regex exception traversal with an otherwise identical ignored parent."
+    },
+    {
+      "id": "brz.ignored-parent-without-exception",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache\ncache/**\n",
+          "cache/drop.tmp": "ignored sibling\n",
+          "cache/sibling.tmp": "ignored sibling\n",
+          "cache/keep.tmp": "ignored target\n"
+        }
+      },
+      "query": "cache/keep.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE"],
+      "release_gate": "Confirm the ignored subtree stays pruned when no exception can reopen it."
+    },
+    {
       "id": "brz.strong-exclusion-exact-path-does-not-match-descendant",
       "profile": "breezy",
       "dimension": "traversal",

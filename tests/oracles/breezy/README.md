@@ -12,7 +12,7 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 ```
 
 Two captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client and
-Linux aarch64 under Python 3.12. Twenty-seven boolean candidates and three explicit regex/error
+Linux aarch64 under Python 3.12. Twenty-nine boolean candidates and three explicit regex/error
 cases are recorded across both profiles. The boolean cases include exception priority, `!!`
 strong-exclude priority, trailing slash normalization, basename matching,
 slash-rooted matching, whitespace preservation, no nested `.bzrignore` auto-discovery, global versus
@@ -30,7 +30,10 @@ fail `ignored` and `status` with exit code 3. The published global inline flag e
 behavior until a supported client version demonstrates otherwise. In both traversal orders, the
 policy walker matches
 captured status unknown/ignored paths when an exception opens an ignored parent and exposes its
-siblings. The local policy is checked against all 27 boolean candidate cases. Broader regex behavior,
+siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
+appears as unknown while sibling files remain ignored. Without that exception, native status keeps
+the ignored subtree hidden. The local policy is checked against all 29 boolean candidate cases.
+Broader regex behavior,
 source precedence, and pruning safety beyond these cases remain open. Breezy's documented pattern
 rule says that a
 slash or regular expression is compared with the workspace-relative path, while a pattern without

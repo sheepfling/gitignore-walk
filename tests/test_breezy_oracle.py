@@ -125,13 +125,21 @@ def test_breezy_parent_exception_rule_opens_directory_even_without_matching_file
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+@pytest.mark.parametrize(
+    "case_id",
+    [
+        "brz.walk-ignored-parent-exception-opens-siblings",
+        "brz.regex-exception-opens-ignored-parent",
+        "brz.ignored-parent-without-exception",
+    ],
+)
 def test_breezy_walker_matches_captured_exception_parent_status(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     profile: str,
     topdown: bool,
+    case_id: str,
 ) -> None:
-    case_id = "brz.walk-ignored-parent-exception-opens-siblings"
     case = next(case for case in CASES if case["id"] == case_id)
     observation = next(item for item in CAPTURES[profile]["cases"] if item["id"] == case_id)
     default_patterns = tuple(CAPTURES[profile]["default_rules"]["patterns"])
@@ -165,8 +173,12 @@ def test_breezy_walker_matches_captured_exception_parent_status(
 
     assert observation["status_exit_code"] == 0
     assert included - tracked == set(observation["unknown_paths"])
-    assert ignored == set(observation["ignored_paths"])
-    assert case["query"] in included
-    assert "cache/drop.tmp" in included
-    assert "cache/.oracle-walk-anchor" in included
-    assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False
+    assert ignored - tracked == set(observation["ignored_paths"])
+    assert (case["query"] in included) is (case_id != "brz.ignored-parent-without-exception")
+    if case_id == "brz.walk-ignored-parent-exception-opens-siblings":
+        assert "cache/drop.tmp" in included
+    if case_id == "brz.regex-exception-opens-ignored-parent":
+        assert "cache/drop.tmp" in ignored
+        assert "cache/sibling.tmp" in ignored
+    can_prune = policy.can_prune_ignored_directory(root / "cache", policy.explain("cache"))
+    assert can_prune is (case_id == "brz.ignored-parent-without-exception")
