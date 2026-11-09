@@ -15,6 +15,7 @@ import tempfile
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 
 def _invoke(
@@ -64,6 +65,58 @@ def _unknown_paths(output: str) -> set[str]:
     return paths
 
 
+def _add_anchor(
+    checkout: Path,
+    anchor: Path,
+    *,
+    executable: str,
+    environment: Mapping[str, str],
+) -> tuple[subprocess.CompletedProcess[str], str]:
+    """Version a nested fixture anchor using Breezy's native working-tree API on Windows."""
+    if os.name != "nt":
+        relative_anchor = anchor.relative_to(checkout).as_posix()
+        return (
+            _invoke(
+                [executable, "add", "--no-plugins", relative_anchor],
+                cwd=checkout,
+                environment=environment,
+            ),
+            "cli",
+        )
+
+    try:
+        import breezy
+        from breezy import plugin
+        from breezy.workingtree import WorkingTree
+    except ImportError:
+        relative_anchor = anchor.relative_to(checkout).as_posix()
+        return (
+            _invoke(
+                [executable, "add", "--no-plugins", relative_anchor],
+                cwd=checkout,
+                environment=environment,
+            ),
+            "cli-fallback",
+        )
+
+    command = [executable, "add", "--no-plugins", str(anchor)]
+    try:
+        with patch.dict(os.environ, environment, clear=True):
+            breezy.initialize()
+            plugin.load_plugins()
+            tree = WorkingTree.open(str(checkout))
+            relative_parent = anchor.parent.relative_to(checkout)
+            with tree.lock_write():
+                for depth in range(1, len(relative_parent.parts) + 1):
+                    directory = Path(*relative_parent.parts[:depth]).as_posix()
+                    tree.add([directory])
+                tree.add([anchor.relative_to(checkout).as_posix()])
+    except Exception as error:
+        stderr = f"{type(error).__name__}: {error}"
+        return subprocess.CompletedProcess(command, 1, "", stderr), "api"
+    return subprocess.CompletedProcess(command, 0, "", ""), "api"
+
+
 def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="gitignore-walk-brz-oracle-") as temporary:
         base = Path(temporary)
@@ -110,13 +163,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             cwd=checkout,
             environment=environment,
         )
-        root = _invoke(
-            [executable, "root", "--no-plugins"],
-            cwd=checkout,
-            environment=environment,
-        )
         query = case.get("query")
         anchor_add = None
+        anchor_add_method = None
         if query is not None:
             target = (checkout / query).resolve()
             try:
@@ -127,14 +176,10 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 anchor = target.parent / ".oracle-walk-anchor"
                 anchor.parent.mkdir(parents=True, exist_ok=True)
                 anchor.write_text("native walker anchor\n", encoding="utf-8")
-                anchor_root = _invoke(
-                    [executable, "root", "--no-plugins"],
-                    cwd=anchor.parent,
-                    environment=environment,
-                )
-                anchor_add = _invoke(
-                    [executable, "add", "--no-plugins", anchor.name],
-                    cwd=anchor.parent,
+                anchor_add, anchor_add_method = _add_anchor(
+                    checkout,
+                    anchor,
+                    executable=executable,
                     environment=environment,
                 )
             target.parent.mkdir(parents=True, exist_ok=True)
@@ -162,14 +207,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "candidate_matches": candidate_matches,
             "init_exit_code": init.returncode,
             "init_stderr": init.stderr,
-            "root_exit_code": root.returncode,
-            "root_stdout": root.stdout,
-            "root_stderr": root.stderr,
             "anchor_add_exit_code": anchor_add.returncode if anchor_add else None,
             "anchor_add_stderr": anchor_add.stderr if anchor_add else "",
-            "anchor_root_exit_code": anchor_root.returncode if anchor_add else None,
-            "anchor_root_stdout": anchor_root.stdout if anchor_add else "",
-            "anchor_root_stderr": anchor_root.stderr if anchor_add else "",
+            "anchor_add_method": anchor_add_method,
             "ignored_command": ["brz", "ignored", "--no-plugins", "--verbose"],
             "ignored_exit_code": ignored.returncode,
             "status_command": ["brz", "status", "--no-plugins", "--short", "--no-classify"],
