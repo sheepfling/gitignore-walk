@@ -1021,6 +1021,31 @@
       "release_gate": "Retain the captured native comparison and incomplete-discovery diagnostic."
     },
     {
+      "id": "hg.include-symlink-loop",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:loop/rules.ignore\n"
+        },
+        "symlinks": {
+          "loop": "loop"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "expected_policy_discovery_complete": false,
+      "expected_policy_diagnostics": [
+        "source-unavailable"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain Mercurial's warning and incomplete discovery for include sources behind a symlink loop."
+    },
+    {
       "id": "hg.include-missing-source",
       "profile": "hg",
       "dimension": "source-discovery",

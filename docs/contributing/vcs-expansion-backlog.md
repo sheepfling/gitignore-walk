@@ -502,7 +502,9 @@ Mercurial references: [ignore-file syntax](https://www.mercurial-scm.org/help/to
 
 For Mercurial, Windows case-sensitive glob behavior is now captured. Remaining probes include regex
 features beyond the captured unanchored search, start anchor, inline flags, and newline matching;
-additional include-source symlink boundaries, including loops and Windows behavior. Mercurial's
+additional include-source symlink boundaries and Windows behavior. A self-referential include-source
+symlink loop is now captured on macOS arm64: Mercurial warns and skips the source, and the policy
+reports incomplete discovery. Windows loop behavior remains unverified. Mercurial's
 command-line `include:` notation
 reads patterns from a file; it does not execute a command. That file-selection feature is separate
 from this ignore-policy expansion. Native help documents regex/glob/rootglob and says an ignore

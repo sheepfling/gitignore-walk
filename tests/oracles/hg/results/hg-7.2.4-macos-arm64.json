@@ -1599,6 +1599,43 @@
       "raw_stderr": ""
     },
     {
+      "id": "hg.include-symlink-loop",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/opt/homebrew/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "a.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "a.tmp is not ignored\n",
+      "stderr": "skipping unreadable pattern file 'loop/rules.ignore': Too many levels of symbolic links\n",
+      "configuration": null,
+      "normalized_stdout_sha256": "762e3d2ff08a50ab9e5ca6d1b2dca58b3b2dfbbf1a4e410ffd33eae28525140c",
+      "normalized_stderr_sha256": "0af78ca758de2032ca82fa159992eb6be546c0e0d954f2a5b0662372bb6eb99a",
+      "raw_stdout": "a.tmp is not ignored\n",
+      "raw_stderr": "skipping unreadable pattern file 'loop/rules.ignore': Too many levels of symbolic links\n"
+    },
+    {
       "id": "hg.include-missing-source",
       "profile": "hg",
       "dimension": "source-discovery",
