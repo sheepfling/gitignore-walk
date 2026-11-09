@@ -11,10 +11,10 @@ Run from the repository root:
 python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 ```
 
-Two captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client and
-Linux aarch64 under Python 3.12. Twenty-nine boolean candidates and three explicit regex/error
-cases are recorded across both profiles. The boolean cases include exception priority, `!!`
-strong-exclude priority, trailing slash normalization, basename matching,
+Three captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
+aarch64, and Linux x86_64 under Python 3.12. Twenty-nine boolean candidates and three explicit
+regex/error cases are recorded across all three profiles. The boolean cases include exception
+priority, `!!` strong-exclude priority, trailing slash normalization, basename matching,
 slash-rooted matching, whitespace preservation, no nested `.bzrignore` auto-discovery, global versus
 branch exception priority, and built-in Python cache ignores without a user ignore file. A child
 exception under an ignored directory makes both the exception path and a sibling path appear as
@@ -26,13 +26,14 @@ non-capturing groups with a warning; a native query confirms the normalized patt
 Anchored path regexes, negative lookahead, and scoped inline flags match and reject captured paths as
 expected. Malformed RE patterns
 fail `ignored` and `status` with exit code 3. The published global inline flag example
-`RE:(?i)foo` also fails with exit code 3 in both pinned profiles; preserve this observed native
+`RE:(?i)foo` also fails with exit code 3 in all three pinned profiles; preserve this observed native
 behavior until a supported client version demonstrates otherwise. In both traversal orders, the
 policy walker matches
 captured status unknown/ignored paths when an exception opens an ignored parent and exposes its
 siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
-the ignored subtree hidden. The local policy is checked against all 29 boolean candidate cases.
+the ignored subtree hidden. The local policy is checked against all 29 boolean candidate cases on all
+three profiles.
 Broader regex behavior,
 source precedence, and pruning safety beyond these cases remain open. Breezy's documented pattern
 rule says that a

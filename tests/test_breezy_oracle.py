@@ -15,6 +15,7 @@ CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["ca
 CAPTURE_FILES = (
     "brz-3.3.24-macos-arm64.json",
     "brz-3.3.24-linux-aarch64-py312.json",
+    "brz-3.3.24-linux-x86_64-py312.json",
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
@@ -67,14 +68,16 @@ def test_breezy_capture_commands_succeed_in_isolated_configuration(profile: str)
 
 
 def test_breezy_profiles_agree_on_rules_and_membership_observations() -> None:
-    macos, linux = (CAPTURES[name] for name in CAPTURE_FILES)
-    assert macos["default_rules"]["patterns"] == linux["default_rules"]["patterns"]
-    for mac_case, linux_case in zip(macos["cases"], linux["cases"], strict=True):
-        assert mac_case["id"] == linux_case["id"]
-        assert mac_case["observed_ignored"] == linux_case["observed_ignored"]
-        assert mac_case["observed_unknown"] == linux_case["observed_unknown"]
-        assert mac_case["ignored_paths"] == linux_case["ignored_paths"]
-        assert mac_case["unknown_paths"] == linux_case["unknown_paths"]
+    baseline = CAPTURES[CAPTURE_FILES[0]]
+    for profile in CAPTURE_FILES[1:]:
+        other = CAPTURES[profile]
+        assert baseline["default_rules"]["patterns"] == other["default_rules"]["patterns"]
+        for baseline_case, other_case in zip(baseline["cases"], other["cases"], strict=True):
+            assert baseline_case["id"] == other_case["id"]
+            assert baseline_case["observed_ignored"] == other_case["observed_ignored"]
+            assert baseline_case["observed_unknown"] == other_case["observed_unknown"]
+            assert baseline_case["ignored_paths"] == other_case["ignored_paths"]
+            assert baseline_case["unknown_paths"] == other_case["unknown_paths"]
 
 
 def test_breezy_ignore_query_creates_the_user_ignore_file() -> None:

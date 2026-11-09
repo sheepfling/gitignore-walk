@@ -125,26 +125,27 @@ See the [Subversion oracle
 notes](../../tests/oracles/svn/README.md).
 
 The initial Fossil policy asks the native client for effective `ignore-glob` settings and evaluates
-whole workspace-relative paths with SQLite `GLOB`. Its eleven-case corpus was captured against
-Fossil 2.28/macOS arm64 and 2.26/Linux aarch64. Native-backed policy tests cover separator and quote
-forms, hash-leading patterns, literal backslashes, simple glob classes, no-negation behavior,
-effective-setting discovery, and ignored-directory pruning. A captured extras fixture now checks
-included and ignored walk results against
-native output across both profiles, including exclusion of the Fossil workspace marker. Additional
+whole workspace-relative paths with SQLite `GLOB`. Its 20-case corpus was captured against Fossil
+2.28/macOS arm64 and 2.26/Linux aarch64 and x86_64. Native-backed policy tests cover
+separator and quote forms, hash-leading patterns, literal backslashes, simple glob classes,
+no-negation behavior, effective-setting discovery, and ignored-directory pruning. A captured extras
+fixture now checks
+included and ignored walk results against native output across macOS and both Linux profiles,
+including exclusion of the Fossil workspace marker. Additional
 malformed lexical cases and broader native/platform profiles remain open.
 See the [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 [Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md).
 
 The initial Breezy evaluator queries the native client for built-in rules, then loads its standard
-user ignore file and root `.bzrignore`. Its 24 boolean candidates pass against Breezy 3.3.24/macOS
-arm64 and Linux aarch64. The native status fixture verifying that a child exception opens an ignored
-parent and exposes sibling files matches policy walk results in both traversal orders. Native
+user ignore file and root `.bzrignore`. Its 29 boolean candidates pass against Breezy 3.3.24/macOS
+arm64 and Linux aarch64 and x86_64. The native status fixture verifying that a child exception opens
+an ignored parent and exposes sibling files matches policy walk results in both traversal orders. Native
 captures also include exact-path versus `/**` strong exclusions. The matcher follows Breezy's
 documented rule that slash-containing patterns and regexes
 match the complete workspace-relative path while other globs match the last path component. The
-captured RE subset now covers anchored path matching and named-capture normalization. Both pinned
-3.3.24 clients reject `RE:(?i)foo` with an invalid-pattern error, despite the published guide example.
-Broader regex flags and restrictions, Windows configuration discovery, and cross-platform profiles
+captured RE subset now covers anchored path matching and named-capture normalization. All three pinned
+3.3.24 clients reject `RE:(?i)foo` with an invalid-pattern error, despite the published guide example,
+across all three profiles. Broader regex flags and restrictions and Windows configuration discovery
 remain open.
 See the [Breezy oracle notes](../../tests/oracles/breezy/README.md), [Breezy pattern
 reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and [Breezy ignore
