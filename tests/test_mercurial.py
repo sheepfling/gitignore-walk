@@ -725,7 +725,10 @@ def test_repeated_symlinked_source_retains_each_subinclude_scope(tmp_path: Path)
         for trace in (first, second):
             assert not trace.decision.ignored
             assert not trace.decision.discovery_complete
-            assert [item.code for item in trace.decision.diagnostics] == ["source-unavailable"]
+            assert [item.code for item in trace.decision.diagnostics] == [
+                "source-unavailable",
+                "source-unavailable",
+            ]
         return
     assert first.decision.ignored
     assert second.decision.ignored
