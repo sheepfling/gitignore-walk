@@ -18,7 +18,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.strong-exclude",
@@ -36,7 +36,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.trailing-slash-not-directory-only",
@@ -55,7 +55,7 @@
       "source_ids": [
         "BRZ-PATTERNS"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.basename-depth",
@@ -73,7 +73,7 @@
       "source_ids": [
         "BRZ-PATTERNS"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.slash-rooted",
@@ -91,7 +91,7 @@
       "source_ids": [
         "BRZ-PATTERNS"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.spaces-preserved",
@@ -109,7 +109,7 @@
       "source_ids": [
         "BRZ-LOAD-SOURCE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.nested-not-autoload",
@@ -128,7 +128,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.parent-exception-traversal",
@@ -146,7 +146,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.regex-path-match",
@@ -160,7 +160,7 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": ["BRZ-PATTERNS"],
-      "release_gate": "Captured path-scoped RE matching on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+      "release_gate": "Captured path-scoped RE matching on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
       "id": "brz.regex-path-anchor-miss",
@@ -174,7 +174,7 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": ["BRZ-PATTERNS"],
-      "release_gate": "Captured anchored RE non-matches on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+      "release_gate": "Captured anchored RE non-matches on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
       "id": "brz.regex-named-capture-match",
@@ -188,7 +188,7 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": ["BRZ-PATTERNS"],
-      "release_gate": "Captured named-capture normalization and matching on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+      "release_gate": "Captured named-capture normalization and matching on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
       "id": "brz.regex-restrictions",
@@ -225,7 +225,7 @@
       "source_ids": [
         "BRZ-LOAD-SOURCE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.regex-named-capture",
@@ -243,7 +243,7 @@
       "source_ids": [
         "BRZ-PATTERNS"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.regex-numbered-capture",
@@ -261,7 +261,7 @@
       "source_ids": [
         "BRZ-PATTERNS"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.regex-non-capture",
@@ -279,7 +279,7 @@
       "source_ids": [
         "BRZ-PATTERNS"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.regex-invalid-pattern",
@@ -313,7 +313,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.regex-global-inline-flag-rejected",
@@ -348,7 +348,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.local-exception-beats-global-ignore",
@@ -367,7 +367,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.parent-exception-target-absent",
@@ -385,7 +385,7 @@
       "source_ids": [
         "BRZ-IGNORE"
       ],
-      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
       "id": "brz.walk-ignored-parent-exception-opens-siblings",
@@ -533,7 +533,7 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": ["BRZ-PATTERNS"],
-      "release_gate": "Captured positive path lookahead behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+      "release_gate": "Captured positive path lookahead behavior on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
       "id": "brz.regex-lookahead-path-exclusion",
@@ -547,7 +547,7 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": ["BRZ-PATTERNS"],
-      "release_gate": "Captured negative path lookahead behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+      "release_gate": "Captured negative path lookahead behavior on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
       "id": "brz.regex-scoped-inline-flag",
@@ -561,7 +561,7 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": ["BRZ-PATTERNS"],
-      "release_gate": "Captured scoped case-insensitive regex behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+      "release_gate": "Captured scoped case-insensitive regex behavior on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     }
   ]
 }

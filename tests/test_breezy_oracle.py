@@ -16,6 +16,7 @@ CAPTURE_FILES = (
     "brz-3.3.24-macos-arm64.json",
     "brz-3.3.24-linux-aarch64-py312.json",
     "brz-3.3.24-linux-x86_64-py312.json",
+    "brz-3.3.24-windows-x86_64-py312.json",
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))

@@ -140,15 +140,18 @@ See the [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 
 The initial Breezy evaluator queries the native client for built-in rules, then loads its standard
 user ignore file and root `.bzrignore`. Its 29 boolean candidates pass against Breezy 3.3.24/macOS
-arm64 and Linux aarch64 and x86_64. The native status fixture verifying that a child exception opens
-an ignored parent and exposes sibling files matches policy walk results in both traversal orders. Native
+arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64. The Windows capture uses an
+isolated `BRZ_HOME`; it does not confirm Breezy's default AppData shell-folder lookup. A Windows-only
+policy test covers the documented `%APPDATA%/Breezy/3.0/ignore` default. The native status fixture
+verifying that a child exception opens an ignored parent and exposes sibling files matches policy
+walk results in both traversal orders. Native
 captures also include exact-path versus `/**` strong exclusions. The matcher follows Breezy's
 documented rule that slash-containing patterns and regexes
 match the complete workspace-relative path while other globs match the last path component. The
-captured RE subset now covers anchored path matching and named-capture normalization. All three pinned
+captured RE subset now covers anchored path matching and named-capture normalization. All four pinned
 3.3.24 clients reject `RE:(?i)foo` with an invalid-pattern error, despite the published guide example,
-across all three profiles. Broader regex flags and restrictions and Windows configuration discovery
-remain open.
+across all four profiles. Broader regex flags and restrictions and native default Windows configuration
+discovery remain open.
 See the [Breezy oracle notes](../../tests/oracles/breezy/README.md), [Breezy pattern
 reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and [Breezy ignore
 reference](https://www.breezy-vcs.org/doc/en/user-reference/ignore-help.html).

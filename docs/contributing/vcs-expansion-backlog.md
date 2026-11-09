@@ -91,24 +91,27 @@ candidates agree, including global fallback, local-over-global precedence, versi
 precedence, and the previously captured quote, separator, and traversal cases. Eight malformed or
 escaped-token probes also match all three profiles and the evaluator; other tokenizer boundaries
 remain open. Breezy's corpus is now
-captured on 3.3.24/macOS arm64 and Linux aarch64 and x86_64 with isolated user configuration:
-twenty-nine boolean cases agree, including global-versus-branch exception priority and built-in
-defaults without a user ignore file. A child exception under an ignored directory exposes sibling
-files as unknown in status.
+captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64 with
+isolated user configuration: all twenty-nine boolean cases agree, including global-versus-branch
+exception priority and built-in defaults without a user ignore file. The Windows capture seeds
+nested anchors through Breezy's API because the client CLI misresolves nested add paths. Its
+isolated `BRZ_HOME` avoids the runner's actual AppData directory; native confirmation of the
+documented default shell-folder path remains open. A child exception under an ignored directory
+exposes sibling files as unknown in status.
 The exception pattern opens the ignored directory even when its named target is absent.
 The native regex exception case also opens an ignored parent in both traversal orders; its target
 appears as unknown while sibling files remain ignored, and the matching no-exception control keeps
-the subtree hidden. The policy walker matches both native path sets on all three profiles.
+the subtree hidden. The policy walker matches both native path sets on all four profiles.
 Named regex captures are rewritten with a warning; malformed RE patterns fail with exit code 3.
 The initial Breezy evaluator and typed selection are implemented and pass all twenty-nine boolean
 candidate cases, including exact-path versus `/**` strong exclusions, `BRZ_HOME` global ignores,
 exception-aware directory traversal, anchored RE matches, negative lookahead, scoped inline flags,
 and named-capture normalization. A new native
 status capture verifies that an exception under ignored `cache` exposes sibling files; policy walk
-results match native unknown and ignored paths in both directions on all three profiles. Broader
-RE semantics, Windows configuration paths, and
+results match native unknown and ignored paths in both directions on all four profiles. Broader
+RE semantics, native default Windows configuration discovery, and
 source-location precedence remain open. Native captures also show that the documented global inline
-regex flag example is rejected with exit code 3 in all three pinned Breezy profiles. Other non-Git
+regex flag example is rejected with exit code 3 in all four pinned Breezy profiles. Other non-Git
 candidate cases have
 no captured native result. The November
 7 checkpoint separately records seven Git probes. These captures do not establish complete
