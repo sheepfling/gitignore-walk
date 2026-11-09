@@ -163,13 +163,15 @@ and upload captures and summaries even on failure. Perforce's Linux binaries rem
 2026.1 with SHA-256 verification, and Breezy remains pinned to 3.3.24. Artifacts expire after seven
 days; import reviewed conformance evidence into version control when it needs a longer lifetime.
 
-Automatic runs happen for pull requests and pushes to `main`. Branch-only iteration is local;
-use **Run workflow** for a branch before opening a PR when hosted evidence is needed. There is no
-second branch-push run alongside a PR run, and newer runs cancel superseded work for that event
-and ref. A typical open-PR push therefore starts seven jobs rather than two sets of fourteen:
-75% fewer job starts, not a measured 75% reduction in runtime or charges. With no open PR, feature
-branch pushes start no jobs automatically. Consolidating native work may lengthen elapsed time and
-makes a full native job the retry unit; backend names remain visible in logs and summaries.
+Automatic runs happen for pull requests and pushes to `main`. Feature-branch pushes are local-only;
+open a draft PR when hosted evidence is needed before the work is ready to merge. The manual
+`workflow_dispatch` trigger in a feature branch is not available until that workflow definition is
+present on the default branch. There is no second branch-push run alongside a PR run, and newer runs
+cancel superseded work for that event and ref. A typical open-PR push therefore starts seven jobs
+rather than two sets of fourteen: 75% fewer job starts, not a measured 75% reduction in runtime or
+charges. With no open PR, feature-branch pushes start no jobs automatically. Consolidating native
+work may lengthen elapsed time and makes a full native job the retry unit; backend names remain
+visible in logs and summaries.
 
 Before adopting the workflow, check repository rulesets or branch protection for old native-job
 names. Replace any required old native contexts with `native-linux` and `native-windows` through
