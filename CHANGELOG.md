@@ -23,6 +23,11 @@ Notable user-facing changes are recorded here.
 - Mercurial matching remains local and portable. Reading Mercurial's configured `ui.ignore` list is
   opt-in and requires the `hg` executable. Ignore decisions describe rule matches, not tracked or
   versioned membership.
+- Mercurial native captures cover 7.2.4 on macOS arm64, 7.0.1 on Linux aarch64 and x86_64, and
+  7.1.2 on Windows Server 2025 x86_64. The Windows profile has five explicit path skips and one
+  symlink-dependent walk skip. Include cycles remain a bounded safe divergence; a native
+  `debugignore` subinclude query also exits with a trace-formatting error after reporting a match.
+  See the [Mercurial oracle notes](tests/oracles/hg/README.md) for the case-level captures.
 - All additional VCS policies are initial implementations. Their tested profiles, native skips,
   unsupported behavior, and known divergences are documented in the [VCS expansion backlog](docs/contributing/vcs-expansion-backlog.md)
   and the corresponding [native oracle notes](tests/oracles/).

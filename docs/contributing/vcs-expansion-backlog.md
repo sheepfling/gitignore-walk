@@ -392,6 +392,12 @@ checks pass; no skipped native comparison is described as conformance.
 
 **Priority:** P1 · **Depends on:** VCS-07
 
+**Status:** Complete for the initial release scope; publication remains a separate release action.
+The README and changelog describe the explicit selection contract, opt-in Mercurial config query,
+tested profiles, skips, and known divergences. Case-level findings link to versioned native captures
+in `tests/oracles/hg/results/`; the changelog is included in the source archive. Local full CI and
+the hosted matrix pass on the documented branch state.
+
 Review the public contract, limitations, migration impact, README examples, API docs, and release
 notes. Record known divergences and link each one to a test or issue. Keep the wheel name decision
 separate unless the new scope makes a product rename necessary.
@@ -402,6 +408,9 @@ checks are green.
 ### VCS-09 — Add later schemes one at a time
 
 **Priority:** P2 · **Depends on:** VCS-08
+
+**Next scheme:** SVN, following the research ranking above. Its current property policy is an initial
+implementation; versioned membership and broader path behavior remain open.
 
 Repeat VCS-00 through VCS-08 for each additional system. Reuse the conformance harness and shared
 contracts, but keep each scheme's source discovery, semantics, configuration, and limitations
