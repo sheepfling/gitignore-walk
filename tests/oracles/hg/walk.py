@@ -36,6 +36,10 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "observed_unknown_paths": None,
             "candidate_matches": None,
             "tracked_paths": sorted(case.get("tracked_paths", [])),
+            "init_exit_code": 0,
+            "nested_init_exit_codes": [],
+            "add_exit_codes": [],
+            "exit_code": 0,
         }
     with tempfile.TemporaryDirectory(prefix="gitignore-walk-hg-walk-oracle-") as temporary:
         temp = Path(temporary)
@@ -173,10 +177,13 @@ def capture(cases_path: Path, output_path: Path, hg_executable: str) -> int:
     )
     captured = [_capture_case(case, executable) for case in cases_data["cases"]]
     failed = any(
-        case["init_exit_code"] != 0
-        or any(code != 0 for code in case["nested_init_exit_codes"])
-        or any(code != 0 for code in case["add_exit_codes"])
-        or case["exit_code"] != 0
+        case["native_status"] != "skipped"
+        and (
+            case["init_exit_code"] != 0
+            or any(code != 0 for code in case["nested_init_exit_codes"])
+            or any(code != 0 for code in case["add_exit_codes"])
+            or case["exit_code"] != 0
+        )
         for case in captured
     )
     version_lines = version.stdout.splitlines()
@@ -193,9 +200,10 @@ def capture(cases_path: Path, output_path: Path, hg_executable: str) -> int:
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    matched = sum(case["candidate_matches"] for case in captured)
+    matched = sum(case["candidate_matches"] is True for case in captured)
+    comparable = sum(case["candidate_matches"] is not None for case in captured)
     print(f"Captured {len(captured)} Mercurial walking cases: {result['status']}")
-    print(f"Candidate walking observations matching: {matched}/{len(captured)}")
+    print(f"Candidate walking observations matching: {matched}/{comparable}")
     print(f"Capture: {output_path}")
     return 1 if failed else 0
 

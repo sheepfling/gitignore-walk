@@ -152,11 +152,13 @@ def capture(output: Path, *, allow_registry_mutation: bool) -> dict[str, Any]:
                 "registry override probe\n", encoding="utf-8"
             )
             (working_copy / file_candidate_name).write_text("user file probe\n", encoding="utf-8")
-            file_policy = SubversionIgnorePolicy(working_copy, environment=environment)
+            file_policy = SubversionIgnorePolicy(
+                working_copy, config_dir=user_config.parent, environment=environment
+            )
             overridden_decision = file_policy.explain(overridden_candidate_name)
             file_decision = file_policy.explain(file_candidate_name)
             file_native_xml = _run(
-                [svn, "status", "--xml", "--no-ignore"],
+                [svn, "--config-dir", str(user_config.parent), "status", "--xml", "--no-ignore"],
                 cwd=working_copy,
                 environment=environment,
             )
