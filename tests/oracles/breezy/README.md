@@ -43,8 +43,10 @@ captured status unknown/ignored paths when an exception opens an ignored parent 
 siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
 the ignored subtree hidden. The local policy is checked against all 36 boolean candidate cases on
-macOS arm64 and Linux aarch64; the other two committed profiles retain 33 checked cases. Broader
-regex behavior, additional source-location and configuration precedence, and pruning safety beyond
+macOS arm64 and Linux aarch64; the other two committed profiles retain 33 checked cases. Additional
+regex probes cover Unicode `\\w` and `\\d`, fixed-width lookbehind, and Breezy's native parse error
+for a numeric backreference to its open regex wrapper. These four probes are currently captured on
+macOS arm64 only. Additional source-location and configuration precedence, and pruning safety beyond
 these cases remain open. Breezy's documented pattern
 rule says that a
 slash or regular expression is compared with the workspace-relative path, while a pattern without

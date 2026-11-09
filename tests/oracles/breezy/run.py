@@ -286,9 +286,16 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
                 environment=environment,
             )
         captured = [_capture_case(case, executable) for case in cases_data["cases"]]
+        expected_invalid_patterns = {
+            "brz.regex-invalid-pattern",
+            "brz.regex-global-inline-flag-rejected",
+            "brz.regex-backreference-invalid-pattern",
+        }
         failed = defaults.returncode != 0 or any(
             case["init_exit_code"] != 0
             or case["anchor_add_exit_code"] not in (None, 0)
+            or case["ignored_exit_code"] != (3 if case["id"] in expected_invalid_patterns else 0)
+            or case["status_exit_code"] != (3 if case["id"] in expected_invalid_patterns else 0)
             or case["candidate_matches"] is False
             or case["winning_pattern_matches"] is False
             for case in captured

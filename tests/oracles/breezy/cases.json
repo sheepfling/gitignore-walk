@@ -676,6 +676,74 @@
       "native_status": "captured",
       "source_ids": ["BRZ-PATTERNS"],
       "release_gate": "Captured scoped case-insensitive regex behavior on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
+    },
+    {
+      "id": "brz.regex-backreference-invalid-pattern",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^cache/(src)-\\1\\.tmp$"]
+      },
+      "query": "cache/src-src.tmp",
+      "expected_candidate": null,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Capture Breezy's invalid-pattern behavior for a backreference to its open regex wrapper on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-unicode-word-class",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^\\w+\\.tmp$"]
+      },
+      "query": "café.tmp",
+      "expected_candidate": true,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Capture Unicode word-class behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-unicode-digit-class",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^\\d+\\.tmp$"]
+      },
+      "query": "٣.tmp",
+      "expected_candidate": true,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Capture Unicode digit-class behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-fixed-lookbehind",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^cache/(?<=cache/)keep\\.tmp$"]
+      },
+      "query": "cache/keep.tmp",
+      "expected_candidate": true,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Capture fixed-width lookbehind behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
     }
   ]
 }

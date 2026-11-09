@@ -431,7 +431,10 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
             # stable across supported Python versions.
             if _GLOBAL_INLINE_FLAGS.search(expression_text):
                 raise re.error("global flags are not at the start of the expression")
-            expression = re.compile(f"(?:{expression_text})$")
+            # Breezy wraps regular expressions in a capturing group before
+            # compiling them. Keep that wrapper: numeric backreferences are
+            # numbered relative to it, including its open group.
+            expression = re.compile(f"({expression_text})$")
         else:
             expression = re.compile(_glob_to_regex(expression_text))
     except re.error as error:

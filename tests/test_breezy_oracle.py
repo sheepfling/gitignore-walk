@@ -55,7 +55,12 @@ def test_breezy_capture_commands_succeed_in_isolated_configuration(profile: str)
         case["ignored_exit_code"]
         == (
             3
-            if case["id"] in {"brz.regex-invalid-pattern", "brz.regex-global-inline-flag-rejected"}
+            if case["id"]
+            in {
+                "brz.regex-invalid-pattern",
+                "brz.regex-global-inline-flag-rejected",
+                "brz.regex-backreference-invalid-pattern",
+            }
             else 0
         )
         for case in capture["cases"]
@@ -64,7 +69,12 @@ def test_breezy_capture_commands_succeed_in_isolated_configuration(profile: str)
         case["status_exit_code"]
         == (
             3
-            if case["id"] in {"brz.regex-invalid-pattern", "brz.regex-global-inline-flag-rejected"}
+            if case["id"]
+            in {
+                "brz.regex-invalid-pattern",
+                "brz.regex-global-inline-flag-rejected",
+                "brz.regex-backreference-invalid-pattern",
+            }
             else 0
         )
         for case in capture["cases"]
@@ -111,10 +121,22 @@ def test_breezy_parent_exception_keeps_descendants_reachable() -> None:
 
 def test_breezy_invalid_regex_is_a_native_query_error() -> None:
     for capture in CAPTURES.values():
-        for case_id in ("brz.regex-invalid-pattern", "brz.regex-global-inline-flag-rejected"):
+        for case_id in (
+            "brz.regex-invalid-pattern",
+            "brz.regex-global-inline-flag-rejected",
+        ):
             case = next(case for case in capture["cases"] if case["id"] == case_id)
             assert case["ignored_exit_code"] == 3
             assert "Invalid pattern" in case["stderr"]
+
+
+def test_breezy_backreference_regex_is_a_native_query_error() -> None:
+    case_id = "brz.regex-backreference-invalid-pattern"
+    case_data = next(case for case in CASES if case["id"] == case_id)
+    for profile in case_data["capture_profiles"]:
+        observation = next(item for item in CAPTURES[profile]["cases"] if item["id"] == case_id)
+        assert observation["ignored_exit_code"] == 3
+        assert "Invalid pattern" in observation["stderr"]
 
 
 def test_breezy_named_regex_capture_is_normalized_with_a_warning() -> None:

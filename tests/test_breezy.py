@@ -206,6 +206,11 @@ def test_breezy_allows_escaped_inline_flag_text() -> None:
     assert rule.matches("(?i)foo")
 
 
+def test_breezy_backreference_to_wrapper_group_is_rejected() -> None:
+    with pytest.raises(BreezyIgnoreError, match="Invalid Breezy pattern"):
+        _compile_rule(r"RE:^cache/(src)-\1\.tmp$", source=".bzrignore", line=1)
+
+
 def test_breezy_selector_uses_discriminated_selection(breezy_root: Path) -> None:
     selection = select_policy(breezy_root, BreezyPolicyConfig())
 

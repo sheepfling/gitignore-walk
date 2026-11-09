@@ -1916,6 +1916,198 @@
       "isolated_configuration": true,
       "global_ignore_existed_before": false,
       "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-backreference-invalid-pattern",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": null,
+      "query": "cache/src-src.tmp",
+      "observed_ignored": false,
+      "observed_pattern": null,
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": null,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 3,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 3,
+      "ignored_paths": [],
+      "unknown_paths": [],
+      "stdout": "",
+      "stderr": "brz: ERROR: Invalid pattern(s) found. File ~/.config/breezy/ignore or .bzrignore contains error(s).\n  RE:^cache/(src)-\\1\\.tmp$\n",
+      "status_stdout": "",
+      "status_stderr": "brz: ERROR: Invalid pattern(s) found. File ~/.config/breezy/ignore or .bzrignore contains error(s).\n  RE:^cache/(src)-\\1\\.tmp$\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4a93d000aaca377d97d1cd0f11d3edb5dede31f9f02df07d5a95a895ce4ca6f1",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-unicode-word-class",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "caf\u00e9.tmp",
+      "observed_ignored": true,
+      "observed_pattern": "RE:^\\w+\\.tmp$",
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "caf\u00e9.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "caf\u00e9.tmp                                           RE:^\\w+\\.tmp$\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n",
+      "status_stderr": "",
+      "stdout_sha256": "dba714f353111d97966dda976fa966e80efb7e2031ca85cb2a8e67bec72f123b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-unicode-digit-class",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "\u0663.tmp",
+      "observed_ignored": true,
+      "observed_pattern": "RE:^\\d+\\.tmp$",
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "\u0663.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "\u0663.tmp                                              RE:^\\d+\\.tmp$\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n",
+      "status_stderr": "",
+      "stdout_sha256": "5299588d7d308789bb750a56dc06a5d3d2c4ed4c8350109c316a034f45ab1eb3",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-fixed-lookbehind",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "cache/keep.tmp",
+      "observed_ignored": true,
+      "observed_pattern": "RE:^cache/(?<=cache/)keep\\.tmp$",
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "cache/keep.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "cache/keep.tmp                                     RE:^cache/(?<=cache/)keep\\.tmp$\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  cache\n+N  cache/.oracle-walk-anchor\n",
+      "status_stderr": "",
+      "stdout_sha256": "5da029db08be7ad7963d58f802599a7fee7144a36350485f33f9fc810063daa2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
     }
   ]
 }
