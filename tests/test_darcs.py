@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -19,6 +20,10 @@ from gitignore_walk import (
     select_policy,
 )
 from gitignore_walk._schemes.darcs import policy as darcs_policy_module
+
+DARCS_ORACLE_CASES = json.loads(
+    (Path(__file__).parent / "oracles" / "darcs" / "cases.json").read_text(encoding="utf-8")
+)["cases"]
 
 
 def test_darcs_policy_uses_managed_and_add_candidate_inventories(
@@ -168,6 +173,57 @@ def test_darcs_selection_is_discriminated_and_native(tmp_path: Path) -> None:
     assert isinstance(selection.policy, DarcsBoringPolicy)
     assert selection.mode == "darcs"
     assert selection.backend == "darcs-native-candidates"
+
+
+@pytest.mark.parametrize(
+    "case",
+    [
+        case
+        for case in DARCS_ORACLE_CASES
+        if case["id"]
+        in {
+            "darcs.unicode-literal-match",
+            "darcs.unicode-normalization-is-distinct",
+            "darcs.posix-alpha-class-on-unicode",
+        }
+    ],
+    ids=lambda case: case["id"],
+)
+def test_native_darcs_policy_matches_captured_unicode_regex_cases(
+    tmp_path: Path, case: dict[str, Any]
+) -> None:
+    executable = shutil.which("darcs")
+    if executable is None:
+        pytest.skip("native Darcs is not installed")
+    root = tmp_path / "repository"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "APPDATA": str(home),
+        "DARCS_PAGER": "cat",
+        "PAGER": "cat",
+        "LC_ALL": "C",
+    }
+    initialized = subprocess.run(
+        [executable, "init", "--repodir", str(root)],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert initialized.returncode == 0, initialized.stderr
+    boring = root / "_darcs" / "prefs" / "boring"
+    boring.write_text(case["setup"]["local_boring"], encoding="utf-8")
+    target = root / case["query"]
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.touch()
+    policy = DarcsBoringPolicy(root, darcs_executable=executable, environment=environment)
+
+    assert policy.explain(case["query"]).ignored is case["expected_boring"]
 
 
 @pytest.mark.parametrize("topdown", [True, False])

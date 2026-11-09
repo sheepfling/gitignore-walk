@@ -218,6 +218,64 @@
       "home": "<temp>/home"
     },
     {
+      "id": "darcs.unicode-literal-match",
+      "dimension": "encoding",
+      "query": "\u00e9.tmp",
+      "expected_boring": true,
+      "observed_boring": true,
+      "candidate_paths": [],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 1,
+      "whatsnew_stdout": "No changes!\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.unicode-normalization-is-distinct",
+      "dimension": "encoding",
+      "query": "e\u0301.tmp",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "e\u0301.tmp"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./e\u0301.tmp\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.posix-alpha-class-on-unicode",
+      "dimension": "regex",
+      "query": "\u00e9.tmp",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "\u00e9.tmp"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./\u00e9.tmp\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
       "id": "darcs.comments-and-invalid-regex",
       "dimension": "lexing",
       "query": null,

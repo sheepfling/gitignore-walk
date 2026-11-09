@@ -126,6 +126,36 @@
       "native_status": "captured"
     },
     {
+      "id": "darcs.unicode-literal-match",
+      "dimension": "encoding",
+      "setup": {
+        "local_boring": "^\u00e9\\.tmp$\n"
+      },
+      "query": "\u00e9.tmp",
+      "expected_boring": true,
+      "native_status": "captured"
+    },
+    {
+      "id": "darcs.unicode-normalization-is-distinct",
+      "dimension": "encoding",
+      "setup": {
+        "local_boring": "^\u00e9\\.tmp$\n"
+      },
+      "query": "e\u0301.tmp",
+      "expected_boring": false,
+      "native_status": "captured"
+    },
+    {
+      "id": "darcs.posix-alpha-class-on-unicode",
+      "dimension": "regex",
+      "setup": {
+        "local_boring": "^[[:alpha:]]+\\.tmp$\n"
+      },
+      "query": "\u00e9.tmp",
+      "expected_boring": false,
+      "native_status": "captured"
+    },
+    {
       "id": "darcs.comments-and-invalid-regex",
       "dimension": "lexing",
       "setup": {
