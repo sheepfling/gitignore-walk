@@ -85,8 +85,9 @@ artifacts. This job records native observations for review; it does not certify 
 against all Mercurial versions or equate ignore matches with tracked-file status.
 
 The `subversion-oracle` job similarly runs `oracle-svn` with Subversion installed and uploads its
-isolated repository capture for review. It also runs the Subversion policy tests with the native
-client installed. The initial `SubversionIgnorePolicy` uses `svn` to discover versioned properties
+isolated repository capture for review. The Windows SlikSVN job runs the Subversion integration and
+unit tests, captures the same disposable status corpus, and separately compares Windows Registry
+and user-INI precedence. The initial `SubversionIgnorePolicy` uses `svn` to discover versioned properties
 and reads runtime `global-ignores` settings from an explicit config directory or standard system and
 per-user files. Oracle capture checks native status observations; the Python tests separately compare
 policy decisions and walks with the captured fixture. Neither check certifies untested SVN versions

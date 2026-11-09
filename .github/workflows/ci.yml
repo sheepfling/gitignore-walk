@@ -112,7 +112,7 @@ jobs:
           name: subversion-native-oracle
           path: ${{ runner.temp }}/svn-oracle.json
           if-no-files-found: warn
-  subversion-windows-registry-oracle:
+  subversion-windows-oracle:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -133,11 +133,19 @@ jobs:
           $svnBin = Join-Path $env:ProgramFiles 'SlikSvn\bin'
           $svnPath = Join-Path $svnBin 'svn.exe'
           if (-not (Test-Path $svnPath)) { throw "SlikSVN installation did not contain $svnPath." }
-          if (-not (Test-Path (Join-Path $svnBin 'svnadmin.exe'))) { throw 'SlikSVN installation did not contain svnadmin.exe.' }
+          if (-not (Test-Path (Join-Path $svnBin 'svnadmin.exe'))) {
+            throw 'SlikSVN installation did not contain svnadmin.exe.'
+          }
+          if (-not (Test-Path (Join-Path $svnBin 'svnserve.exe'))) {
+            throw 'SlikSVN installation did not contain svnserve.exe.'
+          }
           $svnBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           & $svnPath --version --quiet
       - run: python -m pip install -e '.[dev]'
-      - run: python -m pytest tests/test_subversion_unit.py -q
+      - run: >-
+          python -m pytest tests/test_subversion.py tests/test_subversion_unit.py
+          tests/test_svn_oracle.py -q
+      - run: python -m scripts.ci oracle-svn --output "$env:RUNNER_TEMP/svn-oracle.json"
       - run: >-
           python tests/oracles/svn/windows_registry.py
           --allow-registry-mutation
@@ -145,8 +153,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: subversion-windows-registry-oracle
-          path: ${{ runner.temp }}/svn-windows-registry.json
+          name: subversion-windows-native-oracles
+          path: |
+            ${{ runner.temp }}/svn-oracle.json
+            ${{ runner.temp }}/svn-windows-registry.json
           if-no-files-found: warn
   fossil-oracle:
     runs-on: ubuntu-latest
