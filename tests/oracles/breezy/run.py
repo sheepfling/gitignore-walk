@@ -110,6 +110,11 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             cwd=checkout,
             environment=environment,
         )
+        root = _invoke(
+            [executable, "root", "--no-plugins"],
+            cwd=checkout,
+            environment=environment,
+        )
         query = case.get("query")
         anchor_add = None
         if query is not None:
@@ -152,6 +157,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "candidate_matches": candidate_matches,
             "init_exit_code": init.returncode,
             "init_stderr": init.stderr,
+            "root_exit_code": root.returncode,
+            "root_stdout": root.stdout,
+            "root_stderr": root.stderr,
             "anchor_add_exit_code": anchor_add.returncode if anchor_add else None,
             "anchor_add_stderr": anchor_add.stderr if anchor_add else "",
             "ignored_command": ["brz", "ignored", "--no-plugins", "--verbose"],
