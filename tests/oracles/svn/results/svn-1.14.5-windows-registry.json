@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "svn": {
+      "executable": "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+      "version": "1.14.5-SlikSvn"
+    },
+    "platform": "Windows-2025Server-10.0.26100-SP0"
+  },
+  "registry": {
+    "hive": "HKEY_CURRENT_USER",
+    "key": "Software\\Tigris.org\\Subversion\\Config\\Miscellany",
+    "value": "global-ignores",
+    "probe_pattern": "*.codex-registry-probe",
+    "registry_only": {
+      "native_status_item": "ignored",
+      "policy_ignored": true,
+      "policy_source": "Subversion runtime configuration registry: HKEY_CURRENT_USER\\Software\\Tigris.org\\Subversion\\Config\\Miscellany"
+    },
+    "user_ini_override": {
+      "native_registry_pattern_status_item": "unversioned",
+      "policy_registry_pattern_ignored": false,
+      "native_file_pattern_status_item": "ignored",
+      "policy_file_pattern_ignored": true,
+      "policy_source": "Subversion runtime configuration: C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-registry-wm5g1kpt\\appdata\\Subversion\\config"
+    },
+    "policy_discovery_complete": true
+  },
+  "candidate_matches": true,
+  "native_status_xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"overridden.codex-registry-probe\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"registry.codex-registry-probe\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"selected.file-only\">\r\n<wc-status\r\n   item=\"ignored\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n"
+}

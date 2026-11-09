@@ -21,8 +21,8 @@ python -m scripts.ci oracle-hg \
 GitHub Actions runs this command in Ubuntu and Windows jobs with Mercurial installed and uploads
 separate workflow artifacts. It records single-path `debugignore` observations and
 `status --ignored` plus `status --unknown` file walks. The committed captures cover macOS arm64
-Mercurial 7.2.4 and Debian
-13 Linux aarch64 and x86_64 Mercurial 7.0.1. The 48 path cases include case-sensitive glob
+Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows Server 2025
+x86_64 Mercurial 7.1.2. The 48 path cases include case-sensitive glob
 matching, Unicode normalization-form sensitivity, missing-source behavior, an external include
 symlink, an undecodable byte in a glob pattern, and trailing-space behavior: glob rules trim trailing
 spaces, while regexp
@@ -33,10 +33,15 @@ policy reports `discovery_complete=False` with a source-unavailable diagnostic. 
 fixtures cover named entries, home-relative paths, repository configuration, and an included
 `.hg/hgrc` file.
 
-Windows CI captures a separate artifact for review; its undecodable-byte query and POSIX
-unreadable-file fixture are marked skipped because Windows cannot reproduce those filesystem
-conditions. That artifact does not become conformance evidence until its differences and client
-version are reviewed.
+The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: all 42
+candidate comparisons match, with no differing candidate results. The include-cycle observation
+remains the documented safe divergence. Five path probes are explicitly skipped for POSIX-only byte
+names, reserved/backslash filenames, symlinked ignore sources, and POSIX unreadable-file
+permissions. The walk capture is in
+`results/hg-walk-7.1.2-windows-x86_64.json`; five fixtures match and the repeated-source-under-two-
+symlink-scopes fixture is skipped because this Mercurial-on-Windows profile does not read its
+symlinked ignore source. The Windows profile adds cross-platform evidence, but these skips leave
+the corresponding behaviors unverified on Windows.
 
 The `oracle-hg` command also probes repository-config trust on POSIX. It creates a temporary
 repository whose `.hg/hgrc` enables one ignore file, observes the file as owned by the
