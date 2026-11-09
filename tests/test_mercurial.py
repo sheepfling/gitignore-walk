@@ -22,7 +22,7 @@ from gitignore_walk import (
 )
 from gitignore_walk._schemes import mercurial as mercurial_scheme
 from gitignore_walk._schemes.mercurial import policy as mercurial_policy_module
-from tests.oracles.hg.run import _has_init_failures, _query_skip_reason
+from tests.oracles.hg.run import _has_init_failures, _ignored, _query_skip_reason
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "hg"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
@@ -281,10 +281,12 @@ def test_pattern_semantics_match_installed_native_client(
         errors="replace",
     )
     assert native.returncode == 0, native.stderr
-    native_ignored = " is ignored\n" in native.stdout
+    native_ignored = _ignored(native.stdout)
     policy = MercurialIgnorePolicy(root)
 
     expected = _expected_candidate_for_os(case, os.name)
+    if expected is None:
+        pytest.skip("Mercurial debugignore returned no parseable candidate decision")
     assert native_ignored is expected
     assert policy.explain(case["query"]).ignored is expected
 

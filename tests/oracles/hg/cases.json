@@ -1138,12 +1138,13 @@
       },
       "query": "\u0661",
       "expected_candidate": false,
+      "expected_candidate_by_os": {"nt": null},
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": [
         "HG-IGNORE"
       ],
-      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+      "release_gate": "Windows debugignore output is not parseable for this query; preserve it as open until a native status fixture resolves it."
     },
     {
       "id": "hg.regex-unicode-ignorecase-is-byte-oriented",
