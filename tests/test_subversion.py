@@ -384,6 +384,8 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
                 "modified.tmp": "before\n",
                 "deleted.tmp": "deleted\n",
                 "missing.tmp": "missing\n",
+                "replaced.tmp": "replaced\n",
+                "obstructed.tmp": "obstructed\n",
             },
             "unversioned_files": {"loose.tmp": "unversioned and ignored\n"},
         }
@@ -395,6 +397,11 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
     (root / "added.tmp").write_text("added after checkout\n", encoding="utf-8")
     _run_svn([svn, "add", "added.tmp"], cwd=root, environment=environment)
     _run_svn([svn, "delete", "--keep-local", "deleted.tmp"], cwd=root, environment=environment)
+    _run_svn([svn, "delete", "--keep-local", "replaced.tmp"], cwd=root, environment=environment)
+    _run_svn([svn, "add", "replaced.tmp"], cwd=root, environment=environment)
+    (root / "obstructed.tmp").unlink()
+    (root / "obstructed.tmp").mkdir()
+    (root / "obstructed.tmp" / "child.txt").write_text("beneath obstruction\n", encoding="utf-8")
     (root / "missing.tmp").unlink()
 
     native = _run_svn(
@@ -425,6 +432,8 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         "added.tmp": "added",
         "deleted.tmp": "deleted",
         "missing.tmp": "missing",
+        "replaced.tmp": "replaced",
+        "obstructed.tmp": "obstructed",
         "loose.tmp": "ignored",
     }
     assert {path: native_items.get(path) for path in expected_items} == expected_items
@@ -452,8 +461,14 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         for path in walker.iter_files(selection="included")
         if path.relative_to(root).parts[0] != ".svn"
     }
-    assert ignored_paths == {"loose.tmp"}
-    assert {"normal.tmp", "modified.tmp", "added.tmp", "deleted.tmp"} <= included_paths
+    assert ignored_paths == {"loose.tmp", "obstructed.tmp/child.txt"}
+    assert {
+        "normal.tmp",
+        "modified.tmp",
+        "added.tmp",
+        "deleted.tmp",
+        "replaced.tmp",
+    } <= included_paths
 
 
 @pytest.mark.parametrize("topdown", [True, False])

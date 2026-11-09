@@ -162,8 +162,9 @@ or `"unversioned"` membership to each `IgnoreDecision`; paths absent from the st
 unknown. The `ignored` field continues to report the rule match. In membership-aware walks, known
 versioned entries are selected as included even if a rule matches. This option adds a native status
 command for each discovered working-copy snapshot. Status values such as normal, modified, added,
-deleted, and missing are treated as versioned; native unversioned and ignored entries are treated as
-unversioned. The live status-transition test covers those values. The walker keeps ignored
+deleted, missing, replaced, and obstructed are treated as versioned; native unversioned and ignored
+entries are treated as unversioned. The live status-transition test covers those values. The walker
+keeps ignored
 directories traversable
 and excludes `.svn` metadata by default. Walks stop at unrelated
 nested `.svn` working
