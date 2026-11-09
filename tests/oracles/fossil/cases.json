@@ -237,6 +237,11 @@
             "expected_candidate": true
           },
           {
+            "value": " \t\"name\"\f ",
+            "query": "name",
+            "expected_candidate": true
+          },
+          {
             "value": " \t\n\u000b\f\r",
             "query": "visible.txt",
             "expected_candidate": false

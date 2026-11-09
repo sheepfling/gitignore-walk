@@ -26,9 +26,9 @@ Global fallback plus local/versioned setting precedence also match all four prof
 Eight malformed-quote,
 adjacent-token, escaped-separator, and empty-token
 probes also match captured native decisions on all four profiles and are checked against the local
-evaluator. Fourteen additional native probes cover the complete ASCII whitespace separator set,
-unquoted boundary trimming, and an all-whitespace setting; these match all four profiles and the
-portable tokenizer. Other tokenizer boundaries remain open. A missing
+evaluator. Fifteen additional native probes cover the complete ASCII whitespace separator set,
+unquoted boundary trimming, whitespace around a quoted token, and an all-whitespace setting; these
+match all four profiles and the portable tokenizer. Other tokenizer boundaries remain open. A missing
 Fossil executable is recorded as skipped, not passed.
 
 The native syntax reference defines whitespace as TAB, LF, VT, FF, CR, and SPACE; the

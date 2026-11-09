@@ -1495,6 +1495,18 @@
           ]
         },
         {
+          "value": " \t\"name\"\f ",
+          "query": "name",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": [
+            "one",
+            "two"
+          ]
+        },
+        {
           "value": " \t\n\u000b\f\r",
           "query": "visible.txt",
           "exit_code": 0,
