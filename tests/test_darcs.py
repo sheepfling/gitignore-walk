@@ -185,6 +185,7 @@ def test_darcs_selection_is_discriminated_and_native(tmp_path: Path) -> None:
             "darcs.unicode-literal-match",
             "darcs.unicode-normalization-is-distinct",
             "darcs.posix-alpha-class-on-unicode",
+            "darcs.posix-alpha-class-on-unicode-utf8-locale",
         }
     ],
     ids=lambda case: case["id"],
@@ -205,7 +206,7 @@ def test_native_darcs_policy_matches_captured_unicode_regex_cases(
         "APPDATA": str(home),
         "DARCS_PAGER": "cat",
         "PAGER": "cat",
-        "LC_ALL": "C",
+        "LC_ALL": case["setup"].get("locale", "C"),
     }
     initialized = subprocess.run(
         [executable, "init", "--repodir", str(root)],

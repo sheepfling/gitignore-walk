@@ -276,6 +276,26 @@
       "home": "<temp>/home"
     },
     {
+      "id": "darcs.posix-alpha-class-on-unicode-utf8-locale",
+      "dimension": "locale",
+      "query": "\u00e9.tmp",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "\u00e9.tmp"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./\u00e9.tmp\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
       "id": "darcs.comments-and-invalid-regex",
       "dimension": "lexing",
       "query": null,

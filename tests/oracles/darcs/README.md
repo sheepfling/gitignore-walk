@@ -12,12 +12,13 @@ Run from the repository root:
 python -m scripts.ci oracle-darcs --output /tmp/darcs-oracle.json
 ```
 
-The current corpus has fifteen probes across macOS arm64 Darcs 2.18.5 and Debian 13 x86_64 Darcs
-2.18.4. Fourteen closed candidates cover ERE alternation, a POSIX character class, global boring
+The current corpus has sixteen probes across macOS arm64 Darcs 2.18.5 and Debian 13 x86_64 Darcs
+2.18.4. Fifteen closed candidates cover ERE alternation, a POSIX character class, global boring
 rules, a configured boringfile, managed-file behavior, and lexical rules. Both profiles agree on all
-fourteen. Native probes confirm a `#` comment only at the start of a rule, leading/trailing spaces
+fifteen. Native probes confirm a `#` comment only at the start of a rule, leading/trailing spaces
 and tabs remain part of the regex, and `#` inside a rule is data. UTF-8 literal regexes match NFC
-names, distinguish NFD spellings, and keep `[[:alpha:]]` ASCII-only under `LC_ALL=C`. The final
+names, distinguish NFD spellings, and keep `[[:alpha:]]` ASCII-only under both `LC_ALL=C` and
+`LC_ALL=C.UTF-8`. The final
 probe captures how an invalid regular expression is reported.
 
 The [Darcs configuration guide](https://darcs.net/Using/Configuration) says `boringfile` overrides
@@ -37,8 +38,8 @@ on POSIX; broader configuration, platform behavior, and other Darcs versions rem
 
 | Capture file                      | Environment                   | Darcs version | Closed candidates |
 | --------------------------------- | ----------------------------- | ------------- | ----------------- |
-| `darcs-2.18.5-macos-arm64.json`   | macOS 26.6.2 arm64            | 2.18.5        | 14/14             |
-| `darcs-debian13-x86_64.json`      | Debian 13 x86_64 in Docker    | 2.18.4        | 14/14             |
+| `darcs-2.18.5-macos-arm64.json`   | macOS 26.6.2 arm64            | 2.18.5        | 15/15             |
+| `darcs-debian13-x86_64.json`      | Debian 13 x86_64 in Docker    | 2.18.4        | 15/15             |
 
 The local capture does not establish behavior on Windows, older Darcs releases, or all POSIX
 regular-expression implementations.

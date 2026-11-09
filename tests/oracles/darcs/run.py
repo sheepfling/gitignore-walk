@@ -69,8 +69,8 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "PATH": os.environ.get("PATH", ""),
             "DARCS_PAGER": "cat",
             "PAGER": "cat",
-            "LC_ALL": "C",
-            "LANG": "C",
+            "LC_ALL": setup.get("locale", "C"),
+            "LANG": setup.get("locale", "C"),
             "TZ": "UTC",
         }
         init = _run(

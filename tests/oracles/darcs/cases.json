@@ -156,6 +156,18 @@
       "native_status": "captured"
     },
     {
+      "id": "darcs.posix-alpha-class-on-unicode-utf8-locale",
+      "dimension": "locale",
+      "setup": {
+        "local_boring": "^[[:alpha:]]+\\.tmp$\n",
+        "locale": "C.UTF-8"
+      },
+      "query": "\u00e9.tmp",
+      "expected_boring": false,
+      "native_status": "captured",
+      "note": "The POSIX alpha class remains ASCII-only under C.UTF-8 in tested Darcs profiles."
+    },
+    {
       "id": "darcs.comments-and-invalid-regex",
       "dimension": "lexing",
       "setup": {
