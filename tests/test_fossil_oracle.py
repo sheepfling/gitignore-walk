@@ -64,8 +64,15 @@ def test_fossil_policy_matches_captured_ignore_decisions(
     profile: str,
     case: dict[str, Any],
 ) -> None:
-    if os.name == "nt" and "\\" in case["query"]:
-        pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
+    if os.name == "nt":
+        components = case["query"].split("/")
+        if any("\\" in component for component in components):
+            pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
+        if any(
+            any(character in component for character in '<>:"|?*') or component.endswith((" ", "."))
+            for component in components
+        ):
+            pytest.skip("Windows cannot represent this Fossil oracle filename")
     setup = case["setup"]
     setting = setup.get(
         "versioned_ignore_glob",
