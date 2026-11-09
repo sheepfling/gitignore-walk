@@ -29,11 +29,13 @@ Mercurial configuration files by default. Pass configured `ui.ignore` files expl
 `MercurialPolicyConfig(read_client_config=True)` to ask the installed `hg` executable to discover
 them. This mode delegates Mercurial's config-file search and precedence to `hg config`; it requires
 the executable and reports config command failures. In the captured
-Mercurial 7.2.4/macOS arm64 and 7.0.1/Debian 13 Linux aarch64 and x86_64 profiles, workspace
-`.hgignore` rules precede configured files, and configured file order is preserved. The scheme has
-its own tagged config and does not
-fall back to Git. Other VCS formats remain under research. Each format gets its own policy and
-config in this built-in extension path; there is no runtime plugin registry. The
+Mercurial 7.2.4/macOS arm64, 7.0.1/Debian 13 Linux aarch64 and x86_64, and 7.1.2/Windows Server
+2025 x86_64 profiles, workspace `.hgignore` rules precede configured files, and configured file
+order is preserved. The scheme has its own tagged config and never falls back to Git. The other
+listed VCS policies are also initial implementations with scheme-specific evidence and limitations;
+additional formats and broader conformance remain under research. Each format gets its own policy
+and config in this built-in extension path; there is no runtime plugin registry. See the
+[unreleased VCS expansion notes](CHANGELOG.md). The
 [contributor checklist](docs/contributing/ignore-scheme-readiness.md) and
 [VCS expansion backlog](docs/contributing/vcs-expansion-backlog.md) record the architecture and
 remaining conformance work.
@@ -320,9 +322,11 @@ support inclusion exceptions, an ignored directory can be pruned safely. Missing
 produce diagnostics and set `discovery_complete=False`; include cycles are reported without
 recursing indefinitely. Unsupported or malformed patterns raise `MercurialIgnoreError`.
 
-The implementation is compared with captured Mercurial 7.2.4/macOS arm64 and 7.0.1/Linux aarch64
-and x86_64 profiles for path matching and ignored-file walking. This is an initial three-profile
-corpus, not full cross-platform certification; see the [oracle notes](tests/oracles/hg/README.md).
+The implementation is compared with captured Mercurial 7.2.4/macOS arm64, 7.0.1/Linux aarch64 and
+x86_64, and 7.1.2/Windows Server 2025 x86_64 profiles for path matching and ignored-file walking.
+The Windows capture has five path skips and one symlink-dependent walk skip; those cases are not
+claimed as conformance. The four-profile corpus is still limited evidence, not full cross-platform
+certification. See the [oracle notes](tests/oracles/hg/README.md) for exact results and limitations.
 
 ## Understand why a path is ignored
 
@@ -403,15 +407,15 @@ ignore rule.
 
 ## Choose a matching policy
 
-| Capability              | Git portable      | Git-native     | Mercurial portable   | Subversion properties | Perforce portable      |
-| ----------------------- | ----------------- | -------------- | -------------------- | --------------------- | ---------------------- |
-| Requires VCS executable | No                | Git            | No                   | `svn`                 | No                     |
-| Nested ignore sources   | `.gitignore`      | `.gitignore`   | `.hgignore` includes | Directory properties  | `P4IGNORE` files       |
-| Runtime/global config   | Conventional file | Git config     | Explicit files       | Explicit patterns     | Explicit/environment   |
-| Inherited rules         | Git precedence    | Git precedence | No                   | `svn:global-ignores`  | Nested file precedence |
-| Batch matching          | Yes               | Yes            | Yes                  | Yes                   | Yes                    |
-| Match explanations      | Yes               | Partial        | Yes                  | Yes                   | Yes                    |
-| Filtered traversal      | Yes               | Yes            | Yes                  | Yes                   | Yes                    |
+| Capability              | Git portable      | Git-native     | Mercurial portable      | Subversion properties         | Perforce portable      |
+| ----------------------- | ----------------- | -------------- | ----------------------- | ----------------------------- | ---------------------- |
+| Requires VCS executable | No                | Git            | Only for config query   | `svn`                         | No                     |
+| Nested ignore sources   | `.gitignore`      | `.gitignore`   | `.hgignore` includes    | Directory properties          | `P4IGNORE` files       |
+| Runtime/global config   | Conventional file | Git config     | Explicit or `hg config` | Config directory and patterns | Explicit/environment   |
+| Inherited rules         | Git precedence    | Git precedence | No                      | `svn:global-ignores`          | Nested file precedence |
+| Batch matching          | Yes               | Yes            | Yes                     | Yes                           | Yes                    |
+| Match explanations      | Yes               | Partial        | Yes                     | Yes                           | Yes                    |
+| Filtered traversal      | Yes               | Yes            | Yes                     | Yes                           | Yes                    |
 
 **Choose portable** when your application needs a self-contained matcher, may run outside
 repositories, or needs predictable Python-only evaluation.
