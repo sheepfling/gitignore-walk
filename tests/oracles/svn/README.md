@@ -37,8 +37,9 @@ evaluates the supported glob rules in Python. Its matcher follows captured SVN/A
 backslash quoting, both `!` and `^` character-class negation markers, malformed opening brackets,
 and unsupported POSIX character classes. Native cases also confirm that spaces in `svn:ignore` and
 `svn:global-ignores` property values are not list separators; each CR/LF-delimited line remains one
-pattern. These cases are captured on Subversion 1.15.0/macOS arm64 and 1.14.5/Linux x86_64; the
-escaped-wildcard filename case is not representable on Windows. In Subversion 1.14.5,
+pattern. These cases are captured on Subversion 1.15.0/macOS arm64 and 1.14.5/Linux x86_64. The
+Windows SlikSvn 1.14.5 capture matches six of the seven cases; its only skip is the escaped-wildcard
+filename, which Windows cannot represent. In Subversion 1.14.5,
 [`status.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/status.c)
 collects working-copy ignore patterns, and
 [`util.c`](https://github.com/apache/subversion/blob/1.14.5/subversion/libsvn_wc/util.c) delegates
