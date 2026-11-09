@@ -105,9 +105,11 @@ captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 202
 isolated user configuration: all twenty-nine boolean cases agree, including global-versus-branch
 exception priority and built-in defaults without a user ignore file. The Windows capture seeds
 nested anchors through Breezy's API because the client CLI misresolves nested add paths. Its
-isolated `BRZ_HOME` avoids the runner's actual AppData directory. A guarded Windows CI probe now
-temporarily tests the default shell-folder path and restores the original ignore file; native
-confirmation remains pending its hosted result. A child exception under an ignored directory
+isolated `BRZ_HOME` avoids the runner's actual AppData directory. A guarded Windows CI probe resolves
+the path through Breezy 3.3.24's `user_ignore_config_path()`, temporarily writes a marker, confirms
+that native `brz ignored` and policy both report it, and restores the original file bytes. The
+captured result is versioned in the Breezy oracle. This confirms the default path for that Windows
+client profile; other native versions remain unverified. A child exception under an ignored directory
 exposes sibling files as unknown in status.
 The exception pattern opens the ignored directory even when its named target is absent.
 The native regex exception case also opens an ignored parent in both traversal orders; its target
@@ -120,9 +122,9 @@ exception-aware directory traversal, anchored RE matches, negative lookahead, sc
 and named-capture normalization. A new native
 status capture verifies that an exception under ignored `cache` exposes sibling files; policy walk
 results match native unknown and ignored paths in both directions on all four profiles. Broader
-RE semantics, native default Windows configuration discovery, and
-source-location precedence remain open. Native captures also show that the documented global inline
-regex flag example is rejected with exit code 3 in all four pinned Breezy profiles. Other non-Git
+RE semantics and source-location precedence remain open. Native captures also show that the
+documented global inline regex flag example is rejected with exit code 3 in all four pinned Breezy
+profiles. Other non-Git
 candidate cases have
 no captured native result. The November
 7 checkpoint separately records seven Git probes. These captures do not establish complete

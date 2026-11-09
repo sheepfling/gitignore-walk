@@ -133,6 +133,12 @@ def capture(output: Path) -> dict[str, Any]:
             policy = BreezyIgnorePolicy(working_tree, environment=environment)
             decision = policy.explain(_CANDIDATE)
             for observation in (init, ignored):
+                observation["command"] = [
+                    argument.replace(str(working_tree), "<working-tree>").replace(
+                        str(appdata), "<APPDATA>"
+                    )
+                    for argument in observation["command"]
+                ]
                 observation["stdout"] = (
                     observation["stdout"]
                     .replace(str(working_tree), "<working-tree>")

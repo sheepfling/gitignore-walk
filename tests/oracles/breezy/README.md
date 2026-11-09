@@ -48,16 +48,18 @@ The Windows capture sets a temporary `BRZ_HOME` to isolate each case. Breezy res
 Windows application-data directory through the Windows shell-folder API, so changing only the
 `APPDATA` process variable does not redirect the native client. The Windows-only policy test checks
 the `%APPDATA%/Breezy/ignore` path selected by Breezy 3.3.24's native resolver; older published
-documentation describes a `Breezy/3.0/ignore` path. The Windows CI job also runs
+documentation describes a `Breezy/3.0/ignore` path. A captured Windows Server 2025 probe confirms
+the native resolver path, shell-folder agreement, and marker match in both `brz ignored` and the
+policy; see `results/brz-3.3.24-windows-default-config.json`. The Windows CI job runs
 `windows_default_config.py`, which resolves the real roaming folder through Shell32, temporarily
 writes a marker rule at the path returned by `breezy.bedding.user_ignore_config_path()`, checks native
 `brz ignored` against the policy, and restores the previous file bytes. Its artifact reports whether
 the process `APPDATA` agrees with the shell folder and preserves normalized command output. The probe
 requires the explicit
 `--allow-user-config-mutation` flag and is only for the disposable Windows CI account; the default
-`oracle-brz` command remains isolated from the user's config. Until that Windows job result is
-reviewed, default-path native confirmation remains open. These results establish candidate behavior
-for the pinned fixtures only; they do not establish future versions, tracked-file traversal, path
+`oracle-brz` command remains isolated from the user's config. These results establish candidate
+behavior for Breezy 3.3.24 on the captured Windows runner only; they do not establish future versions,
+tracked-file traversal, path
 encodings, or complete exception semantics. In particular, status unknown/ignored membership is
 recorded separately from rule matching.
 

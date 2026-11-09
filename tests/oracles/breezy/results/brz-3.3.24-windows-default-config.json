@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "version": "Breezy (brz) 3.3.24",
+    "platform": "Windows-2025Server-10.0.26100-SP0"
+  },
+  "known_folder": "<APPDATA>",
+  "process_appdata_matches_shell_folder": true,
+  "global_ignore_path": "<APPDATA>/breezy/ignore",
+  "native_resolver": "breezy.bedding.user_ignore_config_path",
+  "global_ignore_original_existed": false,
+  "global_ignore_original_sha256": null,
+  "fixture_pattern": "*.default-appdata-probe",
+  "global_ignore_fixture_sha256": "03bacd7c6dde23c9509c72513c2eec4378c2669eb577a1f46eefc54bdbe46578",
+  "working_tree_init": {
+    "command": [
+      "brz.EXE",
+      "init",
+      "--no-plugins",
+      "<working-tree>"
+    ],
+    "exit_code": 0,
+    "stdout": "Created a standalone tree (format: 2a)\n",
+    "stderr": ""
+  },
+  "native_ignored_query": {
+    "command": [
+      "brz.EXE",
+      "ignored",
+      "--no-plugins",
+      "--verbose"
+    ],
+    "exit_code": 0,
+    "stdout": "candidate.default-appdata-probe                    *.default-appdata-probe\n",
+    "stderr": ""
+  },
+  "native_ignored_stdout_normalized": "candidate.default-appdata-probe                    *.default-appdata-probe\n",
+  "native_ignored_stdout_sha256": "0479fa1d5cf91ba4b920afab05a811cfaf1e175376f2fc8935aaefc0f552aafb",
+  "native_ignored_paths": [
+    "candidate.default-appdata-probe"
+  ],
+  "policy_ignored": true,
+  "policy_source": "<APPDATA>/Breezy/ignore",
+  "policy_pattern": "*.default-appdata-probe",
+  "expected_ignored_paths": [
+    "candidate.default-appdata-probe"
+  ],
+  "candidate_matches": true
+}
