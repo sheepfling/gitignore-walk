@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "profile": "hg-walk",
+  "cases": [
+    {
+      "id": "hg.walk.ignored-parent-descendants",
+      "dimension": "walk-pruning",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\ncache\n",
+          "cache/nested/first.tmp": "ignored\n",
+          "cache/second.txt": "ignored\n",
+          "cacheable/visible.txt": "visible\n",
+          "visible.txt": "visible\n"
+        }
+      },
+      "expected_ignored_paths": [
+        "cache/nested/first.tmp",
+        "cache/second.txt"
+      ],
+      "expected_unknown_paths": [".hgignore", "cacheable/visible.txt", "visible.txt"],
+      "tracked_paths": [],
+      "evidence_status": "candidate-until-native-capture"
+    },
+    {
+      "id": "hg.walk.include-source",
+      "dimension": "walk-source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:rules\n",
+          "rules": "syntax: glob\n*.tmp\n",
+          "nested/one.tmp": "ignored\n",
+          "nested/keep.txt": "visible\n",
+          "one.tmp": "ignored\n",
+          "visible.txt": "visible\n"
+        }
+      },
+      "expected_ignored_paths": ["nested/one.tmp", "one.tmp"],
+      "expected_unknown_paths": [".hgignore", "nested/keep.txt", "rules", "visible.txt"],
+      "tracked_paths": [],
+      "evidence_status": "candidate-until-native-capture"
+    },
+    {
+      "id": "hg.walk.subinclude-scope",
+      "dimension": "walk-source-scope",
+      "setup": {
+        "files": {
+          ".hgignore": "subinclude:pkg/rules\n",
+          "pkg/rules": "rootglob:build/*\n",
+          "pkg/build/one.tmp": "ignored\n",
+          "other/build/two.tmp": "visible\n",
+          "pkg/keep.txt": "visible\n"
+        }
+      },
+      "expected_ignored_paths": ["pkg/build/one.tmp"],
+      "expected_unknown_paths": [".hgignore", "other/build/two.tmp", "pkg/keep.txt", "pkg/rules"],
+      "tracked_paths": [],
+      "evidence_status": "candidate-until-native-capture"
+    },
+    {
+      "id": "hg.walk.tracked-ignore-membership",
+      "dimension": "membership-boundary",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n*.tmp\n",
+          "tracked.tmp": "tracked\n",
+          "unknown.tmp": "unknown\n"
+        }
+      },
+      "expected_ignored_paths": ["unknown.tmp"],
+      "expected_unknown_paths": [".hgignore"],
+      "tracked_paths": ["tracked.tmp"],
+      "evidence_status": "candidate-until-native-capture"
+    },
+    {
+      "id": "hg.walk.nested-workspace-boundary",
+      "dimension": "walk-workspace-boundary",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n*.tmp\n",
+          "nested/source.txt": "nested workspace file\n",
+          "nested/ignored.tmp": "nested workspace ignored file\n",
+          "visible.txt": "parent workspace file\n"
+        },
+        "nested_repositories": ["nested"]
+      },
+      "expected_ignored_paths": [],
+      "expected_unknown_paths": [".hgignore", "visible.txt"],
+      "tracked_paths": [],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "hg.walk.repeated-include-distinct-scopes",
+      "dimension": "walk-source-cache-scope",
+      "setup": {
+        "files": {
+          ".hgignore": "subinclude:one/rules\nsubinclude:two/rules\n",
+          "shared/rules": "rootglob:*.tmp\n",
+          "one/first.tmp": "ignored under first matcher root\n",
+          "two/second.tmp": "ignored under second matcher root\n",
+          "root.tmp": "not ignored by either scoped include\n",
+          "one/visible.txt": "visible\n",
+          "two/visible.txt": "visible\n",
+          "visible.txt": "visible\n"
+        },
+        "symlinks": {
+          "one/rules": "../shared/rules",
+          "two/rules": "../shared/rules"
+        }
+      },
+      "expected_ignored_paths": ["one/first.tmp", "two/second.tmp"],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "one/visible.txt",
+        "root.tmp",
+        "shared/rules",
+        "one/rules",
+        "two/rules",
+        "two/visible.txt",
+        "visible.txt"
+      ],
+      "tracked_paths": [],
+      "evidence_status": "candidate-until-native-capture"
+    }
+  ]
+}

@@ -1,8 +1,12 @@
 # Preparing another ignore scheme
 
-This project currently supports Git ignore rules only. This note records the extension boundary and
-the evidence needed before adding another VCS format. It does not claim compatibility with another
-VCS and does not add a runtime plugin API.
+This project supports Git, an initial portable Mercurial ignore policy, an initial Breezy
+pattern-evaluation policy, an initial Fossil effective-setting policy, and an initial
+native-discovery Subversion property policy. These additional schemes remain under conformance
+development. This note records the extension boundary and evidence needed before adding further VCS
+formats; it does not add a runtime plugin API.
+
+The dependency-ordered implementation plan is in the [VCS expansion backlog](vcs-expansion-backlog.md).
 
 ## Keep four responsibilities separate
 
@@ -60,8 +64,101 @@ discovery and traversal fixtures; they should not be assumed to behave like Git 
 
 ## Current research checkpoint
 
-The November 7, 2026 research checkpoint exercised seven native Git probes on Git 2.47.3/Linux. It
-confirmed parent blocking versus contents-only exceptions, recursive `**/` behavior, last-match
-precedence, and the difference between ordinary tracked-file handling and `--no-index` ignore-rule
-matching. These probe results describe Git itself; they are not tests of this library. No non-Git VCS
-client was exercised, so future support still needs native conformance evidence.
+The November 7, 2026 research checkpoint exercised seven native Git probes on Git 2.47.3/Linux. The
+seven probe definitions are versioned under `tests/oracles/git/checkpoint_cases.json`, and a focused
+test replays pattern candidates while separately exercising tracked-index behavior. The 79-case Git
+corpus is now tested against portable and native policy contracts, and the 16 ripgrep scanner cases
+have a separate captured inventory; see the [Git oracle notes](../../tests/oracles/git/README.md) and
+[ripgrep oracle notes](../../tests/oracles/ripgrep/README.md). These cases confirmed parent blocking
+versus contents-only exceptions, recursive `**/` behavior, last-match precedence, and the difference
+between ordinary tracked-file handling and `--no-index` ignore-rule matching. The current Mercurial
+capture covers 40 `hg debugignore` cases and six native status walk fixtures on macOS arm64 with
+Mercurial 7.2.4 and Linux aarch64 and x86_64 with Mercurial 7.0.1. The library
+tests compare all three profiles with its matching and traversal behavior; see the
+[Mercurial oracle](../../tests/oracles/hg/README.md), the
+[macOS matching results](../../tests/oracles/hg/results/hg-7.2.4-macos-arm64.json), the
+[Linux matching results](../../tests/oracles/hg/results/hg-7.0.1-linux-aarch64.json), and the
+[Linux x86_64 matching results](../../tests/oracles/hg/results/hg-7.0.1-linux-x86_64.json), and
+[walk results](../../tests/oracles/hg/results/). All 44 boolean cases and six walk cases agree on
+all three profiles, including case-sensitive matching, exact Unicode normalization-form matching,
+undecodable pattern bytes, unreadable-source warnings with incomplete discovery, and stopping walks
+at `.hg` metadata and nested workspaces. An actual
+byte-path walk matches native status on Linux
+aarch64 and x86_64; the filesystem skips that case on macOS. The include-cycle query remains open
+because Mercurial recurses until failure; a
+separate subinclude query prints an ignored decision and then fails while formatting its trace.
+These profiles do not establish full cross-platform behavior.
+
+Mercurial's documented `.hgignore` syntax distinguishes regexp, unrooted glob, and rootglob rules;
+its pattern docs distinguish `include` from directory-scoped `subinclude`. The implementation uses
+those public contracts and native captures, not Mercurial source code. See the
+[ignore-format documentation](https://mercurial-scm.org/help/topics/hgignore) and
+[pattern documentation](https://www.mercurial-scm.org/help/topics/patterns).
+
+The initial Subversion policy discovers versioned directory properties with `svn` and evaluates
+`svn:ignore`, inherited `svn:global-ignores`, and caller-supplied runtime global patterns locally.
+Its property, nested-working-copy, external, and sparse-depth fixtures agree with native
+`svn status` on 1.15.0/macOS arm64 and 1.14.5/Linux aarch64 and x86_64. A versioned directory at
+depth `empty` retains its `svn:ignore` property for new files; an excluded-depth path stops the walk
+and direct decisions beneath it report incomplete property discovery. The policy walker also stops
+at unrelated nested `.svn` roots and follows native-listed externals. Broader runtime-config
+discovery, versioned membership, and status traversal remain open. See the [Subversion oracle
+notes](../../tests/oracles/svn/README.md).
+
+The initial Fossil policy asks the native client for effective `ignore-glob` settings and evaluates
+whole workspace-relative paths with SQLite `GLOB`. Its eleven-case corpus was captured against
+Fossil 2.28/macOS arm64 and 2.26/Linux aarch64. Native-backed policy tests cover separator and quote
+forms, hash-leading patterns, literal backslashes, simple glob classes, no-negation behavior,
+effective-setting discovery, and ignored-directory pruning. A captured extras fixture now checks
+included and ignored walk results against
+native output across both profiles, including exclusion of the Fossil workspace marker. Additional
+malformed lexical cases and broader native/platform profiles remain open.
+See the [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
+[Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md).
+
+The initial Breezy evaluator queries the native client for built-in rules, then loads its standard
+user ignore file and root `.bzrignore`. Its 24 boolean candidates pass against Breezy 3.3.24/macOS
+arm64 and Linux aarch64. The native status fixture verifying that a child exception opens an ignored
+parent and exposes sibling files matches policy walk results in both traversal orders. Native
+captures also include exact-path versus `/**` strong exclusions. The matcher follows Breezy's
+documented rule that slash-containing patterns and regexes
+match the complete workspace-relative path while other globs match the last path component. The
+captured RE subset now covers anchored path matching and named-capture normalization. Both pinned
+3.3.24 clients reject `RE:(?i)foo` with an invalid-pattern error, despite the published guide example.
+Broader regex flags and restrictions, Windows configuration discovery, and cross-platform profiles
+remain open.
+See the [Breezy oracle notes](../../tests/oracles/breezy/README.md), [Breezy pattern
+reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and [Breezy ignore
+reference](https://www.breezy-vcs.org/doc/en/user-reference/ignore-help.html).
+
+The initial Perforce policy evaluates the caller-selected root without invoking a P4 client by
+default. It reads the configured `P4IGNORE` list or checks `.p4ignore` and `p4ignore.txt`, supports
+the captured wildcard, directory-only, and exception forms, and conservatively keeps ignored
+directories traversable. Its 23 boolean cases agree with isolated P4/P4 Server 2026.1 captures on
+macOS arm64, Debian 13 Linux x86_64, and Ubuntu 24.04 Linux x86_64, including configured-file order,
+nested-source precedence, root-anchored matching relative to nested ignore files, and opt-in
+`P4CONFIG` resolution. Client workspace discovery, broader path grammar, and other platform profiles
+remain open. See the
+[Perforce oracle notes](../../tests/oracles/perforce/README.md).
+
+Darcs now has an initial native candidate policy. It combines `darcs whatsnew --look-for-adds` with
+`darcs show files`, preserving the distinction between untracked add candidates, boring paths, and
+already managed paths. Captures on Darcs 2.18.5/macOS arm64 and 2.18.4/Debian 13 x86_64 agree on six
+closed candidates, and the policy walker matches a native ignored-directory and tracked-file fixture
+in both traversal orders. Managed inventory uses `darcs show files --null`; ambiguous candidate
+summaries fall back to path-specific `darcs add --dry-run --reserved-ok` checks. This preserves
+trailing spaces and handles newline-bearing names without parsing their display output. The policy
+delegates ERE parsing and preference discovery to Darcs and holds one inventory for each walk. Darcs
+2.18.4 and 2.18.5 keep local boring rules active alongside the configured `boringfile`, contrary to
+the [configuration guide](https://darcs.net/Using/Configuration); this is recorded as a native
+documentation discrepancy, not a Python-side rule. Broader path and platform coverage remain open.
+Invalid ERE lines produce a native warning and are skipped. See the
+[Darcs oracle notes](../../tests/oracles/darcs/README.md).
+
+Sapling `.git` and `.sl` modes and Jujutsu colocated and non-colocated modes share the tested
+in-tree `.gitignore` behavior. The four captures also show that `.hgignore` and `.jjignore` are not
+their ignore sources for these profiles. Existing Git-ignore evaluation can cover this bounded rule
+subset when given the correct metadata baseline; config-file and global-exclude discovery remain
+unverified. Jujutsu `status` snapshots its workspace, so the probes use temporary repositories and
+do not establish a safe per-file native adapter. See the
+[compatibility probe notes](../../tests/oracles/compat/README.md).

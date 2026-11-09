@@ -366,6 +366,9 @@ class _GitIgnoreWalkSession:
         resolved = tuple(self.resolve_target(target) for target in targets)
         return list(self._policy._decisions(resolved, self._snapshot))
 
+    def should_descend_directory(self, target: Path) -> bool:
+        return self._policy.should_descend_directory(target)
+
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy.can_prune_ignored_directory(target, decision)
 

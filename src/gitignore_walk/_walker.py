@@ -133,12 +133,19 @@ class IgnoreWalker:
         ignored = None if selection == "all" else selection == "ignored"
         session = self.policy._open_walk()
         top_path = session.walk_top(self.root if top is None else top)
+        if top_path != self.root and not session.should_descend_directory(top_path):
+            return
         if ignored is False and top_path != self.root and top_path.is_dir():
             top_decision = session.explain_many((top_path,))[0]
             if top_decision.ignored and session.can_prune_ignored_directory(top_path, top_decision):
                 return
 
-        def traversable_directories(parent_directory: str, child_names: list[str]) -> list[str]:
+        def traversable_directories(
+            parent_directory: str,
+            child_names: list[str],
+            *,
+            prune_ignored: bool = True,
+        ) -> list[str]:
             parent_path = Path(parent_directory)
             regular_children = [
                 name
@@ -146,6 +153,15 @@ class IgnoreWalker:
                 if _is_regular_directory(parent_path / name, onerror=onerror)
             ]
             child_paths = [session.resolve_target(parent_path / name) for name in regular_children]
+            descendable = [
+                (name, path)
+                for name, path in zip(regular_children, child_paths, strict=True)
+                if session.should_descend_directory(path)
+            ]
+            regular_children = [name for name, _ in descendable]
+            child_paths = [path for _, path in descendable]
+            if not prune_ignored:
+                return regular_children
             child_decisions = session.explain_many(child_paths)
             return [
                 name
@@ -156,17 +172,23 @@ class IgnoreWalker:
                 or not session.can_prune_ignored_directory(child_path, decision)
             ]
 
-        entries = (
-            _walk_pruned_bottom_up(
-                top_path, onerror=onerror, traversable_directories=traversable_directories
+        if topdown:
+            entries = os.walk(top_path, topdown=True, onerror=onerror, followlinks=False)
+        else:
+            entries = _walk_pruned_bottom_up(
+                top_path,
+                onerror=onerror,
+                traversable_directories=lambda parent, names: traversable_directories(
+                    parent, names, prune_ignored=ignored is False
+                ),
             )
-            if not topdown and ignored is False
-            else os.walk(top_path, topdown=topdown, onerror=onerror, followlinks=False)
-        )
         for directory, dir_names, filenames in entries:
             current = Path(directory)
             safe_dir_names = [
-                name for name in dir_names if _is_regular_directory(current / name, onerror=onerror)
+                name
+                for name in dir_names
+                if _is_regular_directory(current / name, onerror=onerror)
+                and session.should_descend_directory(session.resolve_target(current / name))
             ]
             safe_filenames = [
                 name for name in filenames if _is_regular_file(current / name, onerror=onerror)

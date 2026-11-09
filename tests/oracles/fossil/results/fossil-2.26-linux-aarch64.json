@@ -1,0 +1,440 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "fossil": {
+      "executable": "/usr/bin/fossil",
+      "version": "This is fossil version 2.26 [611144ddd9] 2025-05-16 13:52:48 UTC"
+    },
+    "platform": "Linux-7.0.12-linuxkit-aarch64-with-glibc2.41",
+    "runner_python": "3.13.5"
+  },
+  "cases": [
+    {
+      "id": "fossil.star-crosses-slash",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "a/b.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.whole-path",
+      "dimension": "scope",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "a/foo",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "a/foo"
+        ],
+        "stdout_sha256": "a63d79b997ebe310b314cea7e8b684424409c20f70d74b821b2a1181ffa6b87e",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.quoted-spaces",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "two words.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.hash-leading-pattern",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "#literal",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.backslash-hash-is-data",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "#literal",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "#literal"
+        ],
+        "stdout_sha256": "3a867dafd338b16e31d6c4bd19b3a7980b9802a1135c9471a15a04948038e0b0",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.backslash-hash-matches-literally",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "\\#literal",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.class-caret",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "b",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.no-bang-negation",
+      "dimension": "reducer",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "keep.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.versioned-replaces",
+      "dimension": "discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "a.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          ".fossil-settings/ignore-glob.no-warn",
+          "a.tmp"
+        ],
+        "stdout_sha256": "05990a354d685c881cc90a7eac5ebc378e2d1a4fcfdc7a0c9d3fb482f8127df7",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.malformed-quotes",
+      "dimension": "lexing",
+      "evidence_status": "open-question",
+      "native_status": "captured",
+      "expected_candidate": null,
+      "observed_ignored": null,
+      "candidate_matches": null,
+      "query": null,
+      "extras": null,
+      "setting_probes": [
+        {
+          "value": "\"unterminated",
+          "query": "unterminated",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "\"a\"b",
+          "query": "a",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": [
+            "unterminated"
+          ]
+        },
+        {
+          "value": "\"a\"b",
+          "query": "ab",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": false,
+          "listed_paths": [
+            "ab",
+            "unterminated"
+          ]
+        },
+        {
+          "value": "\"a\"b",
+          "query": "a\"b",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": false,
+          "listed_paths": [
+            "a\"b",
+            "ab",
+            "unterminated"
+          ]
+        },
+        {
+          "value": "a\\ b",
+          "query": "a b",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": false,
+          "listed_paths": [
+            "a",
+            "a b",
+            "a\"b",
+            "ab",
+            "unterminated"
+          ]
+        },
+        {
+          "value": "a\\ b",
+          "query": "a\\ b",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": false,
+          "listed_paths": [
+            "a",
+            "a b",
+            "a\"b",
+            "a\\ b",
+            "ab",
+            "unterminated"
+          ]
+        },
+        {
+          "value": "a,,b",
+          "query": "a",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": [
+            "a b",
+            "a\"b",
+            "a\\ b",
+            "ab",
+            "unterminated"
+          ]
+        },
+        {
+          "value": "a,,b",
+          "query": "b",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": [
+            "a b",
+            "a\"b",
+            "a\\ b",
+            "ab",
+            "unterminated"
+          ]
+        }
+      ],
+      "setup_exit_codes": [
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.directory-inheritance",
+      "dimension": "traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "cache/a.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "cacheable/visible.txt",
+          "visible.txt"
+        ],
+        "stdout_sha256": "b9b9463dca5aa08b0d74d0f550973b3f8b77d4439fd38946e560784e7ae53353",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    }
+  ]
+}

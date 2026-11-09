@@ -69,10 +69,42 @@ In PowerShell, use `.\.venv\Scripts\rumdl.exe check --fix .`, then
 | `python -m scripts.test_python_matrix` | Windows Python matrix only; accepts `--windows-versions MAJOR.MINOR ...`                                         |
 | `python -m scripts.ci quality`         | Ruff lint/format, strict Pyright, rumdl, and mdrepo (Python 3.11+)                                               |
 | `python -m scripts.ci package`         | Build wheel/sdist, run Twine, import the installed wheel                                                         |
+| `python -m scripts.ci oracle-hg`       | Capture Mercurial behavior in fresh disposable repositories; requires `hg`                                       |
+| `python -m scripts.ci oracle-svn`      | Capture Subversion ignore status in a disposable local repository; requires `svn` and `svnadmin`                 |
+| `python -m scripts.ci oracle-fossil`   | Capture Fossil ignore-glob and extras behavior in a disposable checkout; requires `fossil`                       |
+| `python -m scripts.ci oracle-brz`      | Capture Breezy ignore and status behavior in isolated disposable working trees; requires `brz`                   |
+| `python -m scripts.ci oracle-p4`       | Capture `P4IGNORE` behavior using a disposable local server and workspace; requires `p4` and `p4d`               |
 
 GitHub Actions uses this same coordinator: matrix entries call `test`, and the Ubuntu Python 3.12
 entry calls `all`. Thus the hosted full check and the local pre-push check use the same ordered
 steps; the other matrix entries add platform and interpreter test coverage.
+
+The separate `mercurial-oracle` job installs Mercurial and invokes the same `oracle-hg` coordinator
+command available locally. It uploads path-matching and ignored-file-walk captures as workflow
+artifacts. This job records native observations for review; it does not certify the implementation
+against all Mercurial versions or equate ignore matches with tracked-file status.
+
+The `subversion-oracle` job similarly runs `oracle-svn` with Subversion installed and uploads its
+isolated repository capture for review. It also runs the Subversion policy tests with the native
+client installed. The initial `SubversionIgnorePolicy` uses `svn` to discover versioned properties
+and reads runtime `global-ignores` settings from an explicit config directory or standard system and
+per-user files. Oracle capture checks native status observations; the Python tests separately compare
+policy decisions and walks with the captured fixture. Neither check certifies untested SVN versions
+or working-copy modes.
+
+The `fossil-oracle` job runs the same `oracle-fossil` coordinator locally and in GitHub Actions.
+Its temporary repositories test `ignore-glob` behavior and upload the exact client/platform
+capture. Fossil results currently feed the research backlog; they do not select a Fossil policy.
+
+The `perforce-oracle` job downloads the pinned P4/P4 Server 2026.1 Linux x86_64 binaries, verifies
+their SHA-256 digests, and invokes the local `oracle-p4` coordinator against disposable servers.
+The committed macOS, Debian Linux, and Ubuntu 24.04 captures are replayed against the portable
+policy tests; the hosted job retains its fresh Linux observation as an artifact.
+
+The `breezy-oracle` job installs the pinned Breezy 3.3.24 client and runs the same `oracle-brz`
+coordinator as the local command. Its disposable trees isolate user configuration and upload rule
+and status observations. Policy tests separately compare Breezy decisions with the committed
+candidate corpus; these checks do not certify all Breezy versions or configuration locations.
 
 The commands in the table assume the virtual environment is active. If it is not, replace `python`
 with `.venv/bin/python` on macOS/Linux or `.\.venv\Scripts\python.exe` in PowerShell.

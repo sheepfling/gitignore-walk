@@ -127,6 +127,8 @@ class _IgnoreWalkSession(Protocol):
 
     def explain_many(self, targets: Iterable[_Target]) -> list[IgnoreDecision]: ...
 
+    def should_descend_directory(self, target: Path) -> bool: ...
+
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool: ...
 
 
@@ -144,6 +146,9 @@ class _DefaultIgnoreWalkSession:
 
     def explain_many(self, targets: Iterable[_Target]) -> list[IgnoreDecision]:
         return self._policy.explain_many(targets)
+
+    def should_descend_directory(self, target: Path) -> bool:
+        return self._policy.should_descend_directory(target)
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy.can_prune_ignored_directory(target, decision)
@@ -185,6 +190,15 @@ class IgnorePolicy(ABC):
     def explain_many(self, targets: Iterable[_Target]) -> list[IgnoreDecision]:
         """Explain targets in input order."""
         return list(self.iter_explain(targets))
+
+    def should_descend_directory(self, target: Path) -> bool:
+        """Return whether traversal may enter a directory, independent of ignore rules.
+
+        Policies can use this hook for workspace boundaries or other traversal barriers that are
+        not represented by an ignored decision. The default permits descent.
+        """
+        del target
+        return True
 
     def trace(self, target: _Target) -> IgnoreTrace:
         """Return the decision and matching-rule trace for one target.

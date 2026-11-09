@@ -31,3 +31,198 @@ jobs:
           python-version: ${{ matrix.python }}
       - run: python -m pip install -e '.[dev]'
       - run: python -m scripts.ci ${{ matrix.checks }}
+  mercurial-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y mercurial
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m pytest tests/test_mercurial.py -q
+      - run: >-
+          python -m scripts.ci oracle-hg
+          --output "$RUNNER_TEMP/hg-oracle.json"
+          --walk-output "$RUNNER_TEMP/hg-walk-oracle.json"
+          --trust-output "$RUNNER_TEMP/hg-trust-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mercurial-native-oracle
+          path: |
+            ${{ runner.temp }}/hg-oracle.json
+            ${{ runner.temp }}/hg-walk-oracle.json
+            ${{ runner.temp }}/hg-trust-oracle.json
+          if-no-files-found: warn
+  mercurial-windows-oracle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Mercurial
+        shell: pwsh
+        run: |
+          winget install --id Mercurial.Mercurial --exact --silent --accept-package-agreements --accept-source-agreements
+          $hgPath = (Get-Command hg.exe -ErrorAction SilentlyContinue).Source
+          if (-not $hgPath) {
+            $candidates = @(
+              "$env:ProgramFiles\Mercurial\hg.exe",
+              "${env:ProgramFiles(x86)}\Mercurial\hg.exe"
+            )
+            $hgPath = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+          }
+          if (-not $hgPath) { throw 'Mercurial installed, but hg.exe was not found.' }
+          Split-Path $hgPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          & $hgPath --version
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m pytest tests/test_mercurial.py -q
+      - run: >-
+          python -m scripts.ci oracle-hg
+          --output "$env:RUNNER_TEMP/hg-oracle.json"
+          --walk-output "$env:RUNNER_TEMP/hg-walk-oracle.json"
+          --trust-output "$env:RUNNER_TEMP/hg-trust-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mercurial-windows-native-oracle
+          path: |
+            ${{ runner.temp }}/hg-oracle.json
+            ${{ runner.temp }}/hg-walk-oracle.json
+            ${{ runner.temp }}/hg-trust-oracle.json
+          if-no-files-found: warn
+  subversion-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y subversion
+      - run: python -m pip install -e '.[dev]'
+      - run: >-
+          python -m pytest tests/test_subversion.py tests/test_subversion_unit.py
+          tests/test_svn_oracle.py -q
+      - run: python -m scripts.ci oracle-svn --output "$RUNNER_TEMP/svn-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: subversion-native-oracle
+          path: ${{ runner.temp }}/svn-oracle.json
+          if-no-files-found: warn
+  subversion-windows-registry-oracle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install SlikSVN command line tools
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP 'Slik-Subversion-1.14.5-x64.zip'
+          $destination = Join-Path $env:RUNNER_TEMP 'slik-svn'
+          Invoke-WebRequest `
+            -Uri 'https://www.sliksvn.com/pub/Slik-Subversion-1.14.5-x64.zip' `
+            -OutFile $archive
+          Expand-Archive -Path $archive -DestinationPath $destination
+          $svnBin = (Get-ChildItem -Path $destination -Filter svn.exe -Recurse | Select-Object -First 1).Directory.FullName
+          if (-not $svnBin) { throw 'SlikSVN archive did not contain svn.exe.' }
+          if (-not (Test-Path (Join-Path $svnBin 'svnadmin.exe'))) { throw 'SlikSVN archive did not contain svnadmin.exe.' }
+          $svnBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          & (Join-Path $svnBin 'svn.exe') --version --quiet
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m pytest tests/test_subversion_unit.py -q
+      - run: >-
+          python tests/oracles/svn/windows_registry.py
+          --allow-registry-mutation
+          --output "$env:RUNNER_TEMP/svn-windows-registry.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: subversion-windows-registry-oracle
+          path: ${{ runner.temp }}/svn-windows-registry.json
+          if-no-files-found: warn
+  fossil-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y fossil
+      - run: python -m scripts.ci oracle-fossil --output "$RUNNER_TEMP/fossil-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fossil-native-oracle
+          path: ${{ runner.temp }}/fossil-oracle.json
+          if-no-files-found: warn
+  breezy-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --disable-pip-version-check breezy==3.3.24
+      - run: python -m scripts.ci oracle-brz --output "$RUNNER_TEMP/brz-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: breezy-native-oracle
+          path: ${{ runner.temp }}/brz-oracle.json
+          if-no-files-found: warn
+  perforce-oracle:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download pinned Perforce 2026.1 Linux binaries
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libatomic1 >/dev/null
+          curl --fail --location --silent --show-error \
+            https://ftp.perforce.com/perforce/r26.1/bin.linux26x86_64/p4 \
+            --output "$RUNNER_TEMP/p4"
+          curl --fail --location --silent --show-error \
+            https://ftp.perforce.com/perforce/r26.1/bin.linux26x86_64/p4d \
+            --output "$RUNNER_TEMP/p4d"
+          echo 'bfbb838cc5794a6a678df65e52841004ca7e192119a1c108adac3d47f6ccb4fc  '"$RUNNER_TEMP/p4" | sha256sum --check
+          echo 'e2c1e11865774782eb37483c0a6f6ebdfc09d9dca6f44880ae59059cdf7b1847  '"$RUNNER_TEMP/p4d" | sha256sum --check
+          chmod 755 "$RUNNER_TEMP/p4" "$RUNNER_TEMP/p4d"
+      - name: Capture Perforce ignore behavior
+        run: >-
+          python -m scripts.ci oracle-p4
+          --p4 "$RUNNER_TEMP/p4"
+          --p4d "$RUNNER_TEMP/p4d"
+          --output "$RUNNER_TEMP/p4-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: perforce-native-oracle
+          path: ${{ runner.temp }}/p4-oracle.json
+          if-no-files-found: warn
+  darcs-oracle:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: sudo apt-get update && sudo apt-get install -y darcs
+      - run: python -m pip install -e '.[dev]'
+      - run: python -m pytest tests/test_darcs.py tests/test_darcs_oracle.py -q
+      - run: python -m scripts.ci oracle-darcs --output "$RUNNER_TEMP/darcs-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: darcs-native-oracle
+          path: ${{ runner.temp }}/darcs-oracle.json
+          if-no-files-found: warn

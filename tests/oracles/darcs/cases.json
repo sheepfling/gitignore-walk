@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip and isolated Darcs 2 native probes",
+  "cases": [
+    {
+      "id": "darcs.ere-alternation",
+      "dimension": "regex",
+      "setup": {"local_boring": "\\.(o|pyc)$\n"},
+      "query": "x.pyc",
+      "expected_boring": true,
+      "native_status": "not-run"
+    },
+    {
+      "id": "darcs.posix-character-class",
+      "dimension": "regex",
+      "setup": {"local_boring": "^[[:digit:]]+$\n"},
+      "query": "123",
+      "expected_boring": true,
+      "native_status": "not-run"
+    },
+    {
+      "id": "darcs.boringfile-replaces-local",
+      "dimension": "discovery",
+      "setup": {
+        "local_boring": "\\.tmp$\n",
+        "boringfile": "policy",
+        "files": {"policy": "\\.bak$\n"}
+      },
+      "query": "a.tmp",
+      "expected_boring": true,
+      "native_status": "captured",
+      "note": "Darcs 2.18.4 and 2.18.5 keep the local rule active despite docs saying it is replaced."
+    },
+    {
+      "id": "darcs.boringfile-selects-versioned-source",
+      "dimension": "discovery",
+      "setup": {
+        "local_boring": "\\.tmp$\n",
+        "boringfile": "policy",
+        "files": {"policy": "\\.bak$\n"}
+      },
+      "query": "a.bak",
+      "expected_boring": true,
+      "native_status": "not-run"
+    },
+    {
+      "id": "darcs.global-additive",
+      "dimension": "discovery",
+      "setup": {
+        "local_boring": "",
+        "global_boring": "\\.tmp$\n"
+      },
+      "query": "a.tmp",
+      "expected_boring": true,
+      "native_status": "not-run"
+    },
+    {
+      "id": "darcs.tracked-boring-file-remains-managed",
+      "dimension": "membership",
+      "setup": {
+        "local_boring": "\\.tmp$\n",
+        "tracked": ["a.tmp"]
+      },
+      "query": "a.tmp",
+      "expected_boring": false,
+      "native_status": "not-run"
+    },
+    {
+      "id": "darcs.comments-and-invalid-regex",
+      "dimension": "lexing",
+      "setup": {
+        "local_boring": "#comment\n #space\ninvalid[\nfoo\t\n"
+      },
+      "query": null,
+      "expected_boring": null,
+      "native_status": "open-question"
+    }
+  ]
+}

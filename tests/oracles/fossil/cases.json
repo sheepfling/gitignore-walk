@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip and isolated Fossil client probes",
+  "cases": [
+    {
+      "id": "fossil.star-crosses-slash",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "*.tmp"
+      },
+      "query": "a/b.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.whole-path",
+      "dimension": "scope",
+      "setup": {
+        "ignore_glob": "foo"
+      },
+      "query": "a/foo",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.quoted-spaces",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\"two words.tmp\",*.bak"
+      },
+      "query": "two words.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.hash-leading-pattern",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "#literal"
+      },
+      "query": "#literal",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.backslash-hash-is-data",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\\#literal"
+      },
+      "query": "#literal",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.backslash-hash-matches-literally",
+      "dimension": "lexing",
+      "setup": {
+        "ignore_glob": "\\#literal"
+      },
+      "query": "\\#literal",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.class-caret",
+      "dimension": "glob",
+      "setup": {
+        "ignore_glob": "[^a]"
+      },
+      "query": "b",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.no-bang-negation",
+      "dimension": "reducer",
+      "setup": {
+        "ignore_glob": "*.tmp,!keep.tmp"
+      },
+      "query": "keep.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.versioned-replaces",
+      "dimension": "discovery",
+      "setup": {
+        "versioned_ignore_glob": "*.bak",
+        "local_ignore_glob": "*.tmp"
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.malformed-quotes",
+      "dimension": "lexing",
+      "setup": {
+        "probes": [
+          {
+            "value": "\"unterminated",
+            "query": "unterminated"
+          },
+          {
+            "value": "\"a\"b",
+            "query": "a"
+          },
+          {
+            "value": "\"a\"b",
+            "query": "ab"
+          },
+          {
+            "value": "\"a\"b",
+            "query": "a\"b"
+          },
+          {
+            "value": "a\\ b",
+            "query": "a b"
+          },
+          {
+            "value": "a\\ b",
+            "query": "a\\ b"
+          },
+          {
+            "value": "a,,b",
+            "query": "a"
+          },
+          {
+            "value": "a,,b",
+            "query": "b"
+          }
+        ]
+      },
+      "query": null,
+      "expected_candidate": null,
+      "evidence_status": "open-question"
+    },
+    {
+      "id": "fossil.directory-inheritance",
+      "dimension": "traversal",
+      "setup": {
+        "ignore_glob": "cache",
+        "files": {
+          "cache/first.txt": "ignored\n",
+          "cache/nested/second.tmp": "ignored\n",
+          "cacheable/visible.txt": "visible\n",
+          "visible.txt": "visible\n"
+        }
+      },
+      "query": "cache/a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    }
+  ]
+}

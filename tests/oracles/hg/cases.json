@@ -1,0 +1,934 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip:fixtures/non_git_contract.json",
+  "cases": [
+    {
+      "id": "hg.default-regex",
+      "profile": "hg",
+      "dimension": "matching",
+      "setup": {
+        "files": {
+          ".hgignore": "\\.tmp$\n"
+        }
+      },
+      "query": "a/b.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-case-sensitive",
+      "profile": "hg",
+      "dimension": "path-case",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nMixed.TMP\n"
+        }
+      },
+      "query": "mixed.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-undecodable-byte-pattern",
+      "profile": "hg",
+      "dimension": "path-encoding",
+      "setup": {
+        "files": {},
+        "files_bytes_hex": {
+          ".hgignore": "73796e7461783a20676c6f620a626164ff2e746d700a"
+        }
+      },
+      "query": "bad\udcff.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.inline-comment",
+      "profile": "hg",
+      "dimension": "lexing",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n*.tmp # comment\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.escaped-hash",
+      "profile": "hg",
+      "dimension": "lexing",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nfoo\\#bar\n"
+        }
+      },
+      "query": "foo#bar",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.trailing-tab",
+      "profile": "hg",
+      "dimension": "whitespace-and-escapes",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nfoo\t\n"
+        }
+      },
+      "query": "foo",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-trailing-spaces-are-trimmed",
+      "profile": "hg",
+      "dimension": "whitespace-and-escapes",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nfoo   \n"
+        }
+      },
+      "query": "foo",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.regexp-trailing-spaces-are-significant",
+      "profile": "hg",
+      "dimension": "whitespace-and-escapes",
+      "setup": {
+        "files": {
+          ".hgignore": "^foo   $\n"
+        }
+      },
+      "query": "foo   ",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.crlf-line-endings",
+      "profile": "hg",
+      "dimension": "byte-line-boundaries",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\r\n*.tmp\r\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.utf8-bom-before-regexp",
+      "profile": "hg",
+      "dimension": "byte-line-boundaries",
+      "setup": {
+        "files": {
+          ".hgignore": "\ufeff.*\\.tmp$\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-escaped-trailing-space",
+      "profile": "hg",
+      "dimension": "whitespace-and-escapes",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nfoo\\ \n"
+        }
+      },
+      "query": "foo ",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.leading-space",
+      "profile": "hg",
+      "dimension": "whitespace-and-escapes",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n foo\n"
+        }
+      },
+      "query": "foo",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.no-negation",
+      "profile": "hg",
+      "dimension": "lexing",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n*.tmp\n!keep.tmp\n"
+        }
+      },
+      "query": "keep.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.rootglob-scope",
+      "profile": "hg",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: rootglob\nconfig/*.local\n"
+        }
+      },
+      "query": "other/config/x.local",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.include-no-rebase",
+      "profile": "hg",
+      "dimension": "source-inclusion",
+      "setup": {
+        "files": {
+          ".hgignore": "include:config/rules\n",
+          "config/rules": "syntax: glob\nbuild/file\n"
+        }
+      },
+      "query": "build/file",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.include-current-root-not-source-dir",
+      "profile": "hg",
+      "dimension": "source-inclusion",
+      "setup": {
+        "files": {
+          ".hgignore": "include:config/rules\n",
+          "config/rules": "syntax: rootglob\nbuild/file\n"
+        }
+      },
+      "query": "build/file",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.subinclude-rebases",
+      "profile": "hg",
+      "dimension": "source-inclusion",
+      "setup": {
+        "files": {
+          ".hgignore": "subinclude:pkg/rules\n",
+          "pkg/rules": "rootglob:build/*\n"
+        }
+      },
+      "query": "pkg/build/file",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.subinclude-does-not-escape",
+      "profile": "hg",
+      "dimension": "source-inclusion",
+      "setup": {
+        "files": {
+          ".hgignore": "subinclude:pkg/.hgignore\n",
+          "pkg/.hgignore": "syntax: glob\n../build/file\n"
+        }
+      },
+      "query": "build/file",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.nested-file-not-autoloaded",
+      "profile": "hg",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: rootglob\na.tmp\n"
+        }
+      },
+      "query": "pkg/a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.included-syntax-resets",
+      "profile": "hg",
+      "dimension": "source-inclusion",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\ninclude:rules\n",
+          "rules": "syntax: regexp\n.*\\.tmp$\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.brace-alternation",
+      "profile": "hg",
+      "dimension": "glob-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n*.{py,txt}\n"
+        }
+      },
+      "query": "a.py",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.embedded-double-star",
+      "profile": "hg",
+      "dimension": "glob-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\ntest/**.txt\n"
+        }
+      },
+      "query": "test/deep/a.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.question-crosses-separator-source-profile",
+      "profile": "hg",
+      "dimension": "glob-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\na?b\n"
+        }
+      },
+      "query": "a/b",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.unclosed-bracket",
+      "profile": "hg",
+      "dimension": "glob-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nfile[\n"
+        }
+      },
+      "query": "file[",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.parent-match",
+      "profile": "hg",
+      "dimension": "directory-matching",
+      "setup": {
+        "files": {
+          ".hgignore": "^cache$\n"
+        }
+      },
+      "query": "cache/file",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.config-extra-files",
+      "profile": "hg",
+      "dimension": "configuration",
+      "setup": {
+        "files": {
+          "<home>/work.ignore": "syntax: glob\n*.tmp\n"
+        },
+        "config": {
+          "ui.ignore.work": "<home>/work.ignore"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.config-discovery-named-ignore-entries",
+      "profile": "hg",
+      "dimension": "configuration",
+      "setup": {
+        "files": {
+          "<home>/first.ignore": "^shared\\.tmp$\n",
+          "<home>/second.ignore": "^shared\\.tmp$\n"
+        },
+        "config": {
+          "ui.ignore.first": "<home>/first.ignore",
+          "ui.ignore.second": "<home>/second.ignore"
+        }
+      },
+      "query": "shared.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "policy_mode": "client-config"
+    },
+    {
+      "id": "hg.config-discovery-repository-config",
+      "profile": "hg",
+      "dimension": "configuration",
+      "setup": {
+        "files": {
+          ".hg/hgrc": "[ui]\nignore.workspace = workspace.ignore\n",
+          "workspace.ignore": "^workspace\\.tmp$\n"
+        }
+      },
+      "query": "workspace.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "policy_mode": "client-config"
+    },
+    {
+      "id": "hg.config-discovery-home-relative-path",
+      "profile": "hg",
+      "dimension": "configuration",
+      "setup": {
+        "files": {
+          "<home>/.project-ignore": "^home\\.tmp$\n"
+        },
+        "config": {
+          "ui.ignore.home": "~/.project-ignore"
+        }
+      },
+      "query": "home.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "policy_mode": "client-config"
+    },
+    {
+      "id": "hg.config-discovery-included-hgrc",
+      "profile": "hg",
+      "dimension": "configuration",
+      "setup": {
+        "files": {
+          ".hg/hgrc": "%include <home>/ignore-config.rc\n",
+          "<home>/ignore-config.rc": "[ui]\nignore.included = <home>/included.ignore\n",
+          "<home>/included.ignore": "^included\\.tmp$\n"
+        }
+      },
+      "query": "included.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "policy_mode": "client-config"
+    },
+    {
+      "id": "hg.invalid-syntax-warning",
+      "profile": "hg",
+      "dimension": "diagnostics",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: nonsense\n.*\\.tmp$\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": {
+        "ignored": true,
+        "diagnostic": "invalid syntax; previous syntax retained"
+      },
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.regex-inline-flags-newline",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "(?s)^a.*b$\n"
+        }
+      },
+      "query": "a\nb",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.regex-unanchored-search",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "foo\n"
+        }
+      },
+      "query": "xfooy",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.regex-start-anchor",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "^foo\n"
+        }
+      },
+      "query": "x/foo",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.regex-scoped-inline-flags",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "(?i-m:foo)\n"
+        }
+      },
+      "query": "FOO",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.include-cycle",
+      "profile": "hg",
+      "dimension": "source-inclusion",
+      "setup": {
+        "files": {
+          ".hgignore": "include:cycle\n",
+          "cycle": "include:cycle\n"
+        }
+      },
+      "query": "x",
+      "expected_candidate": {
+        "library_error": "include cycle"
+      },
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-escaped-star",
+      "profile": "hg",
+      "dimension": "glob-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nliteral\\*.tmp\n"
+        }
+      },
+      "query": "literal*.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-character-class",
+      "profile": "hg",
+      "dimension": "glob-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n[!a].tmp\n"
+        }
+      },
+      "query": "b.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-character-class-rejects",
+      "profile": "hg",
+      "dimension": "glob-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\n[!a].tmp\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.even-backslash-comment",
+      "profile": "hg",
+      "dimension": "whitespace-and-escapes",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nfoo\\\\#bar\n"
+        }
+      },
+      "query": "foo#bar",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.odd-backslash-comment",
+      "profile": "hg",
+      "dimension": "whitespace-and-escapes",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\nfoo\\\\\\#bar\n"
+        }
+      },
+      "query": "foo\\#bar",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.configured-ignore-source-order",
+      "profile": "hg",
+      "dimension": "configuration",
+      "setup": {
+        "files": {
+          "<home>/first.ignore": "shared\\.tmp$\n",
+          "<home>/second.ignore": "shared\\.tmp$\n"
+        },
+        "config": {
+          "ui.ignore.first": "<home>/first.ignore",
+          "ui.ignore.second": "<home>/second.ignore"
+        }
+      },
+      "query": "shared.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.glob-unicode-normalization-is-significant",
+      "profile": "hg",
+      "dimension": "path-normalization",
+      "setup": {
+        "files": {
+          ".hgignore": "syntax: glob\ncaf\u00e9.tmp\n"
+        }
+      },
+      "query": "cafe\u0301.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+    },
+    {
+      "id": "hg.include-symlink-outside-workspace",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:external.ignore\n"
+        },
+        "outside_files": {
+          ".oracle-outside/external.ignore": "syntax: glob\n*.tmp\n"
+        },
+        "symlinks": {
+          "external.ignore": "../.oracle-outside/external.ignore"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the native comparison for a symlinked include source outside the workspace.",
+      "expected_policy_source_outside_workspace": true,
+      "expected_policy_scope": "."
+    },
+    {
+      "id": "hg.include-missing-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:missing.ignore\n"
+        }
+      },
+      "query": "x.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "expected_policy_discovery_complete": false,
+      "expected_policy_diagnostics": [
+        "source-unavailable"
+      ]
+    },
+    {
+      "id": "hg.subinclude-missing-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "subinclude:missing/rules\n"
+        }
+      },
+      "query": "missing/x.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "expected_policy_discovery_complete": false,
+      "expected_policy_diagnostics": [
+        "source-unavailable"
+      ]
+    },
+    {
+      "id": "hg.configured-ignore-missing-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {},
+        "config": {
+          "ui.ignore.missing": "does-not-exist.ignore"
+        }
+      },
+      "query": "x.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "expected_policy_discovery_complete": false,
+      "expected_policy_diagnostics": [
+        "source-unavailable"
+      ]
+    },
+    {
+      "id": "hg.include-unreadable-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:rules.ignore\n",
+          "rules.ignore": "syntax: glob\n*.tmp\n"
+        },
+        "file_modes": {
+          "rules.ignore": 0
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "expected_policy_discovery_complete": false,
+      "expected_policy_diagnostics": [
+        "source-unavailable"
+      ]
+    }
+  ]
+}

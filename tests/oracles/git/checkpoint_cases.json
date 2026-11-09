@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-research-checkpoint.zip:git_probe_results.json",
+  "native_profile": "Git 2.47.3 on Linux x86_64",
+  "evidence_status": "native-observed",
+  "target_suite": "tests/test_git_checkpoint.py",
+  "cases": [
+    {
+      "id": "git.ignored-parent-blocks-exception",
+      "rules": "build/\n!build/keep.txt\n",
+      "path": "build/keep.txt",
+      "expected_rule_match": true,
+      "expected_native_ignored": true,
+      "membership": "untracked",
+      "no_index": true
+    },
+    {
+      "id": "git.ignored-contents-allow-exception",
+      "rules": "build/*\n!build/keep.txt\n",
+      "path": "build/keep.txt",
+      "expected_rule_match": false,
+      "expected_native_ignored": false,
+      "membership": "untracked",
+      "no_index": true
+    },
+    {
+      "id": "git.double-star-within-component-is-not-recursive",
+      "rules": "test/**.txt\n",
+      "path": "test/deep/a.txt",
+      "expected_rule_match": false,
+      "expected_native_ignored": false,
+      "membership": "untracked",
+      "no_index": true
+    },
+    {
+      "id": "git.double-star-directory-component-is-recursive",
+      "rules": "test/**/*.txt\n",
+      "path": "test/deep/a.txt",
+      "expected_rule_match": true,
+      "expected_native_ignored": true,
+      "membership": "untracked",
+      "no_index": true
+    },
+    {
+      "id": "git.later-exclusion-overrides-earlier-exception",
+      "rules": "!keep.tmp\n*.tmp\n",
+      "path": "keep.tmp",
+      "expected_rule_match": true,
+      "expected_native_ignored": true,
+      "membership": "untracked",
+      "no_index": true
+    },
+    {
+      "id": "git.tracked-file-respects-index-by-default",
+      "rules": "*.tmp\n",
+      "path": "keep.tmp",
+      "expected_rule_match": true,
+      "expected_native_ignored": false,
+      "membership": "tracked",
+      "no_index": false
+    },
+    {
+      "id": "git.tracked-file-matches-rule-with-no-index",
+      "rules": "*.tmp\n",
+      "path": "keep.tmp",
+      "expected_rule_match": true,
+      "expected_native_ignored": true,
+      "membership": "tracked",
+      "no_index": true
+    }
+  ]
+}

@@ -8,6 +8,9 @@ from ._policy import (
     IgnoreTraceMatch,
     IgnoreWalkEntry,
 )
+from ._schemes.breezy import BreezyIgnoreError, BreezyIgnorePolicy
+from ._schemes.darcs import DarcsBoringError, DarcsBoringPolicy
+from ._schemes.fossil import FossilIgnoreError, FossilIgnorePolicy
 from ._schemes.git import (
     GitIgnoreMatch,
     GitIgnoreMatcher,
@@ -19,20 +22,47 @@ from ._schemes.git import (
     matches_gitignore,
     parse_gitignore,
 )
+from ._schemes.mercurial import MercurialIgnoreError, MercurialIgnorePolicy
+from ._schemes.perforce import PerforceIgnoreError, PerforceIgnorePolicy
+from ._schemes.subversion import SubversionIgnoreError, SubversionIgnorePolicy
 from ._selection import (
+    BreezyPolicyConfig,
+    BreezyPolicySelection,
+    DarcsPolicyConfig,
+    DarcsPolicySelection,
+    FossilPolicyConfig,
+    FossilPolicySelection,
     GitPolicyConfig,
     GitPolicySelection,
+    MercurialPolicyConfig,
+    MercurialPolicySelection,
+    PerforcePolicyConfig,
+    PerforcePolicySelection,
     PolicyConfig,
     PolicySelection,
     PortablePolicyConfig,
     PortablePolicySelection,
     PreferGitPolicyConfig,
+    SubversionPolicyConfig,
+    SubversionPolicySelection,
     select_policy,
 )
 from ._walker import IgnoreWalker
 from .errors import GitIgnoreError, GitIgnoreParseError
 
 __all__ = [
+    "BreezyIgnoreError",
+    "BreezyIgnorePolicy",
+    "BreezyPolicyConfig",
+    "BreezyPolicySelection",
+    "DarcsBoringError",
+    "DarcsBoringPolicy",
+    "DarcsPolicyConfig",
+    "DarcsPolicySelection",
+    "FossilIgnoreError",
+    "FossilIgnorePolicy",
+    "FossilPolicyConfig",
+    "FossilPolicySelection",
     "GitIgnoreError",
     "GitIgnoreMatch",
     "GitIgnoreMatcher",
@@ -49,12 +79,24 @@ __all__ = [
     "IgnoreTraceMatch",
     "IgnoreWalkEntry",
     "IgnoreWalker",
+    "MercurialIgnoreError",
+    "MercurialIgnorePolicy",
+    "MercurialPolicyConfig",
+    "MercurialPolicySelection",
+    "PerforceIgnoreError",
+    "PerforceIgnorePolicy",
+    "PerforcePolicyConfig",
+    "PerforcePolicySelection",
     "PolicyConfig",
     "PolicySelection",
     "PortablePolicyConfig",
     "PortablePolicySelection",
     "PreferGitPolicyConfig",
     "RegexMatcher",
+    "SubversionIgnoreError",
+    "SubversionIgnorePolicy",
+    "SubversionPolicyConfig",
+    "SubversionPolicySelection",
     "is_gitignored",
     "matches_gitignore",
     "parse_gitignore",

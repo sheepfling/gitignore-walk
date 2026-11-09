@@ -1,0 +1,1744 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip:vcs-ignore-implementation-research/fixtures/native_git.json",
+  "source_profile": "git-2.47.3-tested-linux; other versions must re-run",
+  "native_capture_profiles": [
+    "Git 2.47.3 on Linux x86_64 (handoff)"
+  ],
+  "case_count": 79,
+  "assertion_count": 78,
+  "observation_only_count": 1,
+  "cases": [
+    {
+      "id": "git.empty",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.comment",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "#a.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.blank",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "\n\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.inline_hash_literal",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo#bar\n"
+        },
+        {
+          "path": "foo#bar",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo#bar",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.escaped_hash",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "\\#foo\n"
+        },
+        {
+          "path": "#foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "#foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.escaped_bang",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "\\!foo\n"
+        },
+        {
+          "path": "!foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "!foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.leading_space_significant",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": " foo\n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.leading_space_filename",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": " foo\n"
+        },
+        {
+          "path": " foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": " foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.leading_space_before_hash",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": " #foo\n"
+        },
+        {
+          "path": " #foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": " #foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.trailing_ascii_space_trim",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo  \n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.escaped_trailing_space",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo\\ \n"
+        },
+        {
+          "path": "foo ",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo ",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.escaped_trailing_space_not_plain",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo\\ \n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.trailing_tab_significant",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo\t\n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.trailing_tab_filename",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo\t\n"
+        },
+        {
+          "path": "foo\t",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo\t",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.crlf",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo\r\n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.utf8_bom_start",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "\ufefffoo\n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.utf8_bom_midstream",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "bar\n\ufefffoo\n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.missing_final_newline",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "lexing-and-record-boundaries",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.basename_any_depth",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "a/b/data.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/b/data.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.wildcard_dotfiles",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": ".tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": ".tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.star_no_separator",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a/*.tmp\n"
+        },
+        {
+          "path": "a/b/file.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/b/file.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.star_direct",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a/*.tmp\n"
+        },
+        {
+          "path": "a/file.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/file.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.anchor_root",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "/foo\n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.anchor_not_nested",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "/foo\n"
+        },
+        {
+          "path": "a/foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/foo",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.middle_slash_source_relative",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a/foo\n"
+        },
+        {
+          "path": "b/a/foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "b/a/foo",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.nested_source_anchor",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": "pkg/.gitignore",
+          "content": "/foo\n"
+        },
+        {
+          "path": "pkg/foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "pkg/foo",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.nested_source_anchor_not_deeper",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": "pkg/.gitignore",
+          "content": "/foo\n"
+        },
+        {
+          "path": "pkg/sub/foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "pkg/sub/foo",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.basename_directory_descendant",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "cache\n"
+        },
+        {
+          "path": "a/cache/item.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/cache/item.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.directory_suffix_not_regular_file",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "cache/\n"
+        },
+        {
+          "path": "cache",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "cache",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.directory_suffix_directory",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "cache/\n"
+        }
+      ],
+      "query": "cache",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "directories": [
+        "cache"
+      ],
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.directory_suffix_descendant",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "cache/\n"
+        },
+        {
+          "path": "a/cache/file",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/cache/file",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_middle_zero",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a/**/file\n"
+        },
+        {
+          "path": "a/file",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/file",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_middle_many",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a/**/file\n"
+        },
+        {
+          "path": "a/b/c/file",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/b/c/file",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_prefix_root",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "**/file\n"
+        },
+        {
+          "path": "file",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "file",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_prefix_deep",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "**/file\n"
+        },
+        {
+          "path": "a/b/file",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/b/file",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_tail_directory_not_self",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a/**\n"
+        }
+      ],
+      "query": "a",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "directories": [
+        "a"
+      ],
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_tail_descendant",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a/**\n"
+        },
+        {
+          "path": "a/b/c",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a/b/c",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_in_component_not_recursive",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "test/**.txt\n"
+        },
+        {
+          "path": "test/deep/a.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "test/deep/a.txt",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.double_star_in_component_direct",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "test/**.txt\n"
+        },
+        {
+          "path": "test/a.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "test/a.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.question_single",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "f?.txt\n"
+        },
+        {
+          "path": "fa.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "fa.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.question_not_many",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "f?.txt\n"
+        },
+        {
+          "path": "fab.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "fab.txt",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.bracket_range",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "f[0-9].txt\n"
+        },
+        {
+          "path": "f3.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "f3.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.bracket_not_bang",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "f[!0-9].txt\n"
+        },
+        {
+          "path": "fa.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "fa.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.bracket_negation_caret",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "f[^0-9].txt\n"
+        },
+        {
+          "path": "fa.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "fa.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.brace_not_expanded",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.{py,txt}\n"
+        },
+        {
+          "path": "foo.py",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo.py",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.brace_literal",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.{py,txt}\n"
+        },
+        {
+          "path": "foo.{py,txt}",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo.{py,txt}",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.unclosed_bracket_does_not_match_literal",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "file[\n"
+        },
+        {
+          "path": "file[",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "file[",
+      "expected_ignored": false,
+      "expectation_basis": "Corrected after native Git 2.47.3 first-run counterexample; see results/native_probes.initial.json",
+      "evidence_status": "native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.escaped_star",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "\\*.tmp\n"
+        },
+        {
+          "path": "*.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "*.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.escaped_star_not_wildcard",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "\\*.tmp\n"
+        },
+        {
+          "path": "x.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "x.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "pattern-matching-and-scope",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.last_exclusion_wins",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "!keep.tmp\n*.tmp\n"
+        },
+        {
+          "path": "keep.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "keep.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.last_exception_wins",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n!keep.tmp\n"
+        },
+        {
+          "path": "keep.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "keep.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "expected_pattern": "!keep.tmp",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.exception_without_exclusion",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "!keep.tmp\n"
+        },
+        {
+          "path": "keep.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "keep.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "expected_pattern": "!keep.tmp",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.parent_barrier",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "build/\n!build/keep.txt\n"
+        },
+        {
+          "path": "build/keep.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "build/keep.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "expected_pattern": "build/",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.contents_allow_exception",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "build/*\n!build/keep.txt\n"
+        },
+        {
+          "path": "build/keep.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "build/keep.txt",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.unignore_parent_then_child",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "build/\n!build/\nbuild/*\n!build/keep.txt\n"
+        },
+        {
+          "path": "build/keep.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "build/keep.txt",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.child_rules_cannot_rescue_ignored_parent",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "build/\n"
+        },
+        {
+          "path": "build/.gitignore",
+          "content": "!keep.txt\n"
+        },
+        {
+          "path": "build/keep.txt",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "build/keep.txt",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.child_source_overrides_parent",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "pkg/.gitignore",
+          "content": "!keep.tmp\n"
+        },
+        {
+          "path": "pkg/keep.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "pkg/keep.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "expected_source": "pkg/.gitignore",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.deeper_child_source_wins",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "!*.tmp\n"
+        },
+        {
+          "path": "pkg/.gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "pkg/keep.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "pkg/keep.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "expected_source": "pkg/.gitignore",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "precedence-and-exceptions",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.info_exclude",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": ".git/info/exclude",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "expected_source": ".git/info/exclude",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "source-discovery-and-precedence",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.gitignore_over_info",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "!a.tmp\n"
+        },
+        {
+          "path": ".git/info/exclude",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "expected_source": ".gitignore",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "source-discovery-and-precedence",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.xdg_global",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "home_files": [
+        {
+          "path": ".config/git/ignore",
+          "content": "*.tmp\n"
+        }
+      ],
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "source-discovery-and-precedence",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.info_over_global",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": ".git/info/exclude",
+          "content": "!a.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "home_files": [
+        {
+          "path": ".config/git/ignore",
+          "content": "*.tmp\n"
+        }
+      ],
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "source-discovery-and-precedence",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.gitignore_over_global",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "!a.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "home_files": [
+        {
+          "path": ".config/git/ignore",
+          "content": "*.tmp\n"
+        }
+      ],
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "source-discovery-and-precedence",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.custom_config_excludes",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": "custom.ignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "config": {
+        "core.excludesFile": "custom.ignore"
+      },
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "source-discovery-and-precedence",
+      "target_suite": "tests/test_git_research.py::test_native_git_policy_matches_configured_research_case",
+      "coverage_status": "native-policy test passed; tracked membership intentionally separate"
+    },
+    {
+      "id": "git.case_sensitive",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "A.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "configuration-and-index-membership",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.configured_case_insensitive",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "A.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "config": {
+        "core.ignoreCase": "true"
+      },
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "configuration-and-index-membership",
+      "target_suite": "tests/test_git_research.py::test_native_git_policy_matches_configured_research_case",
+      "coverage_status": "native-policy test passed; tracked membership intentionally separate"
+    },
+    {
+      "id": "git.tracked_default",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "before_tracking": [
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "track": [
+        "a.tmp"
+      ],
+      "no_index": false,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "configuration-and-index-membership",
+      "target_suite": "tests/test_git_research.py::test_native_policy_reports_rule_match_even_for_tracked_paths",
+      "coverage_status": "native-policy test passed; tracked membership intentionally separate"
+    },
+    {
+      "id": "git.tracked_no_index",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "before_tracking": [
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "track": [
+        "a.tmp"
+      ],
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "configuration-and-index-membership",
+      "target_suite": "tests/test_git_research.py::test_native_policy_reports_rule_match_even_for_tracked_paths",
+      "coverage_status": "native-policy test passed; tracked membership intentionally separate"
+    },
+    {
+      "id": "git.newline_filename",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "line\nbreak.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "line\nbreak.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.backslash_filename_literal",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "a\\\\b\n"
+        },
+        {
+          "path": "a\\b",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a\\b",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.cwd_subdirectory_ancestor_rule",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "sub/a.tmp",
+          "content": "fixture\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "cwd": "sub",
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.symlink_ignore_file_not_followed",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": "rules.txt",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "pkg/a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "pkg/a.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "symlinks": [
+        {
+          "path": "pkg/.gitignore",
+          "target": "../rules.txt"
+        }
+      ],
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.symlink_not_directory_rule",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "link/\n"
+        },
+        {
+          "path": "keep",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "link",
+      "expected_ignored": false,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "symlinks": [
+        {
+          "path": "link",
+          "target": "real",
+          "directory": true
+        }
+      ],
+      "directories": [
+        "real"
+      ],
+      "posix_only": true,
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.worktree_common_excludes",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": ""
+        },
+        {
+          "path": ".git/info/exclude",
+          "content": "*.tmp\n"
+        },
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "a.tmp",
+      "expected_ignored": true,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "worktree": true,
+      "worktree_files": [
+        {
+          "path": "a.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "evidence_status": "documented-and-native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_native_git_policy_matches_configured_research_case",
+      "coverage_status": "native-policy test passed; tracked membership intentionally separate"
+    },
+    {
+      "id": "git.non_utf8_path",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "*.tmp\n"
+        },
+        {
+          "path_base64": "YmFk/y50bXA=",
+          "content": "x"
+        }
+      ],
+      "query_base64": "YmFk/y50bXA=",
+      "expected_ignored": true,
+      "posix_only": true,
+      "evidence_status": "native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_non_utf8_path_candidate",
+      "coverage_status": "portable-policy test; Linux-only, skipped on macOS"
+    },
+    {
+      "id": "git.observe_unicode_question_under_c_locale",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "?.tmp\n"
+        },
+        {
+          "path": "\u00e9.tmp",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "\u00e9.tmp",
+      "expected_ignored": false,
+      "expectation_basis": "Observed Git 2.47.3/Linux/LC_ALL=C, then asserted on rerun",
+      "posix_only": true,
+      "evidence_status": "native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.observe_trailing_backslash",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo\\\n"
+        },
+        {
+          "path": "foo\\",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo\\",
+      "expected_ignored": false,
+      "expectation_basis": "Observed Git 2.47.3/Linux, then asserted on rerun",
+      "posix_only": true,
+      "evidence_status": "native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    },
+    {
+      "id": "git.observe_nul_in_rule",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "foo\u0000bar\n"
+        },
+        {
+          "path": "foo",
+          "content": "fixture\n"
+        }
+      ],
+      "query": "foo",
+      "expected_ignored": null,
+      "expectation_basis": "Git manual/source, unless noted; independently checked by native oracle",
+      "posix_only": true,
+      "evidence_status": "observation-only",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "observation-only; see coverage-status field",
+      "coverage_status": "observation-only; preserve as safe-divergence research"
+    },
+    {
+      "id": "git.two_questions_match_utf8_two_bytes",
+      "files": [
+        {
+          "path": ".gitignore",
+          "content": "??.tmp\n"
+        },
+        {
+          "path": "\u00e9.tmp",
+          "content": "x"
+        }
+      ],
+      "query": "\u00e9.tmp",
+      "expected_ignored": true,
+      "posix_only": true,
+      "expectation_basis": "Byte-matching hypothesis independently checked on rerun",
+      "evidence_status": "native-confirmed-candidate",
+      "target_area": "path-encoding-and-filesystem-edges",
+      "target_suite": "tests/test_git_research.py::test_portable_git_policy_matches_imported_research_case",
+      "coverage_status": "portable-policy test passed"
+    }
+  ],
+  "portable_coverage": {
+    "test_module": "tests/test_git_research.py",
+    "passed_cases": 72,
+    "deferred_assertion_cases": 0,
+    "platform_skipped_cases": 1,
+    "observation_only_cases": 1,
+    "native_evidence": "tests/oracles/git/results/git-2.47.3-linux-x86_64-research.json"
+  },
+  "native_policy_coverage": {
+    "test_module": "tests/test_git_research.py",
+    "config_and_worktree_cases": [
+      "git.custom_config_excludes",
+      "git.configured_case_insensitive",
+      "git.worktree_common_excludes"
+    ],
+    "tracked_case_contract": "GitStandardPolicy uses --no-index; both tracked probes report ignore-rule matching, while native default check-ignore reports index membership for git.tracked_default.",
+    "case_count": 5
+  }
+}

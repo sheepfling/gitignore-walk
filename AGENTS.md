@@ -12,8 +12,10 @@
 
 - `src/gitignore_walk/` contains the scheme-neutral policy contracts, resolver selection, and
   walker. Built-in dialect implementations live under `src/gitignore_walk/_schemes/<scheme>/`;
-  Git's portable and native implementations are in `_schemes/git/`.
-- `tests/test_policies.py` covers parser, matching, explanation, traversal, and Git behavior.
+  Git's portable and native implementations are in `_schemes/git/`, and Mercurial's portable
+  implementation is in `_schemes/mercurial/`.
+- `tests/test_policies.py` covers shared/Git behavior; `tests/test_mercurial.py` covers the initial
+  Mercurial policy against its captured oracle profile.
 - `scripts/ci.py` coordinates local checks and is also the entry point called by hosted CI.
 - `docs/validation.md` documents the pre-push command and verification scope.
 
@@ -77,6 +79,9 @@ results.
   selection unions, exhaustive resolver switch, exports, typing contract, and behavior tests as a
   unit. A fallback must not silently change ignore schemes. `IgnorePolicy` is the built-in walker
   seam, not a third-party scheme plugin API.
+- Keep Mercurial source behavior distinct: `.hgignore` and configured extra files use additive
+  rules, with scheme-specific `include` and `subinclude` scopes. Do not treat native oracle output as
+  proof of library behavior or mark a nonzero native query as a normal pass.
 - Keep type annotations compatible with Python 3.10 and pass strict Pyright.
 - Add or update focused tests in `tests/test_policies.py` when changing observable behavior.
 - Keep user-facing guidance in README/docs. Use this file for durable repository conventions and

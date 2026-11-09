@@ -76,6 +76,8 @@ def parse_gitignore(lines: Iterable[str], *, source: str) -> GitIgnoreSpec:
     patterns: list[GitIgnorePattern] = []
     try:
         for source_line, line in enumerate(lines, start=1):
+            if source_line == 1:
+                line = line.removeprefix("\ufeff")
             pattern = parse_pattern_line(line, source_line=source_line)
             if pattern is not None:
                 patterns.append(pattern)

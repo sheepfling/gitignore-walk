@@ -1,0 +1,487 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip:fixtures/non_git_contract.json",
+  "cases": [
+    {
+      "id": "brz.exception-priority",
+      "profile": "breezy",
+      "dimension": "reducer",
+      "setup": {
+        "files": {
+          ".bzrignore": "!keep.tmp\n*.tmp\n"
+        }
+      },
+      "query": "keep.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.strong-exclude",
+      "profile": "breezy",
+      "dimension": "reducer",
+      "setup": {
+        "files": {
+          ".bzrignore": "!!keep.tmp\n!keep.tmp\n"
+        }
+      },
+      "query": "keep.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.trailing-slash-not-directory-only",
+      "profile": "breezy",
+      "dimension": "normalization",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache/\n"
+        },
+        "kind": "regular-file"
+      },
+      "query": "cache",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.basename-depth",
+      "profile": "breezy",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          ".bzrignore": "*.tmp\n"
+        }
+      },
+      "query": "a/b.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.slash-rooted",
+      "profile": "breezy",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          ".bzrignore": "a/*.tmp\n"
+        }
+      },
+      "query": "b/a/x.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.spaces-preserved",
+      "profile": "breezy",
+      "dimension": "lexing",
+      "setup": {
+        "files": {
+          ".bzrignore": "foo \n"
+        }
+      },
+      "query": "foo",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-LOAD-SOURCE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.nested-not-autoload",
+      "profile": "breezy",
+      "dimension": "discovery",
+      "setup": {
+        "files": {
+          ".bzrignore": "",
+          "sub/.bzrignore": "*.tmp\n"
+        }
+      },
+      "query": "sub/a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.parent-exception-traversal",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          "cache/drop.tmp": "still ignored\n"
+        }
+      },
+      "query": "cache/keep.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.regex-path-match",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^cache/.*\\.tmp$"]
+      },
+      "query": "cache/a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured path-scoped RE matching on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-path-anchor-miss",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^cache/.*\\.tmp$"]
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured anchored RE non-matches on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-named-capture-match",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:(?P<name>foo)\\.tmp"]
+      },
+      "query": "foo.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured named-capture normalization and matching on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-restrictions",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": [
+          "RE:.*\\.tmp",
+          "RE:(?P<x>a)",
+          "!!RE:.*\\.tmp"
+        ]
+      },
+      "query": null,
+      "expected_candidate": null,
+      "evidence_status": "open-question",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS",
+        "BRZ-GLOB-SOURCE"
+      ],
+      "release_gate": "Pin supported RE subset, anchoring, flags and !!RE normalization; do not silently use arbitrary Python regex."
+    },
+    {
+      "id": "brz.missing-user-file-defaults",
+      "profile": "breezy",
+      "dimension": "defaults",
+      "setup": {
+        "global_ignore_file_exists": false
+      },
+      "query": "defaults.pyc",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-LOAD-SOURCE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.regex-named-capture",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": [
+          "RE:(?P<x>a)"
+        ]
+      },
+      "query": "a",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.regex-numbered-capture",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": [
+          "RE:(a)"
+        ]
+      },
+      "query": "a",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.regex-non-capture",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": [
+          "RE:(?:a)"
+        ]
+      },
+      "query": "a",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.regex-invalid-pattern",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": [
+          "RE:("
+        ]
+      },
+      "query": "a",
+      "expected_candidate": null,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Capture exact ignored/status and exit behavior under isolated Breezy 3.3.24."
+    },
+    {
+      "id": "brz.global-ignore-source",
+      "profile": "breezy",
+      "dimension": "discovery",
+      "setup": {
+        "global_ignore_file_content": "*.global\n"
+      },
+      "query": "nested/cache.global",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.regex-global-inline-flag-rejected",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:(?i)foo"]
+      },
+      "query": "foo",
+      "expected_candidate": null,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Retain the captured invalid-pattern error for global inline regex flags."
+    },
+    {
+      "id": "brz.global-exception-beats-local-ignore",
+      "profile": "breezy",
+      "dimension": "reducer",
+      "setup": {
+        "files": {
+          ".bzrignore": "*.tmp\n"
+        },
+        "global_ignore_file_content": "!keep.tmp\n"
+      },
+      "query": "keep.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.local-exception-beats-global-ignore",
+      "profile": "breezy",
+      "dimension": "reducer",
+      "setup": {
+        "files": {
+          ".bzrignore": "!keep.tmp\n"
+        },
+        "global_ignore_file_content": "*.tmp\n"
+      },
+      "query": "keep.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.parent-exception-target-absent",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache\n!cache/keep.tmp\n"
+        }
+      },
+      "query": "cache/drop.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Captured against Breezy 3.3.24 on macOS arm64 and Linux aarch64; see results."
+    },
+    {
+      "id": "brz.walk-ignored-parent-exception-opens-siblings",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache\n!cache/keep.tmp\n",
+          "cache/drop.tmp": "ignored parent sibling\n",
+          "cache/sibling.tmp": "visible through traversal\n"
+        }
+      },
+      "query": "cache/sibling.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE"],
+      "release_gate": "Verify the native status walk enters an ignored parent for a child exception."
+    },
+    {
+      "id": "brz.strong-exclusion-exact-path-does-not-match-descendant",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache\n!cache/keep.tmp\n!!cache/private\n",
+          "cache/private/secret.tmp": "strongly excluded\n"
+        }
+      },
+      "query": "cache/private/secret.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured: the exact strong path pattern does not match a descendant of that path."
+    },
+    {
+      "id": "brz.strong-path-descendant",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache\n!!cache/private\n",
+          "cache/private/secret.tmp": "strongly excluded parent candidate\n"
+        }
+      },
+      "query": "cache/private/secret.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured: an exact strong path pattern does not match its descendants."
+    },
+    {
+      "id": "brz.strong-path-descendant-globstar",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".bzrignore": "cache\n!!cache/private/**\n",
+          "cache/private/secret.tmp": "strongly excluded child candidate\n"
+        }
+      },
+      "query": "cache/private/secret.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Captured: an explicit `/**` pattern matches the descendant path."
+    },
+    {
+      "id": "brz.brz-home-global-ignore",
+      "profile": "breezy",
+      "dimension": "discovery",
+      "setup": {
+        "brz_home": true,
+        "brz_home_ignore_file_content": "*.homeprobe\n"
+      },
+      "query": "nested/cache.homeprobe",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-CONFIGURATION",
+        "BRZ-IGNORE"
+      ],
+      "release_gate": "Capture custom BRZ_HOME global ignore discovery on both native profiles."
+    }
+  ]
+}

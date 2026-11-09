@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "source": "Apache Subversion 1.8 repository-dictated configuration docs and local probes",
+  "cases": [
+    {
+      "id": "svn.properties-local-and-inherited",
+      "dimension": "property-scope-runtime-config-and-membership",
+      "setup": {
+        "directories": ["pkg", "pkg/deeper"],
+        "properties": {
+          ".": {
+            "svn:ignore": "*.tmp\n",
+            "svn:global-ignores": "*.cache\nCase.Only\n"
+          },
+          "pkg": {
+            "svn:ignore": "local.tmp\n!keep.tmp\n",
+            "svn:global-ignores": "*.deep\n"
+          }
+        },
+        "versioned_files": {
+          "tracked.tmp": "tracked\n"
+        },
+        "unversioned_files": {
+          "root.tmp": "ignored by local property\n",
+          "ignored.tmp/child.txt": "inside an ignored directory\n",
+          "root.cache": "ignored by inheritable property\n",
+          "case.only": "case-sensitive glob probe\n",
+          "visible.txt": "visible\n",
+          "configured.oracle-default": "ignored by isolated runtime config\n",
+          "pkg/child.tmp": "not inherited from svn:ignore\n",
+          "pkg/child.cache": "ignored by inherited svn:global-ignores\n",
+          "pkg/deeper/a.deep": "ignored by nested inherited property\n",
+          "pkg/keep.tmp": "Subversion properties do not use Git negation\n",
+          "pkg/local.tmp": "ignored by nested svn:ignore\n",
+          "pkg/visible.txt": "visible\n"
+        }
+      },
+      "expected_ignored_paths": [
+        "configured.oracle-default",
+        "ignored.tmp",
+        "pkg/child.cache",
+        "pkg/deeper/a.deep",
+        "pkg/local.tmp",
+        "root.cache",
+        "root.tmp"
+      ],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.sparse-empty-directory-property",
+      "dimension": "sparse-working-copy-property-discovery",
+      "setup": {
+        "directories": ["pkg"],
+        "properties": {
+          "pkg": {
+            "svn:ignore": "*.tmp\n"
+          }
+        },
+        "versioned_files": {
+          "pkg/tracked.tmp": "versioned before sparse depth is reduced\n"
+        },
+        "sparse_depths": {
+          "pkg": "empty"
+        },
+        "unversioned_files": {
+          "pkg/loose.tmp": "ignored by the sparse directory property\n",
+          "pkg/visible.txt": "not ignored\n"
+        }
+      },
+      "expected_ignored_paths": ["pkg/loose.tmp"],
+      "expected_status_paths": ["pkg/loose.tmp", "pkg/visible.txt"],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.sparse-excluded-directory-does-not-descend",
+      "dimension": "sparse-working-copy-traversal-boundary",
+      "setup": {
+        "directories": ["pkg"],
+        "properties": {
+          "pkg": {
+            "svn:ignore": "*.tmp\n"
+          }
+        },
+        "versioned_files": {
+          "pkg/tracked.tmp": "versioned before sparse depth is excluded\n"
+        },
+        "sparse_depths": {
+          "pkg": "exclude"
+        },
+        "unversioned_files": {
+          "pkg/loose.tmp": "not visible beneath an excluded directory\n",
+          "pkg/visible.txt": "also not enumerated by native status\n"
+        }
+      },
+      "expected_ignored_paths": [],
+      "expected_status_paths": ["pkg"],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.walk-nested-working-copy-boundary",
+      "dimension": "working-copy-boundary",
+      "setup": {
+        "unversioned_files": {
+          "visible.txt": "parent working-copy file\n"
+        },
+        "nested_working_copies": {
+          "child": {
+            "unversioned_files": {
+              "nested.txt": "nested working-copy file\n",
+              "nested.tmp": "nested ignored candidate\n"
+            }
+          }
+        }
+      },
+      "expected_ignored_paths": [],
+      "expected_status_paths": ["child", "visible.txt"],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.walk-descends-into-externals",
+      "dimension": "external-working-copy-traversal",
+      "setup": {
+        "repository_directories": ["empty"],
+        "properties": {
+          ".": {
+            "svn:externals": "^/empty ext\n-r 1 ^/empty ext-operative\n^/empty@1 ext-peg\n../empty ext-parent\n<repository_url>/empty ext-absolute\n<repository_path>/empty ext-server-root"
+          }
+        },
+        "unversioned_files": {
+          "visible.txt": "parent working-copy file\n"
+        },
+        "external_files": {
+          "ext/external.txt": "external file\n",
+          "ext/ignored.tmp": "external ignore candidate\n",
+          "ext-operative/operative.txt": "operative revision external\n",
+          "ext-peg/peg.txt": "peg revision external\n",
+          "ext-parent/parent.txt": "parent-relative external\n",
+          "ext-absolute/absolute.txt": "absolute URL external\n",
+          "ext-server-root/server-root.txt": "server-root URL external\n"
+        }
+      },
+      "expected_ignored_paths": [],
+      "expected_status_paths": [
+        "ext",
+        "ext/external.txt",
+        "ext/ignored.tmp",
+        "ext-operative",
+        "ext-operative/operative.txt",
+        "ext-peg",
+        "ext-peg/peg.txt",
+        "ext-parent",
+        "ext-parent/parent.txt",
+        "ext-absolute",
+        "ext-absolute/absolute.txt",
+        "ext-server-root",
+        "ext-server-root/server-root.txt",
+        "visible.txt"
+      ],
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "svn.walk-scheme-relative-external",
+      "dimension": "external-working-copy-scheme-relative-url",
+      "setup": {
+        "repository_protocol": "svnserve",
+        "repository_directories": ["empty"],
+        "properties": {
+          ".": {
+            "svn:externals": "//<repository_authority>/empty ext-scheme-relative"
+          }
+        },
+        "unversioned_files": {
+          "visible.txt": "parent working-copy file\n"
+        },
+        "external_files": {
+          "ext-scheme-relative/scheme-relative.txt": "scheme-relative URL external\n"
+        }
+      },
+      "expected_ignored_paths": [],
+      "expected_status_paths": [
+        "ext-scheme-relative",
+        "ext-scheme-relative/scheme-relative.txt",
+        "visible.txt"
+      ],
+      "evidence_status": "native-observed"
+    }
+  ]
+}

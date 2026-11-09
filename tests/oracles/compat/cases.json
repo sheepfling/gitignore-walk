@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip and isolated Sapling/Jujutsu mode probes",
+  "probe_files": {
+    ".gitignore": "*.tmp\n",
+    ".hgignore": "syntax: glob\n*.log\n",
+    ".jjignore": "*.log\n",
+    "a.tmp": "tmp\n",
+    "b.log": "log\n",
+    "visible.txt": "visible\n"
+  },
+  "query_files": ["a.tmp", "b.log", "visible.txt"],
+  "expected_included": ["b.log", "visible.txt"],
+  "expected_ignored": ["a.tmp"],
+  "profiles": [
+    {"id": "sapling.git-mode", "vcs": "sapling", "mode": "git"},
+    {"id": "sapling.sl-mode", "vcs": "sapling", "mode": "sl"},
+    {"id": "jj.colocated", "vcs": "jujutsu", "mode": "colocated"},
+    {"id": "jj.noncolocated", "vcs": "jujutsu", "mode": "noncolocated"}
+  ]
+}

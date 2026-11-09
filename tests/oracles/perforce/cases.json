@@ -1,0 +1,478 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip and isolated local P4 client/server probes",
+  "cases": [
+    {
+      "id": "p4.p4config-discovers-ignore-source",
+      "dimension": "configuration-discovery",
+      "setup": {
+        "P4CONFIG": ".p4config",
+        "files": {
+          ".p4config": "P4IGNORE=custom.ignore\n",
+          "custom.ignore": "*.tmp\n"
+        }
+      },
+      "query": "build/a.tmp",
+      "query_cwd": "parent",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Capture P4IGNORE inherited from an isolated P4CONFIG file on all available profiles."
+    },
+    {
+      "id": "p4.p4config-ignore-overrides-environment",
+      "dimension": "configuration-precedence",
+      "setup": {
+        "P4CONFIG": ".p4config",
+        "P4IGNORE": "environment.ignore",
+        "files": {
+          ".p4config": "P4IGNORE=config.ignore\n",
+          "config.ignore": "*.tmp\n",
+          "environment.ignore": ""
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Confirm that P4CONFIG P4IGNORE overrides the process environment value."
+    },
+    {
+      "id": "p4.nested-p4config-selects-nested-ignore-source",
+      "dimension": "configuration-scope",
+      "setup": {
+        "P4CONFIG": ".p4config",
+        "files": {
+          ".p4config": "P4IGNORE=root.ignore\n",
+          "root.ignore": "*.tmp\n",
+          "sub/.p4config": "P4IGNORE=child.ignore\n",
+          "sub/child.ignore": "!*.tmp\n"
+        }
+      },
+      "query": "sub/a.tmp",
+      "query_cwd": "parent",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Determine whether a nested P4CONFIG replaces or supplements parent P4IGNORE configuration."
+    },
+    {
+      "id": "p4.basename-star",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "*.tmp\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.basename-star-matches-nested-file",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          ".p4ignore": "*.tmp\n",
+          "nested/a.tmp": "ignored\n"
+        }
+      },
+      "query": "nested/a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.single-star-stops-at-separator",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "test/*.txt\n"
+        }
+      },
+      "query": "test/deep/a.txt",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.double-star-crosses-separator",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "test/**.txt\n"
+        }
+      },
+      "query": "test/deep/a.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.directory-only-does-not-match-file",
+      "dimension": "file-kind",
+      "setup": {
+        "files": {
+          ".p4ignore": "build/\n"
+        }
+      },
+      "query": "build",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.directory-only-ignores-descendants",
+      "dimension": "file-kind",
+      "setup": {
+        "files": {
+          ".p4ignore": "build/\n",
+          "build/child.txt": "ignored\n"
+        }
+      },
+      "query": "build/child.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.negation-overrides-earlier-rule",
+      "dimension": "reducer",
+      "setup": {
+        "files": {
+          ".p4ignore": "*.tmp\n!keep.tmp\n"
+        }
+      },
+      "query": "keep.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.explicit-list-replaces-default-file",
+      "dimension": "discovery",
+      "setup": {
+        "P4IGNORE": "custom.ignore",
+        "files": {
+          ".p4ignore": "*.tmp\n",
+          "custom.ignore": ""
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.ignore-file-is-not-implicitly-ignored",
+      "dimension": "defaults",
+      "setup": {
+        "files": {
+          ".p4ignore": ""
+        }
+      },
+      "query": ".p4ignore",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
+    },
+    {
+      "id": "p4.list-and-depth-order",
+      "dimension": "precedence",
+      "setup": {
+        "P4IGNORE": "first;second",
+        "files": {
+          "first": "*.tmp\n",
+          "second": "!*.tmp\n",
+          "sub/first": "*.tmp\n"
+        }
+      },
+      "query": "sub/a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on macOS arm64, Debian 13 x86_64, and Ubuntu 24.04 x86_64 with P4/P4 Server 2026.1; broader versions and platforms remain unverified."
+    },
+    {
+      "id": "p4.first-listed-file-ignore-wins",
+      "dimension": "precedence",
+      "setup": {
+        "P4IGNORE": "first;second",
+        "files": {
+          "first": "*.tmp\n",
+          "second": "!*.tmp\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on macOS arm64, Debian 13 x86_64, and Ubuntu 24.04 x86_64 with P4/P4 Server 2026.1; broader versions and platforms remain unverified."
+    },
+    {
+      "id": "p4.first-listed-file-exception-wins",
+      "dimension": "precedence",
+      "setup": {
+        "P4IGNORE": "first;second",
+        "files": {
+          "first": "!*.tmp\n",
+          "second": "*.tmp\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on macOS arm64, Debian 13 x86_64, and Ubuntu 24.04 x86_64 with P4/P4 Server 2026.1; broader versions and platforms remain unverified."
+    },
+    {
+      "id": "p4.default-ignore-file-order-first-wins",
+      "dimension": "precedence",
+      "setup": {
+        "files": {
+          ".p4ignore": "*.tmp\n",
+          "p4ignore.txt": "!*.tmp\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on macOS arm64, Debian 13 x86_64, and Ubuntu 24.04 x86_64 with P4/P4 Server 2026.1; broader versions and platforms remain unverified."
+    },
+    {
+      "id": "p4.default-ignore-file-order-first-exception-wins",
+      "dimension": "precedence",
+      "setup": {
+        "files": {
+          ".p4ignore": "!*.tmp\n",
+          "p4ignore.txt": "*.tmp\n"
+        }
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on macOS arm64, Debian 13 x86_64, and Ubuntu 24.04 x86_64 with P4/P4 Server 2026.1; broader versions and platforms remain unverified."
+    },
+    {
+      "id": "p4.nested-ignore-overrides-root-exception",
+      "dimension": "precedence",
+      "setup": {
+        "P4IGNORE": "first",
+        "files": {
+          "first": "!*.tmp\n",
+          "sub/first": "*.tmp\n"
+        }
+      },
+      "query": "sub/a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on macOS arm64, Debian 13 x86_64, and Ubuntu 24.04 x86_64 with P4/P4 Server 2026.1; broader versions and platforms remain unverified."
+    },
+    {
+      "id": "p4.nested-exception-overrides-root-ignore",
+      "dimension": "precedence",
+      "setup": {
+        "P4IGNORE": "first",
+        "files": {
+          "first": "*.tmp\n",
+          "sub/first": "!*.tmp\n"
+        }
+      },
+      "query": "sub/a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on macOS arm64, Debian 13 x86_64, and Ubuntu 24.04 x86_64 with P4/P4 Server 2026.1; broader versions and platforms remain unverified."
+    },
+    {
+      "id": "p4.parent-directory-exception",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".p4ignore": "build/\n!build/keep\n"
+        }
+      },
+      "query": "build/keep",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Captured on P4/P4 Server 2026.1/macOS arm64; this add-preview result does not alone prove general walker behavior."
+    },
+    {
+      "id": "p4.leading-slash-anchors-to-ignore-file",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          ".p4ignore": "/config/*.tmp\n"
+        }
+      },
+      "query": "config/a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check that a leading slash anchors the rule at the ignore-file directory on the captured native profiles."
+    },
+    {
+      "id": "p4.leading-slash-rejects-nested-match",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          ".p4ignore": "/config/*.tmp\n"
+        }
+      },
+      "query": "nested/config/a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check that a leading slash prevents a same-suffix match below the ignore-file directory on the captured native profiles."
+    },
+    {
+      "id": "p4.leading-slash-uses-nested-ignore-scope",
+      "dimension": "scope",
+      "setup": {
+        "files": {
+          "sub/.p4ignore": "/config/*.tmp\n"
+        }
+      },
+      "query": "sub/config/a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Confirm root-anchored matching is relative to a nested P4IGNORE file, not the caller workspace root."
+    },
+    {
+      "id": "p4.default-p4config",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "P4CONFIG": ".p4config",
+        "files": {
+          ".p4config": ""
+        }
+      },
+      "query": ".p4config",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Capture the automatic P4CONFIG filename exclusion reported by `p4 ignores`."
+    },
+    {
+      "id": "p4.custom-p4config-name-is-default-ignored",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "P4CONFIG": "p4config.txt",
+        "files": {
+          "p4config.txt": ""
+        }
+      },
+      "query": "p4config.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Confirm the active P4CONFIG filename, including a customized name, is implicitly ignored."
+    },
+    {
+      "id": "p4-default-p4config-name-requires-matching-setting",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "P4CONFIG": "p4config.txt",
+        "files": {
+          ".p4config": ""
+        }
+      },
+      "query": ".p4config",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Confirm the default exclusion follows the configured P4CONFIG filename rather than hard-coding .p4config."
+    },
+    {
+      "id": "p4.default-p4root",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "files": {
+          ".p4root": ""
+        }
+      },
+      "query": ".p4root",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Capture the built-in P4ROOT path exclusion reported by `p4 ignores`."
+    },
+    {
+      "id": "p4.p4root-directory-descendant-inherits-default-ignore",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "files": {}
+      },
+      "query": "sub/.p4root/child",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Confirm a matching .p4root directory causes descendants to inherit the built-in ignore."
+    },
+    {
+      "id": "p4.p4config-exclusion-requires-setting",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "files": {
+          ".p4config": ""
+        }
+      },
+      "query": ".p4config",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Confirm the automatic P4CONFIG exclusion is active only when P4CONFIG is configured."
+    },
+    {
+      "id": "p4.default-p4config-exception-does-not-override",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "P4CONFIG": ".p4config",
+        "files": {
+          ".p4config": "",
+          ".p4ignore": "!/.p4config\n"
+        }
+      },
+      "query": ".p4config",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Confirm a user exception cannot override the native P4CONFIG default exclusion."
+    },
+    {
+      "id": "p4.default-p4config-case-sensitivity",
+      "dimension": "built-in-exclusions",
+      "setup": {
+        "P4CONFIG": ".p4config",
+        "files": {
+          ".p4config": "",
+          ".P4CONFIG": ""
+        }
+      },
+      "query": ".P4CONFIG",
+      "expected_candidate": null,
+      "expected_by_platform": {
+        "macos": true,
+        "linux": false
+      },
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Record the observed filesystem-dependent case behavior without collapsing the native platform profiles."
+    }
+  ]
+}

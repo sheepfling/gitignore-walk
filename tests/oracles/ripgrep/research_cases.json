@@ -1,0 +1,346 @@
+{
+  "schema_version": 1,
+  "source": "vcs-ignore-implementation-research.zip:vcs-ignore-implementation-research/fixtures/native_ripgrep.json",
+  "native_profile": "ripgrep 14.1.1 on Linux x86_64 (handoff)",
+  "case_count": 16,
+  "scope": "Optional scanner behavior; separate from Git-ignore policy and VCS selection.",
+  "cases": [
+    {
+      "id": "rg.baseline",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        }
+      ],
+      "expected_files": [
+        "x.probe"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "walk-baseline",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.gitignore",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".gitignore",
+          "content": "*.probe\n"
+        }
+      ],
+      "expected_files": [],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "source-precedence",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.ignore_over_git",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".gitignore",
+          "content": "*.probe\n"
+        },
+        {
+          "path": ".ignore",
+          "content": "!x.probe\n"
+        }
+      ],
+      "expected_files": [
+        "x.probe"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "source-precedence",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.rgignore_over_ignore",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "*.probe\n"
+        },
+        {
+          "path": ".rgignore",
+          "content": "!x.probe\n"
+        }
+      ],
+      "expected_files": [
+        "x.probe"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "source-precedence",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.rgignore_exclude_over_ignore_exception",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "!x.probe\n"
+        },
+        {
+          "path": ".rgignore",
+          "content": "*.probe\n"
+        }
+      ],
+      "expected_files": [],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "source-precedence",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.parent_higher_class_over_child_git",
+      "files": [
+        {
+          "path": "sub/x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "*.probe\n"
+        },
+        {
+          "path": "sub/.gitignore",
+          "content": "!x.probe\n"
+        }
+      ],
+      "expected_files": [],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "source-precedence",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.parent_rg_over_child_ignore",
+      "files": [
+        {
+          "path": "sub/x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".rgignore",
+          "content": "!*.probe\n"
+        },
+        {
+          "path": "sub/.ignore",
+          "content": "*.probe\n"
+        }
+      ],
+      "expected_files": [
+        "sub/x.probe"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "source-precedence",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.deeper_same_class",
+      "files": [
+        {
+          "path": "sub/x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "*.probe\n"
+        },
+        {
+          "path": "sub/.ignore",
+          "content": "!x.probe\n"
+        }
+      ],
+      "expected_files": [
+        "sub/x.probe"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "source-precedence",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.gitignore_requires_repo",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".gitignore",
+          "content": "*.probe\n"
+        }
+      ],
+      "expected_files": [
+        "x.probe"
+      ],
+      "git_repository": false,
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "repository-discovery",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.gitignore_no_require_git",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".gitignore",
+          "content": "*.probe\n"
+        }
+      ],
+      "expected_files": [],
+      "git_repository": false,
+      "flags": [
+        "--hidden",
+        "--no-require-git"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "repository-discovery",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.ignore_outside_repo",
+      "files": [
+        {
+          "path": "x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "*.probe\n"
+        }
+      ],
+      "expected_files": [],
+      "git_repository": false,
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "repository-discovery",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.hidden_default_separate",
+      "files": [
+        {
+          "path": ".hidden.probe",
+          "content": "x"
+        },
+        {
+          "path": "visible.probe",
+          "content": "x"
+        }
+      ],
+      "expected_files": [
+        "visible.probe"
+      ],
+      "flags": [],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "hidden-file-selection",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.hidden_flag_separate",
+      "files": [
+        {
+          "path": ".hidden.probe",
+          "content": "x"
+        },
+        {
+          "path": "visible.probe",
+          "content": "x"
+        }
+      ],
+      "expected_files": [
+        ".hidden.probe",
+        "visible.probe"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "hidden-file-selection",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.parent_directory_blocks",
+      "files": [
+        {
+          "path": "sub/x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "sub/\n!sub/x.probe\n"
+        }
+      ],
+      "expected_files": [],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "parent-pruning-and-exceptions",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.parent_contents_exception",
+      "files": [
+        {
+          "path": "sub/x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "sub/*\n!sub/x.probe\n"
+        }
+      ],
+      "expected_files": [
+        "sub/x.probe"
+      ],
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "parent-pruning-and-exceptions",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    },
+    {
+      "id": "rg.ancestor_ignore_above_scan_root",
+      "files": [
+        {
+          "path": "sub/x.probe",
+          "content": "x"
+        },
+        {
+          "path": ".ignore",
+          "content": "*.probe\n"
+        }
+      ],
+      "expected_files": [],
+      "cwd": "sub",
+      "git_repository": false,
+      "evidence_status": "native-observed; Git-ignore precedence is ripgrep-specific",
+      "target_area": "scan-root-boundary",
+      "target_suite": "tests/test_ripgrep_research.py::test_ripgrep_research_inventory_matches_native_capture",
+      "coverage_status": "native capture imported; no scanner policy is implemented"
+    }
+  ]
+}

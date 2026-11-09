@@ -1,0 +1,247 @@
+{
+  "schema_version": 1,
+  "captured_at_utc": "2026-11-08T06:23:24.867175+00:00",
+  "purpose": "Native ripgrep research fixtures; NOT tests of gitignore-walk.",
+  "platform": "Linux-6.18.57-x86_64-with-glibc2.41",
+  "python": "3.13.5",
+  "version": "ripgrep 14.1.1",
+  "counts": {
+    "passed": 16,
+    "failed": 0,
+    "observed": 0,
+    "skipped": 0,
+    "error": 0
+  },
+  "results": [
+    {
+      "case_id": "rg.baseline",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "x.probe"
+      ],
+      "observed": [
+        "x.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.gitignore",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [],
+      "observed": [],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.ignore_over_git",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "x.probe"
+      ],
+      "observed": [
+        "x.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.rgignore_over_ignore",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "x.probe"
+      ],
+      "observed": [
+        "x.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.rgignore_exclude_over_ignore_exception",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [],
+      "observed": [],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.parent_higher_class_over_child_git",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [],
+      "observed": [],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.parent_rg_over_child_ignore",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "sub/x.probe"
+      ],
+      "observed": [
+        "sub/x.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.deeper_same_class",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "sub/x.probe"
+      ],
+      "observed": [
+        "sub/x.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.gitignore_requires_repo",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "x.probe"
+      ],
+      "observed": [
+        "x.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.gitignore_no_require_git",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [],
+      "observed": [],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.ignore_outside_repo",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [],
+      "observed": [],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.hidden_default_separate",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "visible.probe"
+      ],
+      "observed": [
+        "visible.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.hidden_flag_separate",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        ".hidden.probe",
+        "visible.probe"
+      ],
+      "observed": [
+        ".hidden.probe",
+        "visible.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.parent_directory_blocks",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [],
+      "observed": [],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.parent_contents_exception",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [
+        "sub/x.probe"
+      ],
+      "observed": [
+        "sub/x.probe"
+      ],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    },
+    {
+      "case_id": "rg.ancestor_ignore_above_scan_root",
+      "tool": "ripgrep",
+      "status": "passed",
+      "expected": [],
+      "observed": [],
+      "source": null,
+      "line": null,
+      "pattern": null,
+      "stdout_base64": null,
+      "detail": null
+    }
+  ]
+}

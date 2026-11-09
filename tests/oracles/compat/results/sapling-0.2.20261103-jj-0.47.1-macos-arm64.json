@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "cases": [
+    {
+      "id": "sapling.git-mode",
+      "vcs": "sapling",
+      "mode": "git",
+      "version": "Sapling 0.2.20261103-145137",
+      "included": [
+        "b.log",
+        "visible.txt"
+      ],
+      "ignored": [
+        "a.tmp"
+      ],
+      "status_exit_code": 0,
+      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? visible.txt\u0000I a.tmp\u0000",
+      "status_stderr": "",
+      "metadata_markers": [
+        ".git"
+      ],
+      "isolated_temporary_workspace": true,
+      "candidate_matches": true
+    },
+    {
+      "id": "sapling.sl-mode",
+      "vcs": "sapling",
+      "mode": "sl",
+      "version": "Sapling 0.2.20261103-145137",
+      "included": [
+        "b.log",
+        "visible.txt"
+      ],
+      "ignored": [
+        "a.tmp"
+      ],
+      "status_exit_code": 0,
+      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? visible.txt\u0000I a.tmp\u0000",
+      "status_stderr": "",
+      "metadata_markers": [
+        ".sl"
+      ],
+      "isolated_temporary_workspace": true,
+      "candidate_matches": true
+    },
+    {
+      "id": "jj.colocated",
+      "vcs": "jujutsu",
+      "mode": "colocated",
+      "version": "jj 0.47.1",
+      "included": [
+        "b.log",
+        "visible.txt"
+      ],
+      "ignored": [
+        "a.tmp"
+      ],
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA visible.txt\nWorking copy  (@) : vrottrrr 07b0e529 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "metadata_markers": [
+        ".git",
+        ".jj"
+      ],
+      "isolated_temporary_workspace": true,
+      "status_snapshots_disposable_workspace": true,
+      "candidate_matches": true
+    },
+    {
+      "id": "jj.noncolocated",
+      "vcs": "jujutsu",
+      "mode": "noncolocated",
+      "version": "jj 0.47.1",
+      "included": [
+        "b.log",
+        "visible.txt"
+      ],
+      "ignored": [
+        "a.tmp"
+      ],
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA visible.txt\nWorking copy  (@) : mtskoznp 64c16fd6 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "metadata_markers": [
+        ".jj"
+      ],
+      "isolated_temporary_workspace": true,
+      "status_snapshots_disposable_workspace": true,
+      "candidate_matches": true
+    }
+  ]
+}

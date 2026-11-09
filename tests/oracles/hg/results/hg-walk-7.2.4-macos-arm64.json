@@ -1,0 +1,465 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "executable": "/opt/homebrew/bin/hg",
+    "version": "Mercurial Distributed SCM (version 7.2.4)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "runner_python": "3.12.16"
+  },
+  "cases": [
+    {
+      "id": "hg.walk.ignored-parent-descendants",
+      "dimension": "walk-pruning",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "cache/nested/first.tmp",
+        "cache/second.txt"
+      ],
+      "observed_ignored_paths": [
+        "cache/nested/first.tmp",
+        "cache/second.txt"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "cacheable/visible.txt",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "cacheable/visible.txt",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache/nested/first.tmp",
+            "cache/second.txt"
+          ],
+          "stdout": "cache/nested/first.tmp\u0000cache/second.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "e002c8217c2d45fd046bdd5b9af42ff0788fa4753e0b4aa965d4ae138526c0de",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "cacheable/visible.txt",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000cacheable/visible.txt\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "30d6b3cb6df9827bf02ca2431fda0394436bad076b10a86cf0142abd14bca986",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.include-source",
+      "dimension": "walk-source-discovery",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "nested/one.tmp",
+        "one.tmp"
+      ],
+      "observed_ignored_paths": [
+        "nested/one.tmp",
+        "one.tmp"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "nested/keep.txt",
+        "rules",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "nested/keep.txt",
+        "rules",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "nested/one.tmp",
+            "one.tmp"
+          ],
+          "stdout": "nested/one.tmp\u0000one.tmp\u0000",
+          "stderr": "",
+          "stdout_sha256": "1ee7782559dabf1c22eaf6834eb502d44abc267c6b2ce318fc2c415f82cf6a7d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "nested/keep.txt",
+            "rules",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000nested/keep.txt\u0000rules\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "c09b41f7284c5dcbb8d37e5b6e06741ef221b793c3cbdf998076e92332a76961",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.subinclude-scope",
+      "dimension": "walk-source-scope",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/build/one.tmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/build/one.tmp"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "other/build/two.tmp",
+        "pkg/keep.txt",
+        "pkg/rules"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "other/build/two.tmp",
+        "pkg/keep.txt",
+        "pkg/rules"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/build/one.tmp"
+          ],
+          "stdout": "pkg/build/one.tmp\u0000",
+          "stderr": "",
+          "stdout_sha256": "9f865dfb3d153d0090430bee30f7d3dafa010baf03c63fe543e27a8cd5addc70",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "other/build/two.tmp",
+            "pkg/keep.txt",
+            "pkg/rules"
+          ],
+          "stdout": ".hgignore\u0000other/build/two.tmp\u0000pkg/keep.txt\u0000pkg/rules\u0000",
+          "stderr": "",
+          "stdout_sha256": "65bdfc30f09a5685442013069f85f7e19cd869dd3ccae1b64dfc12acb1a2596c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.tracked-ignore-membership",
+      "dimension": "membership-boundary",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "unknown.tmp"
+      ],
+      "observed_ignored_paths": [
+        "unknown.tmp"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [
+        "tracked.tmp"
+      ],
+      "observations": {
+        "ignored": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "unknown.tmp"
+          ],
+          "stdout": "unknown.tmp\u0000",
+          "stderr": "",
+          "stdout_sha256": "713e1f909ef77f6a678f97ce3beefb32f4d77cf540916fb40f865a5044d02e70",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore"
+          ],
+          "stdout": ".hgignore\u0000",
+          "stderr": "",
+          "stdout_sha256": "306297f774be67efa5dae8125ffee0c18856221eae36a1399584c908d9e90063",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [
+        0
+      ],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.nested-workspace-boundary",
+      "dimension": "walk-workspace-boundary",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [],
+          "stdout": "",
+          "stderr": "",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "3081ecca89643a566696cc8f76c1d0c05459a53d1d2290201c61a2808d208051",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [
+        0
+      ],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.repeated-include-distinct-scopes",
+      "dimension": "walk-source-cache-scope",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "one/first.tmp",
+        "two/second.tmp"
+      ],
+      "observed_ignored_paths": [
+        "one/first.tmp",
+        "two/second.tmp"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "one/rules",
+        "one/visible.txt",
+        "root.tmp",
+        "shared/rules",
+        "two/rules",
+        "two/visible.txt",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "one/rules",
+        "one/visible.txt",
+        "root.tmp",
+        "shared/rules",
+        "two/rules",
+        "two/visible.txt",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "one/first.tmp",
+            "two/second.tmp"
+          ],
+          "stdout": "one/first.tmp\u0000two/second.tmp\u0000",
+          "stderr": "",
+          "stdout_sha256": "21da7ce7d700c493b844571eb1dc9138ae4196edc0bbbb1c7423daf26fd72d6d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "/opt/homebrew/bin/hg",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "one/rules",
+            "one/visible.txt",
+            "root.tmp",
+            "shared/rules",
+            "two/rules",
+            "two/visible.txt",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000one/rules\u0000one/visible.txt\u0000root.tmp\u0000shared/rules\u0000two/rules\u0000two/visible.txt\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "c036e25ec5b8250d763003dc7d7c05899d5fbf9327dd444286702ba7e1688421",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    }
+  ]
+}

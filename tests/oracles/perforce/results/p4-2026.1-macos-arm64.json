@@ -1,0 +1,1253 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "p4": "/opt/homebrew/bin/p4",
+    "p4d": "/opt/homebrew/bin/p4d",
+    "version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "runner_python": "3.12.16"
+  },
+  "cases": [
+    {
+      "id": "p4.p4config-discovers-ignore-source",
+      "dimension": "configuration-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "build/a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "build/a.tmp"
+      ],
+      "command_cwd": "build",
+      "exit_code": 1,
+      "stdout": "//depot/build/a.tmp#1 - opened for add\n<workspace>/build/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/build/a.tmp ignored by <workspace>/custom.ignore:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=custom.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:58555\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-mgbyd_b6/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-mgbyd_b6/trust\nP4USER=super\nP4_127.0.0.1:58555_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.p4config-ignore-overrides-environment",
+      "dimension": "configuration-precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/a.tmp#1 - opened for add\n<workspace>/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/a.tmp ignored by <workspace>/config.ignore:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=config.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:58565\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ugpvbhjj/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ugpvbhjj/trust\nP4USER=super\nP4_127.0.0.1:58565_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.nested-p4config-selects-nested-ignore-source",
+      "dimension": "configuration-scope",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "sub/a.tmp",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "sub/a.tmp"
+      ],
+      "command_cwd": "sub",
+      "exit_code": 0,
+      "stdout": "//depot/sub/a.tmp#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/sub/a.tmp not ignored by <workspace>/sub/child.ignore:1:!*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/sub/.p4config', '<workspace>/.p4config' )\nP4IGNORE=child.ignore (config '<workspace>/sub/.p4config')\nP4PORT=127.0.0.1:58574\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-xkjl51tp/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-xkjl51tp/trust\nP4USER=super\nP4_127.0.0.1:58574_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.basename-star",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/a.tmp#1 - opened for add\n<workspace>/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/a.tmp ignored by <workspace>/.p4ignore:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.basename-star-matches-nested-file",
+      "dimension": "scope",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "nested/a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "nested/a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/nested/a.tmp#1 - opened for add\n<workspace>/nested/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "nested/a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/nested/a.tmp ignored by <workspace>/.p4ignore:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.single-star-stops-at-separator",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "test/deep/a.txt",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "test/deep/a.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/test/deep/a.txt#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "test/deep/a.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/test/deep/a.txt not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.double-star-crosses-separator",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "test/deep/a.txt",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "test/deep/a.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/test/deep/a.txt#1 - opened for add\n<workspace>/test/deep/a.txt - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "test/deep/a.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/test/deep/a.txt ignored by <workspace>/.p4ignore:1:test/**.txt\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.directory-only-does-not-match-file",
+      "dimension": "file-kind",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "build",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "build"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/build#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "build"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/build not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.directory-only-ignores-descendants",
+      "dimension": "file-kind",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "build/child.txt",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "build/child.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/build/child.txt#1 - opened for add\n<workspace>/build/child.txt - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "build/child.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/build/child.txt ignored by <workspace>/.p4ignore:1:build/\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.negation-overrides-earlier-rule",
+      "dimension": "reducer",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "keep.tmp",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "keep.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/keep.tmp#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "keep.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/keep.tmp not ignored by <workspace>/.p4ignore:2:!keep.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.explicit-list-replaces-default-file",
+      "dimension": "discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/a.tmp#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/a.tmp not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.ignore-file-is-not-implicitly-ignored",
+      "dimension": "defaults",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": ".p4ignore",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        ".p4ignore"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/.p4ignore#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          ".p4ignore"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/.p4ignore not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.list-and-depth-order",
+      "dimension": "precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "sub/a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "sub/a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/sub/a.tmp#1 - opened for add\n<workspace>/sub/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "sub/a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/sub/a.tmp ignored by <workspace>/sub/first:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.first-listed-file-ignore-wins",
+      "dimension": "precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/a.tmp#1 - opened for add\n<workspace>/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/a.tmp ignored by <workspace>/first:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.first-listed-file-exception-wins",
+      "dimension": "precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/a.tmp#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/a.tmp not ignored by <workspace>/first:1:!*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.default-ignore-file-order-first-wins",
+      "dimension": "precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/a.tmp#1 - opened for add\n<workspace>/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/a.tmp ignored by <workspace>/.p4ignore:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.default-ignore-file-order-first-exception-wins",
+      "dimension": "precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/a.tmp#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/a.tmp not ignored by <workspace>/.p4ignore:1:!*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.nested-ignore-overrides-root-exception",
+      "dimension": "precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "sub/a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "sub/a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/sub/a.tmp#1 - opened for add\n<workspace>/sub/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "sub/a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/sub/a.tmp ignored by <workspace>/sub/first:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.nested-exception-overrides-root-ignore",
+      "dimension": "precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "sub/a.tmp",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "sub/a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/sub/a.tmp#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "sub/a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/sub/a.tmp not ignored by <workspace>/sub/first:1:!*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.parent-directory-exception",
+      "dimension": "traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "build/keep",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "build/keep"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/build/keep#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "build/keep"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/build/keep not ignored by <workspace>/.p4ignore:2:!build/keep\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.leading-slash-anchors-to-ignore-file",
+      "dimension": "scope",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "config/a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "config/a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/config/a.tmp#1 - opened for add\n<workspace>/config/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "config/a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/config/a.tmp ignored by <workspace>/.p4ignore:1:/config/*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.leading-slash-rejects-nested-match",
+      "dimension": "scope",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "nested/config/a.tmp",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "nested/config/a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/nested/config/a.tmp#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "nested/config/a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/nested/config/a.tmp not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.leading-slash-uses-nested-ignore-scope",
+      "dimension": "scope",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "sub/config/a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "sub/config/a.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/sub/config/a.tmp#1 - opened for add\n<workspace>/sub/config/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "sub/config/a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/sub/config/a.tmp ignored by <workspace>/sub/.p4ignore:1:/config/*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.default-p4config",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": ".p4config",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        ".p4config"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/.p4config#1 - opened for add\n<workspace>/.p4config - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          ".p4config"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/.p4config ignored by - defaults:1:**/.p4config\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:58750\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-skajxlt4/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-skajxlt4/trust\nP4USER=super\nP4_127.0.0.1:58750_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.custom-p4config-name-is-default-ignored",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "p4config.txt",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "p4config.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/p4config.txt#1 - opened for add\n<workspace>/p4config.txt - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "p4config.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/p4config.txt ignored by - defaults:1:**/p4config.txt\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config '<workspace>/p4config.txt' )\nP4PORT=127.0.0.1:58761\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-nqnlz19p/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-nqnlz19p/trust\nP4USER=super\nP4_127.0.0.1:58761_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4-default-p4config-name-requires-matching-setting",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": ".p4config",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        ".p4config"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/.p4config#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          ".p4config"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/.p4config not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config 'noconfig')\nP4PORT=127.0.0.1:58770\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ve8spkex/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ve8spkex/trust\nP4USER=super\nP4_127.0.0.1:58770_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.default-p4root",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": ".p4root",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        ".p4root"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/.p4root#1 - opened for add\n<workspace>/.p4root - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          ".p4root"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/.p4root ignored by - defaults:1:**/.p4root\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.p4root-directory-descendant-inherits-default-ignore",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "sub/.p4root/child",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "sub/.p4root/child"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/sub/.p4root/child#1 - opened for add\n<workspace>/sub/.p4root/child - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "sub/.p4root/child"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/sub/.p4root/child ignored by - defaults:1:**/.p4root\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.p4config-exclusion-requires-setting",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": ".p4config",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        ".p4config"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/.p4config#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          ".p4config"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/.p4config not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.default-p4config-exception-does-not-override",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": ".p4config",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        ".p4config"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/.p4config#1 - opened for add\n<workspace>/.p4config - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          ".p4config"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/.p4config ignored by - defaults:1:**/.p4config\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:58803\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ahmf9voh/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ahmf9voh/trust\nP4USER=super\nP4_127.0.0.1:58803_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    },
+    {
+      "id": "p4.default-p4config-case-sensitivity",
+      "dimension": "built-in-exclusions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": ".P4CONFIG",
+      "expected_candidate": null,
+      "observed_ignored": true,
+      "candidate_matches": null,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        ".P4CONFIG"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/.P4CONFIG#1 - opened for add\n<workspace>/.P4CONFIG - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          ".P4CONFIG"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/.P4CONFIG ignored by - defaults:1:**/.p4config\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": 0,
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:58813\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-0z032sam/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-0z032sam/trust\nP4USER=super\nP4_127.0.0.1:58813_CHARSET=none (enviro)\n",
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace"
+    }
+  ]
+}

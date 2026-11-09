@@ -10,8 +10,14 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal, NoReturn, TypeAlias, TypeGuard, overload
 
+from ._schemes.breezy import BreezyIgnorePolicy
+from ._schemes.darcs import DarcsBoringPolicy
+from ._schemes.fossil import FossilIgnorePolicy
 from ._schemes.git import GitIgnorePolicy, GitStandardPolicy
 from ._schemes.git.portable import _DEFAULT_INITIAL_EXCLUDES
+from ._schemes.mercurial import MercurialIgnorePolicy
+from ._schemes.perforce import PerforceIgnorePolicy
+from ._schemes.subversion import SubversionIgnorePolicy
 from ._util import is_windows
 from .errors import GitIgnoreError
 
@@ -71,8 +77,147 @@ class PreferGitPolicyConfig:
     timeout: float = 30.0
 
 
+@dataclass(frozen=True, slots=True)
+class MercurialPolicyConfig:
+    """Request portable evaluation of Mercurial ignore rules.
+
+    Attributes:
+        ignore_files: Additional ignore files, such as files configured with Mercurial's
+            ``ui.ignore`` setting. Relative paths are resolved from the Mercurial workspace root.
+        read_client_config: Ask ``hg config`` to discover the effective ``ui.ignore`` files.
+        hg_executable: Mercurial executable used only when ``read_client_config`` is enabled.
+        environment: Complete environment for configuration discovery, or the current environment.
+        timeout: Maximum configuration-discovery time in seconds.
+        initial_excludes: Walker baseline exclusions, defaulting to Mercurial's ``.hg`` metadata.
+    """
+
+    mode: Literal["mercurial"] = field(default="mercurial", init=False)
+    ignore_files: Sequence[str | os.PathLike[str]] = ()
+    read_client_config: bool = False
+    hg_executable: str = "hg"
+    environment: Mapping[str, str] | None = None
+    timeout: float = 30.0
+    initial_excludes: Sequence[str] = (".hg",)
+
+
+@dataclass(frozen=True, slots=True)
+class PerforcePolicyConfig:
+    """Request portable P4IGNORE evaluation for a caller-selected workspace root.
+
+    Attributes:
+        p4ignore: Optional semicolon-delimited list overriding ``P4IGNORE`` from the environment.
+            When neither is set, the evaluator checks `.p4ignore` and `p4ignore.txt`.
+        environment: Optional complete environment replacing the process environment. The current
+            evaluator reads ``P4IGNORE`` only unless ``read_client_config`` is enabled.
+        read_client_config: Ask the P4 client for effective ``P4IGNORE`` settings at each target.
+        p4_executable: P4 client used for optional ``p4 set`` configuration discovery.
+        timeout: Maximum duration in seconds for each P4 configuration query.
+        initial_excludes: Hard walker baseline exclusions, defaulting to none.
+    """
+
+    mode: Literal["perforce"] = field(default="perforce", init=False)
+    p4ignore: str | None = None
+    environment: Mapping[str, str] | None = None
+    read_client_config: bool = False
+    p4_executable: str = "p4"
+    timeout: float = 30.0
+    initial_excludes: Sequence[str] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class SubversionPolicyConfig:
+    """Request native discovery of Subversion working-copy ignore properties.
+
+    Attributes:
+        svn_executable: Subversion client used to discover working-copy properties.
+        config_dir: Optional runtime configuration directory passed to the native client. Its
+            ``config`` file overrides standard config sources; without it, standard system and
+            per-user files are discovered from ``environment``.
+        environment: Optional complete environment passed to ``svn``.
+        timeout: Maximum duration in seconds for each Subversion command.
+        global_ignores: Additional runtime ``global-ignores`` patterns supplied by the caller.
+        initial_excludes: Walker baseline exclusions, defaulting to Subversion's ``.svn`` metadata.
+    """
+
+    mode: Literal["subversion"] = field(default="subversion", init=False)
+    svn_executable: str = "svn"
+    config_dir: str | os.PathLike[str] | None = None
+    environment: Mapping[str, str] | None = None
+    timeout: float = 30.0
+    global_ignores: Sequence[str] = ()
+    initial_excludes: Sequence[str] = (".svn",)
+
+
+@dataclass(frozen=True, slots=True)
+class FossilPolicyConfig:
+    """Request Fossil's effective ``ignore-glob`` setting for a checkout.
+
+    Attributes:
+        fossil_executable: Executable name or path used to query Fossil settings.
+        environment: Optional complete environment passed to Fossil subprocesses.
+        timeout: Maximum duration in seconds for each Fossil subprocess.
+        initial_excludes: Additional walker baseline exclusions.
+    """
+
+    mode: Literal["fossil"] = field(default="fossil", init=False)
+    fossil_executable: str = "fossil"
+    environment: Mapping[str, str] | None = None
+    timeout: float = 30.0
+    initial_excludes: Sequence[str] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class BreezyPolicyConfig:
+    """Request Breezy's native default and working-tree ignore rules.
+
+    Attributes:
+        brz_executable: Breezy client used to query built-in default rules.
+        environment: Optional complete environment passed to Breezy and used to locate global
+            ignore configuration. Include PATH when ``brz_executable`` is not absolute.
+        global_ignore_file: Optional explicit user ignore file overriding standard discovery.
+        timeout: Maximum duration for the native default-rule query.
+        initial_excludes: Walker baseline exclusions, defaulting to Breezy's ``.bzr`` metadata.
+    """
+
+    mode: Literal["breezy"] = field(default="breezy", init=False)
+    brz_executable: str = "brz"
+    environment: Mapping[str, str] | None = None
+    global_ignore_file: str | os.PathLike[str] | None = None
+    timeout: float = 30.0
+    initial_excludes: Sequence[str] = (".bzr",)
+
+
+@dataclass(frozen=True, slots=True)
+class DarcsPolicyConfig:
+    """Request native, membership-aware Darcs boring-file decisions.
+
+    Attributes:
+        darcs_executable: Darcs client used to query add candidates and managed paths.
+        environment: Optional complete environment passed to Darcs. It controls home-directory
+            preference discovery as well as process settings.
+        timeout: Maximum duration in seconds for each native query.
+        initial_excludes: Walker baseline exclusions, defaulting to Darcs' ``_darcs`` metadata.
+    """
+
+    mode: Literal["darcs"] = field(default="darcs", init=False)
+    darcs_executable: str = "darcs"
+    environment: Mapping[str, str] | None = None
+    timeout: float = 30.0
+    initial_excludes: Sequence[str] = ("_darcs",)
+
+
 #: Discriminated configuration union accepted by :func:`select_policy`.
-PolicyConfig: TypeAlias = PortablePolicyConfig | GitPolicyConfig | PreferGitPolicyConfig
+PolicyConfig: TypeAlias = (
+    PortablePolicyConfig
+    | GitPolicyConfig
+    | PreferGitPolicyConfig
+    | MercurialPolicyConfig
+    | PerforcePolicyConfig
+    | SubversionPolicyConfig
+    | FossilPolicyConfig
+    | BreezyPolicyConfig
+    | DarcsPolicyConfig
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -110,8 +255,118 @@ class GitPolicySelection:
     fallback_reason: None = None
 
 
+@dataclass(frozen=True, slots=True)
+class MercurialPolicySelection:
+    """Selection of the portable Mercurial ignore evaluator.
+
+    Attributes:
+        mode: Always ``"mercurial"`` for this scheme selection.
+        backend: The Python implementation of Mercurial ignore semantics.
+        policy: Policy used for queries and traversal.
+        fallback_reason: Always ``None``; there is no cross-scheme fallback.
+    """
+
+    mode: Literal["mercurial"] = field(default="mercurial", init=False)
+    backend: Literal["mercurial-python"] = field(default="mercurial-python", init=False)
+    policy: MercurialIgnorePolicy
+    fallback_reason: None = None
+
+
+@dataclass(frozen=True, slots=True)
+class PerforcePolicySelection:
+    """Selection of the portable P4IGNORE evaluator.
+
+    Attributes:
+        mode: Always ``"perforce"`` for this scheme selection.
+        backend: The local Python P4IGNORE evaluator.
+        policy: Policy used for queries and traversal.
+        fallback_reason: Always ``None``; there is no cross-scheme fallback.
+    """
+
+    mode: Literal["perforce"] = field(default="perforce", init=False)
+    backend: Literal["perforce-python"] = field(default="perforce-python", init=False)
+    policy: PerforceIgnorePolicy
+    fallback_reason: None = None
+
+
+@dataclass(frozen=True, slots=True)
+class SubversionPolicySelection:
+    """Selection of the native-property-discovery Subversion policy.
+
+    Attributes:
+        mode: Always ``"subversion"`` for this scheme selection.
+        backend: The native Subversion property-discovery implementation.
+        policy: Policy used for queries and traversal.
+        fallback_reason: Always ``None``; there is no cross-scheme fallback.
+    """
+
+    mode: Literal["subversion"] = field(default="subversion", init=False)
+    backend: Literal["subversion-native-properties"] = field(
+        default="subversion-native-properties", init=False
+    )
+    policy: SubversionIgnorePolicy
+    fallback_reason: None = None
+
+
+@dataclass(frozen=True, slots=True)
+class FossilPolicySelection:
+    """Selection of the Fossil effective-setting policy.
+
+    Attributes:
+        mode: Always ``"fossil"`` for this scheme selection.
+        backend: The Fossil client setting-discovery implementation.
+        policy: Policy used for queries and traversal.
+        fallback_reason: Always ``None``; there is no cross-scheme fallback.
+    """
+
+    mode: Literal["fossil"] = field(default="fossil", init=False)
+    backend: Literal["fossil-effective-setting"] = field(
+        default="fossil-effective-setting", init=False
+    )
+    policy: FossilIgnorePolicy
+    fallback_reason: None = None
+
+
+@dataclass(frozen=True, slots=True)
+class BreezyPolicySelection:
+    """Selection of the Breezy native-default and local-rule policy."""
+
+    mode: Literal["breezy"] = field(default="breezy", init=False)
+    backend: Literal["breezy-native-defaults"] = field(default="breezy-native-defaults", init=False)
+    policy: BreezyIgnorePolicy
+    fallback_reason: None = None
+
+
+@dataclass(frozen=True, slots=True)
+class DarcsPolicySelection:
+    """Selection of the native, membership-aware Darcs candidate policy.
+
+    Attributes:
+        mode: Always ``"darcs"`` for this scheme selection.
+        backend: Native add-candidate and managed-path inventory backend.
+        policy: Policy used for queries and traversal.
+        fallback_reason: Always ``None``; there is no cross-scheme fallback.
+    """
+
+    mode: Literal["darcs"] = field(default="darcs", init=False)
+    backend: Literal["darcs-native-candidates"] = field(
+        default="darcs-native-candidates", init=False
+    )
+    policy: DarcsBoringPolicy
+    fallback_reason: None = None
+
+
 #: Discriminated selection union; ``backend`` narrows ``policy`` to its concrete type.
-PolicySelection: TypeAlias = PortablePolicySelection | GitPolicySelection
+PolicySelection: TypeAlias = (
+    PortablePolicySelection
+    | GitPolicySelection
+    | MercurialPolicySelection
+    | PerforcePolicySelection
+    | SubversionPolicySelection
+    | FossilPolicySelection
+    | BreezyPolicySelection
+    | DarcsPolicySelection
+)
 
 
 def _executable_missing(
@@ -146,7 +401,20 @@ def _executable_missing(
 
 def _is_policy_config(value: object) -> TypeGuard[PolicyConfig]:
     """Return whether a dynamically supplied value is a supported policy config."""
-    return isinstance(value, (PortablePolicyConfig, GitPolicyConfig, PreferGitPolicyConfig))
+    return isinstance(
+        value,
+        (
+            PortablePolicyConfig,
+            GitPolicyConfig,
+            PreferGitPolicyConfig,
+            MercurialPolicyConfig,
+            PerforcePolicyConfig,
+            SubversionPolicyConfig,
+            FossilPolicyConfig,
+            BreezyPolicyConfig,
+            DarcsPolicyConfig,
+        ),
+    )
 
 
 def _assert_never(value: NoReturn) -> NoReturn:
@@ -171,7 +439,43 @@ def select_policy(root: str | os.PathLike[str], config: GitPolicyConfig) -> GitP
 @overload
 def select_policy(
     root: str | os.PathLike[str], config: PreferGitPolicyConfig
-) -> PolicySelection: ...
+) -> GitPolicySelection | PortablePolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: MercurialPolicyConfig
+) -> MercurialPolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: PerforcePolicyConfig
+) -> PerforcePolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: SubversionPolicyConfig
+) -> SubversionPolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: FossilPolicyConfig
+) -> FossilPolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: BreezyPolicyConfig
+) -> BreezyPolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: DarcsPolicyConfig
+) -> DarcsPolicySelection: ...
 
 
 @overload
@@ -246,6 +550,79 @@ def select_policy(
                 environment=selected.environment,
             ),
             fallback_reason="git-executable-missing",
+        )
+
+    elif selected.mode == "mercurial":
+        return MercurialPolicySelection(
+            policy=MercurialIgnorePolicy(
+                root,
+                ignore_files=selected.ignore_files,
+                read_client_config=selected.read_client_config,
+                hg_executable=selected.hg_executable,
+                environment=selected.environment,
+                timeout=selected.timeout,
+                initial_excludes=selected.initial_excludes,
+            )
+        )
+
+    elif selected.mode == "perforce":
+        return PerforcePolicySelection(
+            policy=PerforceIgnorePolicy(
+                root,
+                environment=selected.environment,
+                p4ignore=selected.p4ignore,
+                read_client_config=selected.read_client_config,
+                p4_executable=selected.p4_executable,
+                timeout=selected.timeout,
+                initial_excludes=selected.initial_excludes,
+            )
+        )
+
+    elif selected.mode == "subversion":
+        return SubversionPolicySelection(
+            policy=SubversionIgnorePolicy(
+                root,
+                svn_executable=selected.svn_executable,
+                config_dir=selected.config_dir,
+                environment=selected.environment,
+                timeout=selected.timeout,
+                global_ignores=selected.global_ignores,
+                initial_excludes=selected.initial_excludes,
+            )
+        )
+
+    elif selected.mode == "fossil":
+        return FossilPolicySelection(
+            policy=FossilIgnorePolicy(
+                root,
+                fossil_executable=selected.fossil_executable,
+                environment=selected.environment,
+                timeout=selected.timeout,
+                initial_excludes=selected.initial_excludes,
+            )
+        )
+
+    elif selected.mode == "breezy":
+        return BreezyPolicySelection(
+            policy=BreezyIgnorePolicy(
+                root,
+                brz_executable=selected.brz_executable,
+                environment=selected.environment,
+                global_ignore_file=selected.global_ignore_file,
+                timeout=selected.timeout,
+                initial_excludes=selected.initial_excludes,
+            )
+        )
+
+    elif selected.mode == "darcs":
+        return DarcsPolicySelection(
+            policy=DarcsBoringPolicy(
+                root,
+                darcs_executable=selected.darcs_executable,
+                environment=selected.environment,
+                timeout=selected.timeout,
+                initial_excludes=selected.initial_excludes,
+            )
         )
 
     _assert_never(selected)

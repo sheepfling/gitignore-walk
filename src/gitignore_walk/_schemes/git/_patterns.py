@@ -44,7 +44,7 @@ class GitIgnorePattern:
     source_line: int
     directory_only: bool
     basename_only: bool
-    expression: re.Pattern[str]
+    expression: re.Pattern[bytes]
     first_literal: str | None = None
 
     def matches(self, relative: str | os.PathLike[str], *, is_directory: bool) -> bool:
@@ -63,7 +63,7 @@ class GitIgnorePattern:
                 if self.basename_only
                 else _PatternSyntax.SEPARATOR.join(parts[: index + 1])
             )
-            if self.expression.fullmatch(candidate):
+            if self.expression.fullmatch(os.fsencode(candidate)):
                 return True
         return False
 
@@ -89,7 +89,7 @@ def parse_pattern_line(line: str, *, source_line: int) -> GitIgnorePattern | Non
     value = _strip_unescaped_trailing_spaces(value)
     if not value:
         return None
-    source_pattern = value
+    source_pattern = f"{_PatternSyntax.NEGATION if negated else ''}{value}"
 
     anchored = value.startswith(_PatternSyntax.ANCHOR)
     if anchored:
@@ -104,7 +104,7 @@ def parse_pattern_line(line: str, *, source_line: int) -> GitIgnorePattern | Non
 
     basename_only = not anchored and _PatternSyntax.SEPARATOR not in value
     try:
-        expression = re.compile(_glob_to_regex(value))
+        expression = re.compile(_glob_to_regex(value).encode("utf-8", errors="surrogateescape"))
     except re.error as error:
         raise GitIgnorePatternError(
             f"line {source_line}: {error}",
@@ -177,7 +177,7 @@ def _glob_to_regex(pattern: str) -> str:
         if char == _PatternSyntax.ESCAPE:
             index += 1
             if index == len(pattern):
-                chunks.append(re.escape("\\"))
+                chunks.append("(?!)")
             else:
                 chunks.append(re.escape(pattern[index]))
         elif char == _PatternSyntax.STAR:
@@ -229,7 +229,7 @@ def _character_class(pattern: str, start: int) -> _CharacterClass:
             break
         close += 1
     if close >= len(pattern):
-        return _CharacterClass(re.escape("["), start)
+        return _CharacterClass(r"(?!)", len(pattern) - 1)
 
     content: list[str] = []
     index = content_start
@@ -259,7 +259,9 @@ def normalize_relative_path(relative: str | os.PathLike[str]) -> str:
     rejected so matching cannot escape the caller's policy root.
     """
     value = os.fspath(Path(relative))
-    path = value.replace(_PatternSyntax.ESCAPE, _PatternSyntax.SEPARATOR)
+    if os.sep == _PatternSyntax.ESCAPE:
+        value = value.replace(_PatternSyntax.ESCAPE, _PatternSyntax.SEPARATOR)
+    path = value
     if path.startswith("/") or re.match(r"^[A-Za-z]:", path):
         raise ValueError("path must be relative to the ignore-file scope")
     parts = path.split(_PatternSyntax.SEPARATOR)
