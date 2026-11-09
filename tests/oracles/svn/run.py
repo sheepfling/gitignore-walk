@@ -168,7 +168,7 @@ def _capture_case(
                 target = "." if relative == "." else relative
                 for name, value in properties.items():
                     value = value.replace("<repository_url>", repository_url).replace(
-                        "<repository_path>", repository.as_posix()
+                        "<repository_path>", repository.as_uri().removeprefix("file://")
                     )
                     if repository_url.startswith("svn://"):
                         authority = repository_url.removeprefix("svn://").split("/", 1)[0]

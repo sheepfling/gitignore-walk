@@ -138,7 +138,7 @@ def _create_working_copy(
                 authority = repository_url.removeprefix("svn://").split("/", 1)[0]
                 value = value.replace("<repository_authority>", authority)
             value = value.replace("<repository_url>", repository_url).replace(
-                "<repository_path>", repository.as_posix()
+                "<repository_path>", repository.as_uri().removeprefix("file://")
             )
             _run_svn(
                 [*svn_prefix, "propset", name, value, target], cwd=root, environment=environment
