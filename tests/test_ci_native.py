@@ -18,7 +18,8 @@ def write_capture(path: Path, **data: object) -> None:
 
 
 def test_prerequisites_are_explicit_and_selected(monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(ci_native.shutil, "which", lambda tool: None if tool == "p4d" else tool)
+    missing = {"p4d", "svnserve"}
+    monkeypatch.setattr(ci_native.shutil, "which", lambda tool: None if tool in missing else tool)
     ci_native.require_tools(["hg", "svn", "brz"], include_git=True)
     with pytest.raises(RuntimeError, match="p4d"):
         ci_native.require_tools(ci_native.BACKENDS)

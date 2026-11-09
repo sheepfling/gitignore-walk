@@ -57,7 +57,7 @@ jobs:
       - name: Install native clients
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq mercurial subversion fossil darcs libatomic1
+          sudo apt-get install -y -qq mercurial subversion fossil libatomic1
       - name: Download pinned Perforce 2026.1 Linux binaries
         shell: bash
         run: |
@@ -78,9 +78,23 @@ jobs:
       - name: Run native-backed policy tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: python -m scripts.ci test
-      - name: Check all Linux native captures
+      - name: Capture Darcs oracle in Debian 13
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
-        run: python -m scripts.ci native --include-trust --output-dir "$RUNNER_TEMP/native"
+        run: |
+          mkdir -p "$RUNNER_TEMP/native"
+          docker run --rm \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs python3 && python3 tests/oracles/darcs/run.py --output /output/darcs-oracle.json'
+          python -c "from pathlib import Path; from scripts.ci_native import inspect_capture; path = Path(r'$RUNNER_TEMP/native/darcs-oracle.json'); result = inspect_capture(path); print(result); raise SystemExit(not result['passed'])"
+      - name: Check selected Linux native captures
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: >-
+          python -m scripts.ci native --include-trust
+          --backends hg svn fossil brz p4
+          --output-dir "$RUNNER_TEMP/native"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -131,7 +145,7 @@ jobs:
             throw 'SlikSVN installation did not contain svnadmin.exe.'
           }
           if (-not (Test-Path (Join-Path $svnBin 'svnserve.exe'))) {
-            throw 'SlikSVN installation did not contain svnserve.exe.'
+            Write-Host 'svnserve is unavailable; protocol-dependent Subversion cases will be explicitly skipped.'
           }
           $svnBin | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           & $svnPath --version --quiet

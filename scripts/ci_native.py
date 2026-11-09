@@ -15,7 +15,9 @@ from typing import Any
 BACKENDS = ("hg", "svn", "fossil", "brz", "darcs", "p4")
 REQUIRED_TOOLS = {
     "hg": ("hg",),
-    "svn": ("svn", "svnadmin", "svnserve"),
+    # svnserve only enables protocol-based external fixtures; the runner records those as explicit
+    # case-level skips when the server is unavailable.
+    "svn": ("svn", "svnadmin"),
     "fossil": ("fossil",),
     "brz": ("brz",),
     "darcs": ("darcs",),
