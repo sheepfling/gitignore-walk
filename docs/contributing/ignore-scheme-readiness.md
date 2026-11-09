@@ -165,11 +165,13 @@ reference](https://www.breezy-vcs.org/doc/en/user-reference/ignore-help.html).
 The initial Perforce policy evaluates the caller-selected root without invoking a P4 client by
 default. It reads the configured `P4IGNORE` list or checks `.p4ignore` and `p4ignore.txt`, supports
 the captured wildcard, directory-only, and exception forms, and conservatively keeps ignored
-directories traversable. Its 23 boolean cases agree with isolated P4/P4 Server 2026.1 captures on
+directories traversable. Its 35 boolean cases agree with isolated P4/P4 Server 2026.1 captures on
 macOS arm64, Debian 13 Linux x86_64, and Ubuntu 24.04 Linux x86_64, including configured-file order,
 nested-source precedence, root-anchored matching relative to nested ignore files, and opt-in
-`P4CONFIG` resolution. Client workspace discovery, broader path grammar, and other platform profiles
-remain open. See the
+`P4CONFIG` resolution. Three additional path-boundary cases separate `p4 add` rejection from rule
+matching reported by `p4 ignores -i -v`. Lexical cases verify ASCII-space trimming and preservation
+of tabs and interior spaces. Client workspace discovery, broader path grammar, and other platform
+profiles remain open. See the
 [Perforce oracle notes](../../tests/oracles/perforce/README.md).
 
 Darcs now has an initial native candidate policy. It combines `darcs whatsnew --look-for-adds` with

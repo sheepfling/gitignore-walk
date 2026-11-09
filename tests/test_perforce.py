@@ -64,8 +64,6 @@ def test_perforce_policy_matches_captured_native_observation(
 ) -> None:
     if case["dimension"].startswith("configuration-"):
         pytest.skip("P4CONFIG observations are exercised with captured `p4 set` output")
-    if case.get("expected_native_error") is not None:
-        pytest.skip("the native client rejects this path before ignore evaluation")
     policy = _policy_for_case(tmp_path / "workspace", case)
     observation = OBSERVATIONS[profile][case["id"]]
     ignore_check = observation.get("ignore_check")

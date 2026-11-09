@@ -374,11 +374,14 @@ class PerforceIgnorePolicy(IgnorePolicy):
             ) from error
         rules: list[_PerforceRule] = []
         for line_number, raw_line in enumerate(contents.splitlines(), start=1):
-            if not raw_line:
+            # P4 trims ASCII spaces around a rule before checking comments and
+            # matching. Tabs remain part of the rule text.
+            pattern = raw_line.strip(" ")
+            if not pattern:
                 continue
-            if raw_line.startswith("#"):
+            if pattern.startswith("#"):
                 continue
-            pattern = raw_line[1:] if raw_line.startswith(r"\#") else raw_line
+            pattern = pattern[1:] if pattern.startswith(r"\#") else pattern
             if not pattern:
                 continue
             negated = pattern.startswith("!")

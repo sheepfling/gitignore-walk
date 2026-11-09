@@ -187,9 +187,11 @@ then earliest configured filename at that level, then the last matching line in 
 supported subset includes `*`, `**`, leading-slash rules anchored to their ignore file, trailing-slash
 directory rules, and `!` exceptions. The walker does not prune ignored directories, so an exception
 can re-include a descendant. Client workspace discovery, server views, and broader pattern edge
-cases are not implemented. All 23 boolean candidates match native P4/P4 Server 2026.1 profiles on
-macOS arm64, Debian 13 Linux x86_64,
-and Ubuntu 24.04 Linux x86_64; broader behavior and other profiles remain open. See the
+cases are not implemented. It trims ASCII spaces around each rule, preserves interior spaces and
+tabs, and supports the documented `\#` comment escape. All 35 boolean candidates match native P4/P4
+Server 2026.1 profiles on macOS arm64, Debian 13 Linux x86_64, and Ubuntu 24.04 Linux x86_64; three
+path-boundary probes separately record cases where `p4 add` rejects a filename before ignore
+eligibility can be evaluated. See the
 [Perforce oracle notes](tests/oracles/perforce/README.md).
 
 `DarcsPolicyConfig` explicitly selects Darcs' native boring-candidate behavior. It requires a Darcs

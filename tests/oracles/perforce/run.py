@@ -230,6 +230,13 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
             else:
                 ignored_result = ignored
             expected = case["expected_candidate"]
+            observed_rule_match = _ignored_by_rules(ignore_check.stdout, ignore_check.stderr)
+            expected_rule_match = case.get("expected_ignore_match")
+            rule_match_matches = (
+                observed_rule_match is expected_rule_match
+                if isinstance(expected_rule_match, bool)
+                else None
+            )
             client_version = _run(
                 p4, ["-V"], cwd=workspace, environment=environment
             ).stdout.splitlines()
@@ -258,6 +265,15 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                     ignored_result is expected
                     if isinstance(expected, bool) and ignored_result is not None
                     else None
+                ),
+                **(
+                    {
+                        "expected_ignore_match": expected_rule_match,
+                        "observed_ignore_match": observed_rule_match,
+                        "ignore_check_matches": rule_match_matches,
+                    }
+                    if isinstance(expected_rule_match, bool)
+                    else {}
                 ),
                 **(
                     {"native_error": expected_native_error}
@@ -333,7 +349,9 @@ def capture(cases_path: Path, output_path: Path, p4_name: str, p4d_name: str) ->
         result = {
             "schema_version": 1,
             "status": "captured"
-            if not walk_failed and all(case["candidate_matches"] is not False for case in captured)
+            if not walk_failed
+            and all(case["candidate_matches"] is not False for case in captured)
+            and all(case.get("ignore_check_matches") is not False for case in captured)
             else "failed",
             "client": {
                 "p4": p4,

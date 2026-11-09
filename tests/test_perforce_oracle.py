@@ -49,7 +49,10 @@ def test_perforce_capture_matches_versioned_candidates(case: dict[str, Any], pro
         assert observation["exit_code"] != 0
         ignore_check = observation["ignore_check"]
         assert ignore_check["exit_code"] == 0
-        assert ignore_check["observed_ignored"] is True
+        expected_ignore_match = case.get("expected_ignore_match", True)
+        assert ignore_check["observed_ignored"] is expected_ignore_match
+        if "expected_ignore_match" in case:
+            assert observation["ignore_check_matches"] is True
     elif isinstance(expected, bool):
         assert observation["candidate_matches"] is True
         assert observation["observed_ignored"] is expected

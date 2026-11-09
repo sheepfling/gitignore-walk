@@ -67,8 +67,10 @@ def _case_failed(case: dict[str, Any]) -> bool:
     closed = isinstance(expected, bool) or any(
         case.get(key) is not None for key in ("expected_ignored_paths", "expected_unknown_paths")
     )
-    if case.get("candidate_matches") is False or (
-        closed and case.get("candidate_matches") is not True
+    if (
+        case.get("candidate_matches") is False
+        or case.get("ignore_check_matches") is False
+        or (closed and case.get("candidate_matches") is not True)
     ):
         return True
     # Breezy can otherwise mistake empty output from failed queries for "not ignored".

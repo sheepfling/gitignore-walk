@@ -509,6 +509,94 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "release_gate": "Record the observed filesystem-dependent case behavior without collapsing the native platform profiles."
+    },
+    {
+      "id": "p4.escaped-leading-hash",
+      "dimension": "lexical",
+      "setup": {
+        "files": {
+          ".p4ignore": "\\#secret.txt\n"
+        }
+      },
+      "query": "#secret.txt",
+      "expected_candidate": null,
+      "expected_native_error": "wildcards",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Separate p4 add's wildcard-filename rejection from the P4IGNORE rule match reported by p4 ignores.",
+      "expected_ignore_match": true
+    },
+    {
+      "id": "p4.leading-space-comment",
+      "dimension": "lexical",
+      "setup": {
+        "files": {
+          ".p4ignore": " #secret.txt\n"
+        }
+      },
+      "query": "#secret.txt",
+      "expected_candidate": null,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check whether leading ASCII spaces are removed before P4IGNORE comment detection.",
+      "expected_native_error": "wildcards",
+      "expected_ignore_match": false
+    },
+    {
+      "id": "p4.leading-space-is-trimmed",
+      "dimension": "lexical",
+      "setup": {
+        "files": {
+          ".p4ignore": " name.txt\n"
+        }
+      },
+      "query": "name.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Capture native handling of leading ASCII spaces before a P4IGNORE pattern."
+    },
+    {
+      "id": "p4.trailing-spaces-are-trimmed",
+      "dimension": "lexical",
+      "setup": {
+        "files": {
+          ".p4ignore": "name.txt   \n"
+        }
+      },
+      "query": "name.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Capture native handling of trailing ASCII spaces before a P4IGNORE pattern."
+    },
+    {
+      "id": "p4.trailing-tab-is-significant",
+      "dimension": "lexical",
+      "setup": {
+        "files": {
+          ".p4ignore": "name.txt\t\n"
+        }
+      },
+      "query": "name.txt",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Ensure P4's space trimming does not strip a trailing tab."
+    },
+    {
+      "id": "p4.interior-space-is-significant",
+      "dimension": "lexical",
+      "setup": {
+        "files": {
+          ".p4ignore": "name with space.txt\n"
+        }
+      },
+      "query": "name with space.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Preserve spaces inside Perforce ignore patterns while trimming their edges."
     }
   ]
 }
