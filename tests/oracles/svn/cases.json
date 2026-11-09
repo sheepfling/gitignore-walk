@@ -232,19 +232,20 @@
       "id": "svn.glob-apr-default-flags",
       "dimension": "apr-glob-flags",
       "setup": {
+        "directories": ["hidden", "lower", "upper"],
         "properties": {
-          ".": {
-            "svn:ignore": "*.tmp\ncase.tmp\n"
-          }
+          "hidden": {"svn:ignore": "*.tmp\n"},
+          "lower": {"svn:ignore": "case.tmp\n"},
+          "upper": {"svn:ignore": "case.tmp\n"}
         },
         "unversioned_files": {
-          ".hidden.tmp": "wildcard matches a leading period\n",
-          "visible.tmp": "ordinary wildcard match\n",
-          "case.tmp": "exact case-sensitive match\n",
-          "CASE.TMP": "case mismatch remains visible\n"
+          "hidden/.hidden.tmp": "wildcard matches a leading period\n",
+          "lower/case.tmp": "exact case-sensitive match\n",
+          "upper/CASE.TMP": "case mismatch remains visible\n"
         }
       },
-      "expected_ignored_paths": [".hidden.tmp", "case.tmp", "visible.tmp"],
+      "expected_ignored_paths": ["hidden/.hidden.tmp", "lower/case.tmp"],
+      "expected_status_paths": ["hidden/.hidden.tmp", "lower/case.tmp", "upper/CASE.TMP"],
       "evidence_status": "native-observed"
     },
     {

@@ -9,8 +9,9 @@ second external inside it, and checks that rules stay within each external worki
 The collapsed-unversioned-directory case records that native status reports an unversioned
 directory as one entry rather than listing its files. A rule-only decision for a known child can
 still match an ignore pattern, but the child's native membership remains unknown.
-The APR default-flags fixture verifies that `*.tmp` matches `.hidden.tmp` and that `case.tmp` does
-not match `CASE.TMP`.
+The APR default-flags fixture verifies that `*.tmp` matches `hidden/.hidden.tmp` and that
+`case.tmp` matches `lower/case.tmp` but not `upper/CASE.TMP`. Separate directories keep this
+case-sensitivity check valid on case-insensitive filesystems.
 
 Run the capture from the repository root:
 
