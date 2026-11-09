@@ -294,6 +294,26 @@
       "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
     },
     {
+      "id": "hg.nested-subinclude-from-included-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "setup": {
+        "files": {
+          ".hgignore": "include:config/rules.ignore\n",
+          "config/rules.ignore": "subinclude:nested.ignore\n",
+          "config/nested.ignore": "syntax: glob\nconfig.tmp\n"
+        }
+      },
+      "query": "config/config.tmp",
+      "expected_candidate": null,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain Mercurial's native query error while verifying portable nested subinclude evaluation."
+    },
+    {
       "id": "hg.subinclude-rebases",
       "profile": "hg",
       "dimension": "source-inclusion",

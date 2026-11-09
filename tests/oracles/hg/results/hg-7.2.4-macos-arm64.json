@@ -570,6 +570,43 @@
       "raw_stderr": ""
     },
     {
+      "id": "hg.nested-subinclude-from-included-source",
+      "profile": "hg",
+      "dimension": "source-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": null,
+      "observed_ignored": null,
+      "candidate_matches": null,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/opt/homebrew/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "config/config.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 1,
+      "result": "command-error-or-unparsed",
+      "stdout": "",
+      "stderr": "** unknown exception encountered, please report by visiting\n** https://foss.heptapod.net/mercurial/mercurial-devel/-/issues\n** Python 3.15.2 (main, Oct 25 2026, 16:57:51) [Clang 21.0.0 (clang-2100.3.34.2)]\n** Mercurial Distributed SCM (version 7.2.4)\n** Extensions loaded: \nTraceback (most recent call last):\n  File \"/opt/homebrew/bin/hg\", line 51, in <module>\n    dispatch.run()\n    ~~~~~~~~~~~~^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 100, in run\n    status = dispatch(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 189, in dispatch\n    status = _rundispatch(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 239, in _rundispatch\n    ret = _runcatch(req) or 0\n          ~~~~~~~~~^^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 435, in _runcatch\n    return _callcatch(ui, _runcatchfunc)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 445, in _callcatch\n    return scmutil.callcatch(ui, func)\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/scmutil.py\", line 202, in callcatch\n    return func()\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 425, in _runcatchfunc\n    return _dispatch(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 930, in _dispatch\n    return _dispatch_post_cwd(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 1195, in _dispatch_post_cwd\n    return runcommand(\n        lui, repo, cmd, fullargs, ui, options, d, cmdpats, cmdoptions\n    )\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 862, in runcommand\n    ret = _runcommand(ui, options, cmd, d)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 1208, in _runcommand\n    return cmdfunc()\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 1193, in <lambda>\n    d = lambda: util.checksignature(func)(ui, *args, **strcmdopt)\n                ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/util.py\", line 1998, in check\n    return func(*args, **kwargs)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/debugcommands.py\", line 1845, in debugignore\n    if ignore(nf):\n       ~~~~~~^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/match.py\", line 467, in __call__\n    return self.matchfn(fn)\n           ~~~~~~~~~~~~^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/match.py\", line 1533, in matchsubinclude\n    mf = match(*matcherargs)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/match.py\", line 285, in match\n    assert os.path.isabs(root)\n           ~~~~~~~~~~~~~^^^^^^\nAssertionError\n",
+      "configuration": null,
+      "normalized_stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "normalized_stderr_sha256": "19e93f9d4ff4ef892106945d2f775c9ac07488466eec1367905310b4fd6210cc",
+      "raw_stdout": "",
+      "raw_stderr": "** unknown exception encountered, please report by visiting\n** https://foss.heptapod.net/mercurial/mercurial-devel/-/issues\n** Python 3.15.2 (main, Oct 25 2026, 16:57:51) [Clang 21.0.0 (clang-2100.3.34.2)]\n** Mercurial Distributed SCM (version 7.2.4)\n** Extensions loaded: \nTraceback (most recent call last):\n  File \"/opt/homebrew/bin/hg\", line 51, in <module>\n    dispatch.run()\n    ~~~~~~~~~~~~^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 100, in run\n    status = dispatch(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 189, in dispatch\n    status = _rundispatch(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 239, in _rundispatch\n    ret = _runcatch(req) or 0\n          ~~~~~~~~~^^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 435, in _runcatch\n    return _callcatch(ui, _runcatchfunc)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 445, in _callcatch\n    return scmutil.callcatch(ui, func)\n           ~~~~~~~~~~~~~~~~~^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/scmutil.py\", line 202, in callcatch\n    return func()\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 425, in _runcatchfunc\n    return _dispatch(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 930, in _dispatch\n    return _dispatch_post_cwd(req)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 1195, in _dispatch_post_cwd\n    return runcommand(\n        lui, repo, cmd, fullargs, ui, options, d, cmdpats, cmdoptions\n    )\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 862, in runcommand\n    ret = _runcommand(ui, options, cmd, d)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 1208, in _runcommand\n    return cmdfunc()\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/dispatch.py\", line 1193, in <lambda>\n    d = lambda: util.checksignature(func)(ui, *args, **strcmdopt)\n                ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/util.py\", line 1998, in check\n    return func(*args, **kwargs)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/debugcommands.py\", line 1845, in debugignore\n    if ignore(nf):\n       ~~~~~~^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/match.py\", line 467, in __call__\n    return self.matchfn(fn)\n           ~~~~~~~~~~~~^^^^\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/match.py\", line 1533, in matchsubinclude\n    mf = match(*matcherargs)\n  File \"/opt/homebrew/lib/python3.15/site-packages/mercurial/match.py\", line 285, in match\n    assert os.path.isabs(root)\n           ~~~~~~~~~~~~~^^^^^^\nAssertionError\n"
+    },
+    {
       "id": "hg.subinclude-rebases",
       "profile": "hg",
       "dimension": "source-inclusion",

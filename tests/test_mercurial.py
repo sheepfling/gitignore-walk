@@ -256,6 +256,25 @@ def test_policy_matches_captured_native_observation(
         assert {item.code for item in decision.diagnostics} == {"include-cycle"}
 
 
+def test_nested_subinclude_preserves_portable_result_when_native_matcher_fails(
+    tmp_path: Path,
+) -> None:
+    """Retain the native nested-subinclude assertion as a known client divergence."""
+    case = next(case for case in CASES if case["id"] == "hg.nested-subinclude-from-included-source")
+    observation = MATCHING_OBSERVATIONS["hg-7.2.4-macos-arm64.json"][case["id"]]
+    assert observation["native_status"] == "captured"
+    assert observation["exit_code"] == 1
+    assert "AssertionError" in observation["stderr"]
+
+    policy, query = _make_case(tmp_path / "repo", case)
+    decision = policy.explain(query)
+    assert decision.ignored
+    assert decision.discovery_complete
+    assert decision.pattern == "config.tmp"
+    assert decision.scope == "config"
+    assert decision.diagnostics == ()
+
+
 LIVE_PATTERN_SEMANTIC_CASES = [
     case
     for case in CASES
