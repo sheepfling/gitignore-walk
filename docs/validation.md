@@ -87,8 +87,9 @@ against all Mercurial versions or equate ignore matches with tracked-file status
 The `subversion-oracle` job similarly runs `oracle-svn` with Subversion installed and uploads its
 isolated repository capture for review. The Windows SlikSVN job runs the Subversion integration and
 unit tests, captures the same disposable status corpus, and separately compares Windows Registry
-and user-INI precedence. If `svnserve` is absent, only the scheme-relative external case is marked
-skipped; the local-repository cases are still captured. The initial `SubversionIgnorePolicy` uses
+and user-INI precedence. Its reviewed Windows capture is versioned under `tests/oracles/svn/results/`;
+if `svnserve` is absent, only the scheme-relative external case is marked skipped. The initial
+`SubversionIgnorePolicy` uses
 `svn` to discover versioned properties and reads runtime `global-ignores` settings from an explicit
 config directory or standard system and per-user files. Oracle capture checks native status
 observations; the Python tests separately compare

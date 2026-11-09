@@ -14,6 +14,7 @@ CAPTURE_FILES = (
     "svn-1.15.0-macos-arm64.json",
     "svn-1.14.5-linux-aarch64.json",
     "svn-1.14.5-linux-x86_64.json",
+    "svn-1.14.5-windows-x86_64.json",
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
@@ -28,6 +29,10 @@ def test_subversion_capture_matches_candidate(profile: str, case: dict[str, Any]
     observation = next(item for item in capture["cases"] if item["id"] == case["id"])
 
     assert capture["status"] == "captured"
+    if observation["native_status"] == "skipped":
+        pytest.skip(observation["skip_reason"])
+
+    assert observation["native_status"] == "captured"
     assert observation["candidate_matches"]
     assert set(observation["observed_ignored_paths"]) == set(case["expected_ignored_paths"])
     if "expected_status_paths" in case:
@@ -42,8 +47,12 @@ def test_subversion_captured_profiles_agree() -> None:
                 case.get("observed_status_paths"),
             )
             for case in capture["cases"]
+            if case["native_status"] == "captured"
         }
         for capture in CAPTURES.values()
     ]
 
-    assert all(observation == observations[0] for observation in observations[1:])
+    baseline = observations[0]
+    for observation in observations[1:]:
+        shared_cases = baseline.keys() & observation.keys()
+        assert all(baseline[case_id] == observation[case_id] for case_id in shared_cases)
