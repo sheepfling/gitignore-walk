@@ -36,7 +36,8 @@ path without listing files beneath it. All 16 cases match on Subversion 1.15.0/m
 architectures. The Windows oracle job explicitly skips the newline-and-tab case because those
 filenames are not representable there. The focused runtime Subversion suite, including the opt-in
 file-external membership and walker assertions, passes with 107 passed and 4 skipped on macOS arm64,
-Linux x86_64, and Linux aarch64. Windows runtime membership remains for hosted CI to confirm.
+Linux x86_64, and Linux aarch64. The SlikSvn Windows CI job also passes these live membership
+assertions; Windows does not yet have a separate committed file-external capture.
 Captures are stored in `results/`.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and

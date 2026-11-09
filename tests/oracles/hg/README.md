@@ -46,10 +46,11 @@ each client-enabled CI profile. The Windows capture now contains all 65 path cas
 additional byte-semantics probes.
 The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
-The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: all 56
+The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: all 57
 closed candidate comparisons match, with no differing candidate results. The include-cycle
-observation remains the documented safe divergence. The Unicode digit-class probe is open because
-the native command returned no parseable decision for its non-ASCII argument. Seven path probes are
+observation remains the documented safe divergence. The Unicode digit-class query has no parseable
+`debugignore` output on Windows, so the capture uses NUL-delimited native status membership to
+confirm the unignored result. Seven path probes are
 explicitly skipped for POSIX-only byte names, reserved/backslash filenames, symlinked ignore sources,
 and POSIX unreadable-file permissions. The walk capture is in
 `results/hg-walk-7.1.2-windows-x86_64.json`; five fixtures match and the repeated-source-under-two-

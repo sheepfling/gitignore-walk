@@ -1141,13 +1141,13 @@
       "native_observation_fallback": "status-membership",
       "native_observation_fallback_known_unknown_paths": [".hgignore"],
       "expected_candidate": false,
-      "expected_candidate_by_os": {"nt": null},
+      "expected_candidate_by_os": {"nt": false},
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": [
         "HG-IGNORE"
       ],
-      "release_gate": "Windows debugignore output is not parseable for this query; preserve it as open until a native status fixture resolves it."
+      "release_gate": "Windows debugignore output is not parseable; captured native status membership confirms the path is unignored."
     },
     {
       "id": "hg.regex-unicode-ignorecase-is-byte-oriented",

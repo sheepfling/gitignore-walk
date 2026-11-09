@@ -2024,9 +2024,48 @@
       "dimension": "regex-byte-semantics",
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "expected_candidate": null,
-      "observed_ignored": null,
-      "candidate_matches": null,
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "observation_method": "status-membership",
+      "fallback_observation": {
+        "observed_ignored": false,
+        "status": {
+          "ignored": {
+            "command": [
+              "C:\\Program Files\\Mercurial\\hg.EXE",
+              "status",
+              "--ignored",
+              "--no-status",
+              "-0"
+            ],
+            "exit_code": 0,
+            "paths": [],
+            "stdout": "",
+            "stderr": "",
+            "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          "unknown": {
+            "command": [
+              "C:\\Program Files\\Mercurial\\hg.EXE",
+              "status",
+              "--unknown",
+              "--no-status",
+              "-0"
+            ],
+            "exit_code": 0,
+            "paths": [
+              ".hgignore",
+              "?"
+            ],
+            "stdout": ".hgignore\u0000?\u0000",
+            "stderr": "",
+            "stdout_sha256": "6383cd133655781971f13f3c181a0d6c50994f31bdeb5749800535ccc1ba02db",
+            "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          }
+        }
+      },
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -2044,7 +2083,7 @@
       "init_stdout": "",
       "init_stderr": "",
       "exit_code": 0,
-      "result": "command-error-or-unparsed",
+      "result": "not-ignored",
       "stdout": "",
       "stderr": "",
       "configuration": null,
