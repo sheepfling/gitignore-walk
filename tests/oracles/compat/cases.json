@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source": "vcs-ignore-implementation-research.zip and isolated Sapling/Jujutsu mode probes",
   "probe_files": {
-    ".gitignore": "*.tmp\n",
+    ".gitignore": "*.tmp\n!local.priority\n",
     ".hgignore": "syntax: glob\n*.log\n",
     ".jjignore": "*.log\n",
     "a.tmp": "tmp\n",
@@ -14,18 +14,27 @@
   "expected_ignored": ["a.tmp"],
   "source_probe_files": {
     "global.global": "global ignore probe\n",
-    "local.local": "repository-local ignore probe\n"
+    "local.local": "repository-local ignore probe\n",
+    "priority.global": "global and repository-local info override probe\n",
+    "info.priority": "repository-local and workspace override probe\n",
+    "local.priority": "workspace override probe\n"
   },
-  "source_query_files": ["global.global", "local.local"],
+  "source_query_files": [
+    "global.global",
+    "local.local",
+    "priority.global",
+    "info.priority",
+    "local.priority"
+  ],
   "source_rules": {
     "xdg_git_ignore": "*.global\n",
-    "git_info_exclude": "*.local\n"
+    "git_info_exclude": "*.local\n!priority.global\ninfo.priority\nlocal.priority\n"
   },
   "expected_source_ignored": {
-    "sapling.git-mode": ["global.global", "local.local"],
+    "sapling.git-mode": ["global.global", "info.priority", "local.local"],
     "sapling.sl-mode": [],
-    "jj.colocated": ["global.global", "local.local"],
-    "jj.noncolocated": ["global.global"]
+    "jj.colocated": ["global.global", "info.priority", "local.local"],
+    "jj.noncolocated": ["global.global", "priority.global"]
   },
   "profiles": [
     {"id": "sapling.git-mode", "vcs": "sapling", "mode": "git"},

@@ -16,7 +16,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? visible.txt\u0000I a.tmp\u0000I global.global\u0000I local.local\u0000",
+      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? local.priority\u0000? priority.global\u0000? visible.txt\u0000I a.tmp\u0000I global.global\u0000I info.priority\u0000I local.local\u0000",
       "status_stderr": "",
       "metadata_markers": [
         ".git"
@@ -25,13 +25,20 @@
       "source_discovery": {
         "query_files": [
           "global.global",
-          "local.local"
+          "info.priority",
+          "local.local",
+          "local.priority",
+          "priority.global"
         ],
         "ignored": [
           "global.global",
+          "info.priority",
           "local.local"
         ],
-        "included": [],
+        "included": [
+          "local.priority",
+          "priority.global"
+        ],
         "candidate_matches": true
       },
       "candidate_matches": true
@@ -49,7 +56,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? global.global\u0000? local.local\u0000? visible.txt\u0000I a.tmp\u0000",
+      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? global.global\u0000? info.priority\u0000? local.local\u0000? local.priority\u0000? priority.global\u0000? visible.txt\u0000I a.tmp\u0000",
       "status_stderr": "",
       "metadata_markers": [
         ".sl"
@@ -58,12 +65,18 @@
       "source_discovery": {
         "query_files": [
           "global.global",
-          "local.local"
+          "info.priority",
+          "local.local",
+          "local.priority",
+          "priority.global"
         ],
         "ignored": [],
         "included": [
           "global.global",
-          "local.local"
+          "info.priority",
+          "local.local",
+          "local.priority",
+          "priority.global"
         ],
         "candidate_matches": true
       },
@@ -82,7 +95,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA visible.txt\nWorking copy  (@) : otklvsmt 9eeffe8c (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.priority\nA priority.global\nA visible.txt\nWorking copy  (@) : mtqzzvyu b1833437 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".git",
@@ -93,13 +106,20 @@
       "source_discovery": {
         "query_files": [
           "global.global",
-          "local.local"
+          "info.priority",
+          "local.local",
+          "local.priority",
+          "priority.global"
         ],
         "ignored": [
           "global.global",
+          "info.priority",
           "local.local"
         ],
-        "included": [],
+        "included": [
+          "local.priority",
+          "priority.global"
+        ],
         "candidate_matches": true
       },
       "candidate_matches": true
@@ -117,7 +137,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.local\nA visible.txt\nWorking copy  (@) : owunqnwv af994bb2 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA info.priority\nA local.local\nA local.priority\nA visible.txt\nWorking copy  (@) : mowvpmnz 5db5e62d (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".jj"
@@ -127,13 +147,19 @@
       "source_discovery": {
         "query_files": [
           "global.global",
-          "local.local"
+          "info.priority",
+          "local.local",
+          "local.priority",
+          "priority.global"
         ],
         "ignored": [
-          "global.global"
+          "global.global",
+          "priority.global"
         ],
         "included": [
-          "local.local"
+          "info.priority",
+          "local.local",
+          "local.priority"
         ],
         "candidate_matches": true
       },

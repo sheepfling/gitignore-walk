@@ -31,14 +31,20 @@ def test_compatibility_capture_reconciles_ignore_candidates(case_id: str) -> Non
 def test_compatibility_capture_reconciles_ignore_source_discovery(case_id: str) -> None:
     source_discovery = OBSERVATIONS[case_id]["source_discovery"]
     expected_ignored = {
-        "sapling.git-mode": ["global.global", "local.local"],
+        "sapling.git-mode": ["global.global", "info.priority", "local.local"],
         "sapling.sl-mode": [],
-        "jj.colocated": ["global.global", "local.local"],
-        "jj.noncolocated": ["global.global"],
+        "jj.colocated": ["global.global", "info.priority", "local.local"],
+        "jj.noncolocated": ["global.global", "priority.global"],
     }
 
     assert source_discovery["candidate_matches"] is True
-    assert source_discovery["query_files"] == ["global.global", "local.local"]
+    assert source_discovery["query_files"] == [
+        "global.global",
+        "info.priority",
+        "local.local",
+        "local.priority",
+        "priority.global",
+    ]
     assert source_discovery["ignored"] == expected_ignored[case_id]
 
 

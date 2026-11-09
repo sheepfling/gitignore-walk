@@ -7,11 +7,13 @@ Notable user-facing changes are recorded here.
 ### Added
 
 - Scheme-neutral policy and traversal contracts with typed, explicit selection for Git, Mercurial,
-  Subversion, Perforce, Fossil, Breezy, and Darcs.
+  Subversion, Perforce, Fossil, Breezy, Darcs, Sapling, and Jujutsu.
 - Initial portable Mercurial `.hgignore` evaluation for regexp, glob, rootglob, `include`, and
   `subinclude`, with optional read-only discovery of configured `ui.ignore` files through `hg`.
 - Initial scheme-specific policies for Subversion properties, Perforce `P4IGNORE`, Fossil ignore
   globs, Breezy ignore rules, and Darcs boring-file candidates.
+- Initial read-only Sapling and Jujutsu policies for captured Git-compatible ignore sources,
+  with separate workspace discovery and typed selection.
 - Native-oracle fixtures and profile-specific result captures for matching, discovery, and walking.
 
 ### Selection and compatibility

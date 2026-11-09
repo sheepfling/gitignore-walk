@@ -4,8 +4,9 @@
 
 `gitignore-walk` is a Python 3.10+ library for tools that need predictable, inspectable file
 discovery. It supports Git, initial portable Mercurial and Perforce policies, initial Fossil and
-Breezy ignore policies, an initial Subversion-property policy, and a native Darcs boring-candidate
-policy, with rule provenance and directory traversal with optional filtering.
+Breezy ignore policies, an initial Subversion-property policy, a native Darcs boring-candidate
+policy, and read-only Sapling and Jujutsu policies for captured Git-ignore behavior. Policies provide
+rule provenance and directory traversal with optional filtering.
 
 For Git, two policies let applications choose whether to use the bundled evaluator or Git itself:
 
@@ -133,7 +134,8 @@ walker = IgnoreWalker(selection.policy.root, policy=selection.policy)
 
 `PortablePolicyConfig` selects portable Git rules. `GitPolicyConfig` requires Git.
 `PreferGitPolicyConfig` tries Git first and uses the portable resolver only when the executable is
-confirmed missing. `MercurialPolicyConfig` explicitly selects Mercurial. These configs accept
+confirmed missing. `MercurialPolicyConfig`, `SaplingPolicyConfig`, and `JujutsuPolicyConfig`
+explicitly select their schemes. These configs accept
 `initial_excludes`; the Git configs also accept an optional complete `environment`,
 `git_executable`, and `timeout`.
 
@@ -348,6 +350,27 @@ x86_64, and 7.1.2/Windows Server 2025 x86_64 profiles for path matching and igno
 The Windows capture has five path skips and one symlink-dependent walk skip; those cases are not
 claimed as conformance. The four-profile corpus is still limited evidence, not full cross-platform
 certification. See the [oracle notes](tests/oracles/hg/README.md) for exact results and limitations.
+
+### Sapling and Jujutsu matching
+
+`SaplingPolicyConfig` and `JujutsuPolicyConfig` select read-only policies for the captured
+Git-compatible ignore behavior. The policies do not run `sl` or `jj`; both reuse the Git ignore
+matcher while resolving each system's workspace markers and supported sources separately:
+
+- Sapling discovers the nearest `.sl` or `.git` workspace. `.sl` mode reads workspace `.gitignore`
+  files only. `.git` mode also reads XDG Git ignores and `.git/info/exclude`.
+- Jujutsu discovers the nearest `.jj` workspace. Both colocated and non-colocated modes read
+  workspace `.gitignore` files and XDG Git ignores. A colocated `.git/info/exclude` is read when
+  present; an outer Git repository's exclude file is not inherited.
+- When all three source levels are present, workspace `.gitignore` overrides `.git/info/exclude`,
+  which overrides the XDG ignore file.
+
+The caller's root remains the query and traversal bound, while `workspace_root` reports the
+discovered VCS root. The default walker baseline excludes `.sl` or `.git` for Sapling, depending on
+storage mode, and `.jj` for Jujutsu. These initial policies do not query versioned membership,
+support alternate global configuration sources, or claim behavior beyond Sapling 0.2.20261103 and
+Jujutsu 0.47.1 on macOS arm64. The full native capture and limitations are in the
+[compatibility oracle notes](tests/oracles/compat/README.md).
 
 ## Understand why a path is ignored
 

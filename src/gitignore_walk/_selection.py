@@ -15,8 +15,10 @@ from ._schemes.darcs import DarcsBoringPolicy
 from ._schemes.fossil import FossilIgnorePolicy
 from ._schemes.git import GitIgnorePolicy, GitStandardPolicy
 from ._schemes.git.portable import _DEFAULT_INITIAL_EXCLUDES
+from ._schemes.jujutsu import JujutsuIgnorePolicy
 from ._schemes.mercurial import MercurialIgnorePolicy
 from ._schemes.perforce import PerforceIgnorePolicy
+from ._schemes.sapling import SaplingIgnorePolicy
 from ._schemes.subversion import SubversionIgnorePolicy
 from ._util import is_windows
 from .errors import GitIgnoreError
@@ -208,6 +210,37 @@ class DarcsPolicyConfig:
     initial_excludes: Sequence[str] = ("_darcs",)
 
 
+@dataclass(frozen=True, slots=True)
+class SaplingPolicyConfig:
+    """Request portable evaluation of captured Sapling Git-ignore behavior.
+
+    Attributes:
+        environment: Optional complete environment used to locate the conventional XDG Git ignore
+            file in Sapling `.git` storage mode. Sapling `.sl` mode does not read that source.
+        initial_excludes: Optional hard baseline replacing the storage-mode default (`.sl` or
+            `.git`).
+    """
+
+    mode: Literal["sapling"] = field(default="sapling", init=False)
+    environment: Mapping[str, str] | None = None
+    initial_excludes: Sequence[str] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class JujutsuPolicyConfig:
+    """Request read-only evaluation of captured Jujutsu Git-ignore behavior.
+
+    Attributes:
+        environment: Optional complete environment used to locate the conventional XDG Git ignore
+            file.
+        initial_excludes: Hard baseline exclusions, defaulting to Jujutsu's `.jj` metadata.
+    """
+
+    mode: Literal["jujutsu"] = field(default="jujutsu", init=False)
+    environment: Mapping[str, str] | None = None
+    initial_excludes: Sequence[str] = (".jj",)
+
+
 #: Discriminated configuration union accepted by :func:`select_policy`.
 PolicyConfig: TypeAlias = (
     PortablePolicyConfig
@@ -219,6 +252,8 @@ PolicyConfig: TypeAlias = (
     | FossilPolicyConfig
     | BreezyPolicyConfig
     | DarcsPolicyConfig
+    | SaplingPolicyConfig
+    | JujutsuPolicyConfig
 )
 
 
@@ -358,6 +393,30 @@ class DarcsPolicySelection:
     fallback_reason: None = None
 
 
+@dataclass(frozen=True, slots=True)
+class SaplingPolicySelection:
+    """Selection of the read-only Sapling Git-ignore compatibility policy."""
+
+    mode: Literal["sapling"] = field(default="sapling", init=False)
+    backend: Literal["sapling-gitignore-portable"] = field(
+        default="sapling-gitignore-portable", init=False
+    )
+    policy: SaplingIgnorePolicy
+    fallback_reason: None = None
+
+
+@dataclass(frozen=True, slots=True)
+class JujutsuPolicySelection:
+    """Selection of the read-only Jujutsu Git-ignore compatibility policy."""
+
+    mode: Literal["jujutsu"] = field(default="jujutsu", init=False)
+    backend: Literal["jujutsu-gitignore-portable"] = field(
+        default="jujutsu-gitignore-portable", init=False
+    )
+    policy: JujutsuIgnorePolicy
+    fallback_reason: None = None
+
+
 #: Discriminated selection union; ``backend`` narrows ``policy`` to its concrete type.
 PolicySelection: TypeAlias = (
     PortablePolicySelection
@@ -368,6 +427,8 @@ PolicySelection: TypeAlias = (
     | FossilPolicySelection
     | BreezyPolicySelection
     | DarcsPolicySelection
+    | SaplingPolicySelection
+    | JujutsuPolicySelection
 )
 
 
@@ -415,6 +476,8 @@ def _is_policy_config(value: object) -> TypeGuard[PolicyConfig]:
             FossilPolicyConfig,
             BreezyPolicyConfig,
             DarcsPolicyConfig,
+            SaplingPolicyConfig,
+            JujutsuPolicyConfig,
         ),
     )
 
@@ -478,6 +541,18 @@ def select_policy(
 def select_policy(
     root: str | os.PathLike[str], config: DarcsPolicyConfig
 ) -> DarcsPolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: SaplingPolicyConfig
+) -> SaplingPolicySelection: ...
+
+
+@overload
+def select_policy(
+    root: str | os.PathLike[str], config: JujutsuPolicyConfig
+) -> JujutsuPolicySelection: ...
 
 
 @overload
@@ -624,6 +699,24 @@ def select_policy(
                 darcs_executable=selected.darcs_executable,
                 environment=selected.environment,
                 timeout=selected.timeout,
+                initial_excludes=selected.initial_excludes,
+            )
+        )
+
+    elif selected.mode == "sapling":
+        return SaplingPolicySelection(
+            policy=SaplingIgnorePolicy(
+                root,
+                environment=selected.environment,
+                initial_excludes=selected.initial_excludes,
+            )
+        )
+
+    elif selected.mode == "jujutsu":
+        return JujutsuPolicySelection(
+            policy=JujutsuIgnorePolicy(
+                root,
+                environment=selected.environment,
                 initial_excludes=selected.initial_excludes,
             )
         )

@@ -145,7 +145,7 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
         )
         if matches:
             match = matches[effective_index]
-            decision = _decision_from_match(path=resolved, match=match)
+            decision = _decision_from_match(path=resolved, match=match, scheme=self.scheme)
         else:
             decision = IgnoreDecision(
                 path=resolved,
@@ -195,7 +195,7 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
             scope=".",
         )
         if initial_match is not None and initial_match.ignored:
-            return _decision_from_match(path=target, match=initial_match)
+            return _decision_from_match(path=target, match=initial_match, scheme=self.scheme)
 
         policy_match = _gitignore_path_decision(
             root=self._repository_root,
@@ -206,9 +206,9 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
             matcher=self.matcher,
         )
         if policy_match is not None:
-            return _decision_from_match(path=target, match=policy_match)
+            return _decision_from_match(path=target, match=policy_match, scheme=self.scheme)
         if initial_match is not None:
-            return _decision_from_match(path=target, match=initial_match)
+            return _decision_from_match(path=target, match=initial_match, scheme=self.scheme)
         return IgnoreDecision(
             path=target,
             ignored=False,
@@ -517,11 +517,13 @@ def _gitignore_matches_for_path(
     return matches
 
 
-def _decision_from_match(*, path: Path, match: _PatternMatch) -> IgnoreDecision:
+def _decision_from_match(
+    *, path: Path, match: _PatternMatch, scheme: str = "git"
+) -> IgnoreDecision:
     return IgnoreDecision(
         path=path,
         ignored=match.ignored,
-        scheme="git",
+        scheme=scheme,
         source=match.source,
         pattern=match.pattern,
         line=match.line,

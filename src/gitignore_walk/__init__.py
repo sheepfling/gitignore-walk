@@ -22,8 +22,10 @@ from ._schemes.git import (
     matches_gitignore,
     parse_gitignore,
 )
+from ._schemes.jujutsu import JujutsuIgnorePolicy
 from ._schemes.mercurial import MercurialIgnoreError, MercurialIgnorePolicy
 from ._schemes.perforce import PerforceIgnoreError, PerforceIgnorePolicy
+from ._schemes.sapling import SaplingIgnorePolicy
 from ._schemes.subversion import SubversionIgnoreError, SubversionIgnorePolicy
 from ._selection import (
     BreezyPolicyConfig,
@@ -34,6 +36,8 @@ from ._selection import (
     FossilPolicySelection,
     GitPolicyConfig,
     GitPolicySelection,
+    JujutsuPolicyConfig,
+    JujutsuPolicySelection,
     MercurialPolicyConfig,
     MercurialPolicySelection,
     PerforcePolicyConfig,
@@ -43,6 +47,8 @@ from ._selection import (
     PortablePolicyConfig,
     PortablePolicySelection,
     PreferGitPolicyConfig,
+    SaplingPolicyConfig,
+    SaplingPolicySelection,
     SubversionPolicyConfig,
     SubversionPolicySelection,
     select_policy,
@@ -79,6 +85,9 @@ __all__ = [
     "IgnoreTraceMatch",
     "IgnoreWalkEntry",
     "IgnoreWalker",
+    "JujutsuIgnorePolicy",
+    "JujutsuPolicyConfig",
+    "JujutsuPolicySelection",
     "MercurialIgnoreError",
     "MercurialIgnorePolicy",
     "MercurialPolicyConfig",
@@ -93,6 +102,9 @@ __all__ = [
     "PortablePolicySelection",
     "PreferGitPolicyConfig",
     "RegexMatcher",
+    "SaplingIgnorePolicy",
+    "SaplingPolicyConfig",
+    "SaplingPolicySelection",
     "SubversionIgnoreError",
     "SubversionIgnorePolicy",
     "SubversionPolicyConfig",

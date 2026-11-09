@@ -23,6 +23,9 @@ from gitignore_walk import (
     GitStandardPolicy,
     IgnoreDecision,
     IgnoreWalker,
+    JujutsuIgnorePolicy,
+    JujutsuPolicyConfig,
+    JujutsuPolicySelection,
     MercurialIgnorePolicy,
     MercurialPolicyConfig,
     MercurialPolicySelection,
@@ -33,6 +36,9 @@ from gitignore_walk import (
     PortablePolicyConfig,
     PortablePolicySelection,
     PreferGitPolicyConfig,
+    SaplingIgnorePolicy,
+    SaplingPolicyConfig,
+    SaplingPolicySelection,
     SubversionIgnorePolicy,
     SubversionPolicyConfig,
     SubversionPolicySelection,
@@ -82,6 +88,14 @@ def check_policy_selection(root: Path, git_executable: str) -> None:
     assert_type(darcs_result, DarcsPolicySelection)
     assert_type(darcs_result.policy, DarcsBoringPolicy)
 
+    sapling_result = select_policy(root, SaplingPolicyConfig())
+    assert_type(sapling_result, SaplingPolicySelection)
+    assert_type(sapling_result.policy, SaplingIgnorePolicy)
+
+    jujutsu_result = select_policy(root, JujutsuPolicyConfig())
+    assert_type(jujutsu_result, JujutsuPolicySelection)
+    assert_type(jujutsu_result.policy, JujutsuIgnorePolicy)
+
     preferred = select_policy(root, PreferGitPolicyConfig(git_executable=git_executable))
     if preferred.backend == "git":
         assert_type(preferred.policy, GitStandardPolicy)
@@ -109,6 +123,10 @@ def check_policy_selection(root: Path, git_executable: str) -> None:
     check_policy_config(perforce_config)
     darcs_config: PolicyConfig = DarcsPolicyConfig()
     check_policy_config(darcs_config)
+    sapling_config: PolicyConfig = SaplingPolicyConfig()
+    check_policy_config(sapling_config)
+    jujutsu_config: PolicyConfig = JujutsuPolicyConfig()
+    check_policy_config(jujutsu_config)
 
 
 def check_policy_config(config: PolicyConfig) -> None:
@@ -129,5 +147,9 @@ def check_policy_config(config: PolicyConfig) -> None:
         assert_type(config, FossilPolicyConfig)
     elif config.mode == "breezy":
         assert_type(config, BreezyPolicyConfig)
-    else:
+    elif config.mode == "darcs":
         assert_type(config, DarcsPolicyConfig)
+    elif config.mode == "sapling":
+        assert_type(config, SaplingPolicyConfig)
+    else:
+        assert_type(config, JujutsuPolicyConfig)

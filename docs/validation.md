@@ -123,8 +123,9 @@ python -m scripts.ci native --backends hg svn brz --output-dir .local/ci
 
 The first is a partial backend gate, not full backend coverage. `native` runs captures only; it does
 not replace tests, lint, typing, or packaging. `all` remains useful for quick iteration when native
-clients are unavailable, but is not the full pre-push gate. Sapling/Jujutsu probes remain research
-commands, outside both the local and hosted acceptance matrix.
+clients are unavailable, but is not the full pre-push gate. Sapling/Jujutsu tests replay versioned
+native captures; direct client execution is performed by the disposable local compatibility oracle,
+not the hosted matrix.
 
 The commands assume the virtual environment is active. Otherwise replace `python` with
 `.venv/bin/python` on macOS/Linux or `.\.venv\Scripts\python.exe` in PowerShell.

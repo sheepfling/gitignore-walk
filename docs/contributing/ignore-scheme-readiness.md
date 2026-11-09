@@ -188,9 +188,8 @@ Invalid ERE lines produce a native warning and are skipped. See the
 [Darcs oracle notes](../../tests/oracles/darcs/README.md).
 
 Sapling `.git` and `.sl` modes and Jujutsu colocated and non-colocated modes share the tested
-in-tree `.gitignore` behavior. The four captures also show that `.hgignore` and `.jjignore` are not
-their ignore sources for these profiles. Existing Git-ignore evaluation can cover this bounded rule
-subset when given the correct metadata baseline; config-file and global-exclude discovery remain
-unverified. Jujutsu `status` snapshots its workspace, so the probes use temporary repositories and
-do not establish a safe per-file native adapter. See the
+Git-ignore dialect. Initial read-only policies reuse that matcher with mode-specific source
+discovery. XDG Git ignores, `.git/info/exclude`, and their precedence are captured on macOS arm64;
+other global config sources, platforms, and broader patterns remain unverified. Jujutsu `status`
+snapshots its workspace, so these policies avoid invoking it. See the
 [compatibility probe notes](../../tests/oracles/compat/README.md).
