@@ -61,6 +61,12 @@ def test_perforce_capture_matches_versioned_candidates(case: dict[str, Any], pro
         assert isinstance(observation["observed_ignored"], bool)
     if expected_native_error is None:
         assert observation["exit_code"] == (1 if observation["observed_ignored"] else 0)
+    client_root_probe = observation.get("client_root_probe")
+    assert (client_root_probe is not None) is case.get("capture_client_root", False)
+    if client_root_probe is not None:
+        assert client_root_probe["exit_code"] == 0
+        assert client_root_probe["client_root"] == case["expected_client_root"]
+        assert client_root_probe["command"] == ["p4", "-ztag", "info"]
     assert "gitignore-walk-p4-oracle-" not in observation["stdout"] + observation["stderr"]
     walk_preview = observation.get("walk_preview")
     assert (walk_preview is not None) is case.get("capture_walk", False)
@@ -165,6 +171,34 @@ def test_perforce_policy_matches_captured_p4config_settings(
 
     assert observation["p4_set_exit_code"] == 0
     assert policy.is_ignored(case["query"]) is observation["observed_ignored"]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))
+def test_perforce_workspace_root_matches_captured_native_client_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, profile: str
+) -> None:
+    case = next(case for case in CASES if case["id"] == "p4.discovers-client-root-from-descendant")
+    observation = OBSERVATIONS[profile][case["id"]]
+    workspace = tmp_path / "workspace"
+    caller_root = workspace / "sub"
+    caller_root.mkdir(parents=True)
+    (workspace / ".p4ignore").write_text("*.tmp\n", encoding="utf-8")
+    (caller_root / "a.tmp").touch()
+    captured_root = observation["client_root_probe"]["stdout"].replace(
+        "<workspace>", str(workspace)
+    )
+
+    def captured_p4_info(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        assert command[1:] == ["-ztag", "info"]
+        assert Path(kwargs["cwd"]) == caller_root
+        return subprocess.CompletedProcess(command, 0, captured_root, "")
+
+    monkeypatch.setattr(perforce_policy_module.subprocess, "run", captured_p4_info)
+    policy = PerforceIgnorePolicy(caller_root, environment={}, discover_client_workspace=True)
+
+    assert policy.workspace_root == workspace
+    assert policy.root == caller_root
+    assert policy.explain("a.tmp").ignored is True
 
 
 def test_perforce_config_settings_are_resolved_once_per_directory(

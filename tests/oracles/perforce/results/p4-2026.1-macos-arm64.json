@@ -10,6 +10,59 @@
   },
   "cases": [
     {
+      "id": "p4.discovers-client-root-from-descendant",
+      "dimension": "workspace-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "sub/a.tmp",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "sub/a.tmp"
+      ],
+      "command_cwd": "sub",
+      "exit_code": 1,
+      "stdout": "//depot/sub/a.tmp#1 - opened for add\n<workspace>/sub/a.tmp - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/sub/a.tmp ignored by <workspace>/.p4ignore:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "client_root_probe": {
+        "command": [
+          "p4",
+          "-ztag",
+          "info"
+        ],
+        "command_cwd": "sub",
+        "exit_code": 0,
+        "client_root": "<workspace>",
+        "stdout": "... userName super\n... password enabled\n... clientName ignore-oracle\n... clientRoot <workspace>\n... clientLock none\n... clientCwd <workspace>/sub\n... clientHost <local-client>\n... clientCase insensitive\n... peerAddress 127.0.0.1:52246\n... clientAddress 127.0.0.1\n... monitor enabled\n... security enabled\n... serverAddress localhost:52238\n... serverRoot <temp>/server\n... serverDate 2026/11/09 17:44:39 -0600 CST\n... tzoffset -21600\n... serverUptime 00:00:00\n... serverVersion P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)\n... serverServices standard\n... serverLicense none\n... caseHandling insensitive\n... allowStreamSpecInteg 1\n... parentViewDefault inheritAll\n... unloadSupport disabled\n... extensionsSupport enabled\n... resourcePressureLastUpdate 0\n... resourcePressureCPU 0\n... resourcePressureMem 0\n\n",
+        "stderr": ""
+      },
+      "walk_preview": null
+    },
+    {
       "id": "p4.newline-filename-rejected-before-ignore-evaluation",
       "dimension": "path-boundary",
       "evidence_status": "native-observed",
@@ -49,6 +102,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -87,9 +141,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=custom.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:51092\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-677if4yi/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-677if4yi/trust\nP4USER=super\nP4_127.0.0.1:51092_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=custom.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:52255\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-as4guthq/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-as4guthq/trust\nP4USER=super\nP4_127.0.0.1:52255_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -128,9 +183,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=config.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:51100\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-eloyf3gx/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-eloyf3gx/trust\nP4USER=super\nP4_127.0.0.1:51100_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=config.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:52264\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-rophdcli/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-rophdcli/trust\nP4USER=super\nP4_127.0.0.1:52264_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -169,9 +225,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/sub/.p4config', '<workspace>/.p4config' )\nP4IGNORE=child.ignore (config '<workspace>/sub/.p4config')\nP4PORT=127.0.0.1:51109\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-8n2_fyir/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-8n2_fyir/trust\nP4USER=super\nP4_127.0.0.1:51109_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/sub/.p4config', '<workspace>/.p4config' )\nP4IGNORE=child.ignore (config '<workspace>/sub/.p4config')\nP4PORT=127.0.0.1:52272\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-wvzk542_/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-wvzk542_/trust\nP4USER=super\nP4_127.0.0.1:52272_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -213,6 +270,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": {
         "command": [
           "p4",
@@ -264,6 +322,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -305,6 +364,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -346,6 +406,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -387,6 +448,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -428,6 +490,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -469,6 +532,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -510,6 +574,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -551,6 +616,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -592,6 +658,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -633,6 +700,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -674,6 +742,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -715,6 +784,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -756,6 +826,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -797,6 +868,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -838,6 +910,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -879,6 +952,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -920,6 +994,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -961,6 +1036,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1002,6 +1078,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1043,6 +1120,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1081,9 +1159,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:51291\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-6cpm0vf3/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-6cpm0vf3/trust\nP4USER=super\nP4_127.0.0.1:51291_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:52455\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-mqu0uepe/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-mqu0uepe/trust\nP4USER=super\nP4_127.0.0.1:52455_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1122,9 +1201,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config '<workspace>/p4config.txt' )\nP4PORT=127.0.0.1:51299\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-5s3nmbih/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-5s3nmbih/trust\nP4USER=super\nP4_127.0.0.1:51299_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config '<workspace>/p4config.txt' )\nP4PORT=127.0.0.1:52463\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-wgbvqyn0/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-wgbvqyn0/trust\nP4USER=super\nP4_127.0.0.1:52463_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1163,9 +1243,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config 'noconfig')\nP4PORT=127.0.0.1:51307\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-55rjedky/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-55rjedky/trust\nP4USER=super\nP4_127.0.0.1:51307_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config 'noconfig')\nP4PORT=127.0.0.1:52473\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-zf41hkpc/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-zf41hkpc/trust\nP4USER=super\nP4_127.0.0.1:52473_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1207,6 +1288,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1248,6 +1330,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1289,6 +1372,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1327,9 +1411,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:51339\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-oa12t391/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-oa12t391/trust\nP4USER=super\nP4_127.0.0.1:51339_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:52507\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-f3w8oodw/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-f3w8oodw/trust\nP4USER=super\nP4_127.0.0.1:52507_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1368,9 +1453,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:51347\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-wb8f5ozf/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-wb8f5ozf/trust\nP4USER=super\nP4_127.0.0.1:51347_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:52515\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-xups04dv/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-xups04dv/trust\nP4USER=super\nP4_127.0.0.1:52515_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1416,6 +1502,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1461,6 +1548,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1502,6 +1590,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1543,6 +1632,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1584,6 +1674,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     },
     {
@@ -1625,6 +1716,7 @@
       "p4_set_output": null,
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
       "walk_preview": null
     }
   ]

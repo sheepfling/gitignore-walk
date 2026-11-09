@@ -7,7 +7,8 @@ class PerforceIgnoreError(RuntimeError):
     """Raised when a configured Perforce ignore source cannot be read safely.
 
     Attributes:
-        operation: Failed operation, currently ``"read"`` or ``"parse"``.
+        operation: Failed operation, such as ``"read"``, ``"parse"``, ``"config"``, or
+            ``"workspace"``.
         source: Ignore source associated with the failure.
         line: One-based source line when a pattern failed to compile.
     """

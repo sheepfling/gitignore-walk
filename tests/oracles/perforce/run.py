@@ -64,6 +64,13 @@ def _ignored_by_rules(stdout: str, stderr: str) -> bool | None:
     return None
 
 
+def _normalize_client_info(output: str, workspace: Path) -> str:
+    """Normalize temporary paths and the developer machine name in tagged info output."""
+    output = output.replace(str(workspace), "<workspace>")
+    output = re.sub(r"(?m)^(\.\.\. serverRoot )[^\r\n]*", r"\1<temp>/server", output)
+    return re.sub(r"(?m)^(\.\.\. clientHost )[^\r\n]*", r"\1<local-client>", output)
+
+
 def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
     setup = case["setup"]
     with tempfile.TemporaryDirectory(prefix="gitignore-walk-p4-oracle-") as temporary:
@@ -204,6 +211,26 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 cwd=query_cwd,
                 environment=environment,
             )
+            client_root_result = (
+                _run(p4, ["-ztag", "info"], cwd=query_cwd, environment=environment)
+                if case.get("capture_client_root")
+                else None
+            )
+            client_root = None
+            if client_root_result is not None:
+                for line in client_root_result.stdout.splitlines():
+                    fields = line.split(None, 2)
+                    if len(fields) == 3 and fields[:2] == ["...", "clientRoot"]:
+                        client_root = fields[2]
+                        break
+                if client_root is not None:
+                    client_root = client_root.replace(str(workspace), "<workspace>")
+                expected_client_root = case.get("expected_client_root")
+                if client_root_result.returncode != 0 or client_root != expected_client_root:
+                    raise RuntimeError(
+                        f"native client-root observation changed for {case['id']}: "
+                        f"{client_root_result.returncode}, {client_root!r}"
+                    )
             walk_preview = (
                 _run(p4, ["add", "-n", "..."], cwd=workspace, environment=environment)
                 if case.get("capture_walk")
@@ -307,6 +334,18 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 ),
                 "server_root": "<temp>/server",
                 "workspace_root": "<temp>/workspace",
+                "client_root_probe": (
+                    {
+                        "command": ["p4", "-ztag", "info"],
+                        "command_cwd": query_cwd.relative_to(workspace).as_posix() or ".",
+                        "exit_code": client_root_result.returncode,
+                        "client_root": client_root,
+                        "stdout": _normalize_client_info(client_root_result.stdout, workspace),
+                        "stderr": client_root_result.stderr.replace(str(workspace), "<workspace>"),
+                    }
+                    if client_root_result is not None
+                    else None
+                ),
                 "walk_preview": (
                     {
                         "command": ["p4", "add", "-n", "..."],

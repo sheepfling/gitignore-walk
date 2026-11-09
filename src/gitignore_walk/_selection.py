@@ -104,7 +104,7 @@ class MercurialPolicyConfig:
 
 @dataclass(frozen=True, slots=True)
 class PerforcePolicyConfig:
-    """Request portable P4IGNORE evaluation for a caller-selected workspace root.
+    """Request portable P4IGNORE evaluation within a caller-selected traversal root.
 
     Attributes:
         p4ignore: Optional semicolon-delimited list overriding ``P4IGNORE`` from the environment.
@@ -112,8 +112,10 @@ class PerforcePolicyConfig:
         environment: Optional complete environment replacing the process environment. The current
             evaluator reads ``P4IGNORE`` only unless ``read_client_config`` is enabled.
         read_client_config: Ask the P4 client for effective ``P4IGNORE`` settings at each target.
-        p4_executable: P4 client used for optional ``p4 set`` configuration discovery.
-        timeout: Maximum duration in seconds for each P4 configuration query.
+        discover_client_workspace: Ask ``p4 -ztag info`` for the client root. The caller's root
+            remains the traversal and target boundary.
+        p4_executable: P4 client used for optional ``p4 set`` and ``p4 -ztag info`` queries.
+        timeout: Maximum duration in seconds for each P4 configuration or workspace query.
         initial_excludes: Hard walker baseline exclusions, defaulting to none.
     """
 
@@ -121,6 +123,7 @@ class PerforcePolicyConfig:
     p4ignore: str | None = None
     environment: Mapping[str, str] | None = None
     read_client_config: bool = False
+    discover_client_workspace: bool = False
     p4_executable: str = "p4"
     timeout: float = 30.0
     initial_excludes: Sequence[str] = ()
@@ -649,6 +652,7 @@ def select_policy(
                 environment=selected.environment,
                 p4ignore=selected.p4ignore,
                 read_client_config=selected.read_client_config,
+                discover_client_workspace=selected.discover_client_workspace,
                 p4_executable=selected.p4_executable,
                 timeout=selected.timeout,
                 initial_excludes=selected.initial_excludes,

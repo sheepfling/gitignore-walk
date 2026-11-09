@@ -177,18 +177,22 @@ client/platform certification. See the
 [Subversion oracle notes](tests/oracles/svn/README.md).
 
 `PerforcePolicyConfig` explicitly selects the local P4IGNORE evaluator. The caller supplies the
-workspace root; no P4 server is required. It reads `P4IGNORE` from the supplied environment, or
-checks `.p4ignore` followed by `p4ignore.txt` when the setting is absent. Set
+traversal root; no P4 server is required for local rule matching. It reads `P4IGNORE` from the
+supplied environment, or checks `.p4ignore` followed by `p4ignore.txt` when the setting is absent. Set
 `read_client_config=True` to have the installed P4 client resolve `P4CONFIG` and report its
 effective `P4IGNORE` setting. This option invokes `p4 set` for each queried directory; an explicit
 `p4ignore=` value takes precedence and keeps evaluation client-independent.
+Set `discover_client_workspace=True` to ask `p4 -ztag info` for the configured client root. This
+lets the evaluator find ignore files above a nested traversal root while continuing to reject
+targets outside the caller's root. Workspace discovery requires a configured P4 client and is
+independent of `read_client_config`.
 The file list uses semicolon separators. The captured precedence is deepest source directory first,
 then earliest configured filename at that level, then the last matching line in that file. The
 supported subset includes `*`, `**`, leading-slash rules anchored to their ignore file, trailing-slash
 directory rules, and `!` exceptions. The walker does not prune ignored directories, so an exception
-can re-include a descendant. Client workspace discovery, server views, and broader pattern edge
-cases are not implemented. It trims ASCII spaces around each rule, preserves interior spaces and
-tabs, and supports the documented `\#` comment escape. All 35 boolean candidates match native P4/P4
+can re-include a descendant. Server views and broader pattern edge cases are not implemented. It
+trims ASCII spaces around each rule, preserves interior spaces and tabs, and supports the documented
+`\#` comment escape. All 36 boolean candidates match native P4/P4
 Server 2026.1 profiles on macOS arm64, Debian 13 Linux x86_64, and Ubuntu 24.04 Linux x86_64; three
 path-boundary probes separately record cases where `p4 add` rejects a filename before ignore
 eligibility can be evaluated. See the
@@ -538,35 +542,35 @@ policy.explain("build/output.log")
 
 Other available interfaces include:
 
-| API                                                   | Purpose                                                                     |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- |
-| `SubversionIgnorePolicy`                              | Native discovery and evaluation of Subversion ignore properties             |
-| `SubversionPolicyConfig`                              | Explicit Subversion selection and runtime config options                    |
-| `SubversionIgnoreError`                               | Report native Subversion discovery or execution failures                    |
-| `BreezyIgnorePolicy`                                  | Local Breezy rule evaluation with native built-in-rule discovery            |
-| `BreezyPolicyConfig`                                  | Explicit Breezy selection and client/configuration options                  |
-| `BreezyIgnoreError`                                   | Report Breezy rule-source, parse, and client failures                       |
-| `DarcsBoringPolicy`                                   | Native, membership-aware Darcs boring-candidate evaluation                  |
-| `DarcsPolicyConfig`                                   | Darcs client, environment, timeout, and walker-baseline selection           |
-| `DarcsPolicySelection`                                | Typed result identifying the Darcs native candidate backend                 |
-| `DarcsBoringError`                                    | Report Darcs native candidate or managed-path discovery failures            |
-| `PerforceIgnorePolicy`                                | Evaluate the supported P4IGNORE subset for a caller-selected workspace root |
-| `PerforcePolicyConfig`                                | Explicit Perforce selection and P4IGNORE source-list configuration          |
-| `PerforcePolicySelection`                             | Typed result identifying the selected Perforce policy and backend           |
-| `PerforceIgnoreError`                                 | Report Perforce ignore-source and pattern errors                            |
-| `MercurialIgnorePolicy`                               | Portable Mercurial `.hgignore` evaluation                                   |
-| `MercurialPolicyConfig`                               | Mercurial selection with extra paths or opt-in native config discovery      |
-| `select_policy(root, config)`                         | Select a tagged built-in scheme and backend                                 |
-| `MercurialIgnoreError`                                | Report Mercurial source, pattern, and config-discovery errors               |
-| `is_gitignored(root, target)`                         | Portable one-shot query                                                     |
-| `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec`                        |
-| `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                                             |
-| `IgnoreWalker.walk()`                                 | Directory traversal with optional filtering                                 |
-| `IgnoreWalker.iter_files()`                           | File-only traversal                                                         |
-| `IgnorePolicy.explain_many()`                         | Return a mutable list of detailed decisions                                 |
-| `IgnorePolicy.is_ignored_many()`                      | Return a mutable list of ignore decisions                                   |
-| `IgnorePolicy.iter_explain()`                         | Lazily yield detailed decisions                                             |
-| `IgnorePolicy.iter_ignored()`                         | Lazily yield ignore decisions                                               |
+| API                                                   | Purpose                                                                           |
+| ----------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `SubversionIgnorePolicy`                              | Native discovery and evaluation of Subversion ignore properties                   |
+| `SubversionPolicyConfig`                              | Explicit Subversion selection and runtime config options                          |
+| `SubversionIgnoreError`                               | Report native Subversion discovery or execution failures                          |
+| `BreezyIgnorePolicy`                                  | Local Breezy rule evaluation with native built-in-rule discovery                  |
+| `BreezyPolicyConfig`                                  | Explicit Breezy selection and client/configuration options                        |
+| `BreezyIgnoreError`                                   | Report Breezy rule-source, parse, and client failures                             |
+| `DarcsBoringPolicy`                                   | Native, membership-aware Darcs boring-candidate evaluation                        |
+| `DarcsPolicyConfig`                                   | Darcs client, environment, timeout, and walker-baseline selection                 |
+| `DarcsPolicySelection`                                | Typed result identifying the Darcs native candidate backend                       |
+| `DarcsBoringError`                                    | Report Darcs native candidate or managed-path discovery failures                  |
+| `PerforceIgnorePolicy`                                | Evaluate the supported P4IGNORE subset within a caller-selected traversal root    |
+| `PerforcePolicyConfig`                                | Explicit selection, source-list configuration, and optional client-root discovery |
+| `PerforcePolicySelection`                             | Typed result identifying the selected Perforce policy and backend                 |
+| `PerforceIgnoreError`                                 | Report Perforce source, pattern, configuration, and workspace errors              |
+| `MercurialIgnorePolicy`                               | Portable Mercurial `.hgignore` evaluation                                         |
+| `MercurialPolicyConfig`                               | Mercurial selection with extra paths or opt-in native config discovery            |
+| `select_policy(root, config)`                         | Select a tagged built-in scheme and backend                                       |
+| `MercurialIgnoreError`                                | Report Mercurial source, pattern, and config-discovery errors                     |
+| `is_gitignored(root, target)`                         | Portable one-shot query                                                           |
+| `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec`                              |
+| `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                                                   |
+| `IgnoreWalker.walk()`                                 | Directory traversal with optional filtering                                       |
+| `IgnoreWalker.iter_files()`                           | File-only traversal                                                               |
+| `IgnorePolicy.explain_many()`                         | Return a mutable list of detailed decisions                                       |
+| `IgnorePolicy.is_ignored_many()`                      | Return a mutable list of ignore decisions                                         |
+| `IgnorePolicy.iter_explain()`                         | Lazily yield detailed decisions                                                   |
+| `IgnorePolicy.iter_ignored()`                         | Lazily yield ignore decisions                                                     |
 
 All built-in policies implement `IgnorePolicy`. Lazy methods consume targets as they run: Git's
 portable policy caches each ignore file when first read, the Mercurial policy reads one source

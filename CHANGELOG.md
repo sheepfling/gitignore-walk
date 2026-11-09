@@ -12,6 +12,8 @@ Notable user-facing changes are recorded here.
   `subinclude`, with optional read-only discovery of configured `ui.ignore` files through `hg`.
 - Initial scheme-specific policies for Subversion properties, Perforce `P4IGNORE`, Fossil ignore
   globs, Breezy ignore rules, and Darcs boring-file candidates.
+- Opt-in Perforce client-root discovery through tagged `p4 -ztag info`, with the caller's traversal
+  root retained as the target boundary.
 - Initial read-only Sapling and Jujutsu policies for captured Git-compatible ignore sources,
   with separate workspace discovery and typed selection. Captured cases also cover directory
   negation barriers, child re-inclusion, root anchoring, and recursive `**` patterns.

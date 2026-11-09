@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -17,6 +18,7 @@ from gitignore_walk import (
     PerforcePolicySelection,
     select_policy,
 )
+from gitignore_walk._schemes.perforce import policy as perforce_policy_module
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "perforce"
 CASES: list[dict[str, Any]] = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))[
@@ -101,6 +103,52 @@ def test_perforce_selection_is_discriminated_and_scheme_local(tmp_path: Path) ->
     assert selection.mode == "perforce"
     assert selection.backend == "perforce-python"
     assert selection.policy.scheme == "perforce"
+
+
+def test_perforce_can_discover_workspace_without_widening_caller_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = tmp_path / "workspace"
+    caller_root = workspace / "sub"
+    caller_root.mkdir(parents=True)
+    (workspace / ".p4ignore").write_text("*.tmp\n", encoding="utf-8")
+    target = caller_root / "a.tmp"
+    target.touch()
+
+    def captured_p4_info(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        assert command[1:] == ["-ztag", "info"]
+        assert Path(kwargs["cwd"]) == caller_root
+        assert kwargs["env"] == {"P4CLIENT": "client"}
+        return subprocess.CompletedProcess(command, 0, f"... clientRoot {workspace}\n", "")
+
+    monkeypatch.setattr(perforce_policy_module.subprocess, "run", captured_p4_info)
+    selection = select_policy(
+        caller_root,
+        PerforcePolicyConfig(environment={"P4CLIENT": "client"}, discover_client_workspace=True),
+    )
+
+    assert isinstance(selection.policy, PerforceIgnorePolicy)
+    assert selection.policy.root == caller_root
+    assert selection.policy.workspace_root == workspace
+    decision = selection.policy.trace("a.tmp")
+    assert decision.decision.ignored is True
+    assert decision.matches[0].scope == "."
+    with pytest.raises(ValueError, match="inside policy root"):
+        selection.policy.explain("../outside.tmp")
+
+
+def test_perforce_workspace_discovery_requires_a_tagged_client_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def missing_client_root(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        return subprocess.CompletedProcess(command, 0, "... clientName client\n", "")
+
+    monkeypatch.setattr(perforce_policy_module.subprocess, "run", missing_client_root)
+
+    with pytest.raises(PerforceIgnoreError, match="no tagged clientRoot") as error:
+        PerforceIgnorePolicy(tmp_path, environment={}, discover_client_workspace=True)
+
+    assert error.value.operation == "workspace"
 
 
 def test_perforce_leading_slash_anchors_to_the_nested_ignore_file(tmp_path: Path) -> None:

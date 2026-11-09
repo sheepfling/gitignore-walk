@@ -103,7 +103,7 @@ class _PerforceWalkSession:
 class PerforceIgnorePolicy(IgnorePolicy):
     """Evaluate P4IGNORE rules without requiring a P4 client or server.
 
-    ``root`` is the workspace boundary supplied by the caller. The evaluator discovers configured
+    ``root`` is the traversal boundary supplied by the caller. The evaluator discovers configured
     ignore files in each target's ancestor directories, applies source files from shallow to deep,
     and evaluates rules in file-list and line order. The last matching rule wins, so a later
     exception may re-include a child. `*` matches within one path component; `**` may cross
@@ -114,13 +114,14 @@ class PerforceIgnorePolicy(IgnorePolicy):
     directory. An explicit value is parsed as Perforce's semicolon-delimited source list and
     replaces those default names. Set ``read_client_config=True`` to query ``p4 set`` for the
     effective P4CONFIG-derived setting at each target; explicit ``p4ignore`` still takes
-    precedence. Client workspace discovery, server-provided views, and the broader
+    precedence. Set ``discover_client_workspace=True`` to query ``p4 -ztag info`` for the client
+    root; this does not widen the caller's traversal boundary. Server-provided views and the broader
     wildcard/lexical grammar are not implemented yet.
 
     Attributes:
-        root: Caller-selected workspace boundary and target bound.
+        root: Caller-selected traversal boundary and target bound.
         scheme: Stable ``"perforce"`` identifier.
-        workspace_root: The caller-selected workspace boundary.
+        workspace_root: Native client root when discovery is enabled, otherwise the caller root.
     """
 
     @property
@@ -131,7 +132,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
     def _source_order_key(self, source: Path) -> tuple[int, str]:
         """Sort sources by workspace depth and directory path."""
         try:
-            relative_parent = source.parent.relative_to(self.root)
+            relative_parent = source.parent.relative_to(self.workspace_root)
         except ValueError:
             return (-1, source.parent.as_posix())
         return (
@@ -146,23 +147,31 @@ class PerforceIgnorePolicy(IgnorePolicy):
         environment: Mapping[str, str] | None = None,
         p4ignore: str | None = None,
         read_client_config: bool = False,
+        discover_client_workspace: bool = False,
         p4_executable: str = "p4",
         timeout: float = 30.0,
         initial_excludes: Sequence[str] = (),
     ) -> None:
-        """Bind the caller root and load the P4IGNORE file-list selection."""
+        """Bind caller bounds, optionally discover the client root, and load P4IGNORE selection."""
         try:
             self.root = Path(root).expanduser().resolve()
         except (OSError, RuntimeError) as error:
             raise ValueError(f"unable to resolve Perforce policy root: {error}") from error
         if not self.root.is_dir():
             raise ValueError(f"Perforce policy root must be a directory: {self.root}")
-        self.workspace_root = self.root
         self._environment = dict(os.environ if environment is None else environment)
         if not isfinite(timeout) or timeout <= 0:
             raise ValueError("Perforce configuration discovery timeout must be finite and positive")
         self._p4_executable = p4_executable
         self._timeout = timeout
+        self.workspace_root = (
+            self._discover_workspace_root() if discover_client_workspace else self.root
+        )
+        if not self.root.is_relative_to(self.workspace_root):
+            raise PerforceIgnoreError(
+                f"caller root {self.root} is outside Perforce client root {self.workspace_root}",
+                operation="workspace",
+            )
         self._read_client_config = read_client_config and p4ignore is None
         selected = p4ignore if p4ignore is not None else self._environment.get("P4IGNORE")
         self._ignore_files = (
@@ -173,6 +182,57 @@ class PerforceIgnorePolicy(IgnorePolicy):
         self._initial_excludes = tuple(
             item.replace("\\", "/").strip("/") for item in initial_excludes
         )
+
+    def _discover_workspace_root(self) -> Path:
+        """Return the native client root containing the caller root."""
+        try:
+            result = subprocess.run(
+                [self._p4_executable, "-ztag", "info"],
+                cwd=self.root,
+                env=self._environment,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=self._timeout,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise PerforceIgnoreError(
+                f"Unable to discover Perforce client workspace: {error}",
+                operation="workspace",
+            ) from error
+        if result.returncode != 0:
+            detail = result.stderr.strip() or result.stdout.strip() or "unknown P4 error"
+            raise PerforceIgnoreError(
+                f"Perforce client workspace discovery failed: {detail}",
+                operation="workspace",
+            )
+
+        client_root: str | None = None
+        for line in result.stdout.splitlines():
+            fields = line.split(None, 2)
+            if len(fields) == 3 and fields[:2] == ["...", "clientRoot"]:
+                client_root = fields[2]
+                break
+        if not client_root:
+            raise PerforceIgnoreError(
+                "Perforce client workspace discovery returned no tagged clientRoot",
+                operation="workspace",
+            )
+        try:
+            workspace_root = Path(client_root).expanduser().resolve()
+        except (OSError, RuntimeError) as error:
+            raise PerforceIgnoreError(
+                f"Unable to resolve Perforce client root {client_root!r}: {error}",
+                operation="workspace",
+            ) from error
+        if not workspace_root.is_dir():
+            raise PerforceIgnoreError(
+                f"Perforce client root is not a directory: {workspace_root}",
+                operation="workspace",
+            )
+        return workspace_root
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         """Resolve a target and reject paths outside the caller-selected workspace root."""
@@ -236,7 +296,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
                 ignored=not rule.negated,
                 effective=rule is effective_rule,
                 scheme=self.scheme,
-                scope=rule.scope.relative_to(self.root).as_posix() or ".",
+                scope=rule.scope.relative_to(self.workspace_root).as_posix() or ".",
                 reason="matched-rule" if not rule.negated else "exception-rule",
             )
             for rule in matching
@@ -309,7 +369,11 @@ class PerforceIgnorePolicy(IgnorePolicy):
     def _ignore_configuration(self, directory: Path) -> tuple[tuple[str, ...], Path, str | None]:
         """Return effective P4IGNORE source names and the scope of their P4CONFIG value."""
         if not self._read_client_config:
-            return self._ignore_files, self.root, self._environment.get("P4CONFIG") or None
+            return (
+                self._ignore_files,
+                self.workspace_root,
+                self._environment.get("P4CONFIG") or None,
+            )
         try:
             result = subprocess.run(
                 [self._p4_executable, "set"],
@@ -356,8 +420,8 @@ class PerforceIgnorePolicy(IgnorePolicy):
                 p4ignore = value
                 break
         if p4ignore is None:
-            return _DEFAULT_IGNORE_FILES, self.root, p4config_name
-        scope = source_path.parent if source_path is not None else self.root
+            return _DEFAULT_IGNORE_FILES, self.workspace_root, p4config_name
+        scope = source_path.parent if source_path is not None else self.workspace_root
         names = tuple(item for item in p4ignore.split(";") if item)
         return names, scope, p4config_name
 
@@ -449,7 +513,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
     def _contains_component(self, path: Path, name: str) -> bool:
         """Match a path component using the filesystem's case behavior when it exists."""
         candidate = path
-        while candidate != self.root:
+        while candidate != self.workspace_root:
             if candidate.name == name:
                 return True
             try:
@@ -516,7 +580,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
             source=rule.source if rule else None,
             pattern=rule.pattern if rule else None,
             line=rule.line if rule else None,
-            scope=rule.scope.relative_to(self.root).as_posix() or "." if rule else None,
+            scope=rule.scope.relative_to(self.workspace_root).as_posix() or "." if rule else None,
             reason=("matched-rule" if ignored else "exception-rule")
             if rule
             else "no-matching-rule",
