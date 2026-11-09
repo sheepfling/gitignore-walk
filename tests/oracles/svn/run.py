@@ -219,6 +219,56 @@ def _capture_case(
                     )
                 )
                 checkout_url = f"{url}/{checkout_subpath}"
+            elif setup.get("repository_properties"):
+                repository_working_copy = temp / "repository-working-copy"
+                setup_results.append(
+                    _command(
+                        [
+                            svn,
+                            "--config-dir",
+                            str(config_dir),
+                            "checkout",
+                            repository_url,
+                            str(repository_working_copy),
+                        ],
+                        cwd=temp,
+                        environment=environment,
+                    )
+                )
+                for relative, properties in setup["repository_properties"].items():
+                    target = "." if relative == "." else relative
+                    for name, value in properties.items():
+                        setup_results.append(
+                            _command(
+                                [
+                                    svn,
+                                    "--config-dir",
+                                    str(config_dir),
+                                    "propset",
+                                    name,
+                                    value,
+                                    target,
+                                ],
+                                cwd=repository_working_copy,
+                                environment=environment,
+                            )
+                        )
+                setup_results.append(
+                    _command(
+                        [
+                            svn,
+                            "--config-dir",
+                            str(config_dir),
+                            "commit",
+                            "-m",
+                            "repository properties",
+                            ".",
+                        ],
+                        cwd=repository_working_copy,
+                        environment=environment,
+                    )
+                )
+                checkout_url = url
             else:
                 checkout_url = url
             checkout = _command(

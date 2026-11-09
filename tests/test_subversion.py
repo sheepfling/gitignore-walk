@@ -162,6 +162,27 @@ def _create_working_copy(
             cwd=tmp_path,
             environment=environment,
         )
+    elif setup.get("repository_properties"):
+        repository_working_copy = tmp_path / "repository-working-copy"
+        _run_svn(
+            [*svn_prefix, "checkout", repository_url, str(repository_working_copy)],
+            cwd=tmp_path,
+            environment=environment,
+        )
+        for relative, properties in setup["repository_properties"].items():
+            target = "." if relative == "." else relative
+            for name, value in properties.items():
+                _run_svn(
+                    [*svn_prefix, "propset", name, value, target],
+                    cwd=repository_working_copy,
+                    environment=environment,
+                )
+        _run_svn(
+            [*svn_prefix, "commit", "-m", "repository properties", "."],
+            cwd=repository_working_copy,
+            environment=environment,
+        )
+        _run_svn([*svn_prefix, "checkout", url, str(root)], cwd=tmp_path, environment=environment)
     else:
         _run_svn([*svn_prefix, "checkout", url, str(root)], cwd=tmp_path, environment=environment)
     for relative in setup.get("directories", []):
@@ -543,9 +564,15 @@ def test_subversion_walk_follows_native_listed_externals(tmp_path: Path, topdown
     included = set(walker.iter_files(topdown=topdown))
     ignored = set(walker.iter_files(selection="ignored", topdown=topdown))
     all_files = set(walker.iter_files(selection="all", topdown=topdown))
+    expected_ignored = {policy.root / relative for relative in case["expected_ignored_paths"]}
+    workspace_ignored = {
+        path for path in ignored if ".svn" not in path.relative_to(policy.root).parts
+    }
 
-    assert included == native_status_files
-    assert not (native_status_files & ignored)
+    assert included == native_status_files - expected_ignored
+    assert workspace_ignored == expected_ignored
+    assert policy.is_ignored("ext/ignored.tmp")
+    assert policy.trace("ext/ignored.tmp").decision.source == str(policy.root / "ext")
     assert native_status_files <= all_files
     assert {root.relative_to(policy.root).as_posix() for root in policy._load_external_roots()} == {
         "ext",
@@ -556,7 +583,9 @@ def test_subversion_walk_follows_native_listed_externals(tmp_path: Path, topdown
         "ext-server-root",
     }
     assert set(walker.iter_files("ext", topdown=topdown)) == {
-        path for path in native_status_files if path.is_relative_to(policy.root / "ext")
+        path
+        for path in native_status_files - expected_ignored
+        if path.is_relative_to(policy.root / "ext")
     }
 
 

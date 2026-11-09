@@ -121,9 +121,15 @@
       "dimension": "external-working-copy-traversal",
       "setup": {
         "repository_directories": ["empty"],
+        "repository_properties": {
+          "empty": {
+            "svn:global-ignores": "*.tmp\n"
+          }
+        },
         "properties": {
           ".": {
-            "svn:externals": "^/empty ext\n-r 1 ^/empty ext-operative\n^/empty@1 ext-peg\n../empty ext-parent\n<repository_url>/empty ext-absolute\n<repository_path>/empty ext-server-root"
+            "svn:externals": "^/empty ext\n-r 1 ^/empty ext-operative\n^/empty@1 ext-peg\n../empty ext-parent\n<repository_url>/empty ext-absolute\n<repository_path>/empty ext-server-root",
+            "svn:global-ignores": "*.parent\n"
           }
         },
         "unversioned_files": {
@@ -132,6 +138,7 @@
         "external_files": {
           "ext/external.txt": "external file\n",
           "ext/ignored.tmp": "external ignore candidate\n",
+          "ext/root-only.parent": "not ignored by the parent working-copy property\n",
           "ext-operative/operative.txt": "operative revision external\n",
           "ext-peg/peg.txt": "peg revision external\n",
           "ext-parent/parent.txt": "parent-relative external\n",
@@ -139,11 +146,12 @@
           "ext-server-root/server-root.txt": "server-root URL external\n"
         }
       },
-      "expected_ignored_paths": [],
+      "expected_ignored_paths": ["ext/ignored.tmp"],
       "expected_status_paths": [
         "ext",
         "ext/external.txt",
         "ext/ignored.tmp",
+        "ext/root-only.parent",
         "ext-operative",
         "ext-operative/operative.txt",
         "ext-peg",

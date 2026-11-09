@@ -64,6 +64,7 @@ class _SvnRule:
 class _SvnPropertySnapshot:
     """All supported directory properties observed in one working-copy query."""
 
+    workspace_root: Path
     rules: tuple[_SvnRule, ...]
     excluded_roots: frozenset[Path] = frozenset()
     discovery_complete: bool = True
@@ -77,6 +78,9 @@ class _SubversionWalkSession:
         self._policy = policy
         self._snapshot = policy._load_snapshot()
         self._external_roots = policy._load_external_roots()
+        self._external_snapshots = tuple(
+            policy._load_snapshot(workspace_root=root) for root in sorted(self._external_roots)
+        )
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         return self._policy.resolve_target(target)
@@ -88,7 +92,8 @@ class _SubversionWalkSession:
         return path
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
-        return [self._policy._explain_with_snapshot(target, self._snapshot) for target in targets]
+        snapshots = (self._snapshot, *self._external_snapshots)
+        return [self._policy._explain_with_snapshots(target, snapshots) for target in targets]
 
     def should_descend_directory(self, target: Path) -> bool:
         return self._policy._should_descend_directory(
@@ -206,12 +211,24 @@ class SubversionIgnorePolicy(IgnorePolicy):
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain one target using a fresh native property snapshot."""
-        return self._explain_with_snapshot(target, self._load_snapshot())
+        return self.explain_many((target,))[0]
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
         """Explain an ordered set of targets against one native property snapshot."""
+        materialized = list(targets)
         snapshot = self._load_snapshot()
-        return [self._explain_with_snapshot(target, snapshot) for target in targets]
+        nested_markers = self._nested_working_copy_markers(materialized)
+        external_roots: frozenset[Path] = (
+            self._load_external_roots() if nested_markers else frozenset()
+        )
+        external_snapshots = tuple(
+            self._load_snapshot(workspace_root=root)
+            for root in sorted(external_roots)
+            if root in nested_markers
+            and any(self.resolve_target(target).is_relative_to(root) for target in materialized)
+        )
+        snapshots = (snapshot, *external_snapshots)
+        return [self._explain_with_snapshots(target, snapshots) for target in materialized]
 
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
@@ -227,8 +244,22 @@ class SubversionIgnorePolicy(IgnorePolicy):
         """Return every matched property/configuration rule in deterministic order."""
         path = self.resolve_target(target)
         snapshot = self._load_snapshot()
-        matches = self._matching_rules(path, snapshot)
-        decision = self._decision(path, matches[0] if matches else None, snapshot)
+        nested_markers = self._nested_working_copy_markers((path,))
+        external_roots: frozenset[Path] = (
+            self._load_external_roots() if nested_markers else frozenset()
+        )
+        external_snapshots = tuple(
+            self._load_snapshot(workspace_root=root)
+            for root in sorted(external_roots)
+            if root in nested_markers and path.is_relative_to(root)
+        )
+        snapshots = (snapshot, *external_snapshots)
+        matches = self._matching_rules_from_snapshots(path, snapshots)
+        decision_snapshot = max(
+            (item for item in snapshots if path.is_relative_to(item.workspace_root)),
+            key=lambda item: len(item.workspace_root.parts),
+        )
+        decision = self._decision(path, matches[0] if matches else None, decision_snapshot)
         trace = tuple(
             IgnoreTraceMatch(
                 source=rule.source,
@@ -244,6 +275,37 @@ class SubversionIgnorePolicy(IgnorePolicy):
             for index, rule in enumerate(matches)
         )
         return IgnoreTrace(decision=decision, matches=trace, complete=decision.discovery_complete)
+
+    def _nested_working_copy_markers(
+        self, targets: Iterable[str | os.PathLike[str] | Path]
+    ) -> frozenset[Path]:
+        markers: set[Path] = set()
+        for target in targets:
+            path = self.resolve_target(target)
+            for candidate in path.parents:
+                if candidate == self.workspace_root:
+                    break
+                if (candidate / ".svn").is_dir():
+                    markers.add(candidate)
+        return frozenset(markers)
+
+    def _matching_rules_from_snapshots(
+        self, target: Path, snapshots: Sequence[_SvnPropertySnapshot]
+    ) -> tuple[_SvnRule, ...]:
+        applicable = tuple(
+            snapshot for snapshot in snapshots if target.is_relative_to(snapshot.workspace_root)
+        )
+        deepest_root = max(
+            (snapshot.workspace_root for snapshot in applicable), key=lambda root: len(root.parts)
+        )
+        rules = (
+            rule
+            for snapshot in applicable
+            for rule in self._matching_rules(target, snapshot)
+            if snapshot.workspace_root == deepest_root
+            or rule.property_name not in (_IGNORE_PROPERTY, _GLOBAL_IGNORE_PROPERTY)
+        )
+        return tuple(dict.fromkeys(rules))
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         """Keep descending because rule matches do not establish versioned membership."""
@@ -318,18 +380,17 @@ class SubversionIgnorePolicy(IgnorePolicy):
         """Create a stable property snapshot for one filesystem walk."""
         return _SubversionWalkSession(self)
 
-    def _load_snapshot(self) -> _SvnPropertySnapshot:
+    def _load_snapshot(self, *, workspace_root: Path | None = None) -> _SvnPropertySnapshot:
         """Load versioned properties without reading Subversion's private WC database."""
-        info_output = self._run(
-            ("info", "--xml", "--depth", "infinity", "."), cwd=self.workspace_root
-        )
+        query_root = workspace_root or self.workspace_root
+        info_output = self._run(("info", "--xml", "--depth", "infinity", "."), cwd=query_root)
         try:
             info_document = ET.fromstring(info_output)
         except ET.ParseError as error:
             raise SubversionIgnoreError(
                 f"Subversion returned invalid working-copy depth XML: {error}",
                 operation="info",
-                path=str(self.workspace_root),
+                path=str(query_root),
             ) from error
         excluded_roots: set[Path] = set()
         for entry in info_document.findall("./entry"):
@@ -343,9 +404,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
                     operation="info",
                     path=relative,
                 )
-            excluded_roots.add(
-                self.workspace_root if relative in ("", ".") else self.workspace_root / relative
-            )
+            excluded_roots.add(query_root if relative in ("", ".") else query_root / relative)
         output = self._run(
             (
                 "proplist",
@@ -356,7 +415,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
                 "--show-inherited-props",
                 ".",
             ),
-            cwd=self.workspace_root,
+            cwd=query_root,
         )
         try:
             document = ET.fromstring(output)
@@ -364,7 +423,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
             raise SubversionIgnoreError(
                 f"Subversion returned invalid property XML: {error}",
                 operation="proplist",
-                path=str(self.workspace_root),
+                path=str(query_root),
             ) from error
         rules: list[_SvnRule] = []
         for target in document.findall("./target"):
@@ -386,7 +445,7 @@ class SubversionIgnorePolicy(IgnorePolicy):
                 for pattern in split_svn_property_patterns(prop.text or ""):
                     rules.append(
                         _SvnRule(
-                            source=str(self.workspace_root / scope_path),
+                            source=str(query_root / scope_path),
                             scope=scope,
                             property_name=name,
                             pattern=pattern,
@@ -435,7 +494,8 @@ class SubversionIgnorePolicy(IgnorePolicy):
                     )
                 )
         return _SvnPropertySnapshot(
-            tuple(rules),
+            workspace_root=query_root,
+            rules=tuple(rules),
             excluded_roots=frozenset(excluded_roots),
             discovery_complete=runtime_ignores.discovery_complete,
             diagnostics=runtime_ignores.diagnostics,
@@ -479,13 +539,24 @@ class SubversionIgnorePolicy(IgnorePolicy):
     def _explain_with_snapshot(
         self, target: str | os.PathLike[str], snapshot: _SvnPropertySnapshot
     ) -> IgnoreDecision:
+        return self._explain_with_snapshots(target, (snapshot,))
+
+    def _explain_with_snapshots(
+        self,
+        target: str | os.PathLike[str],
+        snapshots: Sequence[_SvnPropertySnapshot],
+    ) -> IgnoreDecision:
         path = self.resolve_target(target)
-        matches = self._matching_rules(path, snapshot)
-        return self._decision(path, matches[0] if matches else None, snapshot)
+        applicable = tuple(
+            snapshot for snapshot in snapshots if path.is_relative_to(snapshot.workspace_root)
+        )
+        matches = self._matching_rules_from_snapshots(path, applicable)
+        decision_snapshot = max(applicable, key=lambda item: len(item.workspace_root.parts))
+        return self._decision(path, matches[0] if matches else None, decision_snapshot)
 
     def _matching_rules(self, target: Path, snapshot: _SvnPropertySnapshot) -> tuple[_SvnRule, ...]:
         try:
-            relative = target.relative_to(self.workspace_root).as_posix()
+            relative = target.relative_to(snapshot.workspace_root).as_posix()
         except ValueError:
             return ()
         components = () if relative in ("", ".") else tuple(relative.split("/"))

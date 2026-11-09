@@ -106,8 +106,10 @@ Its property, nested-working-copy, external, and sparse-depth fixtures agree wit
 `svn status` on 1.15.0/macOS arm64 and 1.14.5/Linux aarch64 and x86_64. A versioned directory at
 depth `empty` retains its `svn:ignore` property for new files; an excluded-depth path stops the walk
 and direct decisions beneath it report incomplete property discovery. The policy walker also stops
-at unrelated nested `.svn` roots and follows native-listed externals. Broader runtime-config
-discovery, versioned membership, and status traversal remain open. See the [Subversion oracle
+at unrelated nested `.svn` roots and follows native-listed externals. It queries properties from
+each listed external working-copy root and stops containing-working-copy property rules at that
+boundary. Broader runtime-config discovery, versioned membership, and status traversal remain open.
+See the [Subversion oracle
 notes](../../tests/oracles/svn/README.md).
 
 The initial Fossil policy asks the native client for effective `ignore-glob` settings and evaluates

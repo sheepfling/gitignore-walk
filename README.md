@@ -160,8 +160,10 @@ It reports inaccessible Registry sources as incomplete. It also does not query v
 membership. Its ignore decisions mean only that a rule matches; the walker keeps ignored
 directories traversable and excludes `.svn` metadata by default. Walks stop at unrelated
 nested `.svn` working
-copies and follow externals that native `svn status` identifies. This initial policy is compared
-against Subversion 1.15.0/macOS arm64 and 1.14.5/Linux aarch64 and x86_64 profiles, not broad
+copies and follow externals that native `svn status` identifies. It loads versioned ignore
+properties within each listed external working copy; properties from the containing working copy
+do not leak across that boundary. This initial policy is compared against Subversion 1.15.0/macOS
+arm64, 1.14.5/Linux aarch64 and x86_64, and 1.14.5/SlikSvn Windows x86_64 profiles, not broad
 client/platform certification. See the
 [Subversion oracle notes](tests/oracles/svn/README.md).
 
