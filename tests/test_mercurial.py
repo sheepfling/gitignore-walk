@@ -291,13 +291,21 @@ def test_pattern_semantics_match_installed_native_client(
     assert native.returncode == 0, native.stderr
     native_ignored = _ignored(native.stdout)
     if native_ignored is None and case.get("native_observation_fallback") == "status-membership":
-        native_ignored = _status_observation(hg, root, environment, case["query"])[
-            "observed_ignored"
-        ]
+        fallback = _status_observation(
+            hg,
+            root,
+            environment,
+            case["query"],
+            known_unknown_paths=case.get("native_observation_fallback_known_unknown_paths", ()),
+        )
+        native_ignored = fallback["observed_ignored"]
     expected = _expected_candidate_for_os(case, os.name)
     policy = MercurialIgnorePolicy(root)
     if expected is None:
-        assert native_ignored is not None, "native debugignore and status gave no candidate result"
+        assert native_ignored is not None, (
+            "native debugignore and status gave no candidate result: "
+            f"{fallback if case.get('native_observation_fallback') else native.stdout!r}"
+        )
         assert policy.explain(case["query"]).ignored is native_ignored
         pytest.skip("the native Windows result is live-checked but not yet in the captured profile")
     assert native_ignored is expected

@@ -1139,6 +1139,7 @@
       },
       "query": "\u0661",
       "native_observation_fallback": "status-membership",
+      "native_observation_fallback_known_unknown_paths": [".hgignore"],
       "expected_candidate": false,
       "expected_candidate_by_os": {"nt": null},
       "evidence_status": "native-observed",

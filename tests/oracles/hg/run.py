@@ -100,6 +100,8 @@ def _status_observation(
     root: Path,
     environment: Mapping[str, str],
     query: str,
+    *,
+    known_unknown_paths: Sequence[str] = (),
 ) -> dict[str, Any]:
     """Determine an untracked path's ignore state from Mercurial's NUL status lists."""
     observations: dict[str, dict[str, Any]] = {}
@@ -135,6 +137,15 @@ def _status_observation(
             observed = True
         elif query in unknown["paths"]:
             observed = False
+        elif os.name == "nt" and known_unknown_paths:
+            native_spelling = query.encode("mbcs", errors="replace").decode("mbcs")
+            known = set(known_unknown_paths)
+            unknown_paths = set(unknown["paths"])
+            if native_spelling != query:
+                if unknown_paths == known and len(ignored["paths"]) == 1:
+                    observed = True
+                elif unknown_paths == known | {native_spelling} and not ignored["paths"]:
+                    observed = False
     return {"observed_ignored": observed, "status": observations}
 
 
@@ -297,7 +308,13 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         fallback_observation: dict[str, Any] | None = None
         observation_method = "debugignore"
         if observed is None and case.get("native_observation_fallback") == "status-membership":
-            fallback_observation = _status_observation(executable, root, env, query)
+            fallback_observation = _status_observation(
+                executable,
+                root,
+                env,
+                query,
+                known_unknown_paths=case.get("native_observation_fallback_known_unknown_paths", ()),
+            )
             observed = fallback_observation["observed_ignored"]
             observation_method = "status-membership"
         expected = _expected_candidate(case)
