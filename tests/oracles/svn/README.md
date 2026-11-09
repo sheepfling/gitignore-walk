@@ -34,7 +34,10 @@ run this extra status query. Sparse-depth fixtures confirm a versioned directory
 path without listing files beneath it. All 16 cases match on Subversion 1.15.0/macOS arm64 and
 1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS and both Linux
 architectures. The Windows oracle job explicitly skips the newline-and-tab case because those
-filenames are not representable there. Captures are stored in `results/`.
+filenames are not representable there. The focused runtime Subversion suite, including the opt-in
+file-external membership and walker assertions, passes with 107 passed and 4 skipped on macOS arm64,
+Linux x86_64, and Linux aarch64. Windows runtime membership remains for hosted CI to confirm.
+Captures are stored in `results/`.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then

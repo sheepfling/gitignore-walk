@@ -175,6 +175,11 @@ def _make_walk_case(root: Path, case: dict[str, Any]) -> MercurialIgnorePolicy:
     return MercurialIgnorePolicy(root)
 
 
+def _expected_candidate_for_os(case: dict[str, Any], native_os: str) -> Any:
+    """Resolve profile-specific native expectations while retaining the POSIX baseline."""
+    return case.get("expected_candidate_by_os", {}).get(native_os, case.get("expected_candidate"))
+
+
 @pytest.mark.parametrize(("case", "profile"), CAPTURED_CASE_PROFILE_PARAMS)
 def test_policy_matches_captured_native_observation(
     tmp_path: Path,
@@ -207,7 +212,7 @@ def test_policy_matches_captured_native_observation(
     expected = observation["observed_ignored"]
     decision = policy.explain(query)
 
-    candidate = case["expected_candidate"]
+    candidate = _expected_candidate_for_os(case, os.name)
     if isinstance(candidate, bool):
         assert observation["candidate_matches"]
         assert expected is candidate
@@ -275,8 +280,9 @@ def test_pattern_semantics_match_installed_native_client(
     native_ignored = " is ignored\n" in native.stdout
     policy = MercurialIgnorePolicy(root)
 
-    assert native_ignored is case["expected_candidate"]
-    assert policy.explain(case["query"]).ignored is case["expected_candidate"]
+    expected = _expected_candidate_for_os(case, os.name)
+    assert native_ignored is expected
+    assert policy.explain(case["query"]).ignored is expected
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")

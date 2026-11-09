@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import fnmatch
+import os
 import re
 from dataclasses import dataclass
 from pathlib import Path
@@ -24,7 +25,12 @@ class HgRule:
 
     def matches(self, relative_path: str) -> bool:
         """Match one path relative to ``matcher_root`` using Mercurial regex semantics."""
-        path_bytes = relative_path.encode("utf-8", errors="surrogateescape")
+        if os.name == "nt":
+            # Mercurial 7.1.2 on Windows matches local paths using the active Windows code page;
+            # the ignore source itself remains UTF-8 bytes. This differs from POSIX byte paths.
+            path_bytes = relative_path.encode("mbcs", errors="replace")
+        else:
+            path_bytes = relative_path.encode("utf-8", errors="surrogateescape")
         return self.expression.match(path_bytes) is not None
 
 

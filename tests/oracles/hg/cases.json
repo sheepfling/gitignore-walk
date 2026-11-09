@@ -1174,12 +1174,13 @@
       },
       "query": "\u00e9",
       "expected_candidate": true,
+      "expected_candidate_by_os": {"nt": false},
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": [
         "HG-IGNORE"
       ],
-      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+      "release_gate": "Keep the POSIX byte result and Windows local-code-page result matched to native Mercurial profiles."
     },
     {
       "id": "hg.regex-ascii-ignorecase",
@@ -1210,12 +1211,13 @@
       },
       "query": "\u00e9",
       "expected_candidate": false,
+      "expected_candidate_by_os": {"nt": true},
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": [
         "HG-IGNORE"
       ],
-      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+      "release_gate": "Keep the POSIX byte result and Windows local-code-page result matched to native Mercurial profiles."
     },
     {
       "id": "hg.glob-two-characters-match-two-byte-utf8-path",
@@ -1228,12 +1230,13 @@
       },
       "query": "\u00e9",
       "expected_candidate": true,
+      "expected_candidate_by_os": {"nt": false},
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": [
         "HG-IGNORE"
       ],
-      "release_gate": "Retain the captured native comparison and live-client differential in profile updates."
+      "release_gate": "Keep the POSIX byte result and Windows local-code-page result matched to native Mercurial profiles."
     }
   ]
 }

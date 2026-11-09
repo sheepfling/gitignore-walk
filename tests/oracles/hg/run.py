@@ -89,6 +89,12 @@ def _ignored(stdout: str) -> bool | None:
     return matches[0] == ""
 
 
+def _expected_candidate(case: Mapping[str, Any]) -> Any:
+    """Return a candidate expectation for the current native platform."""
+    expected = case.get("expected_candidate")
+    return case.get("expected_candidate_by_os", {}).get(os.name, expected)
+
+
 def _has_surrogateescaped_bytes(value: str) -> bool:
     """Return whether text contains a POSIX surrogateescape byte placeholder."""
     return any(0xDC80 <= ord(character) <= 0xDCFF for character in value)
@@ -134,7 +140,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "evidence_status": case["evidence_status"],
             "native_status": "skipped",
             "skip_reason": skip_reason,
-            "expected_candidate": case.get("expected_candidate"),
+            "expected_candidate": _expected_candidate(case),
             "observed_ignored": None,
             "candidate_matches": None,
             "command": [executable, "debugignore", "-v", "--", query],
@@ -191,7 +197,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                     "evidence_status": case["evidence_status"],
                     "native_status": "skipped",
                     "skip_reason": f"Unable to create fixture symlink: {error}",
-                    "expected_candidate": case.get("expected_candidate"),
+                    "expected_candidate": _expected_candidate(case),
                     "observed_ignored": None,
                     "candidate_matches": None,
                     "command": [executable, "debugignore", "-v", "--", query],
@@ -243,7 +249,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         normalized_stdout = raw_stdout.replace(str(root), "<repo>").replace(str(home), "<home>")
         normalized_stderr = raw_stderr.replace(str(root), "<repo>").replace(str(home), "<home>")
         observed = _ignored(normalized_stdout)
-        expected = case.get("expected_candidate")
+        expected = _expected_candidate(case)
         candidate = expected.get("ignored") if isinstance(expected, dict) else expected
         matches_candidate = observed == candidate if isinstance(candidate, bool) else None
         return {
