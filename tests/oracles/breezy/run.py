@@ -143,7 +143,6 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "HOME": str(home),
             "USERPROFILE": str(home),
             "APPDATA": str(app_data),
-            "XDG_CONFIG_HOME": str(config_home),
             "BRZ_PLUGIN_PATH": "",
             "BRZ_LOG": os.devnull,
             "PATH": os.environ.get("PATH", ""),
@@ -151,6 +150,8 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "LANG": "C",
             "TZ": "UTC",
         }
+        if os.name != "nt":
+            environment["XDG_CONFIG_HOME"] = str(config_home)
         if setup.get("brz_home"):
             environment["BRZ_HOME"] = str(brz_home)
         _write_files(checkout, setup.get("files", {}))
@@ -254,7 +255,6 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
                 "HOME": str(home),
                 "USERPROFILE": str(home),
                 "APPDATA": str(home / "appdata"),
-                "XDG_CONFIG_HOME": str(home / ".config"),
                 "BRZ_PLUGIN_PATH": "",
                 "BRZ_LOG": os.devnull,
                 "PATH": os.environ.get("PATH", ""),
@@ -262,6 +262,8 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
                 "LANG": "C",
                 "TZ": "UTC",
             }
+            if os.name != "nt":
+                environment["XDG_CONFIG_HOME"] = str(home / ".config")
             defaults = _invoke(
                 [executable, "ignore", "--no-plugins", "--default-rules"],
                 cwd=home,
