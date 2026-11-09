@@ -236,3 +236,19 @@ jobs:
           name: darcs-native-oracle
           path: ${{ runner.temp }}/darcs-oracle.json
           if-no-files-found: warn
+  breezy-windows-oracle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[dev]' breezy==3.3.24
+      - run: python -m pytest tests/test_breezy.py tests/test_breezy_oracle.py -q
+      - run: python -m scripts.ci oracle-brz --output "$env:RUNNER_TEMP/brz-oracle.json"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: breezy-windows-native-oracle
+          path: ${{ runner.temp }}/brz-oracle.json
+          if-no-files-found: warn

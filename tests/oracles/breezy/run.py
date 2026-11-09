@@ -70,18 +70,21 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         home = base / "home"
         home.mkdir()
         config_home = home / ".config"
+        app_data = base / "appdata"
         checkout = (base / "checkout").resolve()
         checkout.mkdir()
         setup = case["setup"]
         brz_home = base / "brz-home"
-        global_ignore = (
-            brz_home / "breezy" / "ignore"
-            if setup.get("brz_home")
-            else config_home / "breezy" / "ignore"
-        )
+        if setup.get("brz_home"):
+            global_ignore = brz_home / "breezy" / "ignore"
+        elif os.name == "nt":
+            global_ignore = app_data / "Breezy" / "3.0" / "ignore"
+        else:
+            global_ignore = config_home / "breezy" / "ignore"
         environment = {
             "HOME": str(home),
             "USERPROFILE": str(home),
+            "APPDATA": str(app_data),
             "XDG_CONFIG_HOME": str(config_home),
             "BRZ_PLUGIN_PATH": "",
             "PATH": os.environ.get("PATH", ""),
@@ -189,6 +192,7 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
             environment = {
                 "HOME": str(home),
                 "USERPROFILE": str(home),
+                "APPDATA": str(home / "appdata"),
                 "XDG_CONFIG_HOME": str(home / ".config"),
                 "BRZ_PLUGIN_PATH": "",
                 "PATH": os.environ.get("PATH", ""),
