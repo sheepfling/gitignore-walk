@@ -67,11 +67,11 @@ parent-relative URLs, absolute URLs, server-root-relative URLs, and scheme-relat
 loopback-only disposable `svnserve` repository.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented; Windows Registry precedence needs native confirmation, while versioned directory
-membership and broader traversal/path behavior remain open. Fossil's eighteen-case
-ignore-glob corpus is captured on 2.28/macOS arm64 and 2.26/Linux aarch64: seventeen boolean
-candidates agree, including quote and separator edge cases, hash-leading patterns, literal
-backslashes, and ignored-directory descendant suppression. Eight captured malformed/escaped token
-decisions are now also asserted against both profiles and the evaluator; other tokenizer boundaries
+membership and broader traversal/path behavior remain open. Fossil's 20-case
+ignore-glob corpus is captured on 2.28/macOS arm64 and 2.26/Linux aarch64: all 19 boolean
+candidates agree, including global fallback, local-over-global precedence, versioned-over-local
+precedence, and the previously captured quote, separator, and traversal cases. Eight malformed or
+escaped-token probes also match both profiles and the evaluator; other tokenizer boundaries
 remain open. Breezy's corpus is now
 captured on 3.3.24/macOS arm64 and Linux aarch64 with isolated user configuration: twenty-seven boolean
 cases agree, including global-versus-branch exception priority and built-in defaults without a user

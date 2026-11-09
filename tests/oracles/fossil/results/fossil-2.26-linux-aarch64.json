@@ -276,6 +276,68 @@
         0,
         0,
         0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.global-setting-used",
+      "dimension": "discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "query": "a.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [],
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0
+      ],
+      "setup_failed": false
+    },
+    {
+      "id": "fossil.local-replaces-global",
+      "dimension": "discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "query": "a.tmp",
+      "extras": {
+        "command": [
+          "fossil",
+          "extras",
+          "--dotfiles",
+          "--rel-paths"
+        ],
+        "exit_code": 0,
+        "listed_paths": [
+          "a.tmp"
+        ],
+        "stdout_sha256": "88e95ec428cf81c51183f12290eff2fa95411da01188ba20cfc569c8a307fc31",
+        "stderr": ""
+      },
+      "setting_probes": [],
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
         0
       ],
       "setup_failed": false
@@ -283,7 +345,7 @@
     {
       "id": "fossil.malformed-quotes",
       "dimension": "lexing",
-      "evidence_status": "open-question",
+      "evidence_status": "native-observed",
       "native_status": "captured",
       "expected_candidate": null,
       "observed_ignored": null,

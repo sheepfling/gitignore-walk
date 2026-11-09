@@ -86,8 +86,30 @@
       "id": "fossil.versioned-replaces",
       "dimension": "discovery",
       "setup": {
+        "global_ignore_glob": "*.tmp",
         "versioned_ignore_glob": "*.bak",
         "local_ignore_glob": "*.tmp"
+      },
+      "query": "a.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.global-setting-used",
+      "dimension": "discovery",
+      "setup": {
+        "global_ignore_glob": "*.tmp"
+      },
+      "query": "a.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed"
+    },
+    {
+      "id": "fossil.local-replaces-global",
+      "dimension": "discovery",
+      "setup": {
+        "global_ignore_glob": "*.tmp",
+        "local_ignore_glob": "*.bak"
       },
       "query": "a.tmp",
       "expected_candidate": false,

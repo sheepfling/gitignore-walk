@@ -104,6 +104,15 @@ def test_fossil_policy_uses_effective_setting_and_prunes_ignored_directories(
 
     run("init", "--admin-user", "pytest", str(repository))
     run("open", "--nosync", "--workdir", str(checkout), str(repository))
+    run("settings", "ignore-glob", "*.tmp", "--global", cwd=checkout)
+    global_policy = FossilIgnorePolicy(checkout, fossil_executable=fossil, environment=environment)
+    assert global_policy.explain("global.tmp").ignored
+
+    run("settings", "ignore-glob", "*.bak", cwd=checkout)
+    local_policy = FossilIgnorePolicy(checkout, fossil_executable=fossil, environment=environment)
+    assert local_policy.explain("local.bak").ignored
+    assert local_policy.explain("global.tmp").ignored is False
+
     run("settings", "ignore-glob", "*.tmp", cwd=checkout)
     settings_file = checkout / ".fossil-settings" / "ignore-glob"
     settings_file.parent.mkdir()

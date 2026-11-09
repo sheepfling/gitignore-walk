@@ -84,7 +84,10 @@ def test_fossil_policy_matches_captured_ignore_decisions(
     setup = case["setup"]
     setting = setup.get(
         "versioned_ignore_glob",
-        setup.get("local_ignore_glob", setup.get("ignore_glob", "")),
+        setup.get(
+            "local_ignore_glob",
+            setup.get("ignore_glob", setup.get("global_ignore_glob", "")),
+        ),
     )
     root = tmp_path / "checkout"
     root.mkdir()
@@ -216,12 +219,12 @@ def test_fossil_walker_matches_captured_extras_paths(
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
-def test_fossil_open_tokenizer_probes_match_captured_observations(profile: str) -> None:
+def test_fossil_tokenizer_probes_match_captured_observations(profile: str) -> None:
     """Keep observed malformed-token behavior covered without claiming full conformance."""
     capture = CAPTURES[profile]
     observation = next(case for case in capture["cases"] if case["id"] == "fossil.malformed-quotes")
 
-    assert observation["evidence_status"] == "open-question"
+    assert observation["evidence_status"] == "native-observed"
     probes = observation["setting_probes"]
     assert probes
     for probe in probes:

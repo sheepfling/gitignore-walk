@@ -67,6 +67,20 @@ def _capture_case(case: Mapping[str, Any], fossil: str) -> dict[str, Any]:
             path = checkout / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(contents, encoding="utf-8")
+        if setup.get("global_ignore_glob") is not None:
+            setup_results.append(
+                _invoke(
+                    [
+                        fossil,
+                        "settings",
+                        "ignore-glob",
+                        setup["global_ignore_glob"],
+                        "--global",
+                    ],
+                    cwd=checkout,
+                    environment=environment,
+                )
+            )
         local_ignore_glob = setup.get("local_ignore_glob", setup.get("ignore_glob"))
         if local_ignore_glob is not None:
             setup_results.append(
