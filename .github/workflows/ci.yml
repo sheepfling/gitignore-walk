@@ -125,7 +125,7 @@ jobs:
           $archive = Join-Path $env:RUNNER_TEMP 'Slik-Subversion-1.14.5-x64.zip'
           $destination = Join-Path $env:RUNNER_TEMP 'slik-svn'
           Invoke-WebRequest `
-            -Uri 'https://www.sliksvn.com/pub/Slik-Subversion-1.14.5-x64.zip' `
+            -Uri 'https://sliksvn.com/pub/Slik-Subversion-1.14.5-x64.zip' `
             -OutFile $archive
           Expand-Archive -Path $archive -DestinationPath $destination
           $svnBin = (Get-ChildItem -Path $destination -Filter svn.exe -Recurse | Select-Object -First 1).Directory.FullName

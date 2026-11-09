@@ -91,7 +91,10 @@ def test_policy_parses_native_property_snapshot_without_a_client(
     decisions = policy.explain_many(["root.tmp", "pkg/deep/file.cache", "pkg/root.tmp"])
     assert [decision.ignored for decision in decisions] == [True, True, False]
     assert not decisions[0].discovery_complete
-    assert {item.code for item in decisions[0].diagnostics} == {"user-config-location-unknown"}
+    expected_diagnostics = {"user-config-location-unknown"}
+    if os.name == "nt":
+        expected_diagnostics.add("system-config-location-unknown")
+    assert {item.code for item in decisions[0].diagnostics} == expected_diagnostics
     assert [command[2] for command in commands] == [
         "info",
         "info",

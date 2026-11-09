@@ -26,6 +26,7 @@ from .errors import BreezyIgnoreError
 
 _WORKSPACE_MARKER = ".bzr"
 _NAMED_CAPTURE = re.compile(r"\(\?P<([A-Za-z_][A-Za-z0-9_]*)>")
+_GLOBAL_INLINE_FLAGS = re.compile(r"(?<!\\)(?:\\\\)*\(\?[aiLmsux]+\)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -415,6 +416,11 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
                     message="Breezy normalizes named capture groups to non-capturing groups.",
                     source=source,
                 )
+            # Python 3.10 only warned about global flags inside Breezy's capture
+            # wrapper, while newer interpreters reject them. Keep parser behavior
+            # stable across supported Python versions.
+            if _GLOBAL_INLINE_FLAGS.search(expression_text):
+                raise re.error("global flags are not at the start of the expression")
             expression = re.compile(f"({expression_text})")
         else:
             expression = re.compile(_glob_to_regex(expression_text))

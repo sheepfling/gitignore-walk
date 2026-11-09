@@ -111,13 +111,15 @@ def _make_case(
             for key, value in config.items()
         )
         hgrc.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        environment = {
-            "HOME": str(home),
-            "HGRCPATH": str(hgrc),
-            "HGPLAIN": "1",
-            "LC_ALL": "C",
-            "PATH": os.environ.get("PATH", ""),
-        }
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "HOME": str(home),
+                "HGRCPATH": str(hgrc),
+                "HGPLAIN": "1",
+                "LC_ALL": "C",
+            }
+        )
         configuration = MATCHING_OBSERVATIONS[profile][case["id"]]["configuration"]
         if configuration is None or configuration["exit_code"] != 0:
             raise AssertionError(f"{case['id']}: native config capture is incomplete")
@@ -172,6 +174,8 @@ def test_policy_matches_captured_native_observation(
 ) -> None:
     if os.name == "nt" and case["setup"].get("file_modes"):
         pytest.skip("Windows cannot reproduce POSIX unreadable-file permissions")
+    if os.name == "nt" and "\\" in case["query"]:
+        pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
     observation = MATCHING_OBSERVATIONS[profile][case["id"]]
     policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
     expected = observation["observed_ignored"]
@@ -313,7 +317,6 @@ def test_selection_can_enable_native_config_discovery(
         "HGRCPATH": str(hgrc),
         "HGPLAIN": "1",
         "LC_ALL": "C",
-        "PATH": os.environ.get("PATH", ""),
     }
     output = f"{hgrc}:2: ui.ignore.project={ignore_file}\n"
 
@@ -354,13 +357,15 @@ def test_client_config_discovery_runs_the_installed_hg_client(tmp_path: Path) ->
     ignore_file.write_text("syntax: glob\n*.configured\n", encoding="utf-8")
     hgrc = tmp_path / "hgrc"
     hgrc.write_text(f"[ui]\nignore.project = {ignore_file}\n", encoding="utf-8")
-    environment = {
-        "HOME": str(tmp_path),
-        "HGRCPATH": str(hgrc),
-        "HGPLAIN": "1",
-        "LC_ALL": "C",
-        "PATH": os.environ.get("PATH", ""),
-    }
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(tmp_path),
+            "HGRCPATH": str(hgrc),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+        }
+    )
 
     policy = MercurialIgnorePolicy(tmp_path, read_client_config=True, environment=environment)
 
@@ -475,7 +480,7 @@ def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
     assert trace.decision.ignored
     assert trace.complete
     assert len(trace.matches) == 1
-    assert trace.matches[0].source.endswith("/pkg/rules")
+    assert trace.matches[0].source.replace("\\", "/").endswith("/pkg/rules")
     assert trace.matches[0].line == 1
     assert trace.matches[0].scope == "pkg"
 
@@ -579,6 +584,8 @@ def test_undecodable_ignore_bytes_match_surrogateescaped_path(tmp_path: Path) ->
 def test_undecodable_filename_walk_matches_native_status_when_filesystem_allows_it(
     tmp_path: Path,
 ) -> None:
+    if os.name == "nt":
+        pytest.skip("Windows filesystems do not support undecodable POSIX filename bytes")
     hg = shutil.which("hg")
     if hg is None:
         pytest.skip("Mercurial client is not installed")
@@ -587,13 +594,15 @@ def test_undecodable_filename_walk_matches_native_status_when_filesystem_allows_
     home.mkdir()
     hgrc = tmp_path / "hgrc"
     hgrc.write_text("", encoding="utf-8")
-    environment = {
-        "HOME": str(home),
-        "HGRCPATH": str(hgrc),
-        "HGPLAIN": "1",
-        "LC_ALL": "C",
-        "PATH": os.environ.get("PATH", ""),
-    }
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(home),
+            "HGRCPATH": str(hgrc),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+        }
+    )
     initialized = subprocess.run(
         [hg, "init", str(root)],
         env=environment,

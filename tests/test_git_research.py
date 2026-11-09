@@ -187,6 +187,15 @@ def test_portable_git_policy_matches_imported_research_case(
     tmp_path: Path, case: dict[str, Any]
 ) -> None:
     """Check the portable evaluator against supported native Git research candidates."""
+    windows_unrepresentable = {
+        "git.escaped_trailing_space",
+        "git.trailing_tab_filename",
+        "git.escaped_star",
+        "git.newline_filename",
+        "git.backslash_filename_literal",
+    }
+    if os.name == "nt" and case["id"] in windows_unrepresentable:
+        pytest.skip("Windows paths cannot represent this POSIX filename")
     policy = _make_case(tmp_path / "repo", case)
     query = os.fsdecode(_decode_spec(case, "query"))
     if case.get("cwd"):
@@ -197,7 +206,7 @@ def test_portable_git_policy_matches_imported_research_case(
     assert trace.decision.ignored is case["expected_ignored"]
     if expected_source := case.get("expected_source"):
         assert trace.decision.source is not None
-        assert trace.decision.source.endswith(expected_source)
+        assert trace.decision.source.replace("\\", "/").endswith(expected_source)
     if expected_pattern := case.get("expected_pattern"):
         effective = next(match for match in trace.matches if match.effective)
         assert effective.pattern == expected_pattern

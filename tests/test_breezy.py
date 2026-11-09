@@ -137,6 +137,13 @@ def test_breezy_rejects_global_inline_regex_flags(
         BreezyIgnorePolicy(tmp_path)
 
 
+def test_breezy_allows_escaped_inline_flag_text() -> None:
+    rule = _compile_rule(r"RE:\(\?i\)foo", source=".bzrignore", line=1)
+
+    assert rule is not None
+    assert rule.matches("(?i)foo")
+
+
 def test_breezy_selector_uses_discriminated_selection(breezy_root: Path) -> None:
     selection = select_policy(breezy_root, BreezyPolicyConfig())
 

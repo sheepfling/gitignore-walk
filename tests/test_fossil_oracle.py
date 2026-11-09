@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -63,6 +64,8 @@ def test_fossil_policy_matches_captured_ignore_decisions(
     profile: str,
     case: dict[str, Any],
 ) -> None:
+    if os.name == "nt" and "\\" in case["query"]:
+        pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
     setup = case["setup"]
     setting = setup.get(
         "versioned_ignore_glob",
