@@ -32,13 +32,15 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         }
         hg_config = temp / "hgrc"
         hg_config.write_text(_config_text(config), encoding="utf-8")
-        env = {
-            "HOME": str(home),
-            "HGRCPATH": str(hg_config),
-            "HGPLAIN": "1",
-            "LC_ALL": "C",
-            "PATH": os.environ.get("PATH", ""),
-        }
+        env = os.environ.copy()
+        env.update(
+            {
+                "HOME": str(home),
+                "HGRCPATH": str(hg_config),
+                "HGPLAIN": "1",
+                "LC_ALL": "C",
+            }
+        )
         files = setup.get("files", {})
         _write_files(
             root,

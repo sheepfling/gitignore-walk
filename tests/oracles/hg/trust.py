@@ -30,12 +30,11 @@ def _ignored(stdout: str) -> bool | None:
 
 def _environment(home: Path, hgrc: Path) -> dict[str, str]:
     return {
+        **os.environ,
         "HOME": str(home),
         "HGRCPATH": str(hgrc),
         "HGPLAIN": "1",
         "LC_ALL": "C",
-        "PATH": os.environ.get("PATH", ""),
-        "PYTHONPATH": os.environ.get("PYTHONPATH", ""),
     }
 
 

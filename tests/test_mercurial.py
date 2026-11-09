@@ -221,6 +221,8 @@ def test_include_follows_symlinked_source_outside_workspace(tmp_path: Path) -> N
 def test_native_oracle_explains_platform_specific_fixture_skips() -> None:
     """Oracle skips identify path-byte and permission limits on Windows."""
     assert _query_skip_reason("bad\udcff.tmp", native_os="nt") is not None
+    assert _query_skip_reason("foo\\bar", native_os="nt") is not None
+    assert _query_skip_reason("foo\\bar", native_os="posix") is None
     assert _query_skip_reason("bad\udcff.tmp", native_os="posix") is None
     assert _query_skip_reason("ordinary.tmp", native_os="nt") is None
     assert _query_skip_reason("a.tmp", native_os="nt", requires_posix_permissions=True) is not None

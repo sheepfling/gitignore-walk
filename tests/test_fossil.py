@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -41,6 +42,8 @@ def test_fossil_hash_is_pattern_data_not_a_comment(
     target: str,
     expected: bool,
 ) -> None:
+    if os.name == "nt" and "\\" in target:
+        pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
     root = tmp_path / "checkout"
     root.mkdir()
     (root / ".fslckout").touch()

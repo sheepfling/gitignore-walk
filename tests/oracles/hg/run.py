@@ -100,6 +100,8 @@ def _query_skip_reason(
     """Explain when this host cannot reproduce a native-oracle fixture."""
     if native_os == "nt" and _has_surrogateescaped_bytes(query):
         return "Windows process arguments cannot represent POSIX undecodable path bytes"
+    if native_os == "nt" and "\\" in query:
+        return "Windows paths cannot represent a POSIX filename containing backslash"
     if native_os == "nt" and requires_posix_permissions:
         return "Windows file permissions cannot reproduce the POSIX unreadable-source fixture"
     return None
@@ -140,13 +142,15 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             for key, value in setup.get("config", {}).items()
         }
         hg_config.write_text(_config_text(config), encoding="utf-8")
-        env = {
-            "HOME": str(home),
-            "HGRCPATH": str(hg_config),
-            "HGPLAIN": "1",
-            "LC_ALL": "C",
-            "PATH": os.environ.get("PATH", ""),
-        }
+        env = os.environ.copy()
+        env.update(
+            {
+                "HOME": str(home),
+                "HGRCPATH": str(hg_config),
+                "HGPLAIN": "1",
+                "LC_ALL": "C",
+            }
+        )
         init = subprocess.run(
             [executable, "init", str(root)],
             cwd=temp,
@@ -302,11 +306,11 @@ def capture(cases_path: Path, output_path: Path, hg_executable: str) -> int:
         profile = subprocess.run(
             [executable, "debuginstall"],
             env={
+                **os.environ,
                 "HOME": str(profile_home),
                 "HGRCPATH": str(profile_config),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
-                "PATH": os.environ.get("PATH", ""),
             },
             capture_output=True,
             text=True,
