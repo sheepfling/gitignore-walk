@@ -123,8 +123,8 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 anchor.parent.mkdir(parents=True, exist_ok=True)
                 anchor.write_text("native walker anchor\n", encoding="utf-8")
                 anchor_add = _invoke(
-                    [executable, "add", "--no-plugins", str(anchor)],
-                    cwd=checkout,
+                    [executable, "add", "--no-plugins", anchor.name],
+                    cwd=anchor.parent,
                     environment=environment,
                 )
             target.parent.mkdir(parents=True, exist_ok=True)
