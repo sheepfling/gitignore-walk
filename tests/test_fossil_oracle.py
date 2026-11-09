@@ -20,6 +20,7 @@ CAPTURE_FILES = (
     "fossil-2.28-macos-arm64.json",
     "fossil-2.26-linux-aarch64.json",
     "fossil-2.26-linux-x86_64.json",
+    "fossil-2.23-ubuntu-24.04-x86_64.json",
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
