@@ -167,6 +167,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 "HGRCPATH": str(hg_config),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
+                "PYTHONIOENCODING": "utf-8",
             }
         )
         init = subprocess.run(
@@ -240,6 +241,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             cwd=root,
             env=env,
             text=True,
+            encoding="utf-8",
             errors="surrogateescape",
             capture_output=True,
             check=False,
@@ -251,7 +253,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         observed = _ignored(normalized_stdout)
         expected = _expected_candidate(case)
         candidate = expected.get("ignored") if isinstance(expected, dict) else expected
-        matches_candidate = observed == candidate if isinstance(candidate, bool) else None
+        matches_candidate = (
+            observed == candidate if isinstance(candidate, bool) and observed is not None else None
+        )
         return {
             "id": case["id"],
             "profile": case["profile"],
