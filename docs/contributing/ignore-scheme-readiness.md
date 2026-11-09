@@ -74,10 +74,11 @@ versus contents-only exceptions, recursive `**/` behavior, last-match precedence
 between ordinary tracked-file handling and `--no-index` ignore-rule matching. The current Mercurial
 capture covers 48 `hg debugignore` cases and six native status walk fixtures on macOS arm64 with
 Mercurial 7.2.4, Linux aarch64 and x86_64 with Mercurial 7.0.1, and Windows Server 2025 x86_64
-with Mercurial 7.1.2. The library tests compare the three Unix profiles with its matching and
-traversal behavior. The Windows oracle capture has 42 matching candidate comparisons, five explicit
-path skips, and one documented include-cycle divergence; its walk capture has five matching
-fixtures and one symlink-dependent skip. See the
+with Mercurial 7.1.2. The differential library tests now replay the captured observations from all
+four profiles for matching and walking, while native-skipped observations remain test skips. The
+Windows oracle capture has 42 matching candidate comparisons, five explicit path skips, and one
+documented include-cycle divergence; its walk capture has five matching fixtures and one
+symlink-dependent skip. See the
 [Mercurial oracle](../../tests/oracles/hg/README.md), the
 [macOS matching results](../../tests/oracles/hg/results/hg-7.2.4-macos-arm64.json), the
 [Linux matching results](../../tests/oracles/hg/results/hg-7.0.1-linux-aarch64.json), and the

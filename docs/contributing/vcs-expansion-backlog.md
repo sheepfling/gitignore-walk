@@ -375,9 +375,10 @@ fallback cases are explicit, and static typing narrows each selection to its pol
 **Status:** Versioned native observations span macOS arm64 and Linux aarch64 and x86_64. Hosted
 Ubuntu and Windows capture jobs are wired. The reviewed Windows profiles are Mercurial 7.1.2 and
 SlikSvn Subversion 1.14.5 on Windows Server 2025 x86_64; their captures and explicit skips are
-versioned under the oracle result directories. Mercurial's POSIX undecodable-byte command argument,
-POSIX permissions, and symlink-source cases remain skipped there. The broader Python/platform
-matrix remains open.
+versioned under the oracle result directories. Mercurial's captured Windows matching and walk
+observations are replayed by the differential library tests; five path cases and one symlink walk
+are explicit skips. Mercurial's POSIX undecodable-byte command argument, POSIX permissions, and
+symlink-source cases remain skipped there. The broader Python/platform matrix remains open.
 
 Run the supported Python/platform matrix with native-client probes where clients are available.
 Cover path separators, case behavior, Unicode and undecodable names where supported, symlinks, and

@@ -30,6 +30,7 @@ MATCHING_CAPTURE_FILES = (
     "hg-7.2.4-macos-arm64.json",
     "hg-7.0.1-linux-aarch64.json",
     "hg-7.0.1-linux-x86_64.json",
+    "hg-7.1.2-windows-x86_64.json",
 )
 MATCHING_OBSERVATIONS = {
     path: {
@@ -45,6 +46,7 @@ WALK_CAPTURE_FILES = (
     "hg-walk-7.2.4-macos-arm64.json",
     "hg-walk-7.0.1-linux-aarch64.json",
     "hg-walk-7.0.1-linux-x86_64.json",
+    "hg-walk-7.1.2-windows-x86_64.json",
 )
 WALK_OBSERVATIONS = {
     path: {
@@ -173,6 +175,9 @@ def test_policy_matches_captured_native_observation(
     profile: str,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    observation = MATCHING_OBSERVATIONS[profile][case["id"]]
+    if observation["native_status"] == "skipped":
+        pytest.skip(observation["skip_reason"])
     if os.name == "nt" and case["setup"].get("file_modes"):
         pytest.skip("Windows cannot reproduce POSIX unreadable-file permissions")
     if os.name == "nt" and "\\" in case["query"]:
@@ -181,7 +186,6 @@ def test_policy_matches_captured_native_observation(
         pytest.skip("Windows paths cannot represent a filename containing a reserved character")
     if os.name == "nt" and case["setup"].get("symlinks"):
         pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
-    observation = MATCHING_OBSERVATIONS[profile][case["id"]]
     policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
     if case["id"] == "hg.include-unreadable-source":
         unreadable_source = (tmp_path / "repo" / "rules.ignore").resolve()
@@ -418,10 +422,12 @@ def test_walker_matches_captured_native_ignored_file_walk(
     topdown: bool,
     profile: str,
 ) -> None:
+    native = WALK_OBSERVATIONS[profile][case["id"]]
+    if native["native_status"] == "skipped":
+        pytest.skip(native["skip_reason"])
     if os.name == "nt" and case["setup"].get("symlinks"):
         pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     policy = _make_walk_case(tmp_path / "repo", case)
-    native = WALK_OBSERVATIONS[profile][case["id"]]
     tracked = set(case["tracked_paths"])
     # Mercurial status reports symlinks; IgnoreWalker intentionally yields regular files only.
     symlinks = set(case["setup"].get("symlinks", {}))
