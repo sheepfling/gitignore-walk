@@ -39,13 +39,25 @@ def test_perforce_capture_matches_versioned_candidates(case: dict[str, Any], pro
     assert capture["status"] == "captured"
     assert observation["isolated_configuration"] is True
     expected = case["expected_candidate"]
-    if isinstance(expected, bool):
+    expected_native_error = case.get("expected_native_error")
+    if expected_native_error is not None:
+        assert expected is None
+        assert observation["native_error"] == expected_native_error
+        assert expected_native_error in observation["stderr"]
+        assert observation["observed_ignored"] is None
+        assert observation["candidate_matches"] is None
+        assert observation["exit_code"] != 0
+        ignore_check = observation["ignore_check"]
+        assert ignore_check["exit_code"] == 0
+        assert ignore_check["observed_ignored"] is True
+    elif isinstance(expected, bool):
         assert observation["candidate_matches"] is True
         assert observation["observed_ignored"] is expected
     else:
         assert observation["candidate_matches"] is None
         assert isinstance(observation["observed_ignored"], bool)
-    assert observation["exit_code"] == (1 if observation["observed_ignored"] else 0)
+    if expected_native_error is None:
+        assert observation["exit_code"] == (1 if observation["observed_ignored"] else 0)
     assert "gitignore-walk-p4-oracle-" not in observation["stdout"] + observation["stderr"]
     walk_preview = observation.get("walk_preview")
     assert (walk_preview is not None) is case.get("capture_walk", False)

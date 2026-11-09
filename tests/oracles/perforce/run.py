@@ -211,11 +211,24 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
             )
             command_output = command.stdout + command.stderr
             ignored = "ignored file can't be added" in command_output
-            if not ignored and (command.returncode != 0 or "opened for add" not in command_output):
+            expected_native_error = case.get("expected_native_error")
+            if expected_native_error is not None:
+                if expected_native_error not in command_output:
+                    raise RuntimeError(
+                        f"native Perforce error changed for {case['id']}: "
+                        f"expected {expected_native_error!r}, got "
+                        f"{command.returncode}, {command_output!r}"
+                    )
+                ignored_result: bool | None = None
+            elif not ignored and (
+                command.returncode != 0 or "opened for add" not in command_output
+            ):
                 raise RuntimeError(
                     f"p4 add preview did not produce a recognized result for {case['id']}: "
                     f"{command.returncode}, {command.stdout!r}, {command.stderr!r}"
                 )
+            else:
+                ignored_result = ignored
             expected = case["expected_candidate"]
             client_version = _run(
                 p4, ["-V"], cwd=workspace, environment=environment
@@ -240,8 +253,17 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 "native_status": "captured",
                 "query": case["query"],
                 "expected_candidate": expected,
-                "observed_ignored": ignored,
-                "candidate_matches": ignored is expected if isinstance(expected, bool) else None,
+                "observed_ignored": ignored_result,
+                "candidate_matches": (
+                    ignored_result is expected
+                    if isinstance(expected, bool) and ignored_result is not None
+                    else None
+                ),
+                **(
+                    {"native_error": expected_native_error}
+                    if expected_native_error is not None
+                    else {}
+                ),
                 "server_version": server_version,
                 "client_version": next(
                     (line[5:] for line in client_version if line.startswith("Rev. ")), "unknown"

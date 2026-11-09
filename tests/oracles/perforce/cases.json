@@ -3,6 +3,22 @@
   "source": "vcs-ignore-implementation-research.zip and isolated local P4 client/server probes",
   "cases": [
     {
+      "id": "p4.newline-filename-rejected-before-ignore-evaluation",
+      "dimension": "path-boundary",
+      "setup": {
+        "P4IGNORE": ".p4ignore",
+        "files": {
+          ".p4ignore": "*.tmp\n"
+        }
+      },
+      "query": "notes\narchive.tmp",
+      "expected_candidate": null,
+      "expected_native_error": "Non-printable characters not allowed",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Record the native path rejection without treating it as an ignore-rule mismatch."
+    },
+    {
       "id": "p4.p4config-discovers-ignore-source",
       "dimension": "configuration-discovery",
       "setup": {

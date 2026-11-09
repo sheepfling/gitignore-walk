@@ -10,6 +10,48 @@
   },
   "cases": [
     {
+      "id": "p4.newline-filename-rejected-before-ignore-evaluation",
+      "dimension": "path-boundary",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "notes\narchive.tmp",
+      "expected_candidate": null,
+      "observed_ignored": null,
+      "candidate_matches": null,
+      "native_error": "Non-printable characters not allowed",
+      "server_version": "P4D/LINUX26X86_64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/LINUX26X86_64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "notes\narchive.tmp"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "Non-printable characters not allowed in '//ignore-oracle/notes\narchive.tmp'.\n",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "notes\narchive.tmp"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/notes\narchive.tmp ignored by <workspace>/.p4ignore:1:*.tmp\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
+    },
+    {
       "id": "p4.p4config-discovers-ignore-source",
       "dimension": "configuration-discovery",
       "evidence_status": "native-observed",

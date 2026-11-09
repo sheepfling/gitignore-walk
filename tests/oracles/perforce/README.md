@@ -15,6 +15,9 @@ python -m scripts.ci oracle-p4 --output /tmp/p4-oracle.json
 
 The 31 boolean candidates and one platform-dependent case are captured with P4 and P4 Server 2026.1
 on macOS arm64, in a Debian 13 x86_64 Docker container, and in an Ubuntu 24.04 x86_64 container.
+The 33-case corpus also records one newline-bearing filename that `p4 add -n` rejects as
+non-printable before candidate evaluation. A separate `p4 ignores -i -v` query still reports the
+matching rule. This is a native path-boundary observation, not a boolean conformance case.
 The captures include eight checks for built-in `.p4config`, custom `P4CONFIG`, and `.p4root`
 exclusions, including activation, exception precedence, descendant behavior, and filesystem case
 sensitivity. They also include three
@@ -37,8 +40,8 @@ from the official Perforce 2026.1 release path and pinned by SHA-256 in CI.
 
 | Capture file                              | Environment                   | Python  | Cases matching            |
 | ----------------------------------------- | ----------------------------- | ------- | ------------------------- |
-| `p4-2026.1-macos-arm64.json`              | macOS 26.6.2 arm64            | 3.12.16 | 31/31 + platform case     |
-| `p4-2026.1-linux-x86_64.json`             | Debian 13 x86_64 in Docker    | 3.13.5  | 31/31 + platform case     |
-| `p4-2026.1-linux-ubuntu24.04-x86_64.json` | Ubuntu 24.04 x86_64 in Docker | 3.12.3  | 31/31 + platform case     |
+| `p4-2026.1-macos-arm64.json`              | macOS 26.6.2 arm64            | 3.12.16 | 31/31 + platform + error  |
+| `p4-2026.1-linux-x86_64.json`             | Debian 13 x86_64 in Docker    | 3.13.5  | 31/31 + platform + error  |
+| `p4-2026.1-linux-ubuntu24.04-x86_64.json` | Ubuntu 24.04 x86_64 in Docker | 3.12.3  | 31/31 + platform + error  |
 
 Perforce documents the syntax and file-list behavior in the [P4IGNORE reference](https://help.perforce.com/helix-core/server-apps/cmdref/current/Content/CmdRef/P4IGNORE.html?Highlight=workspace+root).
