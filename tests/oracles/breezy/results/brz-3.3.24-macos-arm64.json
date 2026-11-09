@@ -1221,6 +1221,140 @@
       "isolated_configuration": true,
       "global_ignore_existed_before": true,
       "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-lookahead-path-match",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "src/cache.tmp",
+      "observed_ignored": true,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "src/cache.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "src/cache.tmp                                      RE:^(?!vendor/).*\\.tmp$\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  src\n+N  src/.oracle-walk-anchor\n",
+      "status_stderr": "",
+      "stdout_sha256": "c55fd98f218894d5d1ac01d86071324ee380f048165e6c7b396320112d9756f1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-lookahead-path-exclusion",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "query": "vendor/cache.tmp",
+      "observed_ignored": false,
+      "observed_unknown": true,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [],
+      "unknown_paths": [
+        ".bzrignore",
+        "vendor/cache.tmp"
+      ],
+      "stdout": "",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  vendor\n+N  vendor/.oracle-walk-anchor\n?   vendor/cache.tmp\n",
+      "status_stderr": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-scoped-inline-flag",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "CACHE.tmp",
+      "observed_ignored": true,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "CACHE.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "CACHE.tmp                                          RE:(?i:cache)\\.tmp\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n",
+      "status_stderr": "",
+      "stdout_sha256": "7aac33feb127fe6d2239c756e0eae44247a86a847d63964f76c10555b72ae7d6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
     }
   ]
 }

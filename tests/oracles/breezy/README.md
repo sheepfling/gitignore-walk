@@ -12,7 +12,7 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 ```
 
 Two captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client and
-Linux aarch64 under Python 3.12. Twenty-four boolean candidates and three explicit regex/error
+Linux aarch64 under Python 3.12. Twenty-seven boolean candidates and three explicit regex/error
 cases are recorded across both profiles. The boolean cases include exception priority, `!!`
 strong-exclude priority, trailing slash normalization, basename matching,
 slash-rooted matching, whitespace preservation, no nested `.bzrignore` auto-discovery, global versus
@@ -23,13 +23,14 @@ match the full path: `!!cache/private` does not match a deeper file, while
 `!!cache/private/**` does. `BRZ_HOME/breezy/ignore` is recognized as a global-ignore source. The
 default-rule listing is captured separately in each result. Named capture groups are rewritten to
 non-capturing groups with a warning; a native query confirms the normalized pattern still matches.
-Anchored path regexes also match and reject the captured paths as expected. Malformed RE patterns
+Anchored path regexes, negative lookahead, and scoped inline flags match and reject captured paths as
+expected. Malformed RE patterns
 fail `ignored` and `status` with exit code 3. The published global inline flag example
 `RE:(?i)foo` also fails with exit code 3 in both pinned profiles; preserve this observed native
 behavior until a supported client version demonstrates otherwise. In both traversal orders, the
 policy walker matches
 captured status unknown/ignored paths when an exception opens an ignored parent and exposes its
-siblings. The local policy is checked against all 24 boolean candidate cases. Broader regex behavior,
+siblings. The local policy is checked against all 27 boolean candidate cases. Broader regex behavior,
 source precedence, and pruning safety beyond these cases remain open. Breezy's documented pattern
 rule says that a
 slash or regular expression is compared with the workspace-relative path, while a pattern without

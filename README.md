@@ -216,9 +216,10 @@ ignored directory keeps the directory traversable, even if the exception's targe
 decisions and pruning are separate: an ignored parent can remain a traversal candidate. `initial_excludes`
 defaults to `.bzr` metadata. Named regex capture groups are normalized to non-capturing groups and
 reported as diagnostics; malformed regexes raise `BreezyIgnoreError`. The policy does not inspect
-versioned membership. Its 24 boolean candidates, including exact-path versus `/**` strong exclusions
-and `BRZ_HOME` global-ignore discovery, are compared with Breezy 3.3.24 on macOS arm64 and Linux
-aarch64. Both captured profiles also reject `RE:(?i)foo` with a native invalid-pattern error, despite
+versioned membership. Its 27 boolean candidates, including exact-path versus `/**` strong exclusions,
+`BRZ_HOME` global-ignore discovery, negative lookahead, and scoped inline regex flags, are compared
+with Breezy 3.3.24 on macOS arm64 and Linux aarch64. Both captured profiles also reject `RE:(?i)foo`
+with a native invalid-pattern error, despite
 the published pattern guide showing that form. Broader regex, global-config, and platform behavior
 remain open; see the [Breezy oracle notes](tests/oracles/breezy/README.md) and [Breezy pattern
 reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html).

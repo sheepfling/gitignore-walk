@@ -482,6 +482,48 @@
         "BRZ-IGNORE"
       ],
       "release_gate": "Capture custom BRZ_HOME global ignore discovery on both native profiles."
+    },
+    {
+      "id": "brz.regex-lookahead-path-match",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^(?!vendor/).*\\.tmp$"]
+      },
+      "query": "src/cache.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured positive path lookahead behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-lookahead-path-exclusion",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:^(?!vendor/).*\\.tmp$"]
+      },
+      "query": "vendor/cache.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured negative path lookahead behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.regex-scoped-inline-flag",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:(?i:cache)\\.tmp"]
+      },
+      "query": "CACHE.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured scoped case-insensitive regex behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
     }
   ]
 }
