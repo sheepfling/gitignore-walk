@@ -145,7 +145,9 @@ status capture verifies that an exception under ignored `cache` exposes sibling 
 results match native unknown and ignored paths in both directions on all four profiles. Broader
 RE semantics and source-location precedence remain open. Native captures also show that the
 documented global inline regex flag example is rejected with exit code 3 in all four pinned Breezy
-profiles. Other non-Git
+profiles. Four additional regex cases now capture exact whole-path matching, `!!RE` priority, and
+the 3.3.24 backslash normalization quirk on macOS arm64 and Linux aarch64; hosted Linux x86_64 and
+Windows captures are pending. Other non-Git
 candidate cases have
 no captured native result. The November
 7 checkpoint separately records seven Git probes. These captures do not establish complete

@@ -176,6 +176,18 @@ def test_breezy_named_capture_is_normalized_with_diagnostic() -> None:
     assert rule.diagnostic.code == "named-regex-capture-normalized"
 
 
+def test_breezy_regex_matches_complete_path_and_normalizes_strong_source() -> None:
+    full_path = _compile_rule("RE:cache", source=".bzrignore", line=1)
+    strong_escaped = _compile_rule(r"!!RE:^cache/.*\.tmp$", source=".bzrignore", line=2)
+
+    assert full_path is not None
+    assert full_path.matches("cache")
+    assert not full_path.matches("cache.tmp")
+    assert strong_escaped is not None
+    assert strong_escaped.priority == "strong"
+    assert not strong_escaped.matches("cache/drop.tmp")
+
+
 def test_breezy_rejects_global_inline_regex_flags(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

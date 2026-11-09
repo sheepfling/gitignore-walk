@@ -27,6 +27,7 @@ from .errors import BreezyIgnoreError
 _WORKSPACE_MARKER = ".bzr"
 _NAMED_CAPTURE = re.compile(r"\(\?P<([A-Za-z_][A-Za-z0-9_]*)>")
 _GLOBAL_INLINE_FLAGS = re.compile(r"(?<!\\)(?:\\\\)*\(\?[aiLmsux]+\)")
+_SEPARATOR_RUN = re.compile(r"[\\/]+")
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,7 +51,7 @@ class _BreezyRule:
             candidate = relative_path
         else:
             candidate = relative_path.rsplit("/", 1)[-1]
-        return self.expression.search(candidate) is not None
+        return self.expression.match(candidate) is not None
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,9 +89,10 @@ class BreezyIgnorePolicy(IgnorePolicy):
 
     The policy discovers a Breezy tree, obtains the installed client's built-in rules using the
     read-only ``brz ignore --default-rules`` command, and evaluates all rules locally. It supports
-    basename and root-relative globs, ``/**/``, ``RE:`` expressions, exception priority, and
-    ``!!`` strong exclusions. A declared exception can keep an ignored ancestor traversable even
-    when its target does not exist. Ignore decisions describe rule behavior, not tracked membership.
+    basename and root-relative globs, ``/**/``, ``RE:`` expressions over complete
+    workspace-relative paths, exception priority, and ``!!`` strong exclusions. A declared exception
+    can keep an ignored ancestor traversable even when its target does not exist. Ignore decisions
+    describe rule behavior, not tracked membership.
 
     Attributes:
         root: Caller traversal root, bounded to this policy's targets.
@@ -393,7 +395,14 @@ def _load_rule_file(path: Path) -> list[_BreezyRule]:
 
 
 def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None:
-    """Compile a Breezy glob or ``RE:`` pattern and classify its priority."""
+    """Apply Breezy normalization, compile one rule, and classify its priority."""
+    original_pattern = pattern
+    # Match Breezy 3.3.24's normalize_pattern order: !!RE is not exempted before
+    # the leading priority marker is stripped, so backslashes become separators.
+    if not pattern.startswith(("RE:", "!RE:")):
+        pattern = _SEPARATOR_RUN.sub("/", pattern)
+    if len(pattern) > 1:
+        pattern = pattern.rstrip("/")
     priority = "ignore"
     body = pattern
     if body.startswith("!!"):
@@ -422,7 +431,7 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
             # stable across supported Python versions.
             if _GLOBAL_INLINE_FLAGS.search(expression_text):
                 raise re.error("global flags are not at the start of the expression")
-            expression = re.compile(f"({expression_text})")
+            expression = re.compile(f"(?:{expression_text})$")
         else:
             expression = re.compile(_glob_to_regex(expression_text))
     except re.error as error:
@@ -434,7 +443,7 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
         ) from error
     return _BreezyRule(
         source=source,
-        pattern=pattern,
+        pattern=original_pattern,
         line=line,
         priority=priority,
         regex=regex,

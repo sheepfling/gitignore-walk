@@ -1449,6 +1449,188 @@
       "isolated_configuration": true,
       "global_ignore_existed_before": false,
       "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-full-path-match",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "cache",
+      "observed_ignored": true,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "cache"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "cache                                              RE:cache\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n",
+      "status_stderr": "",
+      "stdout_sha256": "335a59953be395e9ff284adfc300342f5b08c347494f6879cbae936fb1d6c3c4",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-full-match-not-search",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "query": "cache.tmp",
+      "observed_ignored": false,
+      "observed_unknown": true,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [],
+      "unknown_paths": [
+        ".bzrignore",
+        "cache.tmp"
+      ],
+      "stdout": "",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n?   cache.tmp\n",
+      "status_stderr": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-strong-priority",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "cache/keep.tmp",
+      "observed_ignored": true,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "cache/keep.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "cache/keep.tmp                                     !!RE:^cache/.*.tmp$\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  cache\n+N  cache/.oracle-walk-anchor\n",
+      "status_stderr": "",
+      "stdout_sha256": "a6f44146499a2ee34d181ad68588106409e46dad0e714febbe4c8ff787e7149d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-strong-path-normalization",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "query": "cache/drop.tmp",
+      "observed_ignored": false,
+      "observed_unknown": true,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [],
+      "unknown_paths": [
+        ".bzrignore",
+        "cache/drop.tmp"
+      ],
+      "stdout": "",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  cache\n+N  cache/.oracle-walk-anchor\n?   cache/drop.tmp\n",
+      "status_stderr": "",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
     }
   ]
 }

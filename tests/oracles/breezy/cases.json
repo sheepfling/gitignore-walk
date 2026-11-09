@@ -177,6 +177,34 @@
       "release_gate": "Captured anchored RE non-matches on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
+      "id": "brz.regex-full-path-match",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:cache"]
+      },
+      "query": "cache",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured exact regex full-path match on Breezy 3.3.24."
+    },
+    {
+      "id": "brz.regex-full-match-not-search",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["RE:cache"]
+      },
+      "query": "cache.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-PATTERNS"],
+      "release_gate": "Captured that RE patterns match the complete path rather than using re.search, on Breezy 3.3.24."
+    },
+    {
       "id": "brz.regex-named-capture-match",
       "profile": "breezy",
       "dimension": "regex",
@@ -209,7 +237,35 @@
         "BRZ-PATTERNS",
         "BRZ-GLOB-SOURCE"
       ],
-      "release_gate": "Pin supported RE subset, anchoring, flags and !!RE normalization; do not silently use arbitrary Python regex."
+      "release_gate": "Capture remaining regex-version differences beyond the pinned 3.3.24 matching and normalization cases."
+    },
+    {
+      "id": "brz.regex-strong-priority",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["!RE:^cache/keep\\.tmp$", "!!RE:^cache/.*.tmp$"]
+      },
+      "query": "cache/keep.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "release_gate": "Captured that !!RE rules override matching RE exceptions on Breezy 3.3.24."
+    },
+    {
+      "id": "brz.regex-strong-path-normalization",
+      "profile": "breezy",
+      "dimension": "regex",
+      "setup": {
+        "patterns": ["!!RE:^cache/.*\\.tmp$"]
+      },
+      "query": "cache/drop.tmp",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "release_gate": "Captured Breezy 3.3.24 path normalization of backslashes in !!RE patterns."
     },
     {
       "id": "brz.missing-user-file-defaults",

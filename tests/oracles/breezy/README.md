@@ -15,9 +15,11 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 ```
 
 Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
-aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. All twenty-nine boolean
-candidates match on all four profiles, and three explicit regex/error cases are recorded across the
-profiles. The boolean cases include exception priority, `!!` strong-exclude priority, trailing slash
+aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original twenty-nine
+boolean candidates match on all four profiles, and three explicit regex/error cases are recorded
+across the profiles. Four additional regex cases now have native captures on macOS arm64 and Linux
+aarch64; hosted Linux x86_64 and Windows captures are pending. The boolean cases include exception
+priority, `!!` strong-exclude priority, trailing slash
 normalization, basename matching,
 slash-rooted matching, whitespace preservation, no nested `.bzrignore` auto-discovery, global versus
 branch exception priority, and built-in Python cache ignores without a user ignore file. A child
@@ -43,6 +45,9 @@ source precedence, and pruning safety beyond these cases remain open. Breezy's d
 rule says that a
 slash or regular expression is compared with the workspace-relative path, while a pattern without
 a slash is compared with the final path component; the policy follows that contract.
+The new probes establish whole-path regex matching rather than substring search, `!!RE` priority over
+an `!RE` exception, and the pinned 3.3.24 normalization quirk that changes backslashes in `!!RE`
+patterns to path separators. The portable policy mirrors these observed decisions.
 
 The Windows capture sets a temporary `BRZ_HOME` to isolate each case. Breezy resolves its default
 Windows application-data directory through the Windows shell-folder API, so changing only the
