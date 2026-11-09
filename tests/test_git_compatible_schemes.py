@@ -25,6 +25,24 @@ _SOURCE_EXPECTATIONS = {
     "jj-noncolocated": ["global.global", "priority.global"],
 }
 
+_PATTERN_RULES = (
+    "blocked/\n!blocked/keep.txt\ncache/*\n!cache/keep.tmp\n/root-only.tmp\n**/deep.log\n"
+)
+_PATTERN_FILES = (
+    "blocked/keep.txt",
+    "cache/drop.tmp",
+    "cache/keep.tmp",
+    "root-only.tmp",
+    "nested/root-only.tmp",
+    "nested/deep/deep.log",
+)
+_PATTERN_IGNORED = {
+    "blocked/keep.txt",
+    "cache/drop.tmp",
+    "root-only.tmp",
+    "nested/deep/deep.log",
+}
+
 
 @pytest.mark.parametrize("mode", sorted(_SOURCE_EXPECTATIONS))
 def test_native_captured_ignore_sources_match_read_only_policy(tmp_path: Path, mode: str) -> None:
@@ -117,6 +135,56 @@ def test_jujutsu_workspace_does_not_inherit_outer_git_info_exclude(tmp_path: Pat
 
     assert policy.workspace_root == workspace
     assert not policy.explain("inside.local").ignored
+
+
+@pytest.mark.parametrize("mode", sorted(_SOURCE_EXPECTATIONS))
+def test_compatible_schemes_match_captured_negation_and_path_patterns(
+    tmp_path: Path, mode: str
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    environment = {"HOME": str(tmp_path / "home"), "XDG_CONFIG_HOME": str(tmp_path / "config")}
+    if mode in {"sapling-git", "jj-colocated"}:
+        _git_init(root)
+    elif mode == "sapling-sl":
+        (root / ".sl").mkdir()
+    else:
+        (root / ".jj").mkdir()
+    if mode.startswith("jj-"):
+        (root / ".jj").mkdir(exist_ok=True)
+    (root / ".gitignore").write_text(_PATTERN_RULES, encoding="utf-8")
+    for relative_path in _PATTERN_FILES:
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+
+    if mode.startswith("sapling-"):
+        policy = SaplingIgnorePolicy(root, environment=environment)
+    else:
+        policy = JujutsuIgnorePolicy(root, environment=environment)
+
+    decisions = {
+        decision.path.relative_to(root).as_posix(): decision
+        for decision in policy.explain_many(_PATTERN_FILES)
+    }
+    assert {path for path, decision in decisions.items() if decision.ignored} == _PATTERN_IGNORED
+    assert {decision.scheme for decision in decisions.values()} == {
+        "sapling" if mode.startswith("sapling-") else "jujutsu"
+    }
+
+    walker = IgnoreWalker(root, policy=policy)
+    walked_ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored")
+        if path.relative_to(root).as_posix() in _PATTERN_FILES
+    }
+    assert walked_ignored == _PATTERN_IGNORED
+    walked_included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included")
+        if path.relative_to(root).as_posix() in _PATTERN_FILES
+    }
+    assert walked_included == set(_PATTERN_FILES) - _PATTERN_IGNORED
 
 
 def test_compatible_scheme_selection_is_typed_and_explicit(tmp_path: Path) -> None:

@@ -62,6 +62,14 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
         included, ignored = _sapling_status_paths(status.stdout)
         source_query_files = set(fixture["source_query_files"])
         source_ignored = sorted(ignored & source_query_files)
+        pattern_query_files = set(fixture["pattern_query_files"])
+        _write_pattern_probes(root, fixture)
+        pattern_status = _run(
+            [executable, "status", "-iu", "--print0"], cwd=root, environment=environment
+        )
+        _require_success(pattern_status, "sl status pattern probes")
+        _, pattern_status_ignored = _sapling_status_paths(pattern_status.stdout)
+        pattern_ignored = _expand_ignored_paths(pattern_status_ignored, pattern_query_files)
         return {
             "id": f"sapling.{mode}-mode",
             "vcs": "sapling",
@@ -80,6 +88,13 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
                 "query_files": sorted(source_query_files),
                 "ignored": source_ignored,
                 "included": sorted(source_query_files - set(source_ignored)),
+            },
+            "pattern_discovery": {
+                "query_files": sorted(pattern_query_files),
+                "ignored": sorted(pattern_ignored),
+                "included": sorted(pattern_query_files - pattern_ignored),
+                "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
+                "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
             },
         }
 
@@ -120,6 +135,18 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         query_files = set(fixture["query_files"])
         source_query_files = set(fixture["source_query_files"])
         source_ignored = sorted(source_query_files - files)
+        pattern_query_files = set(fixture["pattern_query_files"])
+        _write_pattern_probes(root, fixture)
+        pattern_status = _run(
+            [executable, "status", "--no-pager"], cwd=root, environment=environment
+        )
+        _require_success(pattern_status, "jj status pattern probes")
+        pattern_listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+        _require_success(pattern_listed, "jj file list pattern probes")
+        pattern_files = {
+            line.strip() for line in pattern_listed.stdout.splitlines() if line.strip()
+        }
+        pattern_ignored = pattern_query_files - pattern_files
         return {
             "id": f"jj.{mode}",
             "vcs": "jujutsu",
@@ -140,6 +167,14 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
                 "ignored": source_ignored,
                 "included": sorted(source_query_files - set(source_ignored)),
             },
+            "pattern_discovery": {
+                "query_files": sorted(pattern_query_files),
+                "ignored": sorted(pattern_ignored),
+                "included": sorted(pattern_query_files - pattern_ignored),
+                "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
+                "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
+                "file_list_stdout": pattern_listed.stdout.replace(str(root), "<workspace>"),
+            },
         }
 
 
@@ -156,6 +191,22 @@ def _write_source_probes(root: Path, home: Path, fixture: Mapping[str, Any]) -> 
         (info_dir / "exclude").write_text(
             fixture["source_rules"]["git_info_exclude"], encoding="utf-8"
         )
+
+
+def _write_pattern_probes(root: Path, fixture: Mapping[str, Any]) -> None:
+    """Add a path matrix for negation, directory barriers, anchoring, and ``**``."""
+    _write_files(root, fixture["pattern_probe_files"])
+    (root / ".gitignore").write_text(fixture["pattern_rules"], encoding="utf-8")
+
+
+def _expand_ignored_paths(ignored: set[str], query_files: set[str]) -> set[str]:
+    """Expand native ignored-directory summaries to the fixture's queried files."""
+    normalized = {path.rstrip("/") for path in ignored}
+    return {
+        path
+        for path in query_files
+        if path in normalized or any(path.startswith(prefix + "/") for prefix in normalized)
+    }
 
 
 def _sapling_status_paths(output: str) -> tuple[set[str], set[str]]:
@@ -211,6 +262,9 @@ def capture(sapling: str, jj: str) -> dict[str, Any]:
             result["source_discovery"]["ignored"]
             == fixture["expected_source_ignored"][result["id"]]
         )
+        result["pattern_discovery"]["candidate_matches"] = (
+            result["pattern_discovery"]["ignored"] == fixture["expected_pattern_ignored"]
+        )
     return {
         "schema_version": 1,
         "status": "captured",
@@ -229,11 +283,13 @@ def main() -> int:
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     matched = sum(
-        case["candidate_matches"] and case["source_discovery"]["candidate_matches"]
+        case["candidate_matches"]
+        and case["source_discovery"]["candidate_matches"]
+        and case["pattern_discovery"]["candidate_matches"]
         for case in result["cases"]
     )
     print(f"Captured {len(result['cases'])} Sapling/Jujutsu cases")
-    print(f"Ignore and source-discovery candidates matching: {matched}/{len(result['cases'])}")
+    print(f"Ignore, source, and path-pattern candidates matching: {matched}/{len(result['cases'])}")
     print(f"Capture: {arguments.output}")
     return 0 if matched == len(result["cases"]) else 1
 

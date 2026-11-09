@@ -36,6 +36,29 @@
     "jj.colocated": ["global.global", "info.priority", "local.local"],
     "jj.noncolocated": ["global.global", "priority.global"]
   },
+  "pattern_probe_files": {
+    "blocked/keep.txt": "ignored parent blocks re-inclusion\n",
+    "cache/drop.tmp": "ignored child\n",
+    "cache/keep.tmp": "re-included child\n",
+    "root-only.tmp": "root-anchored match\n",
+    "nested/root-only.tmp": "nested root-anchored control\n",
+    "nested/deep/deep.log": "recursive double-star match\n"
+  },
+  "pattern_rules": "blocked/\n!blocked/keep.txt\ncache/*\n!cache/keep.tmp\n/root-only.tmp\n**/deep.log\n",
+  "pattern_query_files": [
+    "blocked/keep.txt",
+    "cache/drop.tmp",
+    "cache/keep.tmp",
+    "root-only.tmp",
+    "nested/root-only.tmp",
+    "nested/deep/deep.log"
+  ],
+  "expected_pattern_ignored": [
+    "blocked/keep.txt",
+    "cache/drop.tmp",
+    "nested/deep/deep.log",
+    "root-only.tmp"
+  ],
   "profiles": [
     {"id": "sapling.git-mode", "vcs": "sapling", "mode": "git"},
     {"id": "sapling.sl-mode", "vcs": "sapling", "mode": "sl"},

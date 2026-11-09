@@ -13,7 +13,8 @@ Notable user-facing changes are recorded here.
 - Initial scheme-specific policies for Subversion properties, Perforce `P4IGNORE`, Fossil ignore
   globs, Breezy ignore rules, and Darcs boring-file candidates.
 - Initial read-only Sapling and Jujutsu policies for captured Git-compatible ignore sources,
-  with separate workspace discovery and typed selection.
+  with separate workspace discovery and typed selection. Captured cases also cover directory
+  negation barriers, child re-inclusion, root anchoring, and recursive `**` patterns.
 - Native-oracle fixtures and profile-specific result captures for matching, discovery, and walking.
 
 ### Selection and compatibility

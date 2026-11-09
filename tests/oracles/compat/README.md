@@ -24,6 +24,13 @@ both modes and reads `.git/info/exclude` only when colocated. In modes with all 
 are captured with Sapling 0.2.20261103 and Jujutsu 0.47.1. They do not establish alternate global
 config files, path encoding, or broader VCS behavior.
 
+A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
+ignored parent directory; a child negation can re-include a file when only the parent's contents
+are ignored; `/root-only.tmp` is anchored to the workspace root; and `**/deep.log` matches a nested
+path. All four Sapling/Jujutsu mode results match these candidates. The portable policy tests replay
+the same rules through both direct explanations and included/ignored walker selections. The capture
+is still one macOS arm64 client profile, not broad cross-platform Git-dialect certification.
+
 Jujutsu's `status` command snapshots the working copy. The probes run it only in disposable
 repositories, then inspect the resulting file list. This is not a safe per-file adapter strategy for
 an existing workspace. A Jujutsu-specific native policy should not call status on user repositories

@@ -41,6 +41,29 @@
         ],
         "candidate_matches": true
       },
+      "pattern_discovery": {
+        "query_files": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "cache/keep.tmp",
+          "nested/deep/deep.log",
+          "nested/root-only.tmp",
+          "root-only.tmp"
+        ],
+        "ignored": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "nested/deep/deep.log",
+          "root-only.tmp"
+        ],
+        "included": [
+          "cache/keep.tmp",
+          "nested/root-only.tmp"
+        ],
+        "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? a.tmp\u0000? b.log\u0000? cache/keep.tmp\u0000? nested/root-only.tmp\u0000? priority.global\u0000? visible.txt\u0000I blocked/keep.txt\u0000I cache/drop.tmp\u0000I global.global\u0000I info.priority\u0000I local.local\u0000I local.priority\u0000I nested/deep/deep.log\u0000I root-only.tmp\u0000",
+        "status_stderr": "",
+        "candidate_matches": true
+      },
       "candidate_matches": true
     },
     {
@@ -80,6 +103,29 @@
         ],
         "candidate_matches": true
       },
+      "pattern_discovery": {
+        "query_files": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "cache/keep.tmp",
+          "nested/deep/deep.log",
+          "nested/root-only.tmp",
+          "root-only.tmp"
+        ],
+        "ignored": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "nested/deep/deep.log",
+          "root-only.tmp"
+        ],
+        "included": [
+          "cache/keep.tmp",
+          "nested/root-only.tmp"
+        ],
+        "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? a.tmp\u0000? b.log\u0000? cache/keep.tmp\u0000? global.global\u0000? info.priority\u0000? local.local\u0000? local.priority\u0000? nested/root-only.tmp\u0000? priority.global\u0000? visible.txt\u0000I blocked/keep.txt\u0000I cache/drop.tmp\u0000I nested/deep/deep.log\u0000I root-only.tmp\u0000",
+        "status_stderr": "",
+        "candidate_matches": true
+      },
       "candidate_matches": true
     },
     {
@@ -95,7 +141,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.priority\nA priority.global\nA visible.txt\nWorking copy  (@) : mtqzzvyu b1833437 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.priority\nA priority.global\nA visible.txt\nWorking copy  (@) : ktzrxvsq 12879419 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".git",
@@ -122,6 +168,30 @@
         ],
         "candidate_matches": true
       },
+      "pattern_discovery": {
+        "query_files": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "cache/keep.tmp",
+          "nested/deep/deep.log",
+          "nested/root-only.tmp",
+          "root-only.tmp"
+        ],
+        "ignored": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "nested/deep/deep.log",
+          "root-only.tmp"
+        ],
+        "included": [
+          "cache/keep.tmp",
+          "nested/root-only.tmp"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA local.priority\nA nested/root-only.tmp\nA priority.global\nA visible.txt\nWorking copy  (@) : ktzrxvsq 3355f587 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nlocal.priority\nnested/root-only.tmp\npriority.global\nvisible.txt\n",
+        "candidate_matches": true
+      },
       "candidate_matches": true
     },
     {
@@ -137,7 +207,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA info.priority\nA local.local\nA local.priority\nA visible.txt\nWorking copy  (@) : mowvpmnz 5db5e62d (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA info.priority\nA local.local\nA local.priority\nA visible.txt\nWorking copy  (@) : wpprtzmq b67c897f (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".jj"
@@ -161,6 +231,30 @@
           "local.local",
           "local.priority"
         ],
+        "candidate_matches": true
+      },
+      "pattern_discovery": {
+        "query_files": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "cache/keep.tmp",
+          "nested/deep/deep.log",
+          "nested/root-only.tmp",
+          "root-only.tmp"
+        ],
+        "ignored": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "nested/deep/deep.log",
+          "root-only.tmp"
+        ],
+        "included": [
+          "cache/keep.tmp",
+          "nested/root-only.tmp"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA info.priority\nA local.local\nA local.priority\nA nested/root-only.tmp\nA visible.txt\nWorking copy  (@) : wpprtzmq 44bcbcb5 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\ninfo.priority\nlocal.local\nlocal.priority\nnested/root-only.tmp\nvisible.txt\n",
         "candidate_matches": true
       },
       "candidate_matches": true

@@ -365,6 +365,10 @@ matcher while resolving each system's workspace markers and supported sources se
 - When all three source levels are present, workspace `.gitignore` overrides `.git/info/exclude`,
   which overrides the XDG ignore file.
 
+The captured pattern matrix also covers directory-level negation barriers, child re-inclusion,
+workspace-root anchoring, and recursive `**`; both policy decisions and walker selections match the
+captured native results for those cases.
+
 The caller's root remains the query and traversal bound, while `workspace_root` reports the
 discovered VCS root. The default walker baseline excludes `.sl` or `.git` for Sapling, depending on
 storage mode, and `.jj` for Jujutsu. These initial policies do not query versioned membership,

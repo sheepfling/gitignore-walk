@@ -48,6 +48,28 @@ def test_compatibility_capture_reconciles_ignore_source_discovery(case_id: str) 
     assert source_discovery["ignored"] == expected_ignored[case_id]
 
 
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS))
+def test_compatibility_capture_reconciles_path_pattern_discovery(case_id: str) -> None:
+    pattern_discovery = OBSERVATIONS[case_id]["pattern_discovery"]
+
+    assert pattern_discovery["candidate_matches"] is True
+    assert pattern_discovery["query_files"] == [
+        "blocked/keep.txt",
+        "cache/drop.tmp",
+        "cache/keep.tmp",
+        "nested/deep/deep.log",
+        "nested/root-only.tmp",
+        "root-only.tmp",
+    ]
+    assert pattern_discovery["ignored"] == [
+        "blocked/keep.txt",
+        "cache/drop.tmp",
+        "nested/deep/deep.log",
+        "root-only.tmp",
+    ]
+    assert pattern_discovery["included"] == ["cache/keep.tmp", "nested/root-only.tmp"]
+
+
 @pytest.mark.parametrize(
     ("case_id", "expected_markers"),
     [
