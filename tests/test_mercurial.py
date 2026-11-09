@@ -27,6 +27,7 @@ from tests.oracles.hg.run import (
     _ignored,
     _query_skip_reason,
     _status_observation,
+    _symlink_is_directory,
 )
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "hg"
@@ -112,7 +113,12 @@ def _make_case(
         link = root / relative
         link.parent.mkdir(parents=True, exist_ok=True)
         try:
-            link.symlink_to(target)
+            link.symlink_to(
+                target,
+                target_is_directory=_symlink_is_directory(
+                    relative, target, case["setup"], link.parent
+                ),
+            )
         except OSError as error:
             pytest.skip(f"filesystem cannot create Mercurial source symlink: {error}")
     config = case["setup"].get("config", {})
@@ -174,7 +180,15 @@ def _make_walk_case(root: Path, case: dict[str, Any]) -> MercurialIgnorePolicy:
     for relative, target in case["setup"].get("symlinks", {}).items():
         link = root / relative
         link.parent.mkdir(parents=True, exist_ok=True)
-        link.symlink_to(target)
+        try:
+            link.symlink_to(
+                target,
+                target_is_directory=_symlink_is_directory(
+                    relative, target, case["setup"], link.parent
+                ),
+            )
+        except OSError as error:
+            pytest.skip(f"filesystem cannot create Mercurial walk symlink: {error}")
     for relative in case["setup"].get("nested_repositories", []):
         (root / relative / ".hg").mkdir(parents=True)
     return MercurialIgnorePolicy(root)
@@ -203,8 +217,6 @@ def test_policy_matches_captured_native_observation(
         pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
     if os.name == "nt" and any(character in case["query"] for character in '<>:"|?*'):
         pytest.skip("Windows paths cannot represent a filename containing a reserved character")
-    if os.name == "nt" and case["setup"].get("symlinks"):
-        pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
     if case["id"] == "hg.include-unreadable-source":
         unreadable_source = (tmp_path / "repo" / "rules.ignore").resolve()
@@ -385,7 +397,7 @@ def test_native_oracle_explains_platform_specific_fixture_skips() -> None:
     assert _query_skip_reason("foo\\bar", native_os="nt") is not None
     assert _query_skip_reason("foo\\bar", native_os="posix") is None
     assert _query_skip_reason("literal*.tmp", native_os="nt") is not None
-    assert _query_skip_reason("", native_os="nt", requires_symlink=True) is not None
+    assert _query_skip_reason("", native_os="nt") is None
     assert _query_skip_reason("bad\udcff.tmp", native_os="posix") is None
     assert _query_skip_reason("ordinary.tmp", native_os="nt") is None
     assert _query_skip_reason("a.tmp", native_os="nt", requires_posix_permissions=True) is not None
@@ -567,8 +579,6 @@ def test_walker_matches_captured_native_ignored_file_walk(
     native = WALK_OBSERVATIONS[profile][case["id"]]
     if native["native_status"] == "skipped":
         pytest.skip(native["skip_reason"])
-    if os.name == "nt" and case["setup"].get("symlinks"):
-        pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     policy = _make_walk_case(tmp_path / "repo", case)
     tracked = set(case["tracked_paths"])
     # Mercurial status reports symlinks; IgnoreWalker intentionally yields regular files only.
@@ -668,8 +678,6 @@ def test_repeated_symlinked_source_retains_each_subinclude_scope(tmp_path: Path)
     case = next(
         case for case in WALK_CASES if case["id"] == "hg.walk.repeated-include-distinct-scopes"
     )
-    if os.name == "nt":
-        pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     policy = _make_walk_case(tmp_path / "repo", case)
 
     first = policy.trace("one/first.tmp")

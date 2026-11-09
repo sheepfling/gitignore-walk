@@ -49,6 +49,22 @@ def _write_byte_files(root: Path, files: Mapping[str, str]) -> None:
         target.write_bytes(bytes.fromhex(contents_hex))
 
 
+def _symlink_is_directory(
+    relative: str, target: str, setup: Mapping[str, Any], parent: Path
+) -> bool:
+    """Tell Windows whether a fixture link targets a directory, including dangling links."""
+    target_path = Path(target)
+    if not target_path.is_absolute():
+        target_path = parent / target_path
+    if target_path.is_dir():
+        return True
+    return any(
+        directive.startswith(f"{relative.rstrip('/')}/")
+        for line in setup.get("files", {}).get(".hgignore", "").splitlines()
+        if (directive := line.partition(":")[2].strip())
+    )
+
+
 def _write_outside_files(temporary_root: Path, files: Mapping[str, str]) -> None:
     """Write fixture files outside the repository but inside its disposable parent."""
     for relative, content in files.items():
@@ -159,7 +175,6 @@ def _query_skip_reason(
     *,
     native_os: str,
     requires_posix_permissions: bool = False,
-    requires_symlink: bool = False,
 ) -> str | None:
     """Explain when this host cannot reproduce a native-oracle fixture."""
     if native_os == "nt" and _has_surrogateescaped_bytes(query):
@@ -168,8 +183,6 @@ def _query_skip_reason(
         return "Windows paths cannot represent a POSIX filename containing backslash"
     if native_os == "nt" and any(character in query for character in '<>:"|?*'):
         return "Windows paths cannot represent a filename containing a reserved character"
-    if native_os == "nt" and requires_symlink:
-        return "Mercurial on Windows does not read symlinked ignore sources in this fixture"
     if native_os == "nt" and requires_posix_permissions:
         return "Windows file permissions cannot reproduce the POSIX unreadable-source fixture"
     return None
@@ -184,7 +197,6 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         query,
         native_os=os.name,
         requires_posix_permissions=bool(setup.get("file_modes")),
-        requires_symlink=bool(setup.get("symlinks")),
     )
     if skip_reason is not None:
         return {
@@ -243,7 +255,10 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 raise ValueError(f"oracle symlink path escapes its temporary root: {relative}")
             link.parent.mkdir(parents=True, exist_ok=True)
             try:
-                link.symlink_to(target)
+                link.symlink_to(
+                    target,
+                    target_is_directory=_symlink_is_directory(relative, target, setup, link.parent),
+                )
             except OSError as error:
                 return {
                     "id": case["id"],

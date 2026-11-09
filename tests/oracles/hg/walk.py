@@ -15,14 +15,12 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from run import _config_text, _query_skip_reason, _write_files
+from run import _config_text, _query_skip_reason, _symlink_is_directory, _write_files
 
 
 def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
     setup = case["setup"]
-    skip_reason = _query_skip_reason(
-        "", native_os=os.name, requires_symlink=bool(setup.get("symlinks"))
-    )
+    skip_reason = _query_skip_reason("", native_os=os.name)
     if skip_reason is not None:
         return {
             "id": case["id"],
@@ -72,7 +70,26 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         for relative, target in setup.get("symlinks", {}).items():
             link = root / relative
             link.parent.mkdir(parents=True, exist_ok=True)
-            link.symlink_to(target)
+            try:
+                link.symlink_to(
+                    target,
+                    target_is_directory=_symlink_is_directory(relative, target, setup, link.parent),
+                )
+            except OSError as error:
+                return {
+                    "id": case["id"],
+                    "dimension": case["dimension"],
+                    "evidence_status": case["evidence_status"],
+                    "native_status": "skipped",
+                    "skip_reason": f"Unable to create fixture symlink: {error}",
+                    "expected_ignored_paths": sorted(case["expected_ignored_paths"]),
+                    "observed_ignored_paths": None,
+                    "expected_unknown_paths": sorted(case["expected_unknown_paths"]),
+                    "observed_unknown_paths": None,
+                    "candidate_matches": None,
+                    "tracked_paths": sorted(case.get("tracked_paths", [])),
+                    "exit_code": None,
+                }
         init = subprocess.run(
             [executable, "init", str(root)],
             cwd=temp,
