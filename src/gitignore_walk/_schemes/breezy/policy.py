@@ -206,6 +206,7 @@ class BreezyIgnorePolicy(IgnorePolicy):
                 "HOME": str(home),
                 "USERPROFILE": str(home),
                 "XDG_CONFIG_HOME": str(home / ".config"),
+                "BRZ_HOME": str(home / "brz-home"),
                 "BRZ_PLUGIN_PATH": "",
                 "PATH": os.pathsep.join(os.get_exec_path(self._environment)),
                 "LC_ALL": "C",

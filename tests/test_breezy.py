@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,7 @@ from gitignore_walk import (
     IgnoreWalker,
     select_policy,
 )
+from gitignore_walk._schemes.breezy import policy as breezy_policy_module
 from gitignore_walk._schemes.breezy.policy import _compile_rule, _glob_to_regex
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "breezy"
@@ -46,6 +48,39 @@ def test_windows_appdata_global_ignore_path(breezy_root: Path, tmp_path: Path) -
     policy = BreezyIgnorePolicy(breezy_root, environment={"APPDATA": str(appdata)})
 
     assert policy.explain("cache.appdata-probe").ignored
+
+
+def test_default_rule_query_uses_isolated_brz_home(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Keep Breezy's default-rule query independent of the caller's config directories."""
+    root = tmp_path / "checkout"
+    (root / ".bzr").mkdir(parents=True)
+    appdata = tmp_path / "appdata"
+    captured: dict[str, str] = {}
+
+    def fake_run(
+        command: list[str],
+        *,
+        cwd: Path,
+        env: dict[str, str],
+        capture_output: bool,
+        timeout: float,
+        check: bool,
+    ) -> subprocess.CompletedProcess[bytes]:
+        captured.update(env)
+        return subprocess.CompletedProcess(command, 0, stdout=b"*.pyc\n", stderr=b"")
+
+    monkeypatch.setattr(breezy_policy_module.subprocess, "run", fake_run)
+    policy = BreezyIgnorePolicy(
+        root,
+        environment={"APPDATA": str(appdata), "HOME": str(tmp_path / "caller-home")},
+    )
+
+    assert policy._default_patterns == ("*.pyc",)
+    assert Path(captured["BRZ_HOME"]) == Path(captured["HOME"]) / "brz-home"
+    assert Path(captured["BRZ_HOME"]) != appdata
+    assert captured["BRZ_PLUGIN_PATH"] == ""
 
 
 def test_globstar_matches_zero_or_more_directory_segments() -> None:
