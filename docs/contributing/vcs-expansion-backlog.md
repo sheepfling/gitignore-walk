@@ -20,11 +20,14 @@ discovery and working-copy conformance remain open. The
 implementation research handoff records 94 native assertions against Git 2.47.3 and ripgrep 14.1.1
 on Linux, plus one malformed-input observation. It also supplies 88 non-Git candidate cases: 67
 documentation/source-derived and 21 open questions. The original Mercurial native corpus has 48 path
-probes and six traversal fixtures, captured with Mercurial 7.2.4 on macOS arm64 and 7.0.1 on Linux
-aarch64 and x86_64. Eight additional regex/glob byte-semantics probes now match native results on
-macOS arm64 and Debian 13 Linux aarch64 and x86_64; the client-enabled test also compares them with
-the installed Mercurial on each platform. Seven regex extension probes for lookaround, word
-boundaries, and backreferences match native on macOS arm64 and both Debian 13 Linux architectures.
+probes and six traversal fixtures, captured with Mercurial 7.2.4 on macOS arm64, 7.0.1 on Linux
+aarch64 and x86_64, and 7.1.2 on Windows x86_64. Windows now captures the full 65-case path corpus:
+56 candidate comparisons match, seven path probes skip on platform constraints, and the include-cycle
+and Unicode digit-class probes remain open. Eight additional regex/glob byte-semantics probes now
+match native results on macOS arm64 and Debian 13 Linux aarch64 and x86_64; the client-enabled test
+also compares them with the installed Mercurial on each platform. Seven regex extension probes cover
+lookaround, word boundaries, and backreferences; they match native on macOS arm64 and both Debian 13
+Linux architectures.
 Two symlink-source boundary probes match on macOS and Debian Linux x86_64. Live-client tests exercise
 the regex cases. The full Mercurial test module passes with 452 passed and 12 skipped on macOS, and
 446 passed and 11 skipped on each Debian Linux architecture. All 46 original boolean expectations

@@ -79,9 +79,10 @@ Linux aarch64/x86_64; tests compare them against the installed client on client-
 The full Mercurial test module passes in Debian 13 Linux containers on both architectures. The
 differential library tests replay captured observations for each profile, while native-skipped
 observations remain test skips. The
-Windows oracle capture has 42 matching candidate comparisons, five explicit path skips, and one
-documented include-cycle divergence; its walk capture has five matching fixtures and one
-symlink-dependent skip. See the
+Windows oracle capture has 56 closed candidate comparisons with no mismatches, seven explicit path
+skips, and two open observations: the documented include-cycle divergence and a Unicode digit-class
+probe whose native command produced no parseable decision. Its walk capture has five matching
+fixtures and one symlink-dependent skip. See the
 [Mercurial oracle](../../tests/oracles/hg/README.md), the
 [macOS matching results](../../tests/oracles/hg/results/hg-7.2.4-macos-arm64.json), the
 [Linux matching results](../../tests/oracles/hg/results/hg-7.0.1-linux-aarch64.json), and the

@@ -42,14 +42,16 @@ fixtures cover named entries, home-relative paths, repository configuration, and
 and Mercurial 7.0.1/Debian 13 Linux aarch64 and x86_64. They show regex character classes and case
 folding are byte-oriented, UTF-8 literals still match, and glob `?` consumes one byte of a multi-byte
 UTF-8 path. The test suite also compares these patterns directly with the installed native client on
-each client-enabled CI profile; the Windows committed capture still contains the original 48 cases.
+each client-enabled CI profile. The Windows capture now contains all 65 path cases, including the
+additional byte-semantics probes.
 The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
-The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: all 42
-candidate comparisons match, with no differing candidate results. The include-cycle observation
-remains the documented safe divergence. Five path probes are explicitly skipped for POSIX-only byte
-names, reserved/backslash filenames, symlinked ignore sources, and POSIX unreadable-file
-permissions. The walk capture is in
+The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: all 56
+closed candidate comparisons match, with no differing candidate results. The include-cycle
+observation remains the documented safe divergence. The Unicode digit-class probe is open because
+the native command returned no parseable decision for its non-ASCII argument. Seven path probes are
+explicitly skipped for POSIX-only byte names, reserved/backslash filenames, symlinked ignore sources,
+and POSIX unreadable-file permissions. The walk capture is in
 `results/hg-walk-7.1.2-windows-x86_64.json`; five fixtures match and the repeated-source-under-two-
 symlink-scopes fixture is skipped because this Mercurial-on-Windows profile does not read its
 symlinked ignore source. The Windows profile adds cross-platform evidence, but these skips leave
