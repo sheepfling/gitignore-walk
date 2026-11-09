@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,17 @@ def breezy_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(BreezyIgnorePolicy, "_load_default_patterns", lambda self: ())
     (tmp_path / ".bzr").mkdir()
     return tmp_path
+
+
+@pytest.mark.skipif(os.name != "nt", reason="Breezy's default config location is platform-specific")
+def test_windows_appdata_global_ignore_path(breezy_root: Path, tmp_path: Path) -> None:
+    appdata = tmp_path / "appdata"
+    global_ignore = appdata / "Breezy" / "3.0" / "ignore"
+    global_ignore.parent.mkdir(parents=True)
+    global_ignore.write_text("*.appdata-probe\n", encoding="utf-8")
+    policy = BreezyIgnorePolicy(breezy_root, environment={"APPDATA": str(appdata)})
+
+    assert policy.explain("cache.appdata-probe").ignored
 
 
 def test_globstar_matches_zero_or_more_directory_segments() -> None:

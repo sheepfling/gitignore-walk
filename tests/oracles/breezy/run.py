@@ -132,11 +132,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         checkout = (base / "checkout").resolve()
         checkout.mkdir()
         setup = case["setup"]
-        brz_home = base / "brz-home"
-        if setup.get("brz_home"):
+        brz_home = base / ("brz-home-explicit" if setup.get("brz_home") else "brz-home")
+        if setup.get("brz_home") or os.name == "nt":
             global_ignore = brz_home / "breezy" / "ignore"
-        elif os.name == "nt":
-            global_ignore = app_data / "Breezy" / "3.0" / "ignore"
         else:
             global_ignore = config_home / "breezy" / "ignore"
         environment = {
@@ -152,7 +150,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         }
         if os.name != "nt":
             environment["XDG_CONFIG_HOME"] = str(config_home)
-        if setup.get("brz_home"):
+        if setup.get("brz_home") or os.name == "nt":
             environment["BRZ_HOME"] = str(brz_home)
         _write_files(checkout, setup.get("files", {}))
         if setup.get("patterns") is not None:
