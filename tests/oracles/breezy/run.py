@@ -122,9 +122,8 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 anchor = target.parent / ".oracle-walk-anchor"
                 anchor.parent.mkdir(parents=True, exist_ok=True)
                 anchor.write_text("native walker anchor\n", encoding="utf-8")
-                relative_anchor = anchor.relative_to(checkout).as_posix()
                 anchor_add = _invoke(
-                    [executable, "add", "--no-plugins", relative_anchor],
+                    [executable, "add", "--no-plugins", str(anchor)],
                     cwd=checkout,
                     environment=environment,
                 )
