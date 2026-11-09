@@ -573,6 +573,11 @@ def test_subversion_walk_follows_native_listed_externals(tmp_path: Path, topdown
     assert workspace_ignored == expected_ignored
     assert policy.is_ignored("ext/ignored.tmp")
     assert policy.trace("ext/ignored.tmp").decision.source == str(policy.root / "ext")
+    assert policy.is_ignored("ext/nested/ignored.deep")
+    assert not policy.is_ignored("ext/nested/root-only.tmp")
+    assert policy.trace("ext/nested/ignored.deep").decision.source == str(
+        policy.root / "ext" / "nested"
+    )
     assert native_status_files <= all_files
     assert {root.relative_to(policy.root).as_posix() for root in policy._load_external_roots()} == {
         "ext",
@@ -580,12 +585,17 @@ def test_subversion_walk_follows_native_listed_externals(tmp_path: Path, topdown
         "ext-peg",
         "ext-parent",
         "ext-absolute",
+        "ext-absolute/nested",
         "ext-server-root",
+        "ext-server-root/nested",
+        "ext/nested",
+        "ext-parent/nested",
     }
     assert set(walker.iter_files("ext", topdown=topdown)) == {
         path
         for path in native_status_files - expected_ignored
         if path.is_relative_to(policy.root / "ext")
+        and ".svn" not in path.relative_to(policy.root).parts
     }
 
 

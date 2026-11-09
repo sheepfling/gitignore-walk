@@ -120,10 +120,14 @@
       "id": "svn.walk-descends-into-externals",
       "dimension": "external-working-copy-traversal",
       "setup": {
-        "repository_directories": ["empty"],
+        "repository_directories": ["empty", "inner"],
         "repository_properties": {
           "empty": {
-            "svn:global-ignores": "*.tmp\n"
+            "svn:global-ignores": "*.tmp\n",
+            "svn:externals": "^/inner nested"
+          },
+          "inner": {
+            "svn:global-ignores": "*.deep\n"
           }
         },
         "properties": {
@@ -139,6 +143,8 @@
           "ext/external.txt": "external file\n",
           "ext/ignored.tmp": "external ignore candidate\n",
           "ext/root-only.parent": "not ignored by the parent working-copy property\n",
+          "ext/nested/ignored.deep": "nested external ignore candidate\n",
+          "ext/nested/root-only.tmp": "not ignored by the outer external property\n",
           "ext-operative/operative.txt": "operative revision external\n",
           "ext-peg/peg.txt": "peg revision external\n",
           "ext-parent/parent.txt": "parent-relative external\n",
@@ -146,22 +152,28 @@
           "ext-server-root/server-root.txt": "server-root URL external\n"
         }
       },
-      "expected_ignored_paths": ["ext/ignored.tmp"],
+      "expected_ignored_paths": ["ext/ignored.tmp", "ext/nested/ignored.deep"],
       "expected_status_paths": [
         "ext",
         "ext/external.txt",
         "ext/ignored.tmp",
         "ext/root-only.parent",
+        "ext/nested",
+        "ext/nested/ignored.deep",
+        "ext/nested/root-only.tmp",
         "ext-operative",
         "ext-operative/operative.txt",
         "ext-peg",
         "ext-peg/peg.txt",
         "ext-parent",
         "ext-parent/parent.txt",
+        "ext-parent/nested",
         "ext-absolute",
         "ext-absolute/absolute.txt",
+        "ext-absolute/nested",
         "ext-server-root",
         "ext-server-root/server-root.txt",
+        "ext-server-root/nested",
         "visible.txt"
       ],
       "evidence_status": "native-observed"

@@ -61,7 +61,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-fwozg20p/config",
+            "/tmp/gitignore-walk-svn-oracle-fgqw6dtx/config",
             "status",
             "--xml"
           ],
@@ -74,16 +74,16 @@
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"case.only\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/child.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/keep.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"case.only\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/child.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/keep.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "b84b311e9cc481a8b00b94cfa813c3c2c743e39f7bae0840a49d5c4a27df29cb",
+          "stdout_sha256": "68526cf1b12d6f7fc171f7dbdcd6e7e828855fda171ec1ad2feec20c5392eb62",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-fwozg20p/config",
+            "/tmp/gitignore-walk-svn-oracle-fgqw6dtx/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -112,9 +112,9 @@
             "root.cache",
             "root.tmp"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"case.only\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"configured.oracle-default\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ignored.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/child.cache\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/child.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/deeper/a.deep\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/keep.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/local.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"root.cache\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"root.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"case.only\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"configured.oracle-default\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ignored.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/child.cache\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/child.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/deeper/a.deep\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/keep.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/local.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"root.cache\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"root.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "d6e767726840e744dac6737101eea517bebf4a15a9c76bae9d52d766cf607d67",
+          "stdout_sha256": "46ca02f8b966be00b7424c00f00d87a6b17274c8f58a227b85231dfecbc8a70f",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -158,7 +158,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-r9dawau1/config",
+            "/tmp/gitignore-walk-svn-oracle-2vu5ijuq/config",
             "status",
             "--xml"
           ],
@@ -167,16 +167,16 @@
             "pkg/visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "234747d0b6488236f51d5658608bead1aad9f68690ea0626e1f88238b997df53",
+          "stdout_sha256": "3af3e73459c8452784da49cf6a9309020d004f5dd42c71e729eb44e7c8218bd4",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-r9dawau1/config",
+            "/tmp/gitignore-walk-svn-oracle-2vu5ijuq/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -189,9 +189,9 @@
           "ignored_paths": [
             "pkg/loose.tmp"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/loose.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/loose.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "69e346e16387b37b96a2351b12aa0234172137ae9accb2031f826fe1f22fdd08",
+          "stdout_sha256": "d159b27d6113efa53bf51dca62db4349893ca7b4f89bc86842b02601b77c834a",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -227,7 +227,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-da2kiiqe/config",
+            "/tmp/gitignore-walk-svn-oracle-1yqw5fcq/config",
             "status",
             "--xml"
           ],
@@ -245,7 +245,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-da2kiiqe/config",
+            "/tmp/gitignore-walk-svn-oracle-1yqw5fcq/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -255,9 +255,9 @@
             "pkg"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "513cf937e0c23549b8a2cd351a944ccbdd34f02d459476b835e5b116552573ba",
+          "stdout_sha256": "364f9a8f0a7e8d3eff6531d34e1f44edce3e258de3f4bc0986af4d26caa02ddb",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -293,29 +293,9 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-73a5aq7o/config",
+            "/tmp/gitignore-walk-svn-oracle-y0voshgk/config",
             "status",
             "--xml"
-          ],
-          "exit_code": 0,
-          "paths": [
-            "child",
-            "visible.txt"
-          ],
-          "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"child\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
-          "stderr": "",
-          "stdout_sha256": "d4202adbb2155ea4ba939098307d5f391e79f591cb7b6024797f6f2eb8a007bb",
-          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        },
-        "no_ignore": {
-          "command": [
-            "/usr/bin/svn",
-            "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-73a5aq7o/config",
-            "status",
-            "--xml",
-            "--no-ignore"
           ],
           "exit_code": 0,
           "paths": [
@@ -326,6 +306,26 @@
           "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"child\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
           "stdout_sha256": "a13743b651eca9e37eff999adc6508c9a01733fefe166b492af75278bea17fea",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-y0voshgk/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "child",
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"child\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "4ce51670ec3e9394841466b2dc8ca2089ddd3b50d38bd4c907862b640ffa3e56",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -346,42 +346,56 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "expected_ignored_paths": [
-        "ext/ignored.tmp"
+        "ext/ignored.tmp",
+        "ext/nested/ignored.deep"
       ],
       "observed_ignored_paths": [
-        "ext/ignored.tmp"
+        "ext/ignored.tmp",
+        "ext/nested/ignored.deep"
       ],
       "expected_status_paths": [
         "ext",
         "ext/external.txt",
         "ext/ignored.tmp",
         "ext/root-only.parent",
+        "ext/nested",
+        "ext/nested/ignored.deep",
+        "ext/nested/root-only.tmp",
         "ext-operative",
         "ext-operative/operative.txt",
         "ext-peg",
         "ext-peg/peg.txt",
         "ext-parent",
         "ext-parent/parent.txt",
+        "ext-parent/nested",
         "ext-absolute",
         "ext-absolute/absolute.txt",
+        "ext-absolute/nested",
         "ext-server-root",
         "ext-server-root/server-root.txt",
+        "ext-server-root/nested",
         "visible.txt"
       ],
       "observed_status_paths": [
         "ext",
         "ext-absolute",
         "ext-absolute/absolute.txt",
+        "ext-absolute/nested",
         "ext-operative",
         "ext-operative/operative.txt",
         "ext-parent",
+        "ext-parent/nested",
         "ext-parent/parent.txt",
         "ext-peg",
         "ext-peg/peg.txt",
         "ext-server-root",
+        "ext-server-root/nested",
         "ext-server-root/server-root.txt",
         "ext/external.txt",
         "ext/ignored.tmp",
+        "ext/nested",
+        "ext/nested/ignored.deep",
+        "ext/nested/root-only.tmp",
         "ext/root-only.parent",
         "visible.txt"
       ],
@@ -392,7 +406,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-ufo4eifs/config",
+            "/tmp/gitignore-walk-svn-oracle-jf6ruw0t/config",
             "status",
             "--xml"
           ],
@@ -401,29 +415,34 @@
             "ext",
             "ext-absolute",
             "ext-absolute/absolute.txt",
+            "ext-absolute/nested",
             "ext-operative",
             "ext-operative/operative.txt",
             "ext-parent",
+            "ext-parent/nested",
             "ext-parent/parent.txt",
             "ext-peg",
             "ext-peg/peg.txt",
             "ext-server-root",
+            "ext-server-root/nested",
             "ext-server-root/server-root.txt",
             "ext/external.txt",
+            "ext/nested",
+            "ext/nested/root-only.tmp",
             "ext/root-only.parent",
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext\">\n<wc-status\n   props=\"none\"\n   item=\"external\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent\">\n<wc-status\n   props=\"none\"\n   item=\"external\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/external.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/root-only.parent\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute/absolute.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative/operative.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent/parent.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg/peg.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root/server-root.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative\">\n<wc-status\n   props=\"none\"\n   item=\"external\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/external.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/root-only.parent\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/nested/root-only.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute/absolute.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative/operative.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent/parent.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg/peg.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root/server-root.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "72cd94b58a096c8c64fd0e9f77da7068993dd4490b4cecebd2f2a2667b8b1327",
+          "stdout_sha256": "d41323060045baa8cde42fe3c4205c036cea75e1c4fb6eded5f0294e3cccea1b",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-ufo4eifs/config",
+            "/tmp/gitignore-walk-svn-oracle-jf6ruw0t/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -433,29 +452,38 @@
             "ext",
             "ext-absolute",
             "ext-absolute/absolute.txt",
+            "ext-absolute/nested",
             "ext-operative",
             "ext-operative/operative.txt",
             "ext-parent",
+            "ext-parent/nested",
             "ext-parent/parent.txt",
             "ext-peg",
             "ext-peg/peg.txt",
             "ext-server-root",
+            "ext-server-root/nested",
             "ext-server-root/server-root.txt",
             "ext/external.txt",
             "ext/ignored.tmp",
+            "ext/nested",
+            "ext/nested/ignored.deep",
+            "ext/nested/root-only.tmp",
             "ext/root-only.parent",
             "visible.txt"
           ],
           "ignored_paths": [
-            "ext/ignored.tmp"
+            "ext/ignored.tmp",
+            "ext/nested/ignored.deep"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext\">\n<wc-status\n   props=\"none\"\n   item=\"external\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative\">\n<wc-status\n   props=\"none\"\n   item=\"external\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/external.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/ignored.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/root-only.parent\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute/absolute.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative/operative.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent/parent.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg/peg.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root/server-root.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext\">\n<wc-status\n   props=\"none\"\n   item=\"external\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/external.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/ignored.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/root-only.parent\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/nested/ignored.deep\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext/nested/root-only.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute/absolute.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-absolute/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-operative/operative.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-parent/parent.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-peg/peg.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root/nested\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-server-root/server-root.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "1dc00df414d769cf933b8bd27cd790200dc15cbe0c5aa412b82b3d078a0de74c",
+          "stdout_sha256": "95f3ba38df85282b7f1b0b1067c11944887ade951e70df615dce71403853df15",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
       "setup_exit_codes": [
+        0,
+        0,
         0,
         0,
         0,
@@ -493,7 +521,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-8uedglsx/config",
+            "/tmp/gitignore-walk-svn-oracle-pd49ppgn/config",
             "status",
             "--xml"
           ],
@@ -504,16 +532,16 @@
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext-scheme-relative\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-scheme-relative/scheme-relative.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext-scheme-relative\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-scheme-relative/scheme-relative.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "9280c6e5c6a831e84816bfd55aed79bb6caa6550d04bb82c0e2e7b2ae30cd0c7",
+          "stdout_sha256": "29da0f4224d08aa4a619291cdee3e008bc6c63cdd0f7513e381f99ad336cc50e",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-8uedglsx/config",
+            "/tmp/gitignore-walk-svn-oracle-pd49ppgn/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -525,9 +553,9 @@
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext-scheme-relative\">\n<wc-status\n   item=\"external\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-scheme-relative/scheme-relative.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"ext-scheme-relative\">\n<wc-status\n   props=\"none\"\n   item=\"external\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"ext-scheme-relative/scheme-relative.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "9280c6e5c6a831e84816bfd55aed79bb6caa6550d04bb82c0e2e7b2ae30cd0c7",
+          "stdout_sha256": "d4a5cf3de42e571a5a8ba3fed82df41564ff4d10b4a4555fff95640861f5ecdf",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -564,7 +592,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-vva5e7m_/config",
+            "/tmp/gitignore-walk-svn-oracle-c8h64e0q/config",
             "status",
             "--xml"
           ],
@@ -573,16 +601,16 @@
             "b"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"b\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"b\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "13d894f702967fcf01702b8a7661a3df3a0d3bac64d5bfcfaf8b0ab6ecba3363",
+          "stdout_sha256": "d75b8428a8badadac41af62994ae82f5e9839b0d89fcb2c4a06c0c7025140ecb",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-vva5e7m_/config",
+            "/tmp/gitignore-walk-svn-oracle-c8h64e0q/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -633,7 +661,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-qjyfsnnu/config",
+            "/tmp/gitignore-walk-svn-oracle-q4dwh265/config",
             "status",
             "--xml"
           ],
@@ -651,7 +679,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-qjyfsnnu/config",
+            "/tmp/gitignore-walk-svn-oracle-q4dwh265/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -664,9 +692,9 @@
           "ignored_paths": [
             "*"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"*\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"*\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "f0fa0614c7fdfb4a89ceee470472cc3bb2b305ff637c4873cbf66ad0e0084f45",
+          "stdout_sha256": "743cf8d8f2f10c817751002dcd3929983b898581cde533c65634d287feec541d",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -702,7 +730,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-_lotmo0n/config",
+            "/tmp/gitignore-walk-svn-oracle-pgz5veho/config",
             "status",
             "--xml"
           ],
@@ -711,16 +739,16 @@
             "a"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "0ea07da20880c45c87dda6f56560126ed92eda66ca76a3b10d36612b20a50fe0",
+          "stdout_sha256": "8037a7d88e33f2de42081fede1dbefe42c81b05d3d1671a47dba3a669646e2d4",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-_lotmo0n/config",
+            "/tmp/gitignore-walk-svn-oracle-pgz5veho/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -733,9 +761,9 @@
           "ignored_paths": [
             "x"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"x\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"x\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "8601da658f0313cc868cef9570d89a2129830b986b55cb27f3a0a395b530693b",
+          "stdout_sha256": "bc59346bb038314e3f61b23d90519eccb908eeb00729a32357d523a72ad1362a",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -771,7 +799,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-52fu08p8/config",
+            "/tmp/gitignore-walk-svn-oracle-w1byj0rn/config",
             "status",
             "--xml"
           ],
@@ -780,16 +808,16 @@
             "a"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "8037a7d88e33f2de42081fede1dbefe42c81b05d3d1671a47dba3a669646e2d4",
+          "stdout_sha256": "0ea07da20880c45c87dda6f56560126ed92eda66ca76a3b10d36612b20a50fe0",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-52fu08p8/config",
+            "/tmp/gitignore-walk-svn-oracle-w1byj0rn/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -802,9 +830,9 @@
           "ignored_paths": [
             "x"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"x\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"x\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "bc59346bb038314e3f61b23d90519eccb908eeb00729a32357d523a72ad1362a",
+          "stdout_sha256": "8601da658f0313cc868cef9570d89a2129830b986b55cb27f3a0a395b530693b",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -840,7 +868,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-p5z7peb2/config",
+            "/tmp/gitignore-walk-svn-oracle-d5oc4zkg/config",
             "status",
             "--xml"
           ],
@@ -849,16 +877,16 @@
             "filex"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"filex\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"filex\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "5d2094757b17c8e3c885dbf39592c726bbbb940e2accc1a8404f99c15e8e25cf",
+          "stdout_sha256": "f66f076b9406a1e95b018b9f5e3d6906f5f20c4a0857ff91d81b3ff1357a56ec",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-p5z7peb2/config",
+            "/tmp/gitignore-walk-svn-oracle-d5oc4zkg/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -871,9 +899,9 @@
           "ignored_paths": [
             "file["
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"file[\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"filex\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"file[\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"filex\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "386cfd53293f345c3f9194251b40a7830fb62d8155002f15b681e7d47395cb30",
+          "stdout_sha256": "02c8b87443580c0d04943ae7fca364d552553509d518095e1b82925470ab18c3",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -905,7 +933,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-0m4yu7l_/config",
+            "/tmp/gitignore-walk-svn-oracle-ljqfiy4b/config",
             "status",
             "--xml"
           ],
@@ -915,16 +943,16 @@
             "x"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"1\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"x\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"1\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"x\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "3606b5be204a95fb83e98d8edde96a242023f4cdfa658114ee42a7f455044bff",
+          "stdout_sha256": "165f350163008c15164411b796f675391990bee42ce5c6f00c24a95046f867db",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-0m4yu7l_/config",
+            "/tmp/gitignore-walk-svn-oracle-ljqfiy4b/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -979,7 +1007,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-qsz54fph/config",
+            "/tmp/gitignore-walk-svn-oracle-s__p7j_1/config",
             "status",
             "--xml"
           ],
@@ -991,16 +1019,16 @@
             "a.tmp"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a.bak\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.cache\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.log\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a.bak\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.cache\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.log\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "b6af9639f9d33fa02966e0c73289b7a7014bf36c29e4b9799858c95d0f093af7",
+          "stdout_sha256": "8c2b988412407ee3ea4e84671ec197086448198744d8bc615d54281b865e67f0",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-qsz54fph/config",
+            "/tmp/gitignore-walk-svn-oracle-s__p7j_1/config",
             "status",
             "--xml",
             "--no-ignore"
@@ -1018,9 +1046,9 @@
             "two words.cache",
             "two words.tmp"
           ],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a.bak\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.cache\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.log\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"two words.cache\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"two words.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"a.bak\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.cache\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.log\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"a.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"two words.cache\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"two words.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "ddbec71e3c73092e2dcb06f219f01549d12db2a9c86aec29620d83662d4b7465",
+          "stdout_sha256": "3a7b877ad97cb5221a4139802a4d8ae51712aa8e24fc522578c99f36c1d56ef7",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -1060,7 +1088,7 @@
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-mj8n73na/config",
+            "/tmp/gitignore-walk-svn-oracle-3xs43xl3/config",
             "status",
             "--xml"
           ],
@@ -1069,16 +1097,16 @@
             "visible.txt"
           ],
           "ignored_paths": [],
-          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
           "stderr": "",
-          "stdout_sha256": "db084a4243808d901763423df1a6f728930d43ab0e660a93354e1a36ef057ce0",
+          "stdout_sha256": "9856e543015afe3b1d52422824ed3ee4cdfc822db878fac25c335b48f96aaaa9",
           "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "no_ignore": {
           "command": [
             "/usr/bin/svn",
             "--config-dir",
-            "/tmp/gitignore-walk-svn-oracle-mj8n73na/config",
+            "/tmp/gitignore-walk-svn-oracle-3xs43xl3/config",
             "status",
             "--xml",
             "--no-ignore"

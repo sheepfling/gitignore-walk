@@ -4,8 +4,8 @@
 inherited `svn:global-ignores` (including a property above a subtree checkout), nested properties,
 APR glob syntax, sparse depths, and working-copy boundaries. External fixtures exercise
 repository-root-relative, parent-relative, absolute, server-root-relative, and scheme-relative URLs.
-One external fixture gives the external repository its own `svn:global-ignores` property and checks
-that containing-working-copy rules do not leak across the external boundary.
+One external fixture gives the external repository its own `svn:global-ignores` property, declares a
+second external inside it, and checks that rules stay within each external working-copy boundary.
 
 Run the capture from the repository root:
 
@@ -62,9 +62,9 @@ determine versioned membership or claim add/status command equivalence beyond th
 keeps ignored directories traversable, stops at unrelated nested `.svn` working copies,
 and follows external roots reported by native status across repository-root-relative,
 parent-relative, absolute, server-root-relative, and scheme-relative URLs, with and without pinned
-revisions. Each listed external working copy supplies its own versioned property snapshot. The
-containing working copy's versioned rules stop at the external boundary; runtime global patterns
-remain active there.
+revisions. Each listed external working copy supplies its own versioned property snapshot, including
+nested externals reported by recursive native status. Versioned rules stop at each external boundary;
+runtime global patterns remain active throughout.
 Sparse `empty`-depth properties and excluded directory traversal barriers are covered. Broader
 configuration precedence, additional client/platform versions, and a reusable cross-scheme oracle
 contract remain open before calling this mature support.
