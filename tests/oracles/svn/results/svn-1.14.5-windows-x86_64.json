@@ -1317,6 +1317,78 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.ignored-unversioned-directory-collapses",
+      "dimension": "ignored-directory-status-traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "cache"
+      ],
+      "observed_ignored_paths": [
+        "cache"
+      ],
+      "expected_status_paths": [
+        "cache",
+        "visible.txt"
+      ],
+      "observed_status_paths": [
+        "cache",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-40bfqkbt\\config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "b592521cd68ce9ba85db82326dd82847a27071b7bdb9d19407c2818a0b79b490",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-40bfqkbt\\config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache",
+            "visible.txt"
+          ],
+          "ignored_paths": [
+            "cache"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"cache\">\r\n<wc-status\r\n   item=\"ignored\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "69ce6c39364ff3f5cd39a0611db360d8042a6071b9ad35d069806e0ba5c6f542",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

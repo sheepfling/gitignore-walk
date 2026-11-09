@@ -9,10 +9,11 @@ second external inside it, and checks that rules stay within each external worki
 The collapsed-unversioned-directory case records that native status reports an unversioned
 directory as one entry rather than listing its files. A rule-only decision for a known child can
 still match an ignore pattern, but the child's native membership remains unknown.
-The ignored-directory fixture records that default status omits an ignored unversioned directory,
-while `--no-ignore` lists it once and still omits its descendants. The policy evaluates descendants
-against the inherited rule, leaves their native membership unknown, and the walker continues through
-the directory.
+The ignored-directory fixture is captured on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04
+x86_64, and 1.14.5/SlikSvn Windows Server 2025 x86_64. Default status omits the ignored
+unversioned directory, while `--no-ignore` lists it once and still omits its descendants. The policy
+evaluates descendants against the inherited rule, leaves their native membership unknown, and the
+walker continues through the directory.
 The APR default-flags fixture verifies that `*.tmp` matches `hidden/.hidden.tmp` and that
 `case.tmp` matches `lower/case.tmp` but not `upper/CASE.TMP`. Separate directories keep this
 case-sensitivity check valid on case-insensitive filesystems.
@@ -48,12 +49,11 @@ run this extra status query. Sparse-depth fixtures confirm a versioned directory
 path without listing files beneath it. A switched-subtree case confirms that inherited
 `svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. The
 original 19-case corpus is captured on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64, and
-1.14.5/SlikSvn Windows Server 2025 x86_64; the ignored-directory case is currently captured on macOS
-while matching Ubuntu and Windows captures are pending. Platform-constrained cases are recorded as
-skips. The APR build lines are retained for these profiles: 1.7.6, 1.7.2, and 1.7.5, respectively. The
-16 earlier cases also match on Subversion 1.14.5/Linux aarch64 and x86_64. The
-file-external case is captured on macOS, both Linux architectures, and Windows Server
-2025 x86_64. The Windows oracle job explicitly skips the
+1.14.5/SlikSvn Windows Server 2025 x86_64. The 20th ignored-directory case is captured on all three
+profiles. Platform-constrained cases are recorded as skips. The APR build lines are retained for these
+profiles: 1.7.6, 1.7.2, and 1.7.5, respectively. The 16 earlier cases also match on
+Subversion 1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS, both
+Linux architectures, and Windows Server 2025 x86_64. The Windows oracle job explicitly skips the
 newline-and-tab case because those filenames are not representable there. The focused runtime
 Subversion suite, including the opt-in file-external membership and walker assertions, passes with
 107 passed and 4 skipped on macOS arm64,
