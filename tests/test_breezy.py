@@ -42,12 +42,15 @@ def breezy_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 @pytest.mark.skipif(os.name != "nt", reason="Breezy's default config location is platform-specific")
 def test_windows_appdata_global_ignore_path(breezy_root: Path, tmp_path: Path) -> None:
     appdata = tmp_path / "appdata"
-    global_ignore = appdata / "Breezy" / "3.0" / "ignore"
+    global_ignore = appdata / "Breezy" / "ignore"
     global_ignore.parent.mkdir(parents=True)
     global_ignore.write_text("*.appdata-probe\n", encoding="utf-8")
     policy = BreezyIgnorePolicy(breezy_root, environment={"APPDATA": str(appdata)})
 
-    assert policy.explain("cache.appdata-probe").ignored
+    decision = policy.explain("cache.appdata-probe")
+
+    assert decision.ignored
+    assert decision.source == str(global_ignore)
 
 
 def test_default_rule_query_uses_isolated_brz_home(

@@ -249,7 +249,7 @@ class BreezyIgnorePolicy(IgnorePolicy):
         if os.name == "nt":
             app_data = self._environment.get("APPDATA")
             if app_data:
-                return Path(app_data) / "Breezy" / "3.0" / "ignore"
+                return Path(app_data) / "Breezy" / "ignore"
         xdg = self._environment.get("XDG_CONFIG_HOME")
         if xdg:
             return Path(xdg) / "breezy" / "ignore"

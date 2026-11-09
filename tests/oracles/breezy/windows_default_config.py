@@ -21,6 +21,7 @@ import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from gitignore_walk import BreezyIgnorePolicy
 
@@ -75,10 +76,32 @@ def capture(output: Path) -> dict[str, Any]:
         raise RuntimeError("the default Breezy Windows config probe only runs on Windows")
     appdata = _roaming_appdata()
     process_appdata = Path(os.environ["APPDATA"])
-    global_ignore = appdata / "Breezy" / "3.0" / "ignore"
     breezy = shutil.which("brz")
     if breezy is None:
         raise FileNotFoundError("Breezy executable 'brz' was not found")
+
+    environment = os.environ.copy()
+    environment.pop("BRZ_HOME", None)
+    environment.pop("BZR_HOME", None)
+    environment.update(
+        {
+            "BRZ_PLUGIN_PATH": "",
+            "BRZ_LOG": os.devnull,
+            "LC_ALL": "C",
+            "LANG": "C",
+            "TZ": "UTC",
+        }
+    )
+    with patch.dict(os.environ, environment, clear=True):
+        from breezy.bedding import user_ignore_config_path
+
+        global_ignore = Path(user_ignore_config_path())
+    try:
+        global_ignore_relative = global_ignore.resolve().relative_to(appdata.resolve())
+    except ValueError as error:
+        raise RuntimeError(
+            f"Breezy resolved its user ignore file outside roaming AppData: {global_ignore}"
+        ) from error
 
     path_existed = global_ignore.exists()
     original = global_ignore.read_bytes() if path_existed else None
@@ -93,17 +116,6 @@ def capture(output: Path) -> dict[str, Any]:
         global_ignore.parent.mkdir(parents=True, exist_ok=True)
         fixture_bytes = (_MARKER_PATTERN + "\n").encode("utf-8")
         global_ignore.write_bytes(fixture_bytes)
-        environment = os.environ.copy()
-        environment.pop("BRZ_HOME", None)
-        environment.update(
-            {
-                "BRZ_PLUGIN_PATH": "",
-                "BRZ_LOG": os.devnull,
-                "LC_ALL": "C",
-                "LANG": "C",
-                "TZ": "UTC",
-            }
-        )
         with tempfile.TemporaryDirectory(prefix="gitignore-walk-brz-appdata-") as temporary:
             working_tree = Path(temporary) / "tree"
             working_tree.mkdir()
@@ -140,7 +152,8 @@ def capture(output: Path) -> dict[str, Any]:
                 if decision.source is not None
                 else None
             )
-            expected_policy_source = "<APPDATA>/Breezy/3.0/ignore"
+            expected_policy_source = "<APPDATA>/Breezy/ignore"
+            global_ignore_path = "<APPDATA>/" + global_ignore_relative.as_posix()
             result = {
                 "schema_version": 1,
                 "status": "captured",
@@ -150,7 +163,8 @@ def capture(output: Path) -> dict[str, Any]:
                     os.path.abspath(process_appdata)
                 )
                 == os.path.normcase(os.path.abspath(appdata)),
-                "global_ignore_path": "<APPDATA>/Breezy/3.0/ignore",
+                "global_ignore_path": global_ignore_path,
+                "native_resolver": "breezy.bedding.user_ignore_config_path",
                 "global_ignore_original_existed": path_existed,
                 "global_ignore_original_sha256": original_sha256,
                 "fixture_pattern": _MARKER_PATTERN,
@@ -171,7 +185,8 @@ def capture(output: Path) -> dict[str, Any]:
                     and ignored["exit_code"] == 0
                     and ignored_paths == [_CANDIDATE]
                     and decision.ignored
-                    and policy_source == expected_policy_source
+                    and policy_source.casefold() == expected_policy_source.casefold()
+                    and global_ignore_relative.as_posix().casefold() == "breezy/ignore"
                 ),
             }
     finally:

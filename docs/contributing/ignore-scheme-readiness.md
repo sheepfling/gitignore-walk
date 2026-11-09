@@ -144,7 +144,7 @@ The initial Breezy evaluator queries the native client for built-in rules, then 
 user ignore file and root `.bzrignore`. Its 29 boolean candidates pass against Breezy 3.3.24/macOS
 arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64. The Windows capture uses an
 isolated `BRZ_HOME`; it does not confirm Breezy's default AppData shell-folder lookup. A Windows-only
-policy test covers the documented `%APPDATA%/Breezy/3.0/ignore` default. The native status fixture
+policy test covers the Windows `%APPDATA%/Breezy/ignore` default. The native status fixture
 verifying that a child exception opens an ignored parent and exposes sibling files matches policy
 walk results in both traversal orders. Native
 captures also include exact-path versus `/**` strong exclusions. The matcher follows Breezy's
