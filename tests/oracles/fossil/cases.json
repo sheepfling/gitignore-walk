@@ -167,6 +167,87 @@
       "evidence_status": "native-observed"
     },
     {
+      "id": "fossil.ascii-whitespace-separators",
+      "dimension": "lexing",
+      "setup": {
+        "probes": [
+          {
+            "value": "one\ttwo",
+            "query": "one",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\ttwo",
+            "query": "two",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\ntwo",
+            "query": "one",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\ntwo",
+            "query": "two",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\u000btwo",
+            "query": "one",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\u000btwo",
+            "query": "two",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\ftwo",
+            "query": "one",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\ftwo",
+            "query": "two",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\rtwo",
+            "query": "one",
+            "expected_candidate": true
+          },
+          {
+            "value": "one\rtwo",
+            "query": "two",
+            "expected_candidate": true
+          },
+          {
+            "value": "one two",
+            "query": "one",
+            "expected_candidate": true
+          },
+          {
+            "value": "one two",
+            "query": "two",
+            "expected_candidate": true
+          },
+          {
+            "value": " \tname\f ",
+            "query": "name",
+            "expected_candidate": true
+          },
+          {
+            "value": " \t\n\u000b\f\r",
+            "query": "visible.txt",
+            "expected_candidate": false
+          }
+        ]
+      },
+      "query": null,
+      "expected_candidate": null,
+      "evidence_status": "native-observed"
+    },
+    {
       "id": "fossil.directory-inheritance",
       "dimension": "traversal",
       "setup": {

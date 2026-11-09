@@ -26,8 +26,10 @@ CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
     for name in CAPTURE_FILES
 }
-MALFORMED_CASE = next(case for case in CASES if case["id"] == "fossil.malformed-quotes")
-MALFORMED_PROBES = MALFORMED_CASE["setup"]["probes"]
+TOKENIZER_CASES = tuple(case for case in CASES if "probes" in case["setup"])
+TOKENIZER_PROBES = tuple(
+    (case, probe) for case in TOKENIZER_CASES for probe in case["setup"]["probes"]
+)
 
 
 def _windows_unrepresentable_query_reason(query: str) -> str | None:
@@ -80,9 +82,10 @@ def test_fossil_capture_matches_known_candidate(profile: str, case: dict[str, An
         assert observation["observed_ignored"] is None or isinstance(
             observation["observed_ignored"], bool
         )
+        expected_probes = case["setup"]["probes"]
         captured_probes = observation["setting_probes"]
-        assert len(captured_probes) == len(MALFORMED_PROBES)
-        for expected, captured in zip(MALFORMED_PROBES, captured_probes, strict=True):
+        assert len(captured_probes) == len(expected_probes)
+        for expected, captured in zip(expected_probes, captured_probes, strict=True):
             assert captured["query"] == expected["query"]
             assert captured["value"] == expected["value"]
             assert captured["observed_ignored"] is expected["expected_candidate"]
@@ -143,20 +146,19 @@ def test_fossil_policy_matches_captured_ignore_decisions(
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize(
-    "probe",
-    MALFORMED_PROBES,
-    ids=lambda probe: f"{probe['value']}->{probe['query']}",
+    ("case", "probe"),
+    TOKENIZER_PROBES,
+    ids=[f"{case['id']}:{probe['value']}->{probe['query']}" for case, probe in TOKENIZER_PROBES],
 )
-def test_fossil_policy_matches_captured_malformed_token_decisions(
+def test_fossil_policy_matches_captured_tokenizer_decisions(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
     profile: str,
+    case: dict[str, Any],
     probe: dict[str, Any],
 ) -> None:
     _skip_unrepresentable_windows_query(probe["query"])
-    captured = next(
-        case for case in CAPTURES[profile]["cases"] if case["id"] == MALFORMED_CASE["id"]
-    )
+    captured = next(item for item in CAPTURES[profile]["cases"] if item["id"] == case["id"])
     observed = next(
         item
         for item in captured["setting_probes"]
@@ -243,10 +245,13 @@ def test_fossil_walker_matches_captured_extras_paths(
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
-def test_fossil_tokenizer_probes_match_captured_observations(profile: str) -> None:
-    """Keep observed malformed-token behavior covered without claiming full conformance."""
+@pytest.mark.parametrize("case", TOKENIZER_CASES, ids=lambda case: case["id"])
+def test_fossil_tokenizer_probes_match_captured_observations(
+    profile: str, case: dict[str, Any]
+) -> None:
+    """Keep native-observed tokenizer decisions aligned with the portable parser."""
     capture = CAPTURES[profile]
-    observation = next(case for case in capture["cases"] if case["id"] == "fossil.malformed-quotes")
+    observation = next(item for item in capture["cases"] if item["id"] == case["id"])
 
     assert observation["evidence_status"] == "native-observed"
     probes = observation["setting_probes"]

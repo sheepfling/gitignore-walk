@@ -1362,6 +1362,158 @@
         0
       ],
       "setup_failed": false
+    },
+    {
+      "id": "fossil.ascii-whitespace-separators",
+      "dimension": "lexing",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": null,
+      "observed_ignored": null,
+      "candidate_matches": null,
+      "query": null,
+      "extras": null,
+      "setting_probes": [
+        {
+          "value": "one\ttwo",
+          "query": "one",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\ttwo",
+          "query": "two",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\ntwo",
+          "query": "one",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\ntwo",
+          "query": "two",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\u000btwo",
+          "query": "one",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\u000btwo",
+          "query": "two",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\ftwo",
+          "query": "one",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\ftwo",
+          "query": "two",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\rtwo",
+          "query": "one",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one\rtwo",
+          "query": "two",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one two",
+          "query": "one",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": "one two",
+          "query": "two",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": []
+        },
+        {
+          "value": " \tname\f ",
+          "query": "name",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": [
+            "one",
+            "two"
+          ]
+        },
+        {
+          "value": " \t\n\u000b\f\r",
+          "query": "visible.txt",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": false,
+          "listed_paths": [
+            "name",
+            "one",
+            "two",
+            "visible.txt"
+          ]
+        }
+      ],
+      "setup_exit_codes": [
+        0,
+        0
+      ],
+      "setup_failed": false
     }
   ]
 }
