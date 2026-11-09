@@ -109,7 +109,7 @@ applicable rules; membership remains unknown for descendants omitted from status
 shows a `cache` pattern matches the versioned directory name but not the different basename of its
 child: tracked files remain included and the unversioned child is not ignored. This exposed and fixed
 an ancestor-component false positive in the policy. Native status and membership captures match on
-macOS 1.15.0; Ubuntu 1.14.3 and Windows SlikSvn 1.14.5 captures are pending for this fixture.
+macOS 1.15.0, Ubuntu 1.14.3, and Windows SlikSvn 1.14.5.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented. Native precedence captures cover system-to-user INI files on Debian 13 x86_64 and
 machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5; broader platform combinations,

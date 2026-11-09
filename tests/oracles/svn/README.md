@@ -15,10 +15,10 @@ x86_64, and 1.14.5/SlikSvn Windows Server 2025 x86_64. Default status omits the 
 unversioned directory, while `--no-ignore` lists it once and still omits its descendants. The policy
 continues traversing it and evaluates each descendant basename against applicable rules; membership
 remains unknown for descendants omitted from native status.
-The versioned-directory fixture is currently captured on Subversion 1.15.0/macOS arm64. It confirms
-that an inherited `cache` pattern matches the directory name but does not match unrelated descendant
-basenames: tracked files remain selected as included, and a new `cache/new.tmp` stays unversioned
-rather than ignored. Matching Ubuntu and Windows captures are pending.
+The versioned-directory fixture matches Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64,
+and 1.14.5/SlikSvn Windows Server 2025 x86_64. It confirms that an inherited `cache` pattern
+matches the directory name but does not match unrelated descendant basenames: tracked files remain
+selected as included, and a new `cache/new.tmp` stays unversioned rather than ignored.
 The APR default-flags fixture verifies that `*.tmp` matches `hidden/.hidden.tmp` and that
 `case.tmp` matches `lower/case.tmp` but not `upper/CASE.TMP`. Separate directories keep this
 case-sensitivity check valid on case-insensitive filesystems.
@@ -55,7 +55,7 @@ path without listing files beneath it. A switched-subtree case confirms that inh
 `svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. The
 original 19 cases and 20th ignored-directory case are captured on Subversion 1.15.0/macOS arm64,
 1.14.3/Ubuntu 24.04 x86_64, and 1.14.5/SlikSvn Windows Server 2025 x86_64. The 21st
-versioned-directory case is currently captured on macOS; Linux and Windows captures are pending.
+versioned-directory case matches all three profiles.
 Platform-constrained cases are recorded as skips. The APR build lines are retained for these
 profiles: 1.7.6, 1.7.2, and 1.7.5, respectively. The 16 earlier cases also match on Subversion
 Subversion 1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS, both

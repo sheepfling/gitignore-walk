@@ -1389,6 +1389,75 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.versioned-directory-ignore-membership",
+      "dimension": "versioned-directory-membership",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_status_paths": [
+        "cache/new.tmp",
+        "visible.txt"
+      ],
+      "observed_status_paths": [
+        "cache/new.tmp",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "cache/tracked.tmp"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-adsu537v\\config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache/new.tmp",
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"cache\\new.tmp\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "d1c3608ee654914970bb5b7bffe4f94c60084d0633b5ebf179d7b14cb6418fd5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-adsu537v\\config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache/new.tmp",
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"cache\\new.tmp\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"visible.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "d1c3608ee654914970bb5b7bffe4f94c60084d0633b5ebf179d7b14cb6418fd5",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }
