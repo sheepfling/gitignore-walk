@@ -418,7 +418,7 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         environment=environment,
     )
     (root / "conflicted.tmp").write_text("ours\n", encoding="utf-8")
-    _run_svn([svn, "update", "."], cwd=root, environment=environment)
+    _run_svn([svn, "update", "--accept", "postpone", "."], cwd=root, environment=environment)
     (root / "missing.tmp").unlink()
     (root / "obstructed.tmp").unlink()
     (root / "obstructed.tmp").mkdir()

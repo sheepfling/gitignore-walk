@@ -21,8 +21,8 @@ implementation research handoff records 94 native assertions against Git 2.47.3 
 on Linux, plus one malformed-input observation. It also supplies 88 non-Git candidate cases: 67
 documentation/source-derived and 21 open questions. The original Mercurial native corpus has 48 path
 probes and six traversal fixtures, captured with Mercurial 7.2.4 on macOS arm64, 7.0.1 on Linux
-aarch64 and x86_64, and 7.1.2 on Windows x86_64. Windows now captures the full 65-case path corpus:
-59 boolean comparisons and one structured invalid-syntax result match; four path probes skip on
+aarch64 and x86_64, and 7.1.2 on Windows x86_64. Windows now captures the full 66-case path corpus:
+60 boolean comparisons and one structured invalid-syntax result match; four path probes skip on
 platform constraints, and the include-cycle remains open. NUL-delimited native status closes the
 Unicode digit-class case whose `debugignore`
 output is unparseable on Windows. Eight additional regex/glob byte-semantics probes now
@@ -30,9 +30,10 @@ match native results on macOS arm64 and Debian 13 Linux aarch64 and x86_64; the 
 also compares them with the installed Mercurial on each platform. Seven regex extension probes cover
 lookaround, word boundaries, and backreferences; they match native on macOS arm64 and both Debian 13
 Linux architectures.
-Two symlink-source boundary probes match on macOS and Debian Linux x86_64. Live-client tests exercise
-the regex cases. The full Mercurial test module passes with 452 passed and 12 skipped on macOS, and
-446 passed and 11 skipped on each Debian Linux architecture. All 46 original boolean expectations
+Two symlink-source boundary probes match on macOS and Debian Linux x86_64. A self-referential
+include-source loop also matches on macOS and Windows. Live-client tests exercise
+the regex cases. The full Mercurial test module passes with 475 passed and 11 skipped on macOS.
+All 46 original boolean expectations
 and the structured invalid-syntax expectation agree across the original profiles, as do all six
 walk fixtures. Parent
 walks stop at nested `.hg` workspaces, and root walks stop at `.hg` metadata.
@@ -502,9 +503,10 @@ Mercurial references: [ignore-file syntax](https://www.mercurial-scm.org/help/to
 
 For Mercurial, Windows case-sensitive glob behavior is now captured. Remaining probes include regex
 features beyond the captured unanchored search, start anchor, inline flags, and newline matching;
-additional include-source symlink boundaries and Windows behavior. A self-referential include-source
-symlink loop is now captured on macOS arm64: Mercurial warns and skips the source, and the policy
-reports incomplete discovery. Windows loop behavior remains unverified. Mercurial's
+additional include-source symlink boundaries. A self-referential include-source symlink loop is now
+captured on macOS arm64 and Windows x86_64: Mercurial warns and skips the source, and the policy
+reports incomplete discovery. The warning differs by platform (`Too many levels of symbolic links`
+on macOS and `Invalid argument` on Windows). Mercurial's
 command-line `include:` notation
 reads patterns from a file; it does not execute a command. That file-selection feature is separate
 from this ignore-policy expansion. Native help documents regex/glob/rootglob and says an ignore
