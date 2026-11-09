@@ -67,7 +67,11 @@ brackets, and the absence of POSIX character classes. They also confirm spaces d
 `svn:ignore` or `svn:global-ignores` property lines. The new cases match on Subversion
 1.15.0/macOS arm64, 1.14.5/Linux aarch64 and x86_64, and 1.14.5/SlikSvn Windows x86_64. Windows
 skips the escaped-wildcard filename because Windows cannot represent `*` in a filename. The new
-inherited-property case also matches native status on all four captured profiles.
+inherited-property case also matches native status on all four captured profiles. A switched
+working-copy case found that recursive property discovery omits inherited rules at switched paths;
+the policy now queries each native-reported switched root and scopes its inherited
+`svn:global-ignores` there. Native status, policy decisions, and walker selections agree on
+Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04 x86_64, and 1.14.5/SlikSvn Windows x86_64.
 The SVN corpus now also covers newline- and tab-bearing filenames: Subversion 1.15.0/macOS arm64
 captures their XML numeric-reference round trip, and top-down and bottom-up policy walks preserve
 the decoded paths. Windows records an explicit skip because it cannot represent these filenames;
@@ -496,7 +500,8 @@ checks are green.
 **Priority:** P2 · **Depends on:** VCS-08
 
 **Next scheme:** SVN, following the research ranking above. Its current property policy is an initial
-implementation; inherited `svn:global-ignores` above the working-copy root are discovered. Opt-in
+implementation; inherited `svn:global-ignores` above the working-copy root and at native-reported
+switched paths are discovered and scoped to the correct subtree. Opt-in
 membership-aware decisions use verbose native status for listed paths, with absent paths left
 unknown. The opt-in file-external membership behavior passes on macOS arm64, Linux aarch64/x86_64,
 and the SlikSvn Windows CI job. The Windows native file-external observation is now committed;

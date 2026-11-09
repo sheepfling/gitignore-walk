@@ -18,6 +18,7 @@ CAPTURE_FILES = (
     "svn-1.14.5-linux-aarch64.json",
     "svn-1.14.5-linux-x86_64.json",
     "svn-1.14.5-windows-x86_64.json",
+    "svn-1.14.3-ubuntu-24.04-x86_64.json",
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))

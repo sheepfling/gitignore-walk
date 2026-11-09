@@ -1277,6 +1277,89 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.switched-subtree-inherits-global-ignores",
+      "dimension": "switched-working-copy-property-inheritance",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/ignored.branchtmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/ignored.branchtmp"
+      ],
+      "expected_status_paths": [
+        "outside.branchtmp",
+        "pkg",
+        "pkg/ignored.branchtmp"
+      ],
+      "observed_status_paths": [
+        "outside.branchtmp",
+        "pkg",
+        "pkg/ignored.branchtmp"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "pkg/base.txt"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-4rpbxoug/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "outside.branchtmp",
+            "pkg"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"outside.branchtmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg\">\n<wc-status\n   props=\"none\"\n   switched=\"true\"\n   item=\"normal\"\n   revision=\"5\">\n<commit\n   revision=\"5\">\n<author>rick</author>\n<date>2026-11-09T19:46:46.064934Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "3d59b2845fe767df79619f2cf09afd83449bfa7498ac5ef4030b5fcc5f45d1b6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-4rpbxoug/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "outside.branchtmp",
+            "pkg",
+            "pkg/ignored.branchtmp"
+          ],
+          "ignored_paths": [
+            "pkg/ignored.branchtmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"outside.branchtmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg\">\n<wc-status\n   props=\"none\"\n   switched=\"true\"\n   item=\"normal\"\n   revision=\"5\">\n<commit\n   revision=\"5\">\n<author>rick</author>\n<date>2026-11-09T19:46:46.064934Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/ignored.branchtmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "60a6daf0a0c55a701c01aa62a5e8d9a56f65a4ccdac1169c8fbe574ba2680936",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

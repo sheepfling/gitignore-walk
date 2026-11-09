@@ -1090,6 +1090,89 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.switched-subtree-inherits-global-ignores",
+      "dimension": "switched-working-copy-property-inheritance",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/ignored.branchtmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/ignored.branchtmp"
+      ],
+      "expected_status_paths": [
+        "outside.branchtmp",
+        "pkg",
+        "pkg/ignored.branchtmp"
+      ],
+      "observed_status_paths": [
+        "outside.branchtmp",
+        "pkg",
+        "pkg/ignored.branchtmp"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "pkg/base.txt"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-3f5jggsq\\config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "outside.branchtmp",
+            "pkg"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"outside.branchtmp\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"pkg\">\r\n<wc-status\r\n   switched=\"true\"\r\n   item=\"normal\"\r\n   revision=\"5\"\r\n   props=\"none\">\r\n<commit\r\n   revision=\"5\">\r\n<author>runneradmin</author>\r\n<date>2026-11-09T19:56:45.944987Z</date>\r\n</commit>\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "87eabab64c896fd6e789eaa0578c6e333ca3f6b84d08b50f69f0e84300d12d22",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-3f5jggsq\\config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "outside.branchtmp",
+            "pkg",
+            "pkg/ignored.branchtmp"
+          ],
+          "ignored_paths": [
+            "pkg/ignored.branchtmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"outside.branchtmp\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"pkg\">\r\n<wc-status\r\n   item=\"normal\"\r\n   revision=\"5\"\r\n   props=\"none\"\r\n   switched=\"true\">\r\n<commit\r\n   revision=\"5\">\r\n<author>runneradmin</author>\r\n<date>2026-11-09T19:56:45.944987Z</date>\r\n</commit>\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"pkg\\ignored.branchtmp\">\r\n<wc-status\r\n   item=\"ignored\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "e7c935bcb7c0edb3e603778010470ef378a38839961f756bcee51486508ee44e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }
