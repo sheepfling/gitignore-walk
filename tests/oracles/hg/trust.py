@@ -32,6 +32,7 @@ def _environment(home: Path, hgrc: Path) -> dict[str, str]:
     return {
         **os.environ,
         "HOME": str(home),
+        "USERPROFILE": str(home),
         "HGRCPATH": str(hgrc),
         "HGPLAIN": "1",
         "LC_ALL": "C",

@@ -338,10 +338,18 @@ def _discover_ui_ignore_files(
     return tuple(sources)
 
 
-def _expand_configured_path(value: str, environment: Mapping[str, str]) -> Path:
+def _expand_configured_path(
+    value: str, environment: Mapping[str, str], *, windows: bool | None = None
+) -> Path:
     """Expand Mercurial's home-relative paths using the discovery environment."""
     if value == "~" or value.startswith(("~/", "~\\")):
-        home = environment.get("HOME") or environment.get("USERPROFILE")
+        if windows is None:
+            windows = os.name == "nt"
+        home = (
+            environment.get("USERPROFILE") or environment.get("HOME")
+            if windows
+            else environment.get("HOME") or environment.get("USERPROFILE")
+        )
         if home:
             return Path(home) / value[2:] if value != "~" else Path(home)
     return Path(value).expanduser()

@@ -15,11 +15,28 @@ from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
-from run import _config_text, _write_files
+from run import _config_text, _query_skip_reason, _write_files
 
 
 def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
     setup = case["setup"]
+    skip_reason = _query_skip_reason(
+        "", native_os=os.name, requires_symlink=bool(setup.get("symlinks"))
+    )
+    if skip_reason is not None:
+        return {
+            "id": case["id"],
+            "dimension": case["dimension"],
+            "evidence_status": case["evidence_status"],
+            "native_status": "skipped",
+            "skip_reason": skip_reason,
+            "expected_ignored_paths": sorted(case["expected_ignored_paths"]),
+            "observed_ignored_paths": None,
+            "expected_unknown_paths": sorted(case["expected_unknown_paths"]),
+            "observed_unknown_paths": None,
+            "candidate_matches": None,
+            "tracked_paths": sorted(case.get("tracked_paths", [])),
+        }
     with tempfile.TemporaryDirectory(prefix="gitignore-walk-hg-walk-oracle-") as temporary:
         temp = Path(temporary)
         home = temp / "home"
@@ -36,6 +53,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         env.update(
             {
                 "HOME": str(home),
+                "USERPROFILE": str(home),
                 "HGRCPATH": str(hg_config),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
@@ -100,6 +118,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 for path in status.stdout.split(b"\0")
                 if path
             )
+            paths = sorted(path.replace("\\", "/") for path in paths)
             observations[selection] = {
                 "command": command,
                 "exit_code": status.returncode,

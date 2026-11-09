@@ -108,11 +108,13 @@ def capture(output: Path, *, allow_registry_mutation: bool) -> dict[str, Any]:
             {
                 "APPDATA": str(appdata),
                 "PROGRAMDATA": str(programdata),
-                "HOME": str(root / "home"),
                 "LC_ALL": "C",
                 "LANG": "C",
             }
         )
+        # Native Windows clients use %APPDATA% for the runtime config directory.
+        # Remove any inherited HOME so Git Bash or runner setup cannot redirect it.
+        environment.pop("HOME", None)
         repository = root / "repository"
         working_copy = root / "working-copy"
         _run([svnadmin, "create", str(repository)], cwd=root, environment=environment)

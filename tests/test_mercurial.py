@@ -115,6 +115,7 @@ def _make_case(
         environment.update(
             {
                 "HOME": str(home),
+                "USERPROFILE": str(home),
                 "HGRCPATH": str(hgrc),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
@@ -176,6 +177,10 @@ def test_policy_matches_captured_native_observation(
         pytest.skip("Windows cannot reproduce POSIX unreadable-file permissions")
     if os.name == "nt" and "\\" in case["query"]:
         pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
+    if os.name == "nt" and any(character in case["query"] for character in '<>:"|?*'):
+        pytest.skip("Windows paths cannot represent a filename containing a reserved character")
+    if os.name == "nt" and case["setup"].get("symlinks"):
+        pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     observation = MATCHING_OBSERVATIONS[profile][case["id"]]
     policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
     expected = observation["observed_ignored"]
@@ -223,6 +228,8 @@ def test_native_oracle_explains_platform_specific_fixture_skips() -> None:
     assert _query_skip_reason("bad\udcff.tmp", native_os="nt") is not None
     assert _query_skip_reason("foo\\bar", native_os="nt") is not None
     assert _query_skip_reason("foo\\bar", native_os="posix") is None
+    assert _query_skip_reason("literal*.tmp", native_os="nt") is not None
+    assert _query_skip_reason("", native_os="nt", requires_symlink=True) is not None
     assert _query_skip_reason("bad\udcff.tmp", native_os="posix") is None
     assert _query_skip_reason("ordinary.tmp", native_os="nt") is None
     assert _query_skip_reason("a.tmp", native_os="nt", requires_posix_permissions=True) is not None
@@ -401,6 +408,8 @@ def test_walker_matches_captured_native_ignored_file_walk(
     topdown: bool,
     profile: str,
 ) -> None:
+    if os.name == "nt" and case["setup"].get("symlinks"):
+        pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     policy = _make_walk_case(tmp_path / "repo", case)
     native = WALK_OBSERVATIONS[profile][case["id"]]
     tracked = set(case["tracked_paths"])
@@ -487,10 +496,22 @@ def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
     assert trace.matches[0].scope == "pkg"
 
 
+def test_windows_home_relative_client_paths_prefer_userprofile() -> None:
+    path = mercurial_policy_module._expand_configured_path(
+        "~/.project-ignore",
+        {"HOME": "/posix-home", "USERPROFILE": "C:/Users/fixture"},
+        windows=True,
+    )
+
+    assert path.as_posix() == "C:/Users/fixture/.project-ignore"
+
+
 def test_repeated_symlinked_source_retains_each_subinclude_scope(tmp_path: Path) -> None:
     case = next(
         case for case in WALK_CASES if case["id"] == "hg.walk.repeated-include-distinct-scopes"
     )
+    if os.name == "nt":
+        pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     policy = _make_walk_case(tmp_path / "repo", case)
 
     first = policy.trace("one/first.tmp")

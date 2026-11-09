@@ -95,13 +95,21 @@ def _has_surrogateescaped_bytes(value: str) -> bool:
 
 
 def _query_skip_reason(
-    query: str, *, native_os: str, requires_posix_permissions: bool = False
+    query: str,
+    *,
+    native_os: str,
+    requires_posix_permissions: bool = False,
+    requires_symlink: bool = False,
 ) -> str | None:
     """Explain when this host cannot reproduce a native-oracle fixture."""
     if native_os == "nt" and _has_surrogateescaped_bytes(query):
         return "Windows process arguments cannot represent POSIX undecodable path bytes"
     if native_os == "nt" and "\\" in query:
         return "Windows paths cannot represent a POSIX filename containing backslash"
+    if native_os == "nt" and any(character in query for character in '<>:"|?*'):
+        return "Windows paths cannot represent a filename containing a reserved character"
+    if native_os == "nt" and requires_symlink:
+        return "Mercurial on Windows does not read symlinked ignore sources in this fixture"
     if native_os == "nt" and requires_posix_permissions:
         return "Windows file permissions cannot reproduce the POSIX unreadable-source fixture"
     return None
@@ -113,7 +121,10 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         raise TypeError(f"{case['id']}: the hg profile requires one path query")
     setup = case["setup"]
     skip_reason = _query_skip_reason(
-        query, native_os=os.name, requires_posix_permissions=bool(setup.get("file_modes"))
+        query,
+        native_os=os.name,
+        requires_posix_permissions=bool(setup.get("file_modes")),
+        requires_symlink=bool(setup.get("symlinks")),
     )
     if skip_reason is not None:
         return {
@@ -146,6 +157,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         env.update(
             {
                 "HOME": str(home),
+                "USERPROFILE": str(home),
                 "HGRCPATH": str(hg_config),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
@@ -308,6 +320,7 @@ def capture(cases_path: Path, output_path: Path, hg_executable: str) -> int:
             env={
                 **os.environ,
                 "HOME": str(profile_home),
+                "USERPROFILE": str(profile_home),
                 "HGRCPATH": str(profile_config),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
