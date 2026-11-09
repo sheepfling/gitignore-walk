@@ -614,6 +614,46 @@ def test_sparse_excluded_directory_is_a_walk_barrier_and_reports_incomplete_rule
     assert {item.code for item in sparse_decision.diagnostics} == {"sparse-path-excluded"}
     assert not sparse_trace.complete
 
+    membership_policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    membership_status = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    membership_document = ET.fromstring(membership_status.stdout)
+    membership_paths = {
+        entry.attrib["path"].replace("\\", "/")
+        for entry in membership_document.findall("./target/entry")
+    }
+    omitted_decision = membership_policy.explain("pkg/loose.tmp")
+    assert "pkg" in membership_paths
+    assert "pkg/loose.tmp" not in membership_paths
+    assert omitted_decision.membership is None
+    assert not omitted_decision.discovery_complete
+    membership_walker = IgnoreWalker(root, policy=membership_policy)
+    membership_files = {
+        path.relative_to(root).as_posix()
+        for path in membership_walker.iter_files(selection="all")
+        if path.is_file() and path.relative_to(root).parts[0] != ".svn"
+    }
+    assert not membership_files
+
 
 @pytest.mark.skipif(os.name == "nt", reason="Windows uses APPDATA and Registry config sources")
 def test_subversion_ambient_user_config_is_discovered_and_matches_native_status(

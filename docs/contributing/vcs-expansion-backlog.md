@@ -201,7 +201,9 @@ handoff; revisit it if native feasibility or project priorities change.
 
 SVN now has a live status-transition test for normal, modified, added, deleted, missing, and ignored-
 unversioned entries. It checks native status membership and membership-aware walk selection; the test
-is not yet confirmed on hosted platform clients. Broader status traversal remains open.
+also checks that an excluded-depth child omitted from verbose native status stays membership-unknown
+and that the walker does not descend there. These new cases are not yet confirmed on hosted platform
+clients. Broader status traversal remains open.
 
 Reorder this list when user demand, supported client automation, or native probe results justify it.
 Do not implement a candidate merely because a CLI is installed. Each implementation starts with a

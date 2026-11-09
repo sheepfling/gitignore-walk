@@ -47,7 +47,9 @@ policy with `svn status --xml --verbose --no-ignore --depth infinity`. It covers
 `added`, `deleted`, and `missing` versioned entries alongside an ignored unversioned entry. It also
 checks that ignored versioned files remain in the walker's `included` selection, while the ignored
 unversioned file appears in its `ignored` selection. This exercises the tested status values without
-claiming that every Subversion working-copy status or sparse-depth membership case is covered.
+claiming that every Subversion working-copy status is covered. A separate excluded-depth check
+confirms that a child omitted from verbose native status remains membership-unknown, that discovery
+remains incomplete, and that the walker does not descend into the excluded subtree.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then
