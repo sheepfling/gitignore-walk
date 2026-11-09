@@ -41,7 +41,7 @@ Then install the development tools into that environment:
 python -m pip install -e '.[dev]'
 ```
 
-Before pushing, run the full local check:
+For quick iteration, run the core local check:
 
 ```sh
 python -m scripts.ci all
@@ -60,9 +60,18 @@ python -m mdrepo fix .  # Python 3.11+
 python -m scripts.ci all
 ```
 
+Before pushing substantial changes, install the native clients listed in [validation.md](docs/validation.md)
+and run `python -m scripts.ci pre-push`, then the available local interpreter matrix. The strict
+pre-push gate requires Git and every selected native client, checks fresh native captures, and
+retains summaries under `.local/ci/`. Report failures, narrowed backend selections, unavailable
+platforms, and explicit skips. Do not describe `all` alone as full native-backend coverage.
+
 GitHub Actions calls the same runner: matrix entries run `test`, and Ubuntu Python 3.12 runs
 `all`. This is the repository's hosted full-check job; do not infer hosted CI status from local
-results.
+results. Nine individual oracle jobs are consolidated into Linux and Windows native jobs,
+with all previous backend/platform pairings retained. Feature-branch pushes are local-only unless
+a PR or manual workflow run is requested. Check required status contexts before adopting changed
+job names; do not change protection settings without authorization.
 
 ## Implementation notes
 

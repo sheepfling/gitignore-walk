@@ -42,6 +42,13 @@ assertions. The SlikSvn Windows suite passed with 99 passed and 12 skipped in th
 the Windows file-external result is in `results/svn-1.14.5-windows-x86_64.json`.
 Captures are stored in `results/`.
 
+A live membership transition test creates and mutates a disposable working copy, then compares the
+policy with `svn status --xml --verbose --no-ignore --depth infinity`. It covers `normal`, `modified`,
+`added`, `deleted`, and `missing` versioned entries alongside an ignored unversioned entry. It also
+checks that ignored versioned files remain in the walker's `included` selection, while the ignored
+unversioned file appears in its `ignored` selection. This exercises the tested status values without
+claiming that every Subversion working-copy status or sparse-depth membership case is covered.
+
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then
 evaluates the supported glob rules in Python. Its matcher follows captured SVN/APR behavior for

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import importlib.util
+import json
 import os
 import shlex
 import shutil
@@ -13,6 +14,8 @@ import tempfile
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
+
+from scripts.ci_native import BACKENDS, require_tools, run_native
 
 
 class EnvVar:
@@ -128,6 +131,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     oracle_command.add_argument("--hg", default="hg", help="Mercurial executable")
     oracle_command.add_argument(
+        "--skip-trust", action="store_true", help="record an explicit skip for the ownership probe"
+    )
+    oracle_command.add_argument(
         "--output",
         type=Path,
         default=project_root() / "tests" / "oracles" / "hg" / "capture.local.json",
@@ -216,8 +222,35 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
 
     commands.add_parser("all", help="run tests, quality checks, and package validation")
+    for name, help_text in (
+        ("native", "run selected native oracles and retain a checked result summary"),
+        ("pre-push", "run all checks plus selected native oracles before pushing"),
+    ):
+        native_command = commands.add_parser(name, help=help_text)
+        native_command.add_argument("--backends", nargs="+", choices=BACKENDS, default=BACKENDS)
+        native_command.add_argument(
+            "--include-trust",
+            action="store_true",
+            help="include the privileged Mercurial ownership probe on an isolated runner",
+        )
+        native_command.add_argument(
+            "--output-dir", type=Path, default=project_root() / ".local" / "ci"
+        )
     arguments = parser.parse_args(argv)
     try:
+        if arguments.command in {"native", "pre-push"}:
+            require_tools(arguments.backends, include_git=arguments.command == "pre-push")
+            if arguments.command == "pre-push":
+                for check in (lambda: _test(sys.executable), _quality, _package):
+                    result = check()
+                    if result:
+                        return result
+            return run_native(
+                project_root(),
+                arguments.backends,
+                arguments.output_dir,
+                include_trust=arguments.include_trust,
+            )
         if arguments.command == "test":
             return _test(sys.executable)
         if arguments.command == "matrix":
@@ -235,7 +268,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             return _package()
         if arguments.command == "oracle-hg":
             return _oracle_hg(
-                arguments.hg, arguments.output, arguments.walk_output, arguments.trust_output
+                arguments.hg,
+                arguments.output,
+                arguments.walk_output,
+                arguments.trust_output,
+                skip_trust=arguments.skip_trust,
             )
         if arguments.command == "oracle-svn":
             return _oracle_svn(arguments.svn, arguments.svnadmin, arguments.output)
@@ -269,11 +306,12 @@ def main(argv: Sequence[str] | None = None) -> int:
 def _test(python: str) -> int:
     version = _python_version(python)
     TEST_TEMP: Final = test_temp()
-    basetemp = TEST_TEMP / f"pytest-{version}"
-    basetemp.parent.mkdir(parents=True, exist_ok=True)
+    TEST_TEMP.mkdir(parents=True, exist_ok=True)
+    # Pytest clears --basetemp. Never reuse a path that another local run may own.
+    basetemp = Path(tempfile.mkdtemp(prefix=f"pytest-{version}-", dir=TEST_TEMP))
     environment = _environment_with_source()
     print(f"Running pytest on Python {version}", flush=True)
-    return _run(
+    result = _run(
         [
             python,
             "-m",
@@ -286,6 +324,10 @@ def _test(python: str) -> int:
         label=f"pytest on Python {version}",
         environment=environment,
     )
+
+    if result == 0:
+        shutil.rmtree(basetemp, ignore_errors=True)
+    return result
 
 
 def _matrix(versions: Sequence[str]) -> int:
@@ -458,7 +500,14 @@ def _quality() -> int:
     return 0
 
 
-def _oracle_hg(executable: str, output: Path, walk_output: Path, trust_output: Path) -> int:
+def _oracle_hg(
+    executable: str,
+    output: Path,
+    walk_output: Path,
+    trust_output: Path,
+    *,
+    skip_trust: bool = False,
+) -> int:
     """Delegate Mercurial matching, walking, and trust captures to oracle runners."""
     oracle_root = project_root() / "tests" / "oracles" / "hg"
     for runner, capture_path, label in (
@@ -466,6 +515,27 @@ def _oracle_hg(executable: str, output: Path, walk_output: Path, trust_output: P
         (oracle_root / "walk.py", walk_output, "Capture native Mercurial ignored-file walks"),
         (oracle_root / "trust.py", trust_output, "Capture native Mercurial config trust behavior"),
     ):
+        if skip_trust and runner.name == "trust.py":
+            capture_path.parent.mkdir(parents=True, exist_ok=True)
+            capture_path.write_text(
+                json.dumps(
+                    {
+                        "schema_version": 1,
+                        "status": "skipped",
+                        "reason": (
+                            "Ownership probe not selected; use --include-trust "
+                            "on an isolated runner."
+                        ),
+                        "client": None,
+                        "states": [],
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            print("SKIPPED: Mercurial ownership probe (not selected)", flush=True)
+            continue
         result = _run(
             [sys.executable, str(runner), "--hg", executable, "--output", str(capture_path)],
             label=label,

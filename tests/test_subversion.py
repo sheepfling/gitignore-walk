@@ -375,6 +375,87 @@ def test_subversion_file_external_keeps_rule_matching_separate_from_membership(
     assert root / "external-file.txt" in set(membership_walker.iter_files(selection="included"))
 
 
+def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: Path) -> None:
+    case = {
+        "setup": {
+            "properties": {".": {"svn:ignore": "*.tmp\n"}},
+            "versioned_files": {
+                "normal.tmp": "normal\n",
+                "modified.tmp": "before\n",
+                "deleted.tmp": "deleted\n",
+                "missing.tmp": "missing\n",
+            },
+            "unversioned_files": {"loose.tmp": "unversioned and ignored\n"},
+        }
+    }
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    svn = shutil.which("svn")
+    assert svn is not None
+    (root / "modified.tmp").write_text("after\n", encoding="utf-8")
+    (root / "added.tmp").write_text("added after checkout\n", encoding="utf-8")
+    _run_svn([svn, "add", "added.tmp"], cwd=root, environment=environment)
+    _run_svn([svn, "delete", "--keep-local", "deleted.tmp"], cwd=root, environment=environment)
+    (root / "missing.tmp").unlink()
+
+    native = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_items = {
+        entry.attrib["path"]: status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    expected_items = {
+        "normal.tmp": "normal",
+        "modified.tmp": "modified",
+        "added.tmp": "added",
+        "deleted.tmp": "deleted",
+        "missing.tmp": "missing",
+        "loose.tmp": "ignored",
+    }
+    assert {path: native_items.get(path) for path in expected_items} == expected_items
+
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    decisions = {path: policy.explain(path) for path in expected_items}
+    assert all(decision.ignored for decision in decisions.values())
+    for path in expected_items.keys() - {"loose.tmp"}:
+        assert decisions[path].membership == "versioned"
+    assert decisions["loose.tmp"].membership == "unversioned"
+
+    walker = IgnoreWalker(root, policy=policy)
+    ignored_paths = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored")
+        if path.relative_to(root).parts[0] != ".svn"
+    }
+    included_paths = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included")
+        if path.relative_to(root).parts[0] != ".svn"
+    }
+    assert ignored_paths == {"loose.tmp"}
+    assert {"normal.tmp", "modified.tmp", "added.tmp", "deleted.tmp"} <= included_paths
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_subversion_walk_round_trips_control_character_paths(tmp_path: Path, topdown: bool) -> None:
     if os.name == "nt":
