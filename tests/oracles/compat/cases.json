@@ -12,6 +12,21 @@
   "query_files": ["a.tmp", "b.log", "visible.txt"],
   "expected_included": ["b.log", "visible.txt"],
   "expected_ignored": ["a.tmp"],
+  "source_probe_files": {
+    "global.global": "global ignore probe\n",
+    "local.local": "repository-local ignore probe\n"
+  },
+  "source_query_files": ["global.global", "local.local"],
+  "source_rules": {
+    "xdg_git_ignore": "*.global\n",
+    "git_info_exclude": "*.local\n"
+  },
+  "expected_source_ignored": {
+    "sapling.git-mode": ["global.global", "local.local"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["global.global", "local.local"],
+    "jj.noncolocated": ["global.global"]
+  },
   "profiles": [
     {"id": "sapling.git-mode", "vcs": "sapling", "mode": "git"},
     {"id": "sapling.sl-mode", "vcs": "sapling", "mode": "sl"},

@@ -16,12 +16,24 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? visible.txt\u0000I a.tmp\u0000",
+      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? visible.txt\u0000I a.tmp\u0000I global.global\u0000I local.local\u0000",
       "status_stderr": "",
       "metadata_markers": [
         ".git"
       ],
       "isolated_temporary_workspace": true,
+      "source_discovery": {
+        "query_files": [
+          "global.global",
+          "local.local"
+        ],
+        "ignored": [
+          "global.global",
+          "local.local"
+        ],
+        "included": [],
+        "candidate_matches": true
+      },
       "candidate_matches": true
     },
     {
@@ -37,12 +49,24 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? visible.txt\u0000I a.tmp\u0000",
+      "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? b.log\u0000? global.global\u0000? local.local\u0000? visible.txt\u0000I a.tmp\u0000",
       "status_stderr": "",
       "metadata_markers": [
         ".sl"
       ],
       "isolated_temporary_workspace": true,
+      "source_discovery": {
+        "query_files": [
+          "global.global",
+          "local.local"
+        ],
+        "ignored": [],
+        "included": [
+          "global.global",
+          "local.local"
+        ],
+        "candidate_matches": true
+      },
       "candidate_matches": true
     },
     {
@@ -58,7 +82,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA visible.txt\nWorking copy  (@) : vrottrrr 07b0e529 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA visible.txt\nWorking copy  (@) : otklvsmt 9eeffe8c (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".git",
@@ -66,6 +90,18 @@
       ],
       "isolated_temporary_workspace": true,
       "status_snapshots_disposable_workspace": true,
+      "source_discovery": {
+        "query_files": [
+          "global.global",
+          "local.local"
+        ],
+        "ignored": [
+          "global.global",
+          "local.local"
+        ],
+        "included": [],
+        "candidate_matches": true
+      },
       "candidate_matches": true
     },
     {
@@ -81,13 +117,26 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA visible.txt\nWorking copy  (@) : mtskoznp 64c16fd6 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.local\nA visible.txt\nWorking copy  (@) : owunqnwv af994bb2 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".jj"
       ],
       "isolated_temporary_workspace": true,
       "status_snapshots_disposable_workspace": true,
+      "source_discovery": {
+        "query_files": [
+          "global.global",
+          "local.local"
+        ],
+        "ignored": [
+          "global.global"
+        ],
+        "included": [
+          "local.local"
+        ],
+        "candidate_matches": true
+      },
       "candidate_matches": true
     }
   ]

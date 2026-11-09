@@ -15,8 +15,13 @@ layouts: Sapling with `.git`, Sapling with `.sl`, colocated Jujutsu with `.git` 
 non-colocated Jujutsu with `.jj` only. In all four layouts, `.gitignore` excludes `a.tmp`, while
 `.hgignore` and `.jjignore` do not exclude `b.log`. This supports using the existing Git-ignore
 policy for the tested in-tree rule subset, with a caller-selected metadata baseline such as
-`.sl` or `.jj`; it does not establish config-file, global-exclude, path-encoding, or broader VCS
-behavior.
+`.sl` or `.jj`.
+
+The isolated global-source probes also capture that Sapling in `.git` mode reads the XDG Git ignore
+file and `.git/info/exclude`; Sapling `.sl` mode reads neither. Jujutsu reads the XDG Git ignore file
+in both modes and reads `.git/info/exclude` only when colocated. These observations are captured
+with Sapling 0.2.20261103 and Jujutsu 0.47.1. They do not establish configuration precedence,
+alternate global config files, path encoding, or broader VCS behavior.
 
 Jujutsu's `status` command snapshots the working copy. The probes run it only in disposable
 repositories, then inspect the resulting file list. This is not a safe per-file adapter strategy for

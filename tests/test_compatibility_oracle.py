@@ -27,6 +27,21 @@ def test_compatibility_capture_reconciles_ignore_candidates(case_id: str) -> Non
     assert observation["included"] == ["b.log", "visible.txt"]
 
 
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS))
+def test_compatibility_capture_reconciles_ignore_source_discovery(case_id: str) -> None:
+    source_discovery = OBSERVATIONS[case_id]["source_discovery"]
+    expected_ignored = {
+        "sapling.git-mode": ["global.global", "local.local"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["global.global", "local.local"],
+        "jj.noncolocated": ["global.global"],
+    }
+
+    assert source_discovery["candidate_matches"] is True
+    assert source_discovery["query_files"] == ["global.global", "local.local"]
+    assert source_discovery["ignored"] == expected_ignored[case_id]
+
+
 @pytest.mark.parametrize(
     ("case_id", "expected_markers"),
     [

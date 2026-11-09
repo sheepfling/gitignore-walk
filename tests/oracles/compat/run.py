@@ -40,9 +40,11 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             **os.environ,
             "HOME": str(home),
             "USERPROFILE": str(home),
+            "XDG_CONFIG_HOME": str(home / ".config"),
             "SL_USER": "Oracle <oracle@example.invalid>",
             "PAGER": "cat",
             "HGPLAIN": "1",
+            "GIT_CONFIG_NOSYSTEM": "1",
         }
         if mode == "git":
             _require_success(
@@ -54,9 +56,12 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
                 _run([executable, "init", str(root)], cwd=root, environment=environment), "sl init"
             )
         _write_files(root, fixture["probe_files"])
+        _write_source_probes(root, home, fixture)
         status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
         _require_success(status, "sl status")
         included, ignored = _sapling_status_paths(status.stdout)
+        source_query_files = set(fixture["source_query_files"])
+        source_ignored = sorted(ignored & source_query_files)
         return {
             "id": f"sapling.{mode}-mode",
             "vcs": "sapling",
@@ -71,6 +76,11 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
                 marker for marker in (".git", ".sl") if (root / marker).exists()
             ),
             "isolated_temporary_workspace": True,
+            "source_discovery": {
+                "query_files": sorted(source_query_files),
+                "ignored": source_ignored,
+                "included": sorted(source_query_files - set(source_ignored)),
+            },
         }
 
 
@@ -93,6 +103,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "USERPROFILE": str(home),
             "XDG_CONFIG_HOME": str(home / ".config"),
             "PAGER": "cat",
+            "GIT_CONFIG_NOSYSTEM": "1",
         }
         command = [executable, "git", "init"]
         if mode == "noncolocated":
@@ -100,12 +111,15 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         command.append(str(root))
         _require_success(_run(command, cwd=root, environment=environment), "jj git init")
         _write_files(root, fixture["probe_files"])
+        _write_source_probes(root, home, fixture)
         status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
         _require_success(status, "jj status")
         listed = _run([executable, "file", "list"], cwd=root, environment=environment)
         _require_success(listed, "jj file list")
         files = {line.strip() for line in listed.stdout.splitlines() if line.strip()}
         query_files = set(fixture["query_files"])
+        source_query_files = set(fixture["source_query_files"])
+        source_ignored = sorted(source_query_files - files)
         return {
             "id": f"jj.{mode}",
             "vcs": "jujutsu",
@@ -121,7 +135,27 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             ),
             "isolated_temporary_workspace": True,
             "status_snapshots_disposable_workspace": True,
+            "source_discovery": {
+                "query_files": sorted(source_query_files),
+                "ignored": source_ignored,
+                "included": sorted(source_query_files - set(source_ignored)),
+            },
         }
+
+
+def _write_source_probes(root: Path, home: Path, fixture: Mapping[str, Any]) -> None:
+    """Seed isolated Git-style global and per-clone ignore sources."""
+    _write_files(root, fixture["source_probe_files"])
+    xdg_ignore = home / ".config" / "git" / "ignore"
+    xdg_ignore.parent.mkdir(parents=True, exist_ok=True)
+    xdg_ignore.write_text(fixture["source_rules"]["xdg_git_ignore"], encoding="utf-8")
+    git_dir = root / ".git"
+    if git_dir.is_dir():
+        info_dir = git_dir / "info"
+        info_dir.mkdir(exist_ok=True)
+        (info_dir / "exclude").write_text(
+            fixture["source_rules"]["git_info_exclude"], encoding="utf-8"
+        )
 
 
 def _sapling_status_paths(output: str) -> tuple[set[str], set[str]]:
@@ -173,6 +207,10 @@ def capture(sapling: str, jj: str) -> dict[str, Any]:
         result["candidate_matches"] = (
             result["included"] == expected_included and result["ignored"] == expected_ignored
         )
+        result["source_discovery"]["candidate_matches"] = (
+            result["source_discovery"]["ignored"]
+            == fixture["expected_source_ignored"][result["id"]]
+        )
     return {
         "schema_version": 1,
         "status": "captured",
@@ -190,9 +228,12 @@ def main() -> int:
     result = capture(arguments.sl, arguments.jj)
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-    matched = sum(case["candidate_matches"] for case in result["cases"])
+    matched = sum(
+        case["candidate_matches"] and case["source_discovery"]["candidate_matches"]
+        for case in result["cases"]
+    )
     print(f"Captured {len(result['cases'])} Sapling/Jujutsu cases")
-    print(f"Git-compatible ignore candidates matching: {matched}/{len(result['cases'])}")
+    print(f"Ignore and source-discovery candidates matching: {matched}/{len(result['cases'])}")
     print(f"Capture: {arguments.output}")
     return 0 if matched == len(result["cases"]) else 1
 
