@@ -229,12 +229,12 @@ class BreezyIgnorePolicy(IgnorePolicy):
     def _load_snapshot(self) -> _BreezySnapshot:
         """Load current global and checkout rules around the cached native defaults."""
         rules: list[_BreezyRule] = []
-        for line_number, pattern in enumerate(self._default_patterns, start=1):
-            if rule := _compile_rule(pattern, source="Breezy built-in defaults", line=line_number):
-                rules.append(rule)
         global_path = self._global_ignore_path()
         if global_path.is_file():
             rules.extend(_load_rule_file(global_path))
+        for line_number, pattern in enumerate(self._default_patterns, start=1):
+            if rule := _compile_rule(pattern, source="Breezy built-in defaults", line=line_number):
+                rules.append(rule)
         local_path = self.workspace_root / ".bzrignore"
         if local_path.is_file():
             rules.extend(_load_rule_file(local_path))

@@ -15,12 +15,16 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 ```
 
 Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
-aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. All 33 boolean candidate
-cases and the explicit regex/error cases are captured across the profiles. The four added regex cases
-establish whole-path matching rather than substring search, `!!RE` priority over an `!RE` exception,
-and the 3.3.24 backslash normalization quirk on all four profiles. The boolean cases include exception
-priority, `!!` strong-exclude priority, trailing slash
-normalization, basename matching,
+aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original 33 boolean
+candidate cases and explicit regex/error cases are captured across all profiles. Three additional
+source-precedence cases are captured on macOS arm64 and Linux aarch64: with overlapping regular
+ignores, Breezy reports the global pattern before the built-in pattern, and the built-in pattern
+before the branch `.bzrignore` pattern. The policy now preserves this observed global, built-in,
+branch order for equal-priority rules. The live `oracle-brz` runner checks these expected winning
+patterns and exits nonzero if a known boolean or winning-pattern candidate mismatches. The four added
+regex cases establish whole-path matching rather than substring search, `!!RE` priority over an `!RE`
+exception, and the 3.3.24 backslash normalization quirk on all four profiles. Boolean cases cover
+exception priority, `!!` strong-exclude priority, trailing slash normalization, basename matching,
 slash-rooted matching, whitespace preservation, no nested `.bzrignore` auto-discovery, global versus
 branch exception priority, and built-in Python cache ignores without a user ignore file. A child
 exception under an ignored directory makes both the exception path and a sibling path appear as
@@ -38,10 +42,10 @@ policy walker matches
 captured status unknown/ignored paths when an exception opens an ignored parent and exposes its
 siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
-the ignored subtree hidden. The local policy is checked against all 33 boolean candidate cases on all
-four profiles.
-Broader regex behavior,
-source precedence, and pruning safety beyond these cases remain open. Breezy's documented pattern
+the ignored subtree hidden. The local policy is checked against all 36 boolean candidate cases on
+macOS arm64 and Linux aarch64; the other two committed profiles retain 33 checked cases. Broader
+regex behavior, additional source-location and configuration precedence, and pruning safety beyond
+these cases remain open. Breezy's documented pattern
 rule says that a
 slash or regular expression is compared with the workspace-relative path, while a pattern without
 a slash is compared with the final path component; the policy follows that contract.

@@ -26,6 +26,9 @@ Notable user-facing changes are recorded here.
 - Mercurial matching remains local and portable. Reading Mercurial's configured `ui.ignore` list is
   opt-in and requires the `hg` executable. Ignore decisions describe rule matches, not tracked or
   versioned membership.
+- Breezy evaluates equal-priority ignore rules in the captured source order: global ignore file,
+  built-in defaults, then branch `.bzrignore`. The source order and trace winner are checked against
+  Breezy 3.3.24 on macOS arm64 and Linux aarch64.
 - Mercurial regex and glob matching now follow native byte semantics. UTF-8 path matching preserves
   literal characters; regex character classes and case folding, plus glob `?`, operate on bytes. The
   added native cases match Mercurial 7.2.4/macOS arm64 and 7.0.1/Debian 13 Linux aarch64 and

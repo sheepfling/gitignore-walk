@@ -259,3 +259,5 @@ def test_breezy_policy_matches_captured_candidate(
     )
 
     assert policy.explain(query).ignored is case["expected_candidate"]
+    if "expected_winning_pattern" in case:
+        assert policy.trace(query).decision.pattern == case["expected_winning_pattern"]

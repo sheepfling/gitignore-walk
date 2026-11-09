@@ -372,6 +372,64 @@
       "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
+      "id": "brz.global-ignore-over-local-ignore",
+      "profile": "breezy",
+      "dimension": "source-precedence",
+      "setup": {
+        "patterns": ["keep.*"],
+        "global_ignore_file_content": "*.tmp\n"
+      },
+      "query": "keep.tmp",
+      "expected_candidate": true,
+      "expected_winning_pattern": "*.tmp",
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.24-linux-aarch64-py312.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE"],
+      "release_gate": "Capture which matching regular ignore source Breezy reports when global and branch rules overlap."
+    },
+    {
+      "id": "brz.local-ignore-over-default-ignore",
+      "profile": "breezy",
+      "dimension": "source-precedence",
+      "setup": {
+        "patterns": ["module.*"]
+      },
+      "query": "module.pyc",
+      "expected_candidate": true,
+      "expected_winning_pattern": "*.py[co]",
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.24-linux-aarch64-py312.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE"],
+      "release_gate": "Capture local versus built-in rule provenance for an overlapping ignore."
+    },
+    {
+      "id": "brz.global-ignore-over-default-ignore",
+      "profile": "breezy",
+      "dimension": "source-precedence",
+      "setup": {
+        "global_ignore_file_content": "module.*\n"
+      },
+      "query": "module.pyc",
+      "expected_candidate": true,
+      "expected_winning_pattern": "module.*",
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.24-linux-aarch64-py312.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE"],
+      "release_gate": "Capture global versus built-in rule provenance for an overlapping ignore."
+    },
+    {
       "id": "brz.regex-global-inline-flag-rejected",
       "profile": "breezy",
       "dimension": "regex",

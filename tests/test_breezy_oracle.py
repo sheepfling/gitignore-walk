@@ -24,19 +24,23 @@ CAPTURES: dict[str, dict[str, Any]] = {
 }
 
 
-@pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
-def test_breezy_captures_match_versioned_candidates(profile: str, case: dict[str, Any]) -> None:
-    capture = CAPTURES[profile]
-    observation = next(item for item in capture["cases"] if item["id"] == case["id"])
+def test_breezy_captures_match_versioned_candidates(case: dict[str, Any]) -> None:
+    profiles = case.get("capture_profiles", CAPTURE_FILES)
+    for profile in profiles:
+        capture = CAPTURES[profile]
+        observation = next(item for item in capture["cases"] if item["id"] == case["id"])
 
-    assert capture["status"] == "captured"
-    expected = case["expected_candidate"]
-    if isinstance(expected, bool):
-        assert observation["candidate_matches"] is True
-        assert observation["observed_ignored"] is expected
-    else:
-        assert observation["candidate_matches"] is None
+        assert capture["status"] == "captured"
+        expected = case["expected_candidate"]
+        if isinstance(expected, bool):
+            assert observation["candidate_matches"] is True
+            assert observation["observed_ignored"] is expected
+        else:
+            assert observation["candidate_matches"] is None
+        if "expected_winning_pattern" in case:
+            assert observation["winning_pattern_matches"] is True
+            assert observation["observed_pattern"] == case["expected_winning_pattern"]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
@@ -70,12 +74,17 @@ def test_breezy_capture_commands_succeed_in_isolated_configuration(profile: str)
 
 def test_breezy_profiles_agree_on_rules_and_membership_observations() -> None:
     baseline = CAPTURES[CAPTURE_FILES[0]]
+    baseline_cases = {case["id"]: case for case in baseline["cases"]}
     for profile in CAPTURE_FILES[1:]:
         other = CAPTURES[profile]
         assert baseline["default_rules"]["patterns"] == other["default_rules"]["patterns"]
-        for baseline_case, other_case in zip(baseline["cases"], other["cases"], strict=True):
-            assert baseline_case["id"] == other_case["id"]
+        other_cases = {case["id"]: case for case in other["cases"]}
+        for case_id in baseline_cases.keys() & other_cases.keys():
+            baseline_case = baseline_cases[case_id]
+            other_case = other_cases[case_id]
             assert baseline_case["observed_ignored"] == other_case["observed_ignored"]
+            if baseline_case.get("winning_pattern_matches") is not None:
+                assert baseline_case["observed_pattern"] == other_case["observed_pattern"]
             assert baseline_case["observed_unknown"] == other_case["observed_unknown"]
             assert baseline_case["ignored_paths"] == other_case["ignored_paths"]
             assert baseline_case["unknown_paths"] == other_case["unknown_paths"]

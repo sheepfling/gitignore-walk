@@ -57,6 +57,16 @@ def _ignored_paths(output: str) -> set[str]:
     return paths
 
 
+def _ignored_patterns(output: str) -> dict[str, str]:
+    """Extract Breezy's reported winning pattern for each ignored path."""
+    patterns: dict[str, str] = {}
+    for line in output.splitlines():
+        match = re.match(r"^(.*?)\s{2,}(\S.*?)\s*$", line)
+        if match:
+            patterns.setdefault(match.group(1).strip(), match.group(2).strip())
+    return patterns
+
+
 def _unknown_paths(output: str) -> set[str]:
     """Extract unversioned paths from Breezy's short status output."""
     paths: set[str] = set()
@@ -194,6 +204,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         status_command = [executable, "status", "--no-plugins", "--short", "--no-classify"]
         status = _invoke(status_command, cwd=checkout, environment=environment)
         paths = _ignored_paths(ignored.stdout)
+        ignored_patterns = _ignored_patterns(ignored.stdout)
         unknown_paths = _unknown_paths(status.stdout)
         observed = query in paths if query is not None else None
         observed_unknown = query in unknown_paths if query is not None else None
@@ -208,6 +219,13 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "expected_candidate": expected,
             "query": query,
             "observed_ignored": observed,
+            "observed_pattern": ignored_patterns.get(query) if query is not None else None,
+            "expected_winning_pattern": case.get("expected_winning_pattern"),
+            "winning_pattern_matches": (
+                ignored_patterns.get(query) == case["expected_winning_pattern"]
+                if "expected_winning_pattern" in case
+                else None
+            ),
             "observed_unknown": observed_unknown,
             "candidate_matches": candidate_matches,
             "init_exit_code": init.returncode,
@@ -269,7 +287,10 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
             )
         captured = [_capture_case(case, executable) for case in cases_data["cases"]]
         failed = defaults.returncode != 0 or any(
-            case["init_exit_code"] != 0 or case["anchor_add_exit_code"] not in (None, 0)
+            case["init_exit_code"] != 0
+            or case["anchor_add_exit_code"] not in (None, 0)
+            or case["candidate_matches"] is False
+            or case["winning_pattern_matches"] is False
             for case in captured
         )
         result = {
@@ -296,8 +317,13 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
     output_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     boolean_cases = [case for case in result["cases"] if case["candidate_matches"] is not None]
     matches = sum(case["candidate_matches"] is True for case in boolean_cases)
+    pattern_cases = [
+        case for case in result["cases"] if case["winning_pattern_matches"] is not None
+    ]
+    pattern_matches = sum(case["winning_pattern_matches"] is True for case in pattern_cases)
     print(f"Captured {len(result['cases'])} Breezy cases: {result['status']}")
     print(f"Boolean candidates matching: {matches}/{len(boolean_cases)}")
+    print(f"Winning-pattern candidates matching: {pattern_matches}/{len(pattern_cases)}")
     print(f"Capture: {output_path}")
     return 1 if result["status"] == "failed" else 0
 
