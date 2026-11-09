@@ -15,8 +15,9 @@ Fossil version, platform, command result, listed paths, and candidate comparison
 Fossil 2.28/macOS arm64 and 2.26/Linux aarch64. Seventeen boolean candidate cases, including
 hash-leading patterns, literal backslashes, ignored-directory descendant suppression, quoted commas,
 single-quoted spaces, quoted trailing spaces, literal quotes, and ASCII-only whitespace separators,
-match both profiles. Malformed-quote and escaped-separator probes are checked against captured native
-decisions on both profiles; the full tokenizer contract remains open. A missing
+match both profiles. Eight malformed-quote, adjacent-token, escaped-separator, and empty-token
+probes also match captured native decisions on both profiles and are checked against the local
+evaluator. Other tokenizer boundaries remain open. A missing
 Fossil executable is recorded as skipped, not passed.
 
 The `fossil.directory-inheritance` case includes ignored descendants and visible siblings. The

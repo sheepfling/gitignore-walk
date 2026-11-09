@@ -100,41 +100,49 @@
         "probes": [
           {
             "value": "\"unterminated",
-            "query": "unterminated"
+            "query": "unterminated",
+            "expected_candidate": true
           },
           {
             "value": "\"a\"b",
-            "query": "a"
+            "query": "a",
+            "expected_candidate": true
           },
           {
             "value": "\"a\"b",
-            "query": "ab"
+            "query": "ab",
+            "expected_candidate": false
           },
           {
             "value": "\"a\"b",
-            "query": "a\"b"
+            "query": "a\"b",
+            "expected_candidate": false
           },
           {
             "value": "a\\ b",
-            "query": "a b"
+            "query": "a b",
+            "expected_candidate": false
           },
           {
             "value": "a\\ b",
-            "query": "a\\ b"
+            "query": "a\\ b",
+            "expected_candidate": false
           },
           {
             "value": "a,,b",
-            "query": "a"
+            "query": "a",
+            "expected_candidate": true
           },
           {
             "value": "a,,b",
-            "query": "b"
+            "query": "b",
+            "expected_candidate": true
           }
         ]
       },
       "query": null,
       "expected_candidate": null,
-      "evidence_status": "open-question"
+      "evidence_status": "native-observed"
     },
     {
       "id": "fossil.directory-inheritance",

@@ -24,6 +24,8 @@ CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
     for name in CAPTURE_FILES
 }
+MALFORMED_CASE = next(case for case in CASES if case["id"] == "fossil.malformed-quotes")
+MALFORMED_PROBES = MALFORMED_CASE["setup"]["probes"]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
@@ -41,6 +43,12 @@ def test_fossil_capture_matches_known_candidate(profile: str, case: dict[str, An
         assert observation["observed_ignored"] is None or isinstance(
             observation["observed_ignored"], bool
         )
+        captured_probes = observation["setting_probes"]
+        assert len(captured_probes) == len(MALFORMED_PROBES)
+        for expected, captured in zip(MALFORMED_PROBES, captured_probes, strict=True):
+            assert captured["query"] == expected["query"]
+            assert captured["value"] == expected["value"]
+            assert captured["observed_ignored"] is expected["expected_candidate"]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
@@ -99,6 +107,52 @@ def test_fossil_policy_matches_captured_ignore_decisions(
     policy = FossilIgnorePolicy(root, environment={"PATH": ""})
 
     assert policy.explain(query).ignored is case["expected_candidate"]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize(
+    "probe",
+    MALFORMED_PROBES,
+    ids=lambda probe: f"{probe['value']}->{probe['query']}",
+)
+def test_fossil_policy_matches_captured_malformed_token_decisions(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    profile: str,
+    probe: dict[str, Any],
+) -> None:
+    if os.name == "nt":
+        components = probe["query"].split("/")
+        if any("\\" in component for component in components):
+            pytest.skip("Windows paths cannot represent a POSIX filename containing backslash")
+        if any(any(character in component for character in '<>:"|?*') for component in components):
+            pytest.skip("Windows cannot represent this Fossil oracle filename")
+    captured = next(
+        case for case in CAPTURES[profile]["cases"] if case["id"] == MALFORMED_CASE["id"]
+    )
+    observed = next(
+        item
+        for item in captured["setting_probes"]
+        if item["value"] == probe["value"] and item["query"] == probe["query"]
+    )
+    assert observed["observed_ignored"] is probe["expected_candidate"]
+
+    root = tmp_path / "checkout"
+    root.mkdir()
+    (root / ".fslckout").touch()
+    query_path = root / probe["query"]
+    query_path.parent.mkdir(parents=True, exist_ok=True)
+    query_path.write_text("oracle fixture\n", encoding="utf-8")
+
+    def captured_setting(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[bytes]:
+        assert command[1:] == ["settings", "ignore-glob", "--value"]
+        assert Path(kwargs["cwd"]) == root
+        return subprocess.CompletedProcess(command, 0, probe["value"].encode(), b"")
+
+    monkeypatch.setattr(fossil_policy_module.subprocess, "run", captured_setting)
+    policy = FossilIgnorePolicy(root, environment={"PATH": ""})
+
+    assert policy.is_ignored(probe["query"]) is probe["expected_candidate"]
 
 
 def test_fossil_captured_profiles_agree() -> None:
