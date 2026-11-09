@@ -15,10 +15,10 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 ```
 
 Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
-aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original twenty-nine
-boolean candidates match on all four profiles, and three explicit regex/error cases are recorded
-across the profiles. Four additional regex cases now have native captures on macOS arm64 and Linux
-aarch64; hosted Linux x86_64 and Windows captures are pending. The boolean cases include exception
+aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. All 33 boolean candidate
+cases and the explicit regex/error cases are captured across the profiles. The four added regex cases
+establish whole-path matching rather than substring search, `!!RE` priority over an `!RE` exception,
+and the 3.3.24 backslash normalization quirk on all four profiles. The boolean cases include exception
 priority, `!!` strong-exclude priority, trailing slash
 normalization, basename matching,
 slash-rooted matching, whitespace preservation, no nested `.bzrignore` auto-discovery, global versus
@@ -38,7 +38,7 @@ policy walker matches
 captured status unknown/ignored paths when an exception opens an ignored parent and exposes its
 siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
-the ignored subtree hidden. The local policy is checked against all 29 boolean candidate cases on all
+the ignored subtree hidden. The local policy is checked against all 33 boolean candidate cases on all
 four profiles.
 Broader regex behavior,
 source precedence, and pruning safety beyond these cases remain open. Breezy's documented pattern
