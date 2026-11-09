@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 from collections.abc import Iterable, Iterator, Mapping, Sequence
+from math import isfinite
 from pathlib import Path
 
 from ..._policy import (
@@ -104,8 +105,10 @@ class MercurialIgnorePolicy(IgnorePolicy):
             path.replace("\\", "/").strip("/") for path in initial_excludes
         )
         self._configured_sources = tuple(Path(path).expanduser() for path in ignore_files)
-        if timeout <= 0:
-            raise ValueError("Mercurial configuration discovery timeout must be positive")
+        if not isfinite(timeout) or timeout <= 0:
+            raise ValueError(
+                "Mercurial configuration discovery timeout must be finite and positive"
+            )
         if read_client_config:
             self._configured_sources += _discover_ui_ignore_files(
                 self.workspace_root,

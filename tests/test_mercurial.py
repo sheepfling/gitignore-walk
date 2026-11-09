@@ -586,6 +586,14 @@ def test_client_config_discovery_reports_missing_mercurial_executable(tmp_path: 
     assert error.value.operation == "config"
 
 
+@pytest.mark.parametrize("timeout", [0.0, -1.0, float("nan"), float("inf"), float("-inf")])
+def test_mercurial_configuration_timeout_must_be_finite_and_positive(
+    tmp_path: Path, timeout: float
+) -> None:
+    with pytest.raises(ValueError, match="timeout must be finite and positive"):
+        MercurialIgnorePolicy(tmp_path, timeout=timeout)
+
+
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 def test_client_config_discovery_runs_the_installed_hg_client(tmp_path: Path) -> None:
     (tmp_path / ".hg").mkdir()
