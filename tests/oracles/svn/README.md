@@ -32,12 +32,14 @@ including paths beneath some sparse working-copy depths. The default stays rule-
 run this extra status query. Sparse-depth fixtures confirm a versioned directory at depth
 `empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
 path without listing files beneath it. All 16 cases match on Subversion 1.15.0/macOS arm64 and
-1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS and both Linux
-architectures. The Windows oracle job explicitly skips the newline-and-tab case because those
-filenames are not representable there. The focused runtime Subversion suite, including the opt-in
-file-external membership and walker assertions, passes with 107 passed and 4 skipped on macOS arm64,
+1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS, both Linux
+architectures, and Windows Server 2025 x86_64. The Windows oracle job explicitly skips the
+newline-and-tab case because those filenames are not representable there. The focused runtime
+Subversion suite, including the opt-in file-external membership and walker assertions, passes with
+107 passed and 4 skipped on macOS arm64,
 Linux x86_64, and Linux aarch64. The SlikSvn Windows CI job also passes these live membership
-assertions; Windows does not yet have a separate committed file-external capture.
+assertions. The SlikSvn Windows suite passed with 99 passed and 12 skipped in the latest hosted run;
+the Windows file-external result is in `results/svn-1.14.5-windows-x86_64.json`.
 Captures are stored in `results/`.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and

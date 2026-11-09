@@ -113,9 +113,10 @@ and direct decisions beneath it report incomplete property discovery. The policy
 at unrelated nested `.svn` roots and follows native-listed externals. It queries properties from
 each listed external working-copy root and stops containing-working-copy property rules at that
 boundary. Opt-in membership discovery uses verbose native status to classify listed entries while
-keeping rule matches independent. Its file-external case passes live tests on Subversion 1.15.0/macOS
-arm64 and 1.14.5/Linux aarch64 and x86_64. Paths omitted by sparse status remain unknown; Windows
-runtime membership and broader status traversal remain open.
+keeping rule matches independent. The file-external case is captured on Subversion 1.15.0/macOS
+arm64, 1.14.5/Linux aarch64 and x86_64, and 1.14.5/SlikSvn Windows x86_64. Live membership tests
+pass on all four profiles. Paths omitted by sparse status remain unknown; broader status traversal
+remains open.
 The SVN oracle also includes newline- and tab-bearing filenames: the macOS native capture confirms
 XML numeric-reference decoding, and top-down/bottom-up policy walks preserve both paths. Windows
 skips this case because those filenames are not representable there; Subversion 1.14.5 Linux arm64

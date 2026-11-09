@@ -506,6 +506,77 @@
       "candidate_matches": null
     },
     {
+      "id": "svn.file-external-is-not-a-directory-boundary",
+      "dimension": "external-file-membership",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_status_paths": [
+        "external-file.txt",
+        "loose.txt"
+      ],
+      "observed_status_paths": [
+        "external-file.txt",
+        "loose.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "source.txt"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-pl9ttnow\\config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "external-file.txt",
+            "loose.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"external-file.txt\">\r\n<wc-status\r\n   item=\"normal\"\r\n   revision=\"2\"\r\n   file-external=\"true\"\r\n   props=\"none\">\r\n<commit\r\n   revision=\"2\">\r\n<author>runneradmin</author>\r\n<date>2026-11-09T12:45:19.965641Z</date>\r\n</commit>\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"loose.txt\">\r\n<wc-status\r\n   item=\"unversioned\"\r\n   props=\"none\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "1ea1955abe875c243a23e9e30bd63647c36f0227957f34bbe38b09b2013cc80c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "C:\\Program Files\\SlikSvn\\bin\\svn.EXE",
+            "--config-dir",
+            "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-svn-oracle-pl9ttnow\\config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "external-file.txt",
+            "loose.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<status>\r\n<target\r\n   path=\".\">\r\n<entry\r\n   path=\"external-file.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"normal\"\r\n   revision=\"2\"\r\n   file-external=\"true\">\r\n<commit\r\n   revision=\"2\">\r\n<author>runneradmin</author>\r\n<date>2026-11-09T12:45:19.965641Z</date>\r\n</commit>\r\n</wc-status>\r\n</entry>\r\n<entry\r\n   path=\"loose.txt\">\r\n<wc-status\r\n   props=\"none\"\r\n   item=\"unversioned\">\r\n</wc-status>\r\n</entry>\r\n</target>\r\n</status>\r\n",
+          "stderr": "",
+          "stdout_sha256": "1117c4d1cd1361f8b385720500d5b65cfd02988a653668ee4bf360c74083a30d",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
       "id": "svn.glob-apr-backslash-escape",
       "dimension": "apr-glob-escaping",
       "evidence_status": "native-observed",
@@ -936,6 +1007,14 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.path-newline-and-tab-round-trip",
+      "dimension": "path-round-trip",
+      "evidence_status": "native-observed",
+      "native_status": "skipped",
+      "skip_reason": "Windows cannot represent filenames containing control characters",
+      "candidate_matches": null
     },
     {
       "id": "svn.global-ignores-above-checkout-root",
