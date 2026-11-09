@@ -21,6 +21,7 @@ from gitignore_walk import (
     select_policy,
 )
 from gitignore_walk._schemes import mercurial as mercurial_scheme
+from gitignore_walk._schemes.mercurial import _ignore_loader as mercurial_loader_module
 from gitignore_walk._schemes.mercurial import policy as mercurial_policy_module
 from tests.oracles.hg.run import (
     _has_init_failures,
@@ -239,9 +240,15 @@ def test_policy_matches_captured_native_observation(
         current_candidate = observation["observed_ignored"]
     if current_candidate is not None:
         assert decision.ignored is current_candidate
-    if "expected_policy_discovery_complete" in case:
-        assert decision.discovery_complete is case["expected_policy_discovery_complete"]
-        assert [item.code for item in decision.diagnostics] == case["expected_policy_diagnostics"]
+    expected_complete = case.get("expected_policy_discovery_complete_by_os", {}).get(
+        os.name, case.get("expected_policy_discovery_complete")
+    )
+    if expected_complete is not None:
+        assert decision.discovery_complete is expected_complete
+        expected_diagnostics = case.get("expected_policy_diagnostics_by_os", {}).get(
+            os.name, case.get("expected_policy_diagnostics", [])
+        )
+        assert [item.code for item in decision.diagnostics] == expected_diagnostics
     if case["id"] == "hg.include-unreadable-source":
         assert "skipping unreadable pattern file" in observation["stderr"]
     if case["id"] == "hg.include-cycle":
@@ -386,6 +393,11 @@ def test_include_follows_symlinked_source_outside_workspace(tmp_path: Path) -> N
 
     trace = policy.trace(query)
 
+    if os.name == "nt":
+        assert not trace.decision.ignored
+        assert not trace.decision.discovery_complete
+        assert [item.code for item in trace.decision.diagnostics] == ["source-unavailable"]
+        return
     assert trace.decision.ignored
     assert Path(trace.decision.source or "").is_relative_to(tmp_path / ".oracle-outside")
     assert trace.matches[0].scope == "."
@@ -403,6 +415,28 @@ def test_native_oracle_explains_platform_specific_fixture_skips() -> None:
     assert _query_skip_reason("a.tmp", native_os="nt", requires_posix_permissions=True) is not None
     assert not _has_init_failures([{"native_status": "skipped"}])
     assert _has_init_failures([{"native_status": "captured", "init_exit_code": 1}])
+
+
+@pytest.mark.parametrize(
+    "case_id",
+    [
+        "hg.include-symlink-outside-workspace",
+        "hg.include-through-symlinked-directory",
+        "hg.include-dangling-symlink-source",
+    ],
+)
+def test_windows_source_discovery_marks_symlink_sources_unavailable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, case_id: str
+) -> None:
+    monkeypatch.setattr(mercurial_loader_module, "_WINDOWS", True)
+    case = next(case for case in CASES if case["id"] == case_id)
+    policy, query = _make_case(tmp_path / "repo", case)
+
+    decision = policy.explain(query)
+
+    assert not decision.ignored
+    assert not decision.discovery_complete
+    assert [item.code for item in decision.diagnostics] == ["source-unavailable"]
 
 
 def test_subinclude_match_is_corroborated_by_native_status_walks() -> None:
@@ -579,6 +613,10 @@ def test_walker_matches_captured_native_ignored_file_walk(
     native = WALK_OBSERVATIONS[profile][case["id"]]
     if native["native_status"] == "skipped":
         pytest.skip(native["skip_reason"])
+    if "expected_ignored_paths_by_os" in case:
+        profile_os = "nt" if "windows" in profile else "posix"
+        if profile_os != os.name:
+            pytest.skip("platform-specific symlink behavior requires a matching native platform")
     policy = _make_walk_case(tmp_path / "repo", case)
     tracked = set(case["tracked_paths"])
     # Mercurial status reports symlinks; IgnoreWalker intentionally yields regular files only.
@@ -683,6 +721,12 @@ def test_repeated_symlinked_source_retains_each_subinclude_scope(tmp_path: Path)
     first = policy.trace("one/first.tmp")
     second = policy.trace("two/second.tmp")
 
+    if os.name == "nt":
+        for trace in (first, second):
+            assert not trace.decision.ignored
+            assert not trace.decision.discovery_complete
+            assert [item.code for item in trace.decision.diagnostics] == ["source-unavailable"]
+        return
     assert first.decision.ignored
     assert second.decision.ignored
     assert first.matches[0].scope == "one"

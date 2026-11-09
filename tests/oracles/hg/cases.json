@@ -940,6 +940,9 @@
       },
       "query": "a.tmp",
       "expected_candidate": true,
+      "expected_candidate_by_os": {
+        "nt": false
+      },
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": [
@@ -947,7 +950,15 @@
       ],
       "release_gate": "Retain the native comparison for a symlinked include source outside the workspace.",
       "expected_policy_source_outside_workspace": true,
-      "expected_policy_scope": "."
+      "expected_policy_scope": ".",
+      "expected_policy_discovery_complete_by_os": {
+        "nt": false
+      },
+      "expected_policy_diagnostics_by_os": {
+        "nt": [
+          "source-unavailable"
+        ]
+      }
     },
     {
       "id": "hg.include-through-symlinked-directory",
@@ -966,12 +977,23 @@
       },
       "query": "file.tmp",
       "expected_candidate": true,
+      "expected_candidate_by_os": {
+        "nt": false
+      },
       "evidence_status": "native-observed",
       "native_status": "captured",
       "source_ids": [
         "HG-IGNORE"
       ],
-      "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
+      "release_gate": "Retain the captured native comparison in future Mercurial profile updates.",
+      "expected_policy_discovery_complete_by_os": {
+        "nt": false
+      },
+      "expected_policy_diagnostics_by_os": {
+        "nt": [
+          "source-unavailable"
+        ]
+      }
     },
     {
       "id": "hg.include-dangling-symlink-source",

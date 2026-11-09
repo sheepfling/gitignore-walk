@@ -18,6 +18,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -41,7 +43,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "c68bac03ebbe3f84c9959eb9d38374042a4506117f7639c44e06a829e8f4337b",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a\\b.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-nt8bj9p_\\repo\\.hgignore, line 1: '\\.tmp$')\n",
+      "raw_stdout": "a\\b.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-09ef9uh8\\repo\\.hgignore, line 1: '\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -53,6 +55,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -108,6 +112,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -131,7 +137,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "30237fe10617835181d74531fbf9f6f83190656aea67c309e0a06a959e8b7ef2",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-4j2sj7m1\\repo\\.hgignore, line 2: '*.tmp')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-kpsguxla\\repo\\.hgignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -143,6 +149,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -166,7 +174,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "6462f2393c01fdade560fe489966448bc341b19c4d49a2e6dbba8ff97dbdc0d8",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo#bar is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-lok0we75\\repo\\.hgignore, line 2: 'foo#bar')\n",
+      "raw_stdout": "foo#bar is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-ltoteryo\\repo\\.hgignore, line 2: 'foo#bar')\n",
       "raw_stderr": ""
     },
     {
@@ -178,6 +186,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -201,7 +211,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "54706d5d7815d0a61518b0860d2955ca4d75c47e4a5d707217e4beff0b3e091e",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-8oid_gix\\repo\\.hgignore, line 2: 'foo')\n",
+      "raw_stdout": "foo is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-gzh05lia\\repo\\.hgignore, line 2: 'foo')\n",
       "raw_stderr": ""
     },
     {
@@ -213,6 +223,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -236,7 +248,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "54706d5d7815d0a61518b0860d2955ca4d75c47e4a5d707217e4beff0b3e091e",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-dx8rq6cv\\repo\\.hgignore, line 2: 'foo')\n",
+      "raw_stdout": "foo is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-y9g71vr7\\repo\\.hgignore, line 2: 'foo')\n",
       "raw_stderr": ""
     },
     {
@@ -248,6 +260,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -271,7 +285,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "1dcd420e18a9abe75fb8e48466871cf1b79639db3baecbfa110032f425bd0bfb",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo    is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-e27jzuwi\\repo\\.hgignore, line 1: '^foo   $')\n",
+      "raw_stdout": "foo    is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-9zs8ra21\\repo\\.hgignore, line 1: '^foo   $')\n",
       "raw_stderr": ""
     },
     {
@@ -283,6 +297,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -306,7 +322,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "30237fe10617835181d74531fbf9f6f83190656aea67c309e0a06a959e8b7ef2",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-a91y394i\\repo\\.hgignore, line 2: '*.tmp')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-vpggl7a0\\repo\\.hgignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -318,6 +334,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -353,6 +371,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -388,6 +408,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -423,6 +445,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -446,7 +470,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "d1ce6f71f67e93561d2fa33e053d39b32eba8db3345bbe883fa4d28c81bf4cd5",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "keep.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-ra_qw_4z\\repo\\.hgignore, line 2: '*.tmp')\n",
+      "raw_stdout": "keep.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-d25q4m0u\\repo\\.hgignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -458,6 +482,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -493,6 +519,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -516,7 +544,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "d25ee49ad0c6ac013d702ef98d3099f0b02adb7f9a1132e725f132c57d3cb204",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "build\\file is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-z8j8b0wh\\repo\\.hgignore, line 1: ':config/rules')\n",
+      "raw_stdout": "build\\file is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-mi5ov99p\\repo\\.hgignore, line 1: ':config/rules')\n",
       "raw_stderr": ""
     },
     {
@@ -528,6 +556,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -551,7 +581,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "d25ee49ad0c6ac013d702ef98d3099f0b02adb7f9a1132e725f132c57d3cb204",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "build\\file is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-owe5k24k\\repo\\.hgignore, line 1: ':config/rules')\n",
+      "raw_stdout": "build\\file is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-td2kv7ux\\repo\\.hgignore, line 1: ':config/rules')\n",
       "raw_stderr": ""
     },
     {
@@ -563,6 +593,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -598,6 +630,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -633,6 +667,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -668,6 +704,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -691,7 +729,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "b6f08e08833412210461afecd3c162a8e0fb6cd11ad2afbc63da116a4fec8afe",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-g85oyx61\\repo\\.hgignore, line 2: ':rules')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-xv4ce8vh\\repo\\.hgignore, line 2: ':rules')\n",
       "raw_stderr": ""
     },
     {
@@ -703,6 +741,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -726,7 +766,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "bb2612cb75e927825ca376ca20789c9ad25df94bec59213297fdf182ea756c22",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.py is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-ciatuefh\\repo\\.hgignore, line 2: '*.{py,txt}')\n",
+      "raw_stdout": "a.py is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-wu7smepk\\repo\\.hgignore, line 2: '*.{py,txt}')\n",
       "raw_stderr": ""
     },
     {
@@ -738,6 +778,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -761,7 +803,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "b56f1232bb67365ae330f429c6f79080a50edc7df9333aed50ed3bff9304162b",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "test\\deep\\a.txt is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-6pqroq6t\\repo\\.hgignore, line 2: 'test/**.txt')\n",
+      "raw_stdout": "test\\deep\\a.txt is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-j9qhhdmt\\repo\\.hgignore, line 2: 'test/**.txt')\n",
       "raw_stderr": ""
     },
     {
@@ -773,6 +815,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -796,7 +840,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "a5a08bf91676b976fb97bc0915a70134441de11d77d7c401b0d5262804423ec9",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a\\b is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-sihz3png\\repo\\.hgignore, line 2: 'a?b')\n",
+      "raw_stdout": "a\\b is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-ymf6u0aj\\repo\\.hgignore, line 2: 'a?b')\n",
       "raw_stderr": ""
     },
     {
@@ -808,6 +852,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -831,7 +877,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "1723bd69847b94beba3453b3502bc7b2bce6ec5d303b35dc30465266eb7650fa",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "file[ is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-8tjihf23\\repo\\.hgignore, line 2: 'file[')\n",
+      "raw_stdout": "file[ is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-0t72w7dj\\repo\\.hgignore, line 2: 'file[')\n",
       "raw_stderr": ""
     },
     {
@@ -843,6 +889,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -866,7 +914,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "c05bd7cd995a8f129a7fb2a90ab7033b7181269bacad5a8a0bfee68d4293c489",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "cache\\file is ignored because of containing directory cache\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-v2h6oz0t\\repo\\.hgignore, line 1: '^cache$')\n",
+      "raw_stdout": "cache\\file is ignored because of containing directory cache\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-p2ltlkok\\repo\\.hgignore, line 1: '^cache$')\n",
       "raw_stderr": ""
     },
     {
@@ -878,6 +926,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -901,7 +951,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "73b3bc0fdb0a848b694dcf35457ab7f2789c9cedd2107f32b727249052ccad91",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-ygpegj3w\\home/work.ignore, line 2: '*.tmp')\n",
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-9jizzr0d\\home/work.ignore, line 2: '*.tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -913,6 +963,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -947,7 +999,7 @@
       },
       "normalized_stdout_sha256": "a5dcc0a2d8883413148fbf5b3b6418e0220f3375525842990b2657df16dc48d4",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "shared.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-x5sp12nj\\home/first.ignore, line 1: '^shared\\.tmp$')\n",
+      "raw_stdout": "shared.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-g66h8mmv\\home/first.ignore, line 1: '^shared\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -959,6 +1011,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -993,7 +1047,7 @@
       },
       "normalized_stdout_sha256": "463b05ae0ce4d1a33b3db9e459f7ba857efa26374a6f893c2d2da60431be193b",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "workspace.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-3225m79b\\repo\\workspace.ignore, line 1: '^workspace\\.tmp$')\n",
+      "raw_stdout": "workspace.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-cmwko6bd\\repo\\workspace.ignore, line 1: '^workspace\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1005,6 +1059,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1039,7 +1095,7 @@
       },
       "normalized_stdout_sha256": "0337799e176d16ab0977998753461edafe9cea1d79ff2fa721babf8cfef9e5c4",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "home.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-6dmiqidm\\home/.project-ignore, line 1: '^home\\.tmp$')\n",
+      "raw_stdout": "home.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-o05grjaa\\home/.project-ignore, line 1: '^home\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1051,6 +1107,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1085,7 +1143,7 @@
       },
       "normalized_stdout_sha256": "9de236343d672d19fc5a229d679db376ab64c159f90a75111d2758394f13cd4d",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "included.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-x1qithid\\home/included.ignore, line 1: '^included\\.tmp$')\n",
+      "raw_stdout": "included.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-1cyi8epj\\home/included.ignore, line 1: '^included\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1100,6 +1158,8 @@
       },
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1123,8 +1183,8 @@
       "configuration": null,
       "normalized_stdout_sha256": "804fc1065c9c40af7f1124cb1ab58a20cfc819e925f58efa6031c0a96b43a932",
       "normalized_stderr_sha256": "5a92c03b63f776f006f954f56d26c1946da975f8e9a4925411318ed1521e86b2",
-      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-19h1hjy4\\repo\\.hgignore, line 2: '.*\\.tmp$')\n",
-      "raw_stderr": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-19h1hjy4\\repo\\.hgignore: ignoring invalid syntax 'nonsense'\nC:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-19h1hjy4\\repo\\.hgignore: ignoring invalid syntax 'nonsense'\n"
+      "raw_stdout": "a.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-p7nf6v0h\\repo\\.hgignore, line 2: '.*\\.tmp$')\n",
+      "raw_stderr": "C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-p7nf6v0h\\repo\\.hgignore: ignoring invalid syntax 'nonsense'\nC:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-p7nf6v0h\\repo\\.hgignore: ignoring invalid syntax 'nonsense'\n"
     },
     {
       "id": "hg.regex-inline-flags-newline",
@@ -1135,6 +1195,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1158,7 +1220,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "a2b6a3e6d4bac6f198f8ca00623e4733300f7f882da429aa5ee403b993960721",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "a\nb is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-julhyiqq\\repo\\.hgignore, line 1: '(?s)^a.*b$')\n",
+      "raw_stdout": "a\nb is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-3e28js8j\\repo\\.hgignore, line 1: '(?s)^a.*b$')\n",
       "raw_stderr": ""
     },
     {
@@ -1170,6 +1232,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1193,7 +1257,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "c36c2eae41357998271ea8b6becff0937a2913833e6dfe0545c49c0a7e8a1f61",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "xfooy is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-f4fxibbc\\repo\\.hgignore, line 1: 'foo')\n",
+      "raw_stdout": "xfooy is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-6bk2uyqc\\repo\\.hgignore, line 1: 'foo')\n",
       "raw_stderr": ""
     },
     {
@@ -1205,6 +1269,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1240,6 +1306,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1263,7 +1331,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "fd3c15b2339be1f991f63aa03248283d3cc63b88c71d9dbde6fbe27e9e235666",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "FOO is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-x3u1qqmh\\repo\\.hgignore, line 1: '(?i-m:foo)')\n",
+      "raw_stdout": "FOO is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-ulvf1nqz\\repo\\.hgignore, line 1: '(?i-m:foo)')\n",
       "raw_stderr": ""
     },
     {
@@ -1275,6 +1343,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1298,7 +1368,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "afd85e34e8293fdcee2df9066feec26480fb5e93afd15dcba526be3a637f84f4",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foobar is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-s5zb4o95\\repo\\.hgignore, line 1: 'foo(?=bar)')\n",
+      "raw_stdout": "foobar is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-qwzoy8av\\repo\\.hgignore, line 1: 'foo(?=bar)')\n",
       "raw_stderr": ""
     },
     {
@@ -1310,6 +1380,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1345,6 +1417,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1368,7 +1442,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "702c8f640b4ca82d180536585c86c6e1ddf9be8c6b89b3a38bdde2610a1d340a",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foobaz is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-u7rztle2\\repo\\.hgignore, line 1: 'foo(?!bar)')\n",
+      "raw_stdout": "foobaz is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-4g2cik7r\\repo\\.hgignore, line 1: 'foo(?!bar)')\n",
       "raw_stderr": ""
     },
     {
@@ -1380,6 +1454,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1403,7 +1479,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "990b5f38a022f10acae8c96a3e2892a890ce33de2e38c9b88fed6c53d0c33381",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "aa-aa is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-dwityuu4\\repo\\.hgignore, line 1: '^(a+)-\\1$')\n",
+      "raw_stdout": "aa-aa is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-naxu0n3x\\repo\\.hgignore, line 1: '^(a+)-\\1$')\n",
       "raw_stderr": ""
     },
     {
@@ -1415,6 +1491,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1450,6 +1528,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1473,7 +1553,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "73a6977facdf22074b63de74ef23f34f7c6047c5fc8226b40cb643f85ea5fe5e",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "foo\\bar is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-k2tdy2d3\\repo\\.hgignore, line 1: '\\bfoo\\b')\n",
+      "raw_stdout": "foo\\bar is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-7vgts8ng\\repo\\.hgignore, line 1: '\\bfoo\\b')\n",
       "raw_stderr": ""
     },
     {
@@ -1485,6 +1565,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1508,7 +1590,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "613609504630dba913ea358b41001d999a1a093c0818fc62f1078b56d88a96c7",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "dir\\foo is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-nwwnac1h\\repo\\.hgignore, line 1: '(?<=/)foo')\n",
+      "raw_stdout": "dir\\foo is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-gzjzzaof\\repo\\.hgignore, line 1: '(?<=/)foo')\n",
       "raw_stderr": ""
     },
     {
@@ -1522,6 +1604,8 @@
       },
       "observed_ignored": null,
       "candidate_matches": null,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1577,6 +1661,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1600,7 +1686,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "eed4fd218331a46c69bec3d32fc284d1fc32d237ca826b577833bd59abaf7ce5",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "b.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-o5glmm66\\repo\\.hgignore, line 2: '[!a].tmp')\n",
+      "raw_stdout": "b.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-v85tiey5\\repo\\.hgignore, line 2: '[!a].tmp')\n",
       "raw_stderr": ""
     },
     {
@@ -1612,6 +1698,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1647,6 +1735,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1702,6 +1792,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1725,7 +1817,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "eebf1dee72470287f3543b5ddb807340f973e3286f3b55aa5b85e7a9ac5c2db7",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "shared.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-waep03fu\\home/first.ignore, line 1: 'shared\\.tmp$')\n",
+      "raw_stdout": "shared.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-2tlf8miw\\home/first.ignore, line 1: 'shared\\.tmp$')\n",
       "raw_stderr": ""
     },
     {
@@ -1737,6 +1829,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1768,11 +1862,12 @@
       "profile": "hg",
       "dimension": "source-discovery",
       "evidence_status": "native-observed",
-      "native_status": "skipped",
-      "skip_reason": "Mercurial on Windows does not read symlinked ignore sources in this fixture",
-      "expected_candidate": true,
-      "observed_ignored": null,
-      "candidate_matches": null,
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1780,19 +1875,36 @@
         "--",
         "a.tmp"
       ],
-      "exit_code": null,
-      "result": "skipped"
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "a.tmp is not ignored\n",
+      "stderr": "skipping unreadable pattern file 'external.ignore': Invalid argument\n",
+      "configuration": null,
+      "normalized_stdout_sha256": "762e3d2ff08a50ab9e5ca6d1b2dca58b3b2dfbbf1a4e410ffd33eae28525140c",
+      "normalized_stderr_sha256": "53eeb760f5639f7e18141af974313035455b3deb4294a10c4809be7fd58ecb3e",
+      "raw_stdout": "a.tmp is not ignored\n",
+      "raw_stderr": "skipping unreadable pattern file 'external.ignore': Invalid argument\n"
     },
     {
       "id": "hg.include-through-symlinked-directory",
       "profile": "hg",
       "dimension": "source-discovery",
       "evidence_status": "native-observed",
-      "native_status": "skipped",
-      "skip_reason": "Mercurial on Windows does not read symlinked ignore sources in this fixture",
-      "expected_candidate": true,
-      "observed_ignored": null,
-      "candidate_matches": null,
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1800,19 +1912,36 @@
         "--",
         "file.tmp"
       ],
-      "exit_code": null,
-      "result": "skipped"
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "file.tmp is not ignored\n",
+      "stderr": "skipping unreadable pattern file 'alias/rules.ignore': Invalid argument\n",
+      "configuration": null,
+      "normalized_stdout_sha256": "c3200f570067db45e532f906b928146ce266b6fcd05a831edbb84cb0e67426d1",
+      "normalized_stderr_sha256": "02868f96ea95470b4515db8a3914095b7732284f740bdd8f3e18fb7068591e85",
+      "raw_stdout": "file.tmp is not ignored\n",
+      "raw_stderr": "skipping unreadable pattern file 'alias/rules.ignore': Invalid argument\n"
     },
     {
       "id": "hg.include-dangling-symlink-source",
       "profile": "hg",
       "dimension": "source-discovery",
       "evidence_status": "native-observed",
-      "native_status": "skipped",
-      "skip_reason": "Mercurial on Windows does not read symlinked ignore sources in this fixture",
+      "native_status": "captured",
       "expected_candidate": false,
-      "observed_ignored": null,
-      "candidate_matches": null,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1820,8 +1949,24 @@
         "--",
         "file.tmp"
       ],
-      "exit_code": null,
-      "result": "skipped"
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "file.tmp is not ignored\n",
+      "stderr": "skipping unreadable pattern file 'alias/rules.ignore': Invalid argument\n",
+      "configuration": null,
+      "normalized_stdout_sha256": "c3200f570067db45e532f906b928146ce266b6fcd05a831edbb84cb0e67426d1",
+      "normalized_stderr_sha256": "02868f96ea95470b4515db8a3914095b7732284f740bdd8f3e18fb7068591e85",
+      "raw_stdout": "file.tmp is not ignored\n",
+      "raw_stderr": "skipping unreadable pattern file 'alias/rules.ignore': Invalid argument\n"
     },
     {
       "id": "hg.include-missing-source",
@@ -1832,6 +1977,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1867,6 +2014,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1902,6 +2051,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1926,7 +2077,7 @@
       "normalized_stdout_sha256": "4978b2491af6a81565dca8592f1a9c5c8e0eb305b9e41a0674789e6a0e73c42d",
       "normalized_stderr_sha256": "a000f279bb9681f3166b11d76cdf9ceb3e921488e55bc5871a5f4d38d8e64251",
       "raw_stdout": "x.tmp is not ignored\n",
-      "raw_stderr": "skipping unreadable pattern file 'C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-i9ucjhwp\\repo\\does-not-exist.ignore': No such file or directory\n"
+      "raw_stderr": "skipping unreadable pattern file 'C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-4acy80h9\\repo\\does-not-exist.ignore': No such file or directory\n"
     },
     {
       "id": "hg.include-unreadable-source",
@@ -1957,6 +2108,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -1980,7 +2133,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "922b67789560253feff7e80d2da32bf680370c5914f9ecd42b274a1d9fe76f5f",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "ascii_12 is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-ncagg9ft\\repo\\.hgignore, line 1: '^\\w+$')\n",
+      "raw_stdout": "ascii_12 is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-aivba89h\\repo\\.hgignore, line 1: '^\\w+$')\n",
       "raw_stderr": ""
     },
     {
@@ -1992,6 +2145,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -2101,6 +2256,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -2136,6 +2293,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -2171,6 +2330,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -2194,7 +2355,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "b42c53f455e40419252f7d73e709b0fbc0e5317c7296babfa61faa2fde386d77",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "FOO is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-8dk8dg3b\\repo\\.hgignore, line 1: '(?i)^foo$')\n",
+      "raw_stdout": "FOO is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-7s8yni37\\repo\\.hgignore, line 1: '(?i)^foo$')\n",
       "raw_stderr": ""
     },
     {
@@ -2206,6 +2367,8 @@
       "expected_candidate": true,
       "observed_ignored": true,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",
@@ -2229,7 +2392,7 @@
       "configuration": null,
       "normalized_stdout_sha256": "3ad5c7cefd20b66b88864107dc1fafe88856223f9ad0cec9e4ec8349c39ee2af",
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "raw_stdout": "\udce9 is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-g2ld7z2y\\repo\\.hgignore, line 2: '?')\n",
+      "raw_stdout": "\udce9 is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-4l1_y59i\\repo\\.hgignore, line 2: '?')\n",
       "raw_stderr": ""
     },
     {
@@ -2241,6 +2404,8 @@
       "expected_candidate": false,
       "observed_ignored": false,
       "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
       "command": [
         "C:\\Program Files\\Mercurial\\hg.EXE",
         "debugignore",

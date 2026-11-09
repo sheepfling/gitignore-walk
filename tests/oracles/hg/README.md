@@ -46,17 +46,18 @@ each client-enabled CI profile. The Windows capture now contains all 65 path cas
 additional byte-semantics probes.
 The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
-The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: all 57
-closed candidate comparisons match, with no differing candidate results. The include-cycle
-observation remains the documented safe divergence. The Unicode digit-class query has no parseable
+The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: 59 boolean
+comparisons and the structured invalid-syntax result match, with no differing closed result. The
+include-cycle observation remains the documented safe divergence. The Unicode digit-class query
+has no parseable
 `debugignore` output on Windows, so the capture uses NUL-delimited native status membership to
-confirm the unignored result. Seven path probes are
-explicitly skipped for POSIX-only byte names, reserved/backslash filenames, symlinked ignore sources,
-and POSIX unreadable-file permissions. The walk capture is in
-`results/hg-walk-7.1.2-windows-x86_64.json`; five fixtures match and the repeated-source-under-two-
-symlink-scopes fixture is skipped because this Mercurial-on-Windows profile does not read its
-symlinked ignore source. The Windows profile adds cross-platform evidence, but these skips leave
-the corresponding behaviors unverified on Windows.
+confirm the unignored result. Four path probes remain explicitly skipped for POSIX-only byte names,
+reserved/backslash filenames, and POSIX unreadable-file permissions. The Windows client emits
+`skipping unreadable pattern file ...: Invalid argument` for file and directory symlink sources;
+the library now marks those sources unavailable and leaves their paths unignored. The walk capture
+is in `results/hg-walk-7.1.2-windows-x86_64.json`; all six fixtures match, including the repeated
+source under two symlink scopes, whose paths remain unknown because Windows Mercurial does not read
+the symlinked sources. The remaining skips leave POSIX-specific behavior unverified on Windows.
 
 The `oracle-hg` command also probes repository-config trust on POSIX. It creates a temporary
 repository whose `.hg/hgrc` enables one ignore file, observes the file as owned by the

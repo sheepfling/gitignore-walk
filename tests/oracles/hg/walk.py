@@ -18,6 +18,12 @@ from typing import Any
 from run import _config_text, _query_skip_reason, _symlink_is_directory, _write_files
 
 
+def _expected_paths(case: Mapping[str, Any], field: str) -> list[str]:
+    """Return the fixture's native path expectation for the current platform."""
+    platform_values = case.get(f"{field}_by_os", {})
+    return sorted(platform_values.get(os.name, case[field]))
+
+
 def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
     setup = case["setup"]
     skip_reason = _query_skip_reason("", native_os=os.name)
@@ -28,9 +34,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "evidence_status": case["evidence_status"],
             "native_status": "skipped",
             "skip_reason": skip_reason,
-            "expected_ignored_paths": sorted(case["expected_ignored_paths"]),
+            "expected_ignored_paths": _expected_paths(case, "expected_ignored_paths"),
             "observed_ignored_paths": None,
-            "expected_unknown_paths": sorted(case["expected_unknown_paths"]),
+            "expected_unknown_paths": _expected_paths(case, "expected_unknown_paths"),
             "observed_unknown_paths": None,
             "candidate_matches": None,
             "tracked_paths": sorted(case.get("tracked_paths", [])),
@@ -82,9 +88,9 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                     "evidence_status": case["evidence_status"],
                     "native_status": "skipped",
                     "skip_reason": f"Unable to create fixture symlink: {error}",
-                    "expected_ignored_paths": sorted(case["expected_ignored_paths"]),
+                    "expected_ignored_paths": _expected_paths(case, "expected_ignored_paths"),
                     "observed_ignored_paths": None,
-                    "expected_unknown_paths": sorted(case["expected_unknown_paths"]),
+                    "expected_unknown_paths": _expected_paths(case, "expected_unknown_paths"),
                     "observed_unknown_paths": None,
                     "candidate_matches": None,
                     "tracked_paths": sorted(case.get("tracked_paths", [])),
@@ -151,8 +157,8 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             }
         ignored = observations["ignored"]["paths"]
         unknown = observations["unknown"]["paths"]
-        expected_ignored = sorted(case["expected_ignored_paths"])
-        expected_unknown = sorted(case["expected_unknown_paths"])
+        expected_ignored = _expected_paths(case, "expected_ignored_paths")
+        expected_unknown = _expected_paths(case, "expected_unknown_paths")
         return {
             "id": case["id"],
             "dimension": case["dimension"],

@@ -375,26 +375,84 @@
       "id": "hg.walk.repeated-include-distinct-scopes",
       "dimension": "walk-source-cache-scope",
       "evidence_status": "candidate-until-native-capture",
-      "native_status": "skipped",
-      "skip_reason": "Mercurial on Windows does not read symlinked ignore sources in this fixture",
-      "expected_ignored_paths": [
-        "one/first.tmp",
-        "two/second.tmp"
-      ],
-      "observed_ignored_paths": null,
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
       "expected_unknown_paths": [
         ".hgignore",
+        "one/first.tmp",
         "one/rules",
         "one/visible.txt",
         "root.tmp",
         "shared/rules",
         "two/rules",
+        "two/second.tmp",
         "two/visible.txt",
         "visible.txt"
       ],
-      "observed_unknown_paths": null,
-      "candidate_matches": null,
+      "observed_unknown_paths": [
+        ".hgignore",
+        "one/first.tmp",
+        "one/rules",
+        "one/visible.txt",
+        "root.tmp",
+        "shared/rules",
+        "two/rules",
+        "two/second.tmp",
+        "two/visible.txt",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
       "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "C:\\Program Files\\Mercurial\\hg.EXE",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [],
+          "stdout": "",
+          "stderr": "",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "C:\\Program Files\\Mercurial\\hg.EXE",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "one/first.tmp",
+            "one/rules",
+            "one/visible.txt",
+            "root.tmp",
+            "shared/rules",
+            "two/rules",
+            "two/second.tmp",
+            "two/visible.txt",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000one\\first.tmp\u0000one\\rules\u0000one\\visible.txt\u0000root.tmp\u0000shared\\rules\u0000two\\rules\u0000two\\second.tmp\u0000two\\visible.txt\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "8f2c9e37de647c6084d58f79d28e881b3ee587d9ecaba8fc734c93d53b83d61e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
       "init_exit_code": 0,
       "nested_init_exit_codes": [],
       "add_exit_codes": [],

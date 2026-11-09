@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import stat
 from dataclasses import dataclass
 from pathlib import Path
@@ -14,6 +15,7 @@ _MAX_INCLUDE_DEPTH = 32
 _MAX_SOURCE_COUNT = 256
 _MAX_SOURCE_BYTES = 4 * 1024 * 1024
 _MAX_TOTAL_BYTES = 32 * 1024 * 1024
+_WINDOWS = os.name == "nt"
 
 
 @dataclass(slots=True)
@@ -61,6 +63,16 @@ def _load_source(
     *,
     depth: int,
 ) -> None:
+    if _WINDOWS and _has_symlink_component(source):
+        state.diagnostics.append(
+            IgnoreDiagnostic(
+                code="source-unavailable",
+                message="Mercurial on Windows skips ignore sources reached through symlinks.",
+                source=str(source),
+                severity="warning",
+            )
+        )
+        return
     try:
         canonical = source.resolve()
     except (OSError, RuntimeError) as error:
@@ -205,3 +217,17 @@ def _load_source(
                 )
     finally:
         state.active.remove(canonical)
+
+
+def _has_symlink_component(source: Path) -> bool:
+    """Return whether a lexical source path crosses a symlink before resolution."""
+    absolute = source.absolute()
+    current = Path(absolute.anchor)
+    for part in absolute.parts[1:]:
+        current /= part
+        try:
+            if current.is_symlink():
+                return True
+        except OSError:
+            return False
+    return False

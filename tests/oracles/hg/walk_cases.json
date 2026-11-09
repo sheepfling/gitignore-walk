@@ -109,6 +109,9 @@
         }
       },
       "expected_ignored_paths": ["one/first.tmp", "two/second.tmp"],
+      "expected_ignored_paths_by_os": {
+        "nt": []
+      },
       "expected_unknown_paths": [
         ".hgignore",
         "one/visible.txt",
@@ -119,6 +122,20 @@
         "two/visible.txt",
         "visible.txt"
       ],
+      "expected_unknown_paths_by_os": {
+        "nt": [
+          ".hgignore",
+          "one/first.tmp",
+          "one/rules",
+          "one/visible.txt",
+          "root.tmp",
+          "shared/rules",
+          "two/rules",
+          "two/second.tmp",
+          "two/visible.txt",
+          "visible.txt"
+        ]
+      },
       "tracked_paths": [],
       "evidence_status": "candidate-until-native-capture"
     }
