@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
+_BREEZY_API_READY = False
+
 
 def _invoke(
     command: Sequence[str], *, cwd: Path, environment: Mapping[str, str]
@@ -101,9 +103,12 @@ def _add_anchor(
 
     command = [executable, "add", "--no-plugins", str(anchor)]
     try:
+        global _BREEZY_API_READY
         with patch.dict(os.environ, environment, clear=True):
-            breezy.initialize()
-            plugin.load_plugins()
+            if not _BREEZY_API_READY:
+                breezy.initialize()
+                plugin.load_plugins()
+                _BREEZY_API_READY = True
             tree = WorkingTree.open(str(checkout))
             relative_parent = anchor.parent.relative_to(checkout)
             with tree.lock_write():
