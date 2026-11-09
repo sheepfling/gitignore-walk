@@ -28,6 +28,9 @@ INHERITED_PROPERTY_CASE = next(
 PATH_ROUND_TRIP_CASE = next(
     case for case in CASES if case["id"] == "svn.path-newline-and-tab-round-trip"
 )
+FILE_EXTERNAL_CASE = next(
+    case for case in CASES if case["id"] == "svn.file-external-is-not-a-directory-boundary"
+)
 
 
 def _run_svn(
@@ -317,6 +320,42 @@ def test_subversion_policy_matches_native_status(tmp_path: Path, case: dict[str,
 
     assert native_ignored == expected
     assert {path for path in fixture_paths if policy.is_ignored(path)} == expected
+
+
+def test_subversion_file_external_keeps_rule_matching_separate_from_membership(
+    tmp_path: Path,
+) -> None:
+    root, environment, config_dir = _create_working_copy(tmp_path, FILE_EXTERNAL_CASE)
+    policy = SubversionIgnorePolicy(root, config_dir=config_dir, environment=environment)
+    walker = IgnoreWalker(root, policy=policy)
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [svn, "--config-dir", str(config_dir), "status", "--xml", "--no-ignore", "."],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    file_external = next(
+        entry
+        for entry in document.findall(".//entry")
+        if entry.attrib["path"] == "external-file.txt"
+    )
+    status = file_external.find("wc-status")
+    assert status is not None
+    assert status.attrib["item"] == "normal"
+    assert status.attrib["file-external"] == "true"
+    native_ignored = {
+        entry.attrib["path"]
+        for entry in document.findall(".//entry")
+        if (wc_status := entry.find("wc-status")) is not None
+        and wc_status.attrib.get("item") == "ignored"
+    }
+    assert "external-file.txt" not in native_ignored
+
+    # Ignore decisions report matching rules, even for versioned file externals.
+    assert policy.is_ignored("external-file.txt")
+    assert root / "external-file.txt" in set(walker.iter_files(selection="ignored"))
 
 
 @pytest.mark.parametrize("topdown", [True, False])

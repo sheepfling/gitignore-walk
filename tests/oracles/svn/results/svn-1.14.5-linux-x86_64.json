@@ -1206,6 +1206,73 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.file-external-is-not-a-directory-boundary",
+      "dimension": "external-file-membership",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_status_paths": [
+        "external-file.txt"
+      ],
+      "observed_status_paths": [
+        "external-file.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "source.txt"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-1xoccolw/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "external-file.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>root</author>\n<date>2026-11-09T11:39:39.866590Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "cb003b40ba7e93dbc3179e8afb5da7792ec48dfd27efe4b5703d4450081334c7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-1xoccolw/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "external-file.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"external-file.txt\">\n<wc-status\n   item=\"normal\"\n   revision=\"2\"\n   file-external=\"true\"\n   props=\"none\">\n<commit\n   revision=\"2\">\n<author>root</author>\n<date>2026-11-09T11:39:39.866590Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "cb003b40ba7e93dbc3179e8afb5da7792ec48dfd27efe4b5703d4450081334c7",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

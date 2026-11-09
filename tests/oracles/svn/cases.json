@@ -205,6 +205,27 @@
       "evidence_status": "native-observed"
     },
     {
+      "id": "svn.file-external-is-not-a-directory-boundary",
+      "dimension": "external-file-membership",
+      "setup": {
+        "versioned_files": {
+          "source.txt": "external file content\n"
+        },
+        "properties": {
+          ".": {
+            "svn:ignore": "external-file.txt\n",
+            "svn:externals": "^/trunk/source.txt external-file.txt"
+          }
+        },
+        "external_files": {
+          "external-file.txt": "external file content\n"
+        }
+      },
+      "expected_ignored_paths": [],
+      "expected_status_paths": ["external-file.txt"],
+      "evidence_status": "native-observed"
+    },
+    {
       "id": "svn.glob-apr-backslash-escape",
       "dimension": "apr-glob-escaping",
       "setup": {

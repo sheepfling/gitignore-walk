@@ -60,7 +60,7 @@ inherited-property case also matches native status on all four captured profiles
 The SVN corpus now also covers newline- and tab-bearing filenames: Subversion 1.15.0/macOS arm64
 captures their XML numeric-reference round trip, and top-down and bottom-up policy walks preserve
 the decoded paths. Windows records an explicit skip because it cannot represent these filenames;
-Subversion 1.14.5 Linux aarch64 and x86_64 captures also match all 15 cases, including both walks.
+Subversion 1.14.5 Linux aarch64 and x86_64 captures also match all 16 cases, including both walks.
 The initial SVN property fixture covers seven ignored paths and local, inherited, nested, runtime,
 negation, case, and tracked-file distinctions; native results match on Subversion 1.15.0/macOS arm64
 and 1.14.5/Linux aarch64. A sparse-depth `empty` fixture confirms directory properties remain
@@ -72,6 +72,9 @@ beneath it; the policy walk excludes unrelated nested `.svn` roots and descends 
 by native status, including repository-root-relative URLs with and without pinned revisions,
 parent-relative URLs, absolute URLs, server-root-relative URLs, and scheme-relative URLs served by a
 loopback-only disposable `svnserve` repository.
+File externals are also captured on macOS and both Linux architectures: native status reports a
+file external as a normal versioned file, and the ignore policy keeps its name match separate from
+that membership result.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented; Windows Registry precedence needs native confirmation, while versioned directory
 membership and broader traversal/path behavior remain open. Fossil's 20-case

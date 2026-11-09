@@ -1,6 +1,6 @@
 # Subversion native oracle
 
-`cases.json` contains 15 isolated local-repository probes. They cover directory `svn:ignore`,
+`cases.json` contains 16 isolated local-repository probes. They cover directory `svn:ignore`,
 inherited `svn:global-ignores` (including a property above a subtree checkout), nested properties,
 APR glob syntax, sparse depths, and working-copy boundaries. External fixtures exercise
 repository-root-relative, parent-relative, absolute, server-root-relative, and scheme-relative URLs.
@@ -21,11 +21,14 @@ working copy or Subversion configuration. GitHub Actions runs the same coordinat
 output as an artifact.
 
 The property fixtures cover local, inherited, nested, and external-working-copy properties; runtime
-configuration; Git-style negation; ignored directories; and a versioned file whose name matches an
-ignore rule. Sparse-depth fixtures confirm a versioned directory at depth `empty` retains its
-`svn:ignore` property, while an excluded directory is reported as one unversioned path without
-listing files beneath it. All 15 cases match on Subversion 1.15.0/macOS arm64 and 1.14.5/Linux
-aarch64 and x86_64. The Windows oracle job explicitly skips the newline-and-tab case because those
+configuration; Git-style negation; ignored directories; and versioned files whose names match ignore
+rules. A file external appears in native status as a normal versioned file with `file-external="true"`;
+even when `svn:ignore` matches its name, it is not reported as ignored. The policy reports rule matches
+separately from versioned membership. Sparse-depth fixtures confirm a versioned directory at depth
+`empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
+path without listing files beneath it. All 16 cases match on Subversion 1.15.0/macOS arm64 and
+1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS and both Linux
+architectures. The Windows oracle job explicitly skips the newline-and-tab case because those
 filenames are not representable there. Captures are stored in `results/`.
 
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
