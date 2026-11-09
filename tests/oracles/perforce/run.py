@@ -204,6 +204,11 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 cwd=query_cwd,
                 environment=environment,
             )
+            walk_preview = (
+                _run(p4, ["add", "-n", "..."], cwd=workspace, environment=environment)
+                if case.get("capture_walk")
+                else None
+            )
             command_output = command.stdout + command.stderr
             ignored = "ignored file can't be added" in command_output
             if not ignored and (command.returncode != 0 or "opened for add" not in command_output):
@@ -264,6 +269,16 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 ),
                 "server_root": "<temp>/server",
                 "workspace_root": "<temp>/workspace",
+                "walk_preview": (
+                    {
+                        "command": ["p4", "add", "-n", "..."],
+                        "exit_code": walk_preview.returncode,
+                        "stdout": walk_preview.stdout.replace(str(workspace), "<workspace>"),
+                        "stderr": walk_preview.stderr.replace(str(workspace), "<workspace>"),
+                    }
+                    if walk_preview
+                    else None
+                ),
             }
         finally:
             server.terminate()
@@ -289,10 +304,14 @@ def capture(cases_path: Path, output_path: Path, p4_name: str, p4d_name: str) ->
         }
     else:
         captured = [_capture_case(case, p4, p4d) for case in cases]
+        walk_failed = any(
+            case["walk_preview"] is not None and case["walk_preview"]["exit_code"] != 0
+            for case in captured
+        )
         result = {
             "schema_version": 1,
             "status": "captured"
-            if all(case["candidate_matches"] is not False for case in captured)
+            if not walk_failed and all(case["candidate_matches"] is not False for case in captured)
             else "failed",
             "client": {
                 "p4": p4,

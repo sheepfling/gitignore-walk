@@ -57,6 +57,26 @@
       "release_gate": "Determine whether a nested P4CONFIG replaces or supplements parent P4IGNORE configuration."
     },
     {
+      "id": "p4.walk-exception-keeps-parent-traversable",
+      "dimension": "traversal",
+      "setup": {
+        "files": {
+          ".p4ignore": "build/\n!build/keep.txt\n*.log\n",
+          "build/drop.txt": "ignored\n",
+          "build/keep.txt": "exception\n",
+          "build/nested/debug.log": "ignored\n",
+          "notes.txt": "included\n",
+          "notes/debug.log": "ignored\n"
+        }
+      },
+      "query": "build/keep.txt",
+      "expected_candidate": false,
+      "capture_walk": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Compare recursive P4 add preview with included/ignored policy walks in both directions."
+    },
+    {
       "id": "p4.basename-star",
       "dimension": "glob",
       "setup": {

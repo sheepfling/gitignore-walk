@@ -10,7 +10,7 @@ from typing import Any
 
 import pytest
 
-from gitignore_walk import PerforceIgnorePolicy
+from gitignore_walk import IgnoreWalker, PerforceIgnorePolicy
 from gitignore_walk._schemes.perforce import policy as perforce_policy_module
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "perforce"
@@ -47,6 +47,10 @@ def test_perforce_capture_matches_versioned_candidates(case: dict[str, Any], pro
         assert isinstance(observation["observed_ignored"], bool)
     assert observation["exit_code"] == (1 if observation["observed_ignored"] else 0)
     assert "gitignore-walk-p4-oracle-" not in observation["stdout"] + observation["stderr"]
+    walk_preview = observation.get("walk_preview")
+    assert (walk_preview is not None) is case.get("capture_walk", False)
+    if walk_preview is not None:
+        assert walk_preview["exit_code"] == 0
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))
@@ -61,6 +65,44 @@ def test_perforce_profile_is_server_backed_and_pinned(profile: str) -> None:
     else:
         assert capture["client"]["version"].startswith("P4/MACOSX12ARM64/")
         assert capture["client"]["platform"].startswith("macOS-")
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_perforce_walker_matches_recursive_native_add_preview(
+    tmp_path: Path, profile: str, topdown: bool
+) -> None:
+    case_id = "p4.walk-exception-keeps-parent-traversable"
+    case = next(case for case in CASES if case["id"] == case_id)
+    observation = OBSERVATIONS[profile][case_id]
+    root = tmp_path / "workspace"
+    root.mkdir()
+    for relative, contents in case["setup"]["files"].items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
+    policy = PerforceIgnorePolicy(root, environment={})
+    walker = IgnoreWalker(root, policy=policy)
+    preview = observation["walk_preview"]
+    native_candidates = {
+        line.removeprefix("//depot/").partition("#")[0]
+        for line in preview["stdout"].splitlines()
+        if line.startswith("//depot/") and line.endswith(" - opened for add")
+    }
+    all_files = set(case["setup"]["files"])
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+
+    assert preview["exit_code"] == 0
+    assert native_candidates == {".p4ignore", "build/keep.txt", "notes.txt"}
+    assert included == native_candidates
+    assert ignored == all_files - native_candidates
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))

@@ -45,9 +45,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=custom.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:58555\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-mgbyd_b6/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-mgbyd_b6/trust\nP4USER=super\nP4_127.0.0.1:58555_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=custom.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:58982\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-yo0me3yv/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-yo0me3yv/trust\nP4USER=super\nP4_127.0.0.1:58982_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.p4config-ignore-overrides-environment",
@@ -85,9 +86,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=config.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:58565\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ugpvbhjj/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ugpvbhjj/trust\nP4USER=super\nP4_127.0.0.1:58565_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=config.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:58990\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-qhhkyymb/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-qhhkyymb/trust\nP4USER=super\nP4_127.0.0.1:58990_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.nested-p4config-selects-nested-ignore-source",
@@ -125,9 +127,61 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/sub/.p4config', '<workspace>/.p4config' )\nP4IGNORE=child.ignore (config '<workspace>/sub/.p4config')\nP4PORT=127.0.0.1:58574\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-xkjl51tp/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-xkjl51tp/trust\nP4USER=super\nP4_127.0.0.1:58574_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/sub/.p4config', '<workspace>/.p4config' )\nP4IGNORE=child.ignore (config '<workspace>/sub/.p4config')\nP4PORT=127.0.0.1:58999\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-elre5l05/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-elre5l05/trust\nP4USER=super\nP4_127.0.0.1:58999_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
+    },
+    {
+      "id": "p4.walk-exception-keeps-parent-traversable",
+      "dimension": "traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "build/keep.txt",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "build/keep.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/build/keep.txt#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "build/keep.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/build/keep.txt not ignored by <workspace>/.p4ignore:2:!build/keep.txt\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": {
+        "command": [
+          "p4",
+          "add",
+          "-n",
+          "..."
+        ],
+        "exit_code": 0,
+        "stdout": "//depot/.p4ignore#1 - opened for add\n//depot/build/keep.txt#1 - opened for add\n//depot/notes.txt#1 - opened for add\n",
+        "stderr": ""
+      }
     },
     {
       "id": "p4.basename-star",
@@ -167,7 +221,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.basename-star-matches-nested-file",
@@ -207,7 +262,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.single-star-stops-at-separator",
@@ -247,7 +303,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.double-star-crosses-separator",
@@ -287,7 +344,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.directory-only-does-not-match-file",
@@ -327,7 +385,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.directory-only-ignores-descendants",
@@ -367,7 +426,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.negation-overrides-earlier-rule",
@@ -407,7 +467,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.explicit-list-replaces-default-file",
@@ -447,7 +508,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.ignore-file-is-not-implicitly-ignored",
@@ -487,7 +549,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.list-and-depth-order",
@@ -527,7 +590,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.first-listed-file-ignore-wins",
@@ -567,7 +631,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.first-listed-file-exception-wins",
@@ -607,7 +672,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.default-ignore-file-order-first-wins",
@@ -647,7 +713,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.default-ignore-file-order-first-exception-wins",
@@ -687,7 +754,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.nested-ignore-overrides-root-exception",
@@ -727,7 +795,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.nested-exception-overrides-root-ignore",
@@ -767,7 +836,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.parent-directory-exception",
@@ -807,7 +877,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.leading-slash-anchors-to-ignore-file",
@@ -847,7 +918,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.leading-slash-rejects-nested-match",
@@ -887,7 +959,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.leading-slash-uses-nested-ignore-scope",
@@ -927,7 +1000,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.default-p4config",
@@ -965,9 +1039,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:58750\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-skajxlt4/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-skajxlt4/trust\nP4USER=super\nP4_127.0.0.1:58750_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:59182\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-it14y5m3/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-it14y5m3/trust\nP4USER=super\nP4_127.0.0.1:59182_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.custom-p4config-name-is-default-ignored",
@@ -1005,9 +1080,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config '<workspace>/p4config.txt' )\nP4PORT=127.0.0.1:58761\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-nqnlz19p/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-nqnlz19p/trust\nP4USER=super\nP4_127.0.0.1:58761_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config '<workspace>/p4config.txt' )\nP4PORT=127.0.0.1:59190\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-lqbdv9n3/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-lqbdv9n3/trust\nP4USER=super\nP4_127.0.0.1:59190_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4-default-p4config-name-requires-matching-setting",
@@ -1045,9 +1121,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config 'noconfig')\nP4PORT=127.0.0.1:58770\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ve8spkex/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ve8spkex/trust\nP4USER=super\nP4_127.0.0.1:58770_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config 'noconfig')\nP4PORT=127.0.0.1:59198\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-jrvuoekq/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-jrvuoekq/trust\nP4USER=super\nP4_127.0.0.1:59198_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.default-p4root",
@@ -1087,7 +1164,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.p4root-directory-descendant-inherits-default-ignore",
@@ -1127,7 +1205,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.p4config-exclusion-requires-setting",
@@ -1167,7 +1246,8 @@
       "p4_set_exit_code": null,
       "p4_set_output": null,
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.default-p4config-exception-does-not-override",
@@ -1205,9 +1285,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:58803\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ahmf9voh/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-ahmf9voh/trust\nP4USER=super\nP4_127.0.0.1:58803_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:59235\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-qawfwrts/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-qawfwrts/trust\nP4USER=super\nP4_127.0.0.1:59235_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     },
     {
       "id": "p4.default-p4config-case-sensitivity",
@@ -1245,9 +1326,10 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:58813\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-0z032sam/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-0z032sam/trust\nP4USER=super\nP4_127.0.0.1:58813_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:59243\nP4TICKETS=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-tnduurpt/tickets\nP4TRUST=/private/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-p4-oracle-tnduurpt/trust\nP4USER=super\nP4_127.0.0.1:59243_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
-      "workspace_root": "<temp>/workspace"
+      "workspace_root": "<temp>/workspace",
+      "walk_preview": null
     }
   ]
 }
