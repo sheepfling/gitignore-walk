@@ -118,6 +118,106 @@
       "home": "<temp>/home"
     },
     {
+      "id": "darcs.hash-leading-rule-is-comment",
+      "dimension": "lexing",
+      "query": "#literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "#literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./#literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.leading-space-is-rule-data",
+      "dimension": "lexing",
+      "query": "#literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "#literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./#literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.trailing-space-is-rule-data",
+      "dimension": "lexing",
+      "query": "literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.trailing-tab-is-rule-data",
+      "dimension": "lexing",
+      "query": "literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.inline-hash-is-pattern-data",
+      "dimension": "lexing",
+      "query": "literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
       "id": "darcs.comments-and-invalid-regex",
       "dimension": "lexing",
       "query": null,

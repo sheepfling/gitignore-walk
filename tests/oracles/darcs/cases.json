@@ -5,18 +5,22 @@
     {
       "id": "darcs.ere-alternation",
       "dimension": "regex",
-      "setup": {"local_boring": "\\.(o|pyc)$\n"},
+      "setup": {
+        "local_boring": "\\.(o|pyc)$\n"
+      },
       "query": "x.pyc",
       "expected_boring": true,
-      "native_status": "not-run"
+      "native_status": "captured"
     },
     {
       "id": "darcs.posix-character-class",
       "dimension": "regex",
-      "setup": {"local_boring": "^[[:digit:]]+$\n"},
+      "setup": {
+        "local_boring": "^[[:digit:]]+$\n"
+      },
       "query": "123",
       "expected_boring": true,
-      "native_status": "not-run"
+      "native_status": "captured"
     },
     {
       "id": "darcs.boringfile-replaces-local",
@@ -24,7 +28,9 @@
       "setup": {
         "local_boring": "\\.tmp$\n",
         "boringfile": "policy",
-        "files": {"policy": "\\.bak$\n"}
+        "files": {
+          "policy": "\\.bak$\n"
+        }
       },
       "query": "a.tmp",
       "expected_boring": true,
@@ -37,11 +43,13 @@
       "setup": {
         "local_boring": "\\.tmp$\n",
         "boringfile": "policy",
-        "files": {"policy": "\\.bak$\n"}
+        "files": {
+          "policy": "\\.bak$\n"
+        }
       },
       "query": "a.bak",
       "expected_boring": true,
-      "native_status": "not-run"
+      "native_status": "captured"
     },
     {
       "id": "darcs.global-additive",
@@ -52,18 +60,70 @@
       },
       "query": "a.tmp",
       "expected_boring": true,
-      "native_status": "not-run"
+      "native_status": "captured"
     },
     {
       "id": "darcs.tracked-boring-file-remains-managed",
       "dimension": "membership",
       "setup": {
         "local_boring": "\\.tmp$\n",
-        "tracked": ["a.tmp"]
+        "tracked": [
+          "a.tmp"
+        ]
       },
       "query": "a.tmp",
       "expected_boring": false,
-      "native_status": "not-run"
+      "native_status": "captured"
+    },
+    {
+      "id": "darcs.hash-leading-rule-is-comment",
+      "dimension": "lexing",
+      "setup": {
+        "local_boring": "#literal\n"
+      },
+      "query": "#literal",
+      "expected_boring": false,
+      "native_status": "captured"
+    },
+    {
+      "id": "darcs.leading-space-is-rule-data",
+      "dimension": "lexing",
+      "setup": {
+        "local_boring": " #literal\n"
+      },
+      "query": "#literal",
+      "expected_boring": false,
+      "native_status": "captured"
+    },
+    {
+      "id": "darcs.trailing-space-is-rule-data",
+      "dimension": "lexing",
+      "setup": {
+        "local_boring": "literal \n"
+      },
+      "query": "literal",
+      "expected_boring": false,
+      "native_status": "captured"
+    },
+    {
+      "id": "darcs.trailing-tab-is-rule-data",
+      "dimension": "lexing",
+      "setup": {
+        "local_boring": "literal\t\n"
+      },
+      "query": "literal",
+      "expected_boring": false,
+      "native_status": "captured"
+    },
+    {
+      "id": "darcs.inline-hash-is-pattern-data",
+      "dimension": "lexing",
+      "setup": {
+        "local_boring": "literal#suffix\n"
+      },
+      "query": "literal",
+      "expected_boring": false,
+      "native_status": "captured"
     },
     {
       "id": "darcs.comments-and-invalid-regex",

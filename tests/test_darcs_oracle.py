@@ -41,6 +41,7 @@ def test_darcs_captured_boring_decisions_match_closed_candidates(
     observation = OBSERVATIONS[profile][case["id"]]
     if case["expected_boring"] is None:
         pytest.skip("native observation is retained as an open contract question")
+    assert case["native_status"] == "captured"
     assert observation["observed_boring"] is case["expected_boring"]
 
 
