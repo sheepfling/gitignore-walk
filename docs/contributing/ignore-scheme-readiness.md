@@ -72,22 +72,26 @@ have a separate captured inventory; see the [Git oracle notes](../../tests/oracl
 [ripgrep oracle notes](../../tests/oracles/ripgrep/README.md). These cases confirmed parent blocking
 versus contents-only exceptions, recursive `**/` behavior, last-match precedence, and the difference
 between ordinary tracked-file handling and `--no-index` ignore-rule matching. The current Mercurial
-capture covers 40 `hg debugignore` cases and six native status walk fixtures on macOS arm64 with
-Mercurial 7.2.4 and Linux aarch64 and x86_64 with Mercurial 7.0.1. The library
-tests compare all three profiles with its matching and traversal behavior; see the
+capture covers 48 `hg debugignore` cases and six native status walk fixtures on macOS arm64 with
+Mercurial 7.2.4, Linux aarch64 and x86_64 with Mercurial 7.0.1, and Windows Server 2025 x86_64
+with Mercurial 7.1.2. The library tests compare the three Unix profiles with its matching and
+traversal behavior. The Windows oracle capture has 42 matching candidate comparisons, five explicit
+path skips, and one documented include-cycle divergence; its walk capture has five matching
+fixtures and one symlink-dependent skip. See the
 [Mercurial oracle](../../tests/oracles/hg/README.md), the
 [macOS matching results](../../tests/oracles/hg/results/hg-7.2.4-macos-arm64.json), the
 [Linux matching results](../../tests/oracles/hg/results/hg-7.0.1-linux-aarch64.json), and the
-[Linux x86_64 matching results](../../tests/oracles/hg/results/hg-7.0.1-linux-x86_64.json), and
-[walk results](../../tests/oracles/hg/results/). All 44 boolean cases and six walk cases agree on
-all three profiles, including case-sensitive matching, exact Unicode normalization-form matching,
-undecodable pattern bytes, unreadable-source warnings with incomplete discovery, and stopping walks
-at `.hg` metadata and nested workspaces. An actual
-byte-path walk matches native status on Linux
-aarch64 and x86_64; the filesystem skips that case on macOS. The include-cycle query remains open
-because Mercurial recurses until failure; a
-separate subinclude query prints an ignored decision and then fails while formatting its trace.
-These profiles do not establish full cross-platform behavior.
+[Linux x86_64 matching results](../../tests/oracles/hg/results/hg-7.0.1-linux-x86_64.json), the
+[Windows matching results](../../tests/oracles/hg/results/hg-7.1.2-windows-x86_64.json), and the
+[walk results](../../tests/oracles/hg/results/). On each Unix profile, 46 boolean cases and the
+structured invalid-syntax expectation agree; the include-cycle query remains a documented safe
+divergence. All six Unix walk cases agree, including case-sensitive matching, exact Unicode
+normalization-form matching, undecodable pattern bytes, unreadable-source warnings with incomplete
+discovery, and stopping walks at `.hg` metadata and nested workspaces. An actual byte-path walk
+matches native status on Linux aarch64 and x86_64; the filesystem skips that case on macOS. A
+separate subinclude query prints an ignored decision and then fails while formatting its trace. The
+Windows captures confirm case-sensitive glob matching but do not establish full Windows conformance,
+particularly for the skipped POSIX byte, permission, and symlink fixtures.
 
 Mercurial's documented `.hgignore` syntax distinguishes regexp, unrooted glob, and rootglob rules;
 its pattern docs distinguish `include` from directory-scoped `subinclude`. The implementation uses

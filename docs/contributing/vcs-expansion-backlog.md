@@ -420,13 +420,13 @@ until exercised against pinned native clients. Primary
 Mercurial references: [ignore-file syntax](https://www.mercurial-scm.org/help/topics/hgignore) and
 [file patterns](https://mercurial-scm.org/help/topics/patterns).
 
-For Mercurial, remaining probes include Windows case behavior; regex features beyond the captured
-unanchored search, start anchor, inline flags, and newline matching; and additional include-source
-symlink boundary forms. Mercurial's command-line `include:` notation reads patterns from a file; it
-does not execute a command. That file-selection feature is separate from this ignore-policy
-expansion. Native help documents regex/glob/rootglob and says an ignore rule may match a path or any
-prefix directory; pattern-file `include:` and directory-scoped `subinclude:` have separate
-documented behavior.
+For Mercurial, Windows case-sensitive glob behavior is now captured. Remaining probes include regex
+features beyond the captured unanchored search, start anchor, inline flags, and newline matching;
+and additional include-source symlink boundary forms. Mercurial's command-line `include:` notation
+reads patterns from a file; it does not execute a command. That file-selection feature is separate
+from this ignore-policy expansion. Native help documents regex/glob/rootglob and says an ignore
+rule may match a path or any prefix directory. Pattern-file `include:` and directory-scoped
+`subinclude:` have separate documented behavior.
 Native captures confirm an undecodable byte in a glob pattern on macOS and Linux; an actual
 undecodable filename walk is verified on Linux and skipped on the tested macOS filesystem, which
 rejects those names.

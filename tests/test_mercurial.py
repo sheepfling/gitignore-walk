@@ -183,6 +183,16 @@ def test_policy_matches_captured_native_observation(
         pytest.skip("Windows Mercurial does not read symlinked ignore sources in these fixtures")
     observation = MATCHING_OBSERVATIONS[profile][case["id"]]
     policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
+    if case["id"] == "hg.include-unreadable-source":
+        unreadable_source = (tmp_path / "repo" / "rules.ignore").resolve()
+        original_open = Path.open
+
+        def deny_unreadable_source(path: Path, *args: Any, **kwargs: Any) -> Any:
+            if path.resolve() == unreadable_source:
+                raise PermissionError("simulated unreadable Mercurial ignore source")
+            return original_open(path, *args, **kwargs)
+
+        monkeypatch.setattr(Path, "open", deny_unreadable_source)
     expected = observation["observed_ignored"]
     decision = policy.explain(query)
 
