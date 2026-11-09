@@ -660,6 +660,118 @@
       "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
     },
     {
+      "id": "hg.regex-positive-lookahead",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "foo(?=bar)\n"
+        }
+      },
+      "query": "foobar",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain the native comparison for regex lookahead in future profile updates."
+    },
+    {
+      "id": "hg.regex-negative-lookahead-rejects",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "foo(?!bar)\n"
+        }
+      },
+      "query": "foobar",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain the native comparison for regex lookahead in future profile updates."
+    },
+    {
+      "id": "hg.regex-negative-lookahead-matches",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "foo(?!bar)\n"
+        }
+      },
+      "query": "foobaz",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain the native comparison for regex lookahead in future profile updates."
+    },
+    {
+      "id": "hg.regex-backreference-matches",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "^(a+)-\\1$\n"
+        }
+      },
+      "query": "aa-aa",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain the native comparison for regex backreferences in future profile updates."
+    },
+    {
+      "id": "hg.regex-backreference-rejects",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "^(a+)-\\1$\n"
+        }
+      },
+      "query": "aa-ab",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain the native comparison for regex backreferences in future profile updates."
+    },
+    {
+      "id": "hg.regex-word-boundary",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "\\bfoo\\b\n"
+        }
+      },
+      "query": "foo/bar",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain the native comparison for byte-regex word boundaries in future profile updates."
+    },
+    {
+      "id": "hg.regex-lookbehind",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "(?<=/)foo\n"
+        }
+      },
+      "query": "dir/foo",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain the native comparison for regex lookbehind in future profile updates."
+    },
+    {
       "id": "hg.include-cycle",
       "profile": "hg",
       "dimension": "source-inclusion",

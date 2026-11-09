@@ -223,17 +223,20 @@ def test_policy_matches_captured_native_observation(
         assert {item.code for item in decision.diagnostics} == {"include-cycle"}
 
 
-BYTE_PATTERN_SEMANTIC_CASES = [
-    case for case in CASES if case["dimension"] in {"regex-byte-semantics", "glob-byte-semantics"}
+LIVE_PATTERN_SEMANTIC_CASES = [
+    case
+    for case in CASES
+    if case["dimension"] in {"regex-byte-semantics", "glob-byte-semantics"}
+    or (case["id"].startswith("hg.regex-") and case["dimension"] == "regex-extensions")
 ]
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
-@pytest.mark.parametrize("case", BYTE_PATTERN_SEMANTIC_CASES, ids=lambda case: case["id"])
-def test_pattern_byte_semantics_match_installed_native_client(
+@pytest.mark.parametrize("case", LIVE_PATTERN_SEMANTIC_CASES, ids=lambda case: case["id"])
+def test_pattern_semantics_match_installed_native_client(
     tmp_path: Path, case: dict[str, Any]
 ) -> None:
-    """Compare UTF-8 regex and glob matching with the installed Mercurial client."""
+    """Compare supported Mercurial regex and glob behavior with the installed client."""
     hg = shutil.which("hg")
     assert hg is not None
     root = tmp_path / "repo"

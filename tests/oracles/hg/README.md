@@ -31,6 +31,9 @@ inline flags. Two additional source-boundary cases capture an include through a 
 outside the workspace and a dangling symlink include. Mercurial follows the first; the second warns
 and skips the source. The policy follows the valid external source and reports incomplete discovery
 for the dangling source. These two cases are captured on macOS arm64 and Debian 13 Linux x86_64.
+Seven regex probes cover lookahead, lookbehind, word boundaries, and backreferences. Captures on
+macOS arm64 and Debian Linux aarch64 and x86_64 agree with the byte-regex evaluator; the live-client
+differential test also exercises these cases.
 An unreadable
 included file is skipped by native Mercurial with a warning; the
 policy reports `discovery_complete=False` with a source-unavailable diagnostic. Config discovery
