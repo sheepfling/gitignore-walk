@@ -355,7 +355,10 @@ versioned behavioral gate is defined.
 **Priority:** P1 · **Depends on:** VCS-00, VCS-02
 
 **Status:** Explicit source order and opt-in `hg config --debug ui` discovery are covered on both
-captured platform profiles, including named global entries and repository-local config. Native
+captured platform profiles, including named global entries and repository-local config. Mercurial
+7.2.4 also confirms the workspace `.hgignore` is reported before a configured `ui.ignore` file when
+both supply the same matching rule; the policy trace retains both sources and the effective source.
+This precedence probe is currently captured on macOS arm64 and Debian 13 Linux x86_64. Native
 probes confirm warnings for missing `include` and configured `ui.ignore` files; Mercurial silently
 skips a missing `subinclude`, while the policy conservatively reports incomplete discovery. A
 symlinked `include` to a file outside the workspace is followed natively and by the policy, with
@@ -516,9 +519,10 @@ until exercised against pinned native clients. Primary
 Mercurial references: [ignore-file syntax](https://www.mercurial-scm.org/help/topics/hgignore) and
 [file patterns](https://mercurial-scm.org/help/topics/patterns).
 
-For Mercurial, Windows case-sensitive glob behavior is now captured. Remaining probes include regex
-features beyond the captured unanchored search, start anchor, inline flags, and newline matching;
-additional include-source symlink boundaries. A self-referential include-source symlink loop is now
+For Mercurial, Windows case-sensitive glob behavior is now captured. Regex extension probes cover
+unanchored search, start anchoring, inline flags, newline matching, lookahead/lookbehind, word
+boundaries, and backreferences. Additional regex and source-precedence profiles remain open. A
+self-referential include-source symlink loop is now
 captured on macOS arm64 and Windows x86_64: Mercurial warns and skips the source, and the policy
 reports incomplete discovery. The warning differs by platform (`Too many levels of symbolic links`
 on macOS and `Invalid argument` on Windows). Mercurial 7.2.4 on macOS also raises an assertion when

@@ -926,6 +926,29 @@
       "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
     },
     {
+      "id": "hg.workspace-ignore-precedes-configured-source",
+      "profile": "hg",
+      "dimension": "configuration-precedence",
+      "setup": {
+        "files": {
+          ".hgignore": "shared\\.tmp$\n",
+          "<home>/extra.ignore": "shared\\.tmp$\n"
+        },
+        "config": {
+          "ui.ignore.extra": "<home>/extra.ignore"
+        }
+      },
+      "query": "shared.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain native source attribution when workspace and configured rules both match.",
+      "policy_mode": "client-config"
+    },
+    {
       "id": "hg.glob-unicode-normalization-is-significant",
       "profile": "hg",
       "dimension": "path-normalization",

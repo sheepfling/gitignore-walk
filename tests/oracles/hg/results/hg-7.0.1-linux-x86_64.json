@@ -1529,6 +1529,54 @@
       "raw_stderr": ""
     },
     {
+      "id": "hg.workspace-ignore-precedes-configured-source",
+      "profile": "hg",
+      "dimension": "configuration-precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "shared.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "shared.tmp is ignored\n(ignore rule in <repo>/.hgignore, line 1: 'shared\\.tmp$')\n",
+      "stderr": "",
+      "configuration": {
+        "command": [
+          "/usr/bin/hg",
+          "config",
+          "--debug",
+          "ui"
+        ],
+        "exit_code": 0,
+        "stdout": "read config from: <hgrc>\n<hgrc>:2: ui.ignore.extra=<home>/extra.ignore\n--verbose: ui.verbose=False\n--debug: ui.debug=True\n--quiet: ui.quiet=False\n",
+        "stderr": "",
+        "normalized_stdout_sha256": "7bcf323b83a1a30b6e952647382213c68f8a5abb2abc32b3b7706eea04089b29"
+      },
+      "normalized_stdout_sha256": "13ce29c034ad41c669e921dc076b209bd66342e097475ec6ea62f1e0717be56c",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "shared.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-c74gu1tm/repo/.hgignore, line 1: 'shared\\.tmp$')\n",
+      "raw_stderr": ""
+    },
+    {
       "id": "hg.glob-unicode-normalization-is-significant",
       "profile": "hg",
       "dimension": "path-normalization",

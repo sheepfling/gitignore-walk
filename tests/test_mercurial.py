@@ -492,6 +492,31 @@ def test_configured_ignore_sources_keep_captured_native_order(tmp_path: Path, pr
 
 
 @pytest.mark.parametrize(
+    "profile",
+    ("hg-7.2.4-macos-arm64.json", "hg-7.0.1-linux-x86_64.json"),
+)
+def test_workspace_ignore_precedes_duplicate_configured_source(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, profile: str
+) -> None:
+    """Preserve native provenance when workspace and configured rules both match."""
+    case_id = "hg.workspace-ignore-precedes-configured-source"
+    case = next(case for case in CASES if case["id"] == case_id)
+    policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
+    trace = policy.trace(query)
+    native = MATCHING_OBSERVATIONS[profile][case_id]
+
+    assert trace.decision.ignored
+    assert trace.decision.source == str((policy.root / ".hgignore").resolve())
+    assert [Path(match.source).name for match in trace.matches] == [
+        ".hgignore",
+        "extra.ignore",
+    ]
+    assert native["candidate_matches"]
+    assert "ignore rule in <repo>/.hgignore" in native["stdout"]
+    assert "extra.ignore" not in native["stdout"]
+
+
+@pytest.mark.parametrize(
     "case_id",
     [
         "hg.config-discovery-named-ignore-entries",
