@@ -123,6 +123,15 @@ def test_breezy_capture_commands_succeed_in_isolated_configuration(profile: str)
     assert all(case["anchor_add_exit_code"] in (None, 0) for case in capture["cases"])
 
 
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+def test_breezy_captures_record_exact_profile_exclusions(profile: str) -> None:
+    capture = CAPTURES[profile]
+    selected, excluded = _select_cases_for_profile(CASES, profile)
+
+    assert {case["id"] for case in capture["cases"]} == {case["id"] for case in selected}
+    assert capture["excluded_cases"] == excluded
+
+
 def test_breezy_profiles_agree_on_rules_and_membership_observations() -> None:
     baseline = CAPTURES[CAPTURE_FILES[0]]
     baseline_cases = {case["id"]: case for case in baseline["cases"]}

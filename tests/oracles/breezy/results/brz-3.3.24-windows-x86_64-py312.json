@@ -1664,5 +1664,59 @@
       "global_ignore_existed_before": false,
       "global_ignore_exists_after": true
     }
+  ],
+  "excluded_cases": [
+    {
+      "id": "brz.global-ignore-over-local-ignore",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.24-linux-aarch64-py312.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    },
+    {
+      "id": "brz.local-ignore-over-default-ignore",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.24-linux-aarch64-py312.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    },
+    {
+      "id": "brz.global-ignore-over-default-ignore",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.24-linux-aarch64-py312.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    },
+    {
+      "id": "brz.regex-backreference-invalid-pattern",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    },
+    {
+      "id": "brz.regex-unicode-word-class",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    },
+    {
+      "id": "brz.regex-unicode-digit-class",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    },
+    {
+      "id": "brz.regex-fixed-lookbehind",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    }
   ]
 }
