@@ -113,8 +113,9 @@ macOS 1.15.0, Ubuntu 1.14.3, and Windows SlikSvn 1.14.5.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented. Native precedence captures cover system-to-user INI files on Debian 13 x86_64 and
 machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5. A macOS 1.15.0 capture confirms
-ambient user `HOME/.subversion/config` discovery. Broader precedence profiles, versioned directory
-membership, and traversal/path behavior remain open. Fossil's 43-case
+ambient user `HOME/.subversion/config` discovery. Versioned-directory membership is covered by a
+three-profile native fixture. Broader precedence profiles and traversal/path behavior remain open.
+Fossil's 43-case
 ignore-glob corpus is captured on 2.28/macOS arm64, 2.26/Linux aarch64 and x86_64, and 2.23/Ubuntu
 24.04 x86_64: all 41 boolean
 candidates agree, including range classes, Unicode `?`, case sensitivity, class-negation markers,
@@ -357,10 +358,20 @@ walker seam.
 | Pruning                       | An ignored directory may be pruned because this supported rule set has no inclusion exceptions     |
 
 The policy uses provisional graph guards (32 include levels, 256 source visits, 4 MiB per source,
-32 MiB total, and 20,000 bytes per compiled pattern). Tests now exercise each ceiling and verify
+32 MiB total, and 20,000 bytes per compiled pattern). Tests exercise each ceiling and verify
 source-graph overflows report incomplete discovery while pattern overflow raises a contextual parse
-error. These are safety ceilings, not compatibility promises; measure them with representative
-repositories and expose configuration only if user need justifies it.
+error. A source-size measurement covered the
+[Mercurial 7.2.4 release archive](https://www.mercurial-scm.org/release/mercurial-7.2.4.tar.gz)
+(SHA-256 `85839e0f39e6cb893a88932aa36ef661759f3c5c5de4551ad26bd9df53cb71a2`), plus the
+[evolve](https://foss.heptapod.net/mercurial/evolve) working tree at
+`bcdd16c129b305f2383262f867515e77d3d2afd6` and
+[hg-git](https://foss.heptapod.net/mercurial/hg-git) at
+`0fe9af40ab8e4e615d29e9b891f39d9cefb05e55`. Their root `.hgignore` files contain 1,188, 417, and
+134 bytes, with 77, 27, and 11 parsed rules; the largest literal rule is 39 bytes and the largest
+compiled expression is 66 bytes. None uses `include:` or `subinclude:`, so the
+profiles establish large headroom for source and pattern sizes but do not measure real graph depth or
+source count. Keep the graph ceilings provisional until a representative include-heavy corpus is
+measured. Expose configuration only if user need justifies it.
 
 ### VCS-02 — Build a reusable native conformance harness
 
@@ -526,13 +537,15 @@ checks are green.
 
 **Priority:** P2 · **Depends on:** VCS-08
 
-**Next scheme:** SVN, following the research ranking above. Its current property policy is an initial
-implementation; inherited `svn:global-ignores` above the working-copy root and at native-reported
-switched paths are discovered and scoped to the correct subtree. Opt-in
-membership-aware decisions use verbose native status for listed paths, with absent paths left
-unknown. The opt-in file-external membership behavior passes on macOS arm64, Linux aarch64/x86_64,
-and the SlikSvn Windows CI job. The Windows native file-external observation is now committed;
-broader membership path/status behavior remains open.
+**Next scheme:** SVN, following the research ranking above. Its initial property policy, inherited
+`svn:global-ignores` discovery, switched-subtree scoping, sparse-depth boundaries, listed externals,
+and opt-in membership are implemented. The 21-case oracle includes all 13 status-profile probes from
+the handoff; the two import-reference probes remain outside the status-walking contract. Live
+membership comparisons cover normal, modified, added, deleted, missing, replaced, obstructed, and
+conflicted entries, plus ignored unversioned entries. Versioned directories and file/directory
+externals have separate native evidence. Paths omitted by sparse status remain unknown by design.
+Further work is broader native status traversal and configuration-precedence profiles; do not
+classify omitted paths as unversioned without new native evidence.
 
 Repeat VCS-00 through VCS-08 for each additional system. Reuse the conformance harness and shared
 contracts, but keep each scheme's source discovery, semantics, configuration, and limitations
