@@ -194,6 +194,51 @@ def test_compatibility_capture_reconciles_onbranch_conditional_global_ignore(
     assert conditional_onbranch["ignored"] == expected_ignored[case_id]
 
 
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_remote_url_conditional_global_ignore(
+    profile: str, case_id: str
+) -> None:
+    conditional_remote = OBSERVATIONS[profile][case_id]["conditional_remote_url"]
+    expected_ignored = {
+        "sapling.git-mode": ["conditional.remote"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["conditional.remote"],
+        "jj.noncolocated": ["conditional.remote"],
+    }
+
+    assert conditional_remote["candidate_matches"] is True
+    assert conditional_remote["query_files"] == [
+        "conditional.global",
+        "conditional.remote",
+        "conditional.visible",
+    ]
+    assert conditional_remote["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_repository_core_excludes_file(
+    profile: str, case_id: str
+) -> None:
+    configured_repository = OBSERVATIONS[profile][case_id]["configured_repository"]
+    expected_ignored = {
+        "sapling.git-mode": ["repository.local"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["repository.local"],
+        "jj.noncolocated": ["repository.local"],
+    }
+
+    assert configured_repository["candidate_matches"] is True
+    assert configured_repository["query_files"] == [
+        "repository.global",
+        "repository.local",
+        "repository.system",
+        "repository.visible",
+    ]
+    assert configured_repository["ignored"] == expected_ignored[case_id]
+
+
 @pytest.mark.parametrize(
     ("case_id", "expected_markers"),
     [

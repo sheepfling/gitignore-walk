@@ -150,6 +150,8 @@ jobs:
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           print(result)
           PY
       - name: Download pinned Sapling and Jujutsu x86_64 releases
@@ -193,6 +195,8 @@ jobs:
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           print(result)
           PY
       - name: Check selected Linux native captures

@@ -55,6 +55,19 @@
     "jj.colocated": ["system.system"],
     "jj.noncolocated": ["system.system"]
   },
+  "configured_repository_probe_files": {
+    "repository.global": "must be visible when repository core.excludesFile is set\n",
+    "repository.local": "must be ignored by repository core.excludesFile\n",
+    "repository.system": "must be visible when repository core.excludesFile is set\n",
+    "repository.visible": "must remain visible\n"
+  },
+  "configured_repository_ignore": "*.local\n",
+  "expected_configured_repository_ignored": {
+    "sapling.git-mode": ["repository.local"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["repository.local"],
+    "jj.noncolocated": ["repository.local"]
+  },
   "conditional_global_probe_files": {
     "conditional.custom": "must be ignored only by a matching gitdir include\n",
     "conditional.global": "must be ignored by XDG when no include condition matches\n",
@@ -77,6 +90,19 @@
     "sapling.sl-mode": [],
     "jj.colocated": ["conditional.branch"],
     "jj.noncolocated": ["conditional.branch"]
+  },
+  "conditional_remote_probe_files": {
+    "conditional.remote": "must be ignored only by a matching remote URL include\n",
+    "conditional.global": "must be ignored by XDG when no include condition matches\n",
+    "conditional.visible": "must remain visible\n"
+  },
+  "conditional_remote_ignore": "*.remote\n",
+  "conditional_remote_url": "https://example.invalid/acme/**",
+  "expected_conditional_remote_ignored": {
+    "sapling.git-mode": ["conditional.remote"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["conditional.remote"],
+    "jj.noncolocated": ["conditional.remote"]
   },
   "expected_source_ignored": {
     "sapling.git-mode": ["global.global", "info.priority", "local.local"],

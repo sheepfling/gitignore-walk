@@ -38,13 +38,15 @@ Jujutsu modes prefer the user file when set, then use the system file, then the 
 explicitly empty user setting disables the global source. Sapling `.sl` mode ignores all three.
 These results are captured on macOS arm64 and Debian 13 Linux aarch64 and x86_64. The policies expose
 `global_excludes_file` for an already resolved path; with `read_git_config=True`, they use the
-configured Git executable to resolve system/user settings and includes. A `gitdir` conditional
-include probe confirms that Sapling `.git` mode and colocated Jujutsu select the conditional user
-file. Non-colocated Jujutsu has no `.git` directory to match that condition, so it follows the
-configured system source. An `onbranch:main` probe matches in Sapling `.git` mode and both Jujutsu
-modes. The policy supplies Jujutsu's internal Git store as config context for non-colocated
-workspaces; caller-provided `GIT_DIR` still takes precedence. Sapling `.sl` mode ignores Git global
-sources. Other conditional forms and client/platform profiles remain open.
+configured Git executable to resolve the effective setting with Git's scope precedence and
+includes. A repository-local `core.excludesFile` overrides system and user values in Sapling `.git`
+mode and both Jujutsu modes; Sapling `.sl` ignores Git config. A `gitdir` conditional include
+selects the user file in Sapling `.git` mode and colocated Jujutsu; non-colocated Jujutsu follows the
+configured system source for that condition. Both `onbranch:main` and a matching
+`hasconfig:remote.*.url` include are honored by Sapling `.git` mode and both Jujutsu modes. The
+policy supplies Jujutsu's internal Git store as context for non-colocated workspaces;
+caller-provided `GIT_DIR` still takes precedence. Other conditional forms and client/platform
+profiles remain open.
 
 A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
 ignored parent directory; a child negation can re-include a file when only the parent's contents

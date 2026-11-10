@@ -419,12 +419,78 @@ def test_compatible_scheme_discovers_onbranch_include_with_workspace_context(
     assert alternate_decision.ignored is False
 
 
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize("mode", ["sapling-git", "jj-colocated", "jj-noncolocated"])
+@pytest.mark.parametrize(
+    ("remote_url", "expected_ignored"),
+    [
+        ("https://example.invalid/acme/project.git", True),
+        ("https://other.invalid/team/project.git", False),
+    ],
+)
+def test_compatible_scheme_discovers_remote_url_conditional_include(
+    tmp_path: Path, mode: str, remote_url: str, expected_ignored: bool
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    xdg_ignore = home / ".config" / "git" / "ignore"
+    xdg_ignore.parent.mkdir(parents=True)
+    xdg_ignore.write_text("*.global\n", encoding="utf-8")
+    remote_ignore = home / "remote-ignore"
+    remote_ignore.write_text("*.remote\n", encoding="utf-8")
+    included_config = home / "included.gitconfig"
+    included_config.write_text(f"[core]\n\texcludesFile = {remote_ignore}\n", encoding="utf-8")
+    global_config = home / ".gitconfig"
+    global_config.write_text(
+        '[includeIf "hasconfig:remote.*.url:https://example.invalid/acme/**"]\n'
+        "\tpath = included.gitconfig\n",
+        encoding="utf-8",
+    )
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    if mode == "sapling-git":
+        _git_init(root)
+        git_dir = root / ".git"
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    elif mode == "jj-colocated":
+        (root / ".jj").mkdir()
+        _git_init(root)
+        git_dir = root / ".git"
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    else:
+        (root / ".jj").mkdir()
+        git_dir = root / ".jj" / "repo" / "store" / "git"
+        subprocess.run(["git", "init", "--bare", "-q", str(git_dir)], check=True)
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    _set_git_remote(git_dir, remote_url)
+    (root / "conditional.remote").touch()
+
+    selection = select_policy(root, config)
+    decision = selection.policy.explain("conditional.remote")
+
+    assert decision.ignored is expected_ignored
+
+    repository_ignore = home / "repository-ignore"
+    repository_ignore.write_text("*.repository\n", encoding="utf-8")
+    _set_git_config(git_dir, "core.excludesFile", str(repository_ignore))
+    (root / "configured.repository").touch()
+    repository_selection = select_policy(root, config)
+    assert repository_selection.policy.explain("configured.repository").ignored is True
+
+
 def test_compatible_scheme_config_discovery_errors_if_git_is_missing(tmp_path: Path) -> None:
     root = tmp_path / "workspace"
     root.mkdir()
     (root / ".jj").mkdir()
 
-    with pytest.raises(GitIgnoreError, match=r"unable to read Git system core.excludesFile"):
+    with pytest.raises(GitIgnoreError, match=r"unable to read Git core.excludesFile"):
         select_policy(
             root,
             JujutsuPolicyConfig(read_git_config=True, git_executable="missing-git-config-client"),
@@ -509,6 +575,21 @@ def _git_init(root: Path) -> None:
 def _set_git_branch(git_dir: Path, branch: str) -> None:
     result = subprocess.run(
         ["git", f"--git-dir={git_dir}", "symbolic-ref", "HEAD", f"refs/heads/{branch}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode:
+        raise AssertionError(result.stderr)
+
+
+def _set_git_remote(git_dir: Path, remote_url: str) -> None:
+    _set_git_config(git_dir, "remote.origin.url", remote_url)
+
+
+def _set_git_config(git_dir: Path, key: str, value: str) -> None:
+    result = subprocess.run(
+        ["git", f"--git-dir={git_dir}", "config", key, value],
         capture_output=True,
         text=True,
         check=False,

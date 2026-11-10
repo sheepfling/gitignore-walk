@@ -234,8 +234,8 @@ class SaplingPolicyConfig:
             passed to Git; include PATH and any Git config environment variables it needs.
         global_excludes_file: Optional explicit path for a configured ``core.excludesFile``. This
             overrides both discovered config and the conventional XDG path in `.git` storage mode.
-        read_git_config: Ask Git to resolve system/global ``core.excludesFile``, including
-            included files.
+        read_git_config: Ask Git to resolve effective system/global/repository
+            ``core.excludesFile`` values, including conditional includes.
             Requires the configured Git executable; when unset, evaluation stays client-independent.
         git_executable: Executable name or path used for optional global config discovery.
         git_config_timeout: Maximum duration in seconds for Git config discovery.
@@ -262,8 +262,8 @@ class JujutsuPolicyConfig:
             any Git config environment variables it needs.
         global_excludes_file: Optional explicit path for a configured ``core.excludesFile``. This
             overrides both discovered config and the conventional XDG path.
-        read_git_config: Ask Git to resolve system/global ``core.excludesFile``, including
-            included files.
+        read_git_config: Ask Git to resolve effective system/global/repository
+            ``core.excludesFile`` values, including conditional includes.
             Requires the configured Git executable; when unset, evaluation stays client-independent.
         git_executable: Executable name or path used for optional global config discovery.
         git_config_timeout: Maximum duration in seconds for Git config discovery.
