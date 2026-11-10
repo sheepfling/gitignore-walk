@@ -148,10 +148,20 @@ def test_fossil_policy_uses_effective_setting_and_prunes_ignored_directories(
     selection = select_policy(checkout, FossilPolicyConfig(environment=environment))
     assert selection.backend == "fossil-effective-setting"
     assert selection.policy.scheme == "fossil"
+    assert checkout / ".fslckout" not in set(
+        IgnoreWalker(checkout, policy=selection.policy).iter_files()
+    )
+    without_marker_baseline = select_policy(
+        checkout, FossilPolicyConfig(environment=environment, initial_excludes=())
+    )
+    assert checkout / ".fslckout" in set(
+        IgnoreWalker(checkout, policy=without_marker_baseline.policy).iter_files()
+    )
 
 
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
-    tmp_path: Path,
+    tmp_path: Path, topdown: bool
 ) -> None:
     fossil = shutil.which("fossil")
     if fossil is None:
@@ -277,3 +287,32 @@ def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
         checkout, FossilPolicyConfig(environment=environment, membership_aware=True)
     )
     assert selection.policy.explain("tracked.tmp").membership == "versioned"
+
+    walker = IgnoreWalker(checkout, policy=selection.policy)
+
+    def walked(selection_name: str) -> set[str]:
+        return {
+            path.relative_to(checkout).as_posix()
+            for path in walker.iter_files(selection=selection_name, topdown=topdown)
+        }
+
+    assert walked("included") == {
+        "added.tmp",
+        "modified.tmp",
+        "moved.tmp",
+        "nested/versioned.txt",
+        "tracked.tmp",
+        "visible.txt",
+    }
+    assert walked("ignored") == {".fslckout", "loose.tmp", "unversioned-dir/nested.tmp"}
+    assert walked("all") == {
+        "added.tmp",
+        ".fslckout",
+        "loose.tmp",
+        "modified.tmp",
+        "moved.tmp",
+        "nested/versioned.txt",
+        "tracked.tmp",
+        "unversioned-dir/nested.tmp",
+        "visible.txt",
+    }

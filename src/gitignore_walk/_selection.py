@@ -173,7 +173,7 @@ class FossilPolicyConfig:
         timeout: Maximum duration in seconds for each Fossil subprocess.
         membership_aware: Query Fossil's structured directory and status commands to report known
             file membership independently from ignore decisions.
-        initial_excludes: Additional walker baseline exclusions.
+        initial_excludes: Hard baseline exclusions, defaulting to Fossil checkout markers.
     """
 
     mode: Literal["fossil"] = field(default="fossil", init=False)
@@ -181,7 +181,7 @@ class FossilPolicyConfig:
     environment: Mapping[str, str] | None = None
     timeout: float = 30.0
     membership_aware: bool = False
-    initial_excludes: Sequence[str] = ()
+    initial_excludes: Sequence[str] = (".fslckout", "_FOSSIL_")
 
 
 @dataclass(frozen=True, slots=True)

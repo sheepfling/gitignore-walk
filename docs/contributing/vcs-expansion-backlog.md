@@ -137,8 +137,11 @@ starts another token. Opt-in membership discovery now combines structured Fossil
 directory and checkout-status results, keeping tracked membership separate from ignore decisions;
 directories remain membership-unknown. A live Fossil 2.28/macOS fixture verifies native membership
 for scheduled additions, missing files, edits, and renames, plus unknown for an absent unreported
-path; ignore decisions remain unchanged. Cross-profile status and broader traversal coverage remain
-open.
+path; ignore decisions remain unchanged. Membership-aware included, ignored, and all-file walks
+now cover those states in both top-down and bottom-up order, keeping scheduled additions, edits,
+renames, and missing tracked files separate from ignored unversioned files. Fossil selection now
+retains its metadata-marker baseline by default, with explicit `initial_excludes` replacement.
+Cross-profile status and broader traversal coverage remain open.
 Breezy's corpus is now
 captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64 with
 isolated user configuration: all thirty-three boolean cases agree, including global-versus-branch

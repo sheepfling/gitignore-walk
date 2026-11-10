@@ -276,7 +276,11 @@ candidates on Fossil 2.28/macOS arm64, 2.26/Linux aarch64 and
 x86_64, and 2.23/Ubuntu 24.04 x86_64. Captured probes cover range classes, Unicode `?`, case
 sensitivity, class-negation markers, unmatched brackets, and Unicode whitespace inside and around
 patterns. Other tokenizer boundaries and broader
-platform/client coverage remain open. See
+platform/client coverage remain open. Membership-aware walks keep scheduled additions, edits,
+renames, and missing tracked paths separate from ignored unversioned files in both top-down and
+bottom-up traversal. The default Fossil config also keeps `.fslckout` and `_FOSSIL_` out of included
+results; pass `initial_excludes=()` to replace that baseline when the checkout marker should be
+yielded. See
 the [Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md) and
 [oracle notes](tests/oracles/fossil/README.md).
 
