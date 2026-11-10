@@ -46,6 +46,7 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         git_executable: str = "git",
         git_config_timeout: float = 30.0,
         initial_excludes: Sequence[str] = (".jj",),
+        follow_symlinked_gitignore: bool = False,
     ) -> None:
         """Bind a caller root to its nearest enclosing `.jj` workspace.
 
@@ -55,12 +56,17 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         global config includes); this requires ``git_executable`` to be available. For a
         non-colocated workspace, the internal Git store supplies conditional-include context unless
         ``environment`` already sets ``GIT_DIR``.
+
+        Set ``follow_symlinked_gitignore`` for Jujutsu before version 0.46.0, which followed
+        nested symlinked `.gitignore` files. The default skips these sources, matching version
+        0.46.0 and newer.
         """
         caller_root = Path(root).expanduser().resolve()
         if not caller_root.is_dir():
             raise ValueError(f"Jujutsu policy root must be a directory: {caller_root}")
         workspace_root = _find_workspace(caller_root)
         super().__init__(caller_root, environment=environment, initial_excludes=initial_excludes)
+        self._allow_symlinked_gitignore = follow_symlinked_gitignore
         self.workspace_root = workspace_root
         self._repository_root = workspace_root
         metadata = _find_repository_metadata(workspace_root)

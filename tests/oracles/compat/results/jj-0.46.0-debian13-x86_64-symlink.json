@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "Linux-7.0.12-linuxkit-x86_64-with-glibc2.41",
+  "clients": {
+    "jujutsu": "jj 0.46.0-7d382314f9420b4b8d932245b49c99492c812b9f"
+  },
+  "expected_follow_symlink": false,
+  "cases": [
+    {
+      "id": "jj.colocated",
+      "native_status": "captured",
+      "source": "nested/.gitignore",
+      "source_is_symlink": true,
+      "source_target_outside_workspace": true,
+      "query_files": [
+        "nested/probe.symlink"
+      ],
+      "ignored": [],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA nested/.gitignore\nA nested/probe.symlink\nWorking copy  (@) : pylsnpnq 5ecb3e48 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": "nested/.gitignore\nnested/probe.symlink\n"
+    },
+    {
+      "id": "jj.noncolocated",
+      "native_status": "captured",
+      "source": "nested/.gitignore",
+      "source_is_symlink": true,
+      "source_target_outside_workspace": true,
+      "query_files": [
+        "nested/probe.symlink"
+      ],
+      "ignored": [],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA nested/.gitignore\nA nested/probe.symlink\nWorking copy  (@) : zvtlylow 6d167f3c (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": "nested/.gitignore\nnested/probe.symlink\n"
+    }
+  ]
+}

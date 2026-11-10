@@ -88,6 +88,20 @@ The portable policies now preserve this mode-specific behavior. Committed macOS 
 captures on aarch64 and x86_64 record all four native results. If a host cannot create the symlink,
 the oracle records an explicit skip rather than claiming a match.
 
+Jujutsu's behavior depends on its release. Version 0.45.1 follows the symlink in both modes;
+version 0.46.0 changed to skip it, and 0.47.1 retains the new behavior. The policy defaults to the
+0.46.0+ behavior. Set `JujutsuPolicyConfig(follow_symlinked_gitignore=True)` to model 0.45.1.
+Focused macOS 26 arm64 and Debian 13 x86_64 captures for 0.45.1 and 0.46.0 are retained in
+`results/`, and native CI recaptures the Linux cases. Reproduce them with
+`run.py --jj <jj-executable> --symlink-only --output <capture.json>`; add
+`--expect-jj-follows-symlink` for the 0.45.1 profile. The v0.46.0 [release notes](https://github.com/jj-vcs/jj/releases/tag/v0.46.0)
+document this change. The official assets were SHA-256 verified before capture:
+`jj-v0.45.1-aarch64-apple-darwin.tar.gz` (`51ba42e3d0682616f6eb015045bfe45289b396f03511f9897f645ce8e9272743`)
+and `jj-v0.46.0-aarch64-apple-darwin.tar.gz`
+(`43daa37ce0f9716cdf6fb65a29cbcae74a3160aef048cf3cb3d166d41cb4ab58`); the Linux x86_64 assets
+use `f35438350b5d61963aac5dd74ede510b31d6b9690769d1a6268cf058cc825f72` and
+`fce0271158e665ceb82dc66c5eb95b1728649094e9133074f3b5baece345fc08`, respectively.
+
 Jujutsu's `status` command snapshots the working copy. The probes run it only in disposable
 repositories, then inspect the resulting file list. This is not a safe per-file adapter strategy for
 an existing workspace. A Jujutsu-specific native policy should not call status on user repositories
@@ -105,3 +119,7 @@ client. Git-native selection remains appropriate only when an actual `.git` repo
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json` | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                     | Windows Server 2025 x64    | —            | 0.47.1  |
+| `jj-0.45.1-macos-arm64-symlink.json`                             | macOS 26 arm64             | —            | 0.45.1  |
+| `jj-0.45.1-debian13-x86_64-symlink.json`                         | Debian 13 x86_64 in Docker | —            | 0.45.1  |
+| `jj-0.46.0-macos-arm64-symlink.json`                             | macOS 26 arm64             | —            | 0.46.0  |
+| `jj-0.46.0-debian13-x86_64-symlink.json`                         | Debian 13 x86_64 in Docker | —            | 0.46.0  |

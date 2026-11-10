@@ -415,6 +415,14 @@ The captured pattern matrix also covers directory-level negation barriers, child
 workspace-root anchoring, and recursive `**`; both policy decisions and walker selections match the
 captured native results for those cases.
 
+Jujutsu changed how it reads in-tree `.gitignore` symlinks in version 0.46.0. Captures show that
+0.45.1 follows a nested symlinked `.gitignore`, while 0.46.0 and 0.47.1 skip it. The policy defaults
+to the 0.46.0+ behavior. To match Jujutsu 0.45.1, set
+`follow_symlinked_gitignore=True` in `JujutsuPolicyConfig`; the read-only policy does not invoke
+`jj` to detect the client's version. The release change is documented in the
+[Jujutsu 0.46.0 notes](https://github.com/jj-vcs/jj/releases/tag/v0.46.0); the versioned native
+captures and reproduction command are in the [compatibility oracle notes](tests/oracles/compat/README.md).
+
 Enable Git system/user config discovery when you need the configured `core.excludesFile`:
 
 ```python

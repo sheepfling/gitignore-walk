@@ -176,6 +176,33 @@ def test_symlinked_nested_gitignore_matches_captured_scheme_behavior(
     assert policy.explain("probe.symlink").ignored is expected_ignored
 
 
+@pytest.mark.parametrize("selected", [False, True])
+def test_jujutsu_can_select_pre_046_symlinked_gitignore_behavior(
+    tmp_path: Path, selected: bool
+) -> None:
+    root = tmp_path / "workspace"
+    nested = root / "nested"
+    nested.mkdir(parents=True)
+    (root / ".jj").mkdir()
+    external_ignore = tmp_path / "external.gitignore"
+    external_ignore.write_text("*.symlink\n", encoding="utf-8")
+    try:
+        (nested / ".gitignore").symlink_to(external_ignore)
+    except OSError as error:
+        pytest.skip(f"creating symlinks is not supported: {error}")
+    (nested / "probe.symlink").touch()
+
+    if selected:
+        policy = select_policy(
+            nested,
+            JujutsuPolicyConfig(follow_symlinked_gitignore=True),
+        ).policy
+    else:
+        policy = JujutsuIgnorePolicy(nested, follow_symlinked_gitignore=True)
+
+    assert policy.explain("probe.symlink").ignored
+
+
 def test_jujutsu_workspace_does_not_inherit_outer_git_info_exclude(tmp_path: Path) -> None:
     outer = tmp_path / "outer"
     outer.mkdir()

@@ -604,7 +604,10 @@ The nested symlinked `.gitignore` probe now confirms a source-layout difference:
 follows a symlink to an ignore file outside the workspace, while Sapling `.git` and Jujutsu skip
 that source. The portable Sapling policy follows this only in `.sl` mode. Committed macOS and Debian
 13 Linux aarch64/x86_64 captures retain all four native outcomes; unsupported symlink creation is
-reported as a skip.
+reported as a skip. Jujutsu 0.45.1 follows the same nested symlink in both modes; 0.46.0 changed to
+skip it, which 0.47.1 also does. The Jujutsu config now exposes
+`follow_symlinked_gitignore=True` for the older behavior. Focused 0.45.1 and 0.46.0 captures are
+retained on macOS arm64 and Debian 13 x86_64, with CI recapturing the Linux release boundary.
 
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native

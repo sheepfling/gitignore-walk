@@ -254,6 +254,7 @@ def _symlink_result(
         link.symlink_to(ignore_source)
     except OSError as error:
         return {
+            "id": mode_id,
             "native_status": "skipped",
             "reason": f"unable to create symlink: {error}",
             "source": "nested/.gitignore",
@@ -267,6 +268,7 @@ def _symlink_result(
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(content, encoding="utf-8")
     return {
+        "id": mode_id,
         "native_status": "captured",
         "source": "nested/.gitignore",
         "source_is_symlink": link.is_symlink(),
@@ -274,7 +276,6 @@ def _symlink_result(
         "query_files": fixture["symlinked_gitignore_query_files"],
         "ignored": [],
         "candidate_matches": None,
-        "mode": mode_id,
     }
 
 
@@ -346,7 +347,11 @@ def _capture_symlinked_gitignore_sapling(
 
 
 def _capture_symlinked_gitignore_jj(
-    executable: str, mode: str, fixture: Mapping[str, Any]
+    executable: str,
+    mode: str,
+    fixture: Mapping[str, Any],
+    *,
+    expected_ignored: Sequence[str] | None = None,
 ) -> dict[str, Any]:
     """Capture Jujutsu's handling of a nested symlinked `.gitignore`."""
     mode_id = f"jj.{mode}"
@@ -379,7 +384,11 @@ def _capture_symlinked_gitignore_jj(
         files = _jujutsu_paths(listed.stdout)
         query_files = set(fixture["symlinked_gitignore_query_files"])
         result["ignored"] = sorted(query_files - files)
-        expected = fixture["expected_symlinked_gitignore_ignored"][mode_id]
+        expected = (
+            fixture["expected_symlinked_gitignore_ignored"][mode_id]
+            if expected_ignored is None
+            else expected_ignored
+        )
         result["candidate_matches"] = result["ignored"] == expected
         result["status_exit_code"] = status.returncode
         result["status_stdout"] = status.stdout.replace(str(root), "<workspace>")
@@ -1466,6 +1475,23 @@ def capture(sapling: str | None, jj: str) -> dict[str, Any]:
     }
 
 
+def capture_jj_symlink_profile(jj: str, *, expected_follow_symlink: bool) -> dict[str, Any]:
+    """Capture Jujutsu's native nested-ignore symlink behavior for one client release."""
+    fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
+    expected_ignored = fixture["symlinked_gitignore_query_files"] if expected_follow_symlink else []
+    return {
+        "schema_version": 1,
+        "status": "captured",
+        "platform": platform.platform(),
+        "clients": {"jujutsu": _version(jj)},
+        "expected_follow_symlink": expected_follow_symlink,
+        "cases": [
+            _capture_symlinked_gitignore_jj(jj, mode, fixture, expected_ignored=expected_ignored)
+            for mode in ("colocated", "noncolocated")
+        ],
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sl", default="sl", help="Sapling executable")
@@ -1475,11 +1501,40 @@ def main() -> int:
         action="store_true",
         help="capture only Jujutsu when the Sapling client cannot run on this platform",
     )
+    parser.add_argument(
+        "--symlink-only",
+        action="store_true",
+        help="capture only Jujutsu's nested .gitignore symlink behavior",
+    )
+    parser.add_argument(
+        "--expect-jj-follows-symlink",
+        action="store_true",
+        help="expect Jujutsu to follow the nested .gitignore symlink (pre-0.46.0 profile)",
+    )
     parser.add_argument("--output", type=Path, required=True, help="capture JSON destination")
     arguments = parser.parse_args()
-    result = capture(None if arguments.jj_only else arguments.sl, arguments.jj)
+    if arguments.expect_jj_follows_symlink and not arguments.symlink_only:
+        parser.error("--expect-jj-follows-symlink requires --symlink-only")
+    if arguments.symlink_only:
+        result = capture_jj_symlink_profile(
+            arguments.jj,
+            expected_follow_symlink=arguments.expect_jj_follows_symlink,
+        )
+    else:
+        result = capture(None if arguments.jj_only else arguments.sl, arguments.jj)
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    if arguments.symlink_only:
+        matched = sum(
+            case["native_status"] == "captured" and case["candidate_matches"]
+            for case in result["cases"]
+        )
+        skipped = sum(case["native_status"] == "skipped" for case in result["cases"])
+        print(f"Captured Jujutsu symlink behavior: {matched}/{len(result['cases'])} cases match")
+        if skipped:
+            print(f"Symlink probes explicitly skipped: {skipped}/{len(result['cases'])}")
+        print(f"Capture: {arguments.output}")
+        return 0 if matched + skipped == len(result["cases"]) else 1
     matched = sum(
         case["candidate_matches"]
         and case["source_discovery"]["candidate_matches"]

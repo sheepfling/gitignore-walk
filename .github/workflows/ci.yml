@@ -172,8 +172,16 @@ jobs:
           curl --fail --location --silent --show-error \
             'https://github.com/jj-vcs/jj/releases/download/v0.47.1/jj-v0.47.1-x86_64-unknown-linux-musl.tar.gz' \
             --output "$RUNNER_TEMP/compat-clients/jj-linux-x64.tar.gz"
+          curl --fail --location --silent --show-error \
+            'https://github.com/jj-vcs/jj/releases/download/v0.45.1/jj-v0.45.1-x86_64-unknown-linux-musl.tar.gz' \
+            --output "$RUNNER_TEMP/compat-clients/jj-0.45.1-linux-x64.tar.gz"
+          curl --fail --location --silent --show-error \
+            'https://github.com/jj-vcs/jj/releases/download/v0.46.0/jj-v0.46.0-x86_64-unknown-linux-musl.tar.gz' \
+            --output "$RUNNER_TEMP/compat-clients/jj-0.46.0-linux-x64.tar.gz"
           echo '682f965b3abeae0a5ca0e1d64f35558679bad2fc79d5f6df34c7e82a52f9788c  '"$RUNNER_TEMP/compat-clients/sapling-linux-x64.tar.xz" | sha256sum --check
           echo 'd4b657f622ee50929c8916466dfa3d6a6c17a0a32b50e7b2c793707ec9ebcad7  '"$RUNNER_TEMP/compat-clients/jj-linux-x64.tar.gz" | sha256sum --check
+          echo 'f35438350b5d61963aac5dd74ede510b31d6b9690769d1a6268cf058cc825f72  '"$RUNNER_TEMP/compat-clients/jj-0.45.1-linux-x64.tar.gz" | sha256sum --check
+          echo 'fce0271158e665ceb82dc66c5eb95b1728649094e9133074f3b5baece345fc08  '"$RUNNER_TEMP/compat-clients/jj-0.46.0-linux-x64.tar.gz" | sha256sum --check
       - name: Capture Sapling and Jujutsu on Debian 13 x86_64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |
@@ -214,6 +222,37 @@ jobs:
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
           print(result)
+          PY
+      - name: Verify Jujutsu symlink behavior change across releases
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          docker run --rm --platform linux/amd64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/compat-clients:/clients:ro" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 >/dev/null && mkdir -p /tmp/jj-0.45.1 /tmp/jj-0.46.0 && tar -xzf /clients/jj-0.45.1-linux-x64.tar.gz -C /tmp/jj-0.45.1 && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj-0.46.0 && python3 tests/oracles/compat/run.py --jj /tmp/jj-0.45.1/jj --symlink-only --expect-jj-follows-symlink --output /output/jj-0.45.1-debian13-x86_64-symlink.json && python3 tests/oracles/compat/run.py --jj /tmp/jj-0.46.0/jj --symlink-only --output /output/jj-0.46.0-debian13-x86_64-symlink.json'
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from scripts.ci_native import inspect_capture
+
+          directory = Path(os.environ["RUNNER_TEMP"]) / "native"
+          for filename, version, follows in (
+              ("jj-0.45.1-debian13-x86_64-symlink.json", "0.45.1", True),
+              ("jj-0.46.0-debian13-x86_64-symlink.json", "0.46.0", False),
+          ):
+              path = directory / filename
+              result = inspect_capture(path)
+              capture = json.loads(path.read_text(encoding="utf-8"))
+              assert result["passed"], result
+              assert capture["clients"]["jujutsu"].startswith(f"jj {version}")
+              assert capture["expected_follow_symlink"] is follows
+              expected_ignored = ["nested/probe.symlink"] if follows else []
+              assert all(case["ignored"] == expected_ignored for case in capture["cases"])
           PY
       - name: Capture worktree conditional behavior with Git 2.56
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

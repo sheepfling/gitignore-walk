@@ -27,6 +27,15 @@ CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
 }
+JJ_SYMLINK_VERSION_CAPTURES = {
+    filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
+    for filename in (
+        "jj-0.45.1-macos-arm64-symlink.json",
+        "jj-0.45.1-debian13-x86_64-symlink.json",
+        "jj-0.46.0-macos-arm64-symlink.json",
+        "jj-0.46.0-debian13-x86_64-symlink.json",
+    )
+}
 OBSERVATIONS = {
     profile: {case["id"]: case for case in capture["cases"]}
     for profile, capture in CAPTURES.items()
@@ -134,6 +143,39 @@ def test_native_capture_reconciles_symlinked_nested_gitignore(profile: str) -> N
         assert probe["candidate_matches"] is True
         assert probe["query_files"] == ["nested/probe.symlink"]
         assert probe["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize(
+    ("filename", "version", "expected_follow"),
+    [
+        ("jj-0.45.1-macos-arm64-symlink.json", "0.45.1", True),
+        ("jj-0.45.1-debian13-x86_64-symlink.json", "0.45.1", True),
+        ("jj-0.46.0-macos-arm64-symlink.json", "0.46.0", False),
+        ("jj-0.46.0-debian13-x86_64-symlink.json", "0.46.0", False),
+    ],
+)
+def test_jj_release_boundary_for_symlinked_ignore_sources(
+    filename: str, version: str, expected_follow: bool
+) -> None:
+    capture = JJ_SYMLINK_VERSION_CAPTURES[filename]
+    expected_ignored = ["nested/probe.symlink"] if expected_follow else []
+
+    assert capture["status"] == "captured"
+    if "macos" in filename:
+        assert capture["platform"].startswith("macOS-26")
+    else:
+        assert capture["platform"].startswith("Linux-")
+        assert "x86_64" in capture["platform"]
+    assert capture["clients"]["jujutsu"].startswith(f"jj {version}")
+    assert capture["expected_follow_symlink"] is expected_follow
+    assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
+    for case in capture["cases"]:
+        probe = case
+        assert probe["native_status"] == "captured"
+        assert probe["source_is_symlink"] is True
+        assert probe["source_target_outside_workspace"] is True
+        assert probe["candidate_matches"] is True
+        assert probe["ignored"] == expected_ignored
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)

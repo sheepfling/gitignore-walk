@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "clients": {
+    "jujutsu": "jj 0.46.0-7d382314f9420b4b8d932245b49c99492c812b9f"
+  },
+  "expected_follow_symlink": false,
+  "cases": [
+    {
+      "id": "jj.colocated",
+      "native_status": "captured",
+      "source": "nested/.gitignore",
+      "source_is_symlink": true,
+      "source_target_outside_workspace": true,
+      "query_files": [
+        "nested/probe.symlink"
+      ],
+      "ignored": [],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA nested/.gitignore\nA nested/probe.symlink\nWorking copy  (@) : xyqtlmzp 685955aa (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": "nested/.gitignore\nnested/probe.symlink\n"
+    },
+    {
+      "id": "jj.noncolocated",
+      "native_status": "captured",
+      "source": "nested/.gitignore",
+      "source_is_symlink": true,
+      "source_target_outside_workspace": true,
+      "query_files": [
+        "nested/probe.symlink"
+      ],
+      "ignored": [],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA nested/.gitignore\nA nested/probe.symlink\nWorking copy  (@) : wntszusk f2a8c659 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": "nested/.gitignore\nnested/probe.symlink\n"
+    }
+  ]
+}

@@ -268,6 +268,8 @@ class JujutsuPolicyConfig:
         git_executable: Executable name or path used for optional global config discovery.
         git_config_timeout: Maximum duration in seconds for Git config discovery.
         initial_excludes: Hard baseline exclusions, defaulting to Jujutsu's `.jj` metadata.
+        follow_symlinked_gitignore: Follow nested symlinked `.gitignore` sources, as Jujutsu did
+            before version 0.46.0. The default skips these sources, matching 0.46.0 and newer.
     """
 
     mode: Literal["jujutsu"] = field(default="jujutsu", init=False)
@@ -277,6 +279,7 @@ class JujutsuPolicyConfig:
     read_git_config: bool = False
     git_executable: str = "git"
     git_config_timeout: float = 30.0
+    follow_symlinked_gitignore: bool = False
 
 
 #: Discriminated configuration union accepted by :func:`select_policy`.
@@ -768,6 +771,7 @@ def select_policy(
                 git_executable=selected.git_executable,
                 git_config_timeout=selected.git_config_timeout,
                 initial_excludes=selected.initial_excludes,
+                follow_symlinked_gitignore=selected.follow_symlinked_gitignore,
             )
         )
 
