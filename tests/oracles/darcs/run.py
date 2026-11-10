@@ -55,6 +55,21 @@ def _paths_from_annotated_lines(output: str, marker: str) -> set[str]:
     return paths
 
 
+def _global_boring_path(environment: Mapping[str, str], *, windows: bool | None = None) -> Path:
+    """Return Darcs' per-user boring-file path for the selected platform."""
+    if windows is None:
+        windows = os.name == "nt"
+    if windows:
+        app_data = environment.get("APPDATA")
+        if app_data is None:
+            raise ValueError("APPDATA must be set to capture Windows Darcs configuration")
+        return Path(app_data) / "darcs" / "boring"
+    home = environment.get("HOME")
+    if home is None:
+        raise ValueError("HOME must be set to capture POSIX Darcs configuration")
+    return Path(home) / ".darcs" / "boring"
+
+
 def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="gitignore-walk-darcs-oracle-") as temporary:
         base = Path(temporary)
@@ -85,7 +100,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         local_boring = repository / "_darcs" / "prefs" / "boring"
         with local_boring.open("w", encoding="utf-8", newline="") as stream:
             stream.write(setup.get("local_boring", ""))
-        global_boring = home / ".darcs" / "boring"
+        global_boring = _global_boring_path(environment)
         if "global_boring" in setup:
             global_boring.parent.mkdir(parents=True, exist_ok=True)
             with global_boring.open("w", encoding="utf-8", newline="") as stream:

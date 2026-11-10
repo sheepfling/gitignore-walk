@@ -8,6 +8,8 @@ from typing import Any
 
 import pytest
 
+from tests.oracles.darcs.run import _global_boring_path
+
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "darcs"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
 CAPTURE_FILES = (
@@ -23,6 +25,19 @@ OBSERVATIONS = {
     profile: {case["id"]: case for case in capture["cases"]}
     for profile, capture in CAPTURES.items()
 }
+
+
+@pytest.mark.parametrize(
+    ("windows", "environment", "expected"),
+    [
+        (False, {"HOME": "/tmp/home", "APPDATA": "/tmp/appdata"}, "/tmp/home/.darcs/boring"),
+        (True, {"HOME": "/tmp/home", "APPDATA": "/tmp/appdata"}, "/tmp/appdata/darcs/boring"),
+    ],
+)
+def test_darcs_global_boring_path_uses_platform_configuration_directory(
+    windows: bool, environment: dict[str, str], expected: str
+) -> None:
+    assert _global_boring_path(environment, windows=windows) == Path(expected)
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))

@@ -663,6 +663,7 @@ jobs:
           ]
           print("Historical Darcs 2.16.3 Windows observations; not current-release conformance.")
           print("Closed observations:", len(closed), "mismatches:", mismatches)
+          assert mismatches == ["darcs.boringfile-replaces-local"], mismatches
           '@ | python -
       - name: Check Windows native captures
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
