@@ -72,6 +72,32 @@
       "evidence_status": "native-observed"
     },
     {
+      "id": "svn.sparse-files-collapses-unversioned-directory",
+      "dimension": "sparse-working-copy-traversal-boundary",
+      "setup": {
+        "directories": ["pkg"],
+        "properties": {
+          "pkg": {
+            "svn:ignore": "*.tmp\n"
+          }
+        },
+        "versioned_files": {
+          "pkg/tracked.tmp": "versioned at sparse files depth\n"
+        },
+        "sparse_depths": {
+          "pkg": "files"
+        },
+        "unversioned_files": {
+          "pkg/loose.tmp": "ignored immediate file\n",
+          "pkg/visible.txt": "visible immediate file\n",
+          "pkg/nested/deep.tmp": "nested file omitted by native status\n"
+        }
+      },
+      "expected_ignored_paths": ["pkg/loose.tmp"],
+      "expected_status_paths": ["pkg/loose.tmp", "pkg/nested", "pkg/visible.txt"],
+      "evidence_status": "native-observed"
+    },
+    {
       "id": "svn.sparse-excluded-directory-does-not-descend",
       "dimension": "sparse-working-copy-traversal-boundary",
       "setup": {

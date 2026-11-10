@@ -1,6 +1,6 @@
 # Subversion native oracle
 
-`cases.json` contains 21 isolated local-repository probes. They cover directory `svn:ignore`,
+`cases.json` contains 22 isolated local-repository probes. They cover directory `svn:ignore`,
 inherited `svn:global-ignores` (including a property above a subtree checkout), nested properties,
 APR glob syntax, sparse depths, and working-copy boundaries. External fixtures exercise
 repository-root-relative, parent-relative, absolute, server-root-relative, and scheme-relative URLs.
@@ -10,6 +10,10 @@ The collapsed-unversioned-directory case records that native status reports an u
 directory as one entry rather than listing its files. A rule-only decision for a known child can
 still match an applicable pattern against its basename, but the child's native membership remains
 unknown.
+The sparse `files`-depth fixture gives `pkg` an immediate-file-only checkout. Native status lists an
+unversioned nested directory without its child file; the policy walker still traverses that
+directory, keeps the omitted child's membership unknown, and selects files by ignore decision
+independently of membership.
 The ignored-directory fixture is captured on Subversion 1.15.0/macOS arm64, 1.14.3/Ubuntu 24.04
 x86_64, and 1.14.5/SlikSvn Windows Server 2025 x86_64. Default status omits the ignored
 unversioned directory, while `--no-ignore` lists it once and still omits its descendants. The policy
@@ -50,15 +54,18 @@ entries populate `IgnoreDecision.membership`, and the walker selects known versi
 included even when their rules match. Membership remains `None` for paths omitted by native status,
 including paths beneath some sparse working-copy depths. The default stays rule-only and does not
 run this extra status query. Sparse-depth fixtures confirm a versioned directory at depth
-`empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
-path without listing files beneath it. A switched-subtree case confirms that inherited
+`empty` retains its `svn:ignore` property, `files` depth collapses a nested unversioned directory,
+and an excluded directory is reported as one unversioned path without listing files beneath it. A
+switched-subtree case confirms that inherited
 `svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. The
 live nested-caller-root check constructs the policy and walker at a versioned subdirectory, compares
 its membership with native verbose status from that directory, and confirms the walk stays within
 the caller's boundary. The
 original 19 cases and 20th ignored-directory case are captured on Subversion 1.15.0/macOS arm64,
 1.14.3/Ubuntu 24.04 x86_64, and 1.14.5/SlikSvn Windows Server 2025 x86_64. The 21st
-versioned-directory case matches all three profiles.
+versioned-directory case matches all three profiles. The 22nd sparse-files case matches on
+Subversion 1.15.0/macOS arm64 and is retained in
+`results/svn-1.15.0-macos-arm64.json`. Fresh CI oracle artifacts will extend the profile coverage.
 Platform-constrained cases are recorded as skips. The APR build lines are retained for these
 profiles: 1.7.6, 1.7.2, and 1.7.5, respectively. The 16 earlier cases also match on Subversion
 Subversion 1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS, both

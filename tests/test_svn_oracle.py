@@ -66,6 +66,30 @@ def test_subversion_macos_capture_uses_ambient_user_config() -> None:
     assert capture["candidate_matches"]
 
 
+def test_subversion_sparse_files_capture_preserves_collapsed_directory_status() -> None:
+    """Retain native status evidence for sparse immediate-file depth traversal."""
+    capture = CAPTURES["svn-1.15.0-macos-arm64.json"]
+    assert capture["status"] == "captured"
+    assert capture["client"]["svn"]["version"] == "1.15.0"
+    assert capture["client"]["platform"].startswith("macOS-")
+    case = next(
+        case
+        for case in capture["cases"]
+        if case["id"] == "svn.sparse-files-collapses-unversioned-directory"
+    )
+    assert case["id"] == "svn.sparse-files-collapses-unversioned-directory"
+    assert case["candidate_matches"]
+    assert case["observed_ignored_paths"] == ["pkg/loose.tmp"]
+    assert case["observed_status_paths"] == [
+        "pkg/loose.tmp",
+        "pkg/nested",
+        "pkg/visible.txt",
+    ]
+    default_status = case["observations"]["default"]["paths"]
+    assert "pkg/nested" in default_status
+    assert "pkg/nested/deep.tmp" not in default_status
+
+
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
 def test_subversion_capture_matches_candidate(profile: str, case: dict[str, Any]) -> None:

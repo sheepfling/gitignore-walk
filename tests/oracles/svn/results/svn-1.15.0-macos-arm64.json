@@ -1645,6 +1645,85 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.sparse-files-collapses-unversioned-directory",
+      "dimension": "sparse-working-copy-traversal-boundary",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/loose.tmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/loose.tmp"
+      ],
+      "expected_status_paths": [
+        "pkg/loose.tmp",
+        "pkg/nested",
+        "pkg/visible.txt"
+      ],
+      "observed_status_paths": [
+        "pkg/loose.tmp",
+        "pkg/nested",
+        "pkg/visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "pkg/tracked.tmp"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-vop6uh8h/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/nested",
+            "pkg/visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/nested\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "687c69854737f109f4cf86dd0891fda7f7d30bbc9cc2298416a72cc7d8f2d975",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-vop6uh8h/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/loose.tmp",
+            "pkg/nested",
+            "pkg/visible.txt"
+          ],
+          "ignored_paths": [
+            "pkg/loose.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/loose.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "c0fb89a37b5a1f49c71daff911ebcaef5840e132ba1dd364ae7c60e5e497eb42",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

@@ -1019,6 +1019,84 @@ def test_sparse_empty_directory_keeps_its_native_ignore_property(tmp_path: Path)
     assert policy_ignored == native_ignored
 
 
+def test_sparse_files_depth_collapses_unversioned_directory_but_keeps_walking(
+    tmp_path: Path,
+) -> None:
+    case = next(
+        case for case in CASES if case["id"] == "svn.sparse-files-collapses-unversioned-directory"
+    )
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_items = {
+        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    assert native_items == {
+        ".": "normal",
+        "pkg": "normal",
+        "pkg/loose.tmp": "ignored",
+        "pkg/nested": "unversioned",
+        "pkg/tracked.tmp": "normal",
+        "pkg/visible.txt": "unversioned",
+    }
+
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    collapsed_directory = policy.explain("pkg/nested")
+    omitted_child = policy.explain("pkg/nested/deep.tmp")
+    assert collapsed_directory.membership == "unversioned"
+    assert omitted_child.membership is None
+    assert not omitted_child.ignored
+
+    walker = IgnoreWalker(root, policy=policy)
+    all_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    included_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    ignored_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    assert all_files == {
+        "pkg/loose.tmp",
+        "pkg/nested/deep.tmp",
+        "pkg/tracked.tmp",
+        "pkg/visible.txt",
+    }
+    assert included_files == {"pkg/nested/deep.tmp", "pkg/tracked.tmp", "pkg/visible.txt"}
+    assert ignored_files == {"pkg/loose.tmp"}
+
+
 def test_sparse_excluded_directory_is_a_walk_barrier_and_reports_incomplete_rules(
     tmp_path: Path,
 ) -> None:
