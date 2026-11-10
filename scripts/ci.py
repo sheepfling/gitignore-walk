@@ -256,10 +256,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         native_command.add_argument(
             "--output-dir", type=Path, default=project_root() / ".local" / "ci"
         )
+        native_command.add_argument(
+            "--sl", default="sl", help="Sapling executable for the optional compat backend"
+        )
+        native_command.add_argument(
+            "--jj", default="jj", help="Jujutsu executable for the optional compat backend"
+        )
     arguments = parser.parse_args(argv)
     try:
         if arguments.command in {"native", "pre-push"}:
-            require_tools(arguments.backends, include_git=arguments.command == "pre-push")
+            require_tools(
+                arguments.backends,
+                include_git=arguments.command == "pre-push",
+                sl=arguments.sl,
+                jj=arguments.jj,
+            )
             if arguments.command == "pre-push":
                 for check in (lambda: _test(sys.executable), _quality, _package):
                     result = check()
@@ -270,6 +281,8 @@ def main(argv: Sequence[str] | None = None) -> int:
                 arguments.backends,
                 arguments.output_dir,
                 include_trust=arguments.include_trust,
+                sl=arguments.sl,
+                jj=arguments.jj,
             )
         if arguments.command == "test":
             return _test(sys.executable)

@@ -840,6 +840,9 @@ jobs:
               assert symlink["candidate_matches"] or symlink["native_status"] == "skipped", symlink
           print("Validated Sapling Windows profile:", capture["clients"]["sapling"])
           '@ | python -
+          python -m scripts.ci native --backends compat --sl $sl --jj $jj `
+            --output-dir (Join-Path $nativeDir 'compat-summary')
+          if ($LASTEXITCODE -ne 0) { throw "Shared Sapling/Jujutsu native summary failed: $LASTEXITCODE" }
       - name: Capture Sapling 0.2.20261028 on Windows
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: pwsh

@@ -411,9 +411,9 @@ user need justifies it.
 `scripts.ci native` coordinates the six default native backends and opt-in `compat` and `svn-config`
 backends for Sapling/Jujutsu and Docker-isolated Subversion system/user precedence. It validates
 closed candidate results and writes a fresh platform/client summary with explicit skips, including
-single-observation capture formats. Hosted workflows retain pinned, scheme-specific profiles and
-artifacts. Keep fixture setup and observation schemas scheme-specific; version-pinned compatibility
-profiles remain separate because they need release-specific client setup and checks.
+single-observation capture formats. Windows CI also runs its checksum-pinned Sapling/Jujutsu clients
+through `compat` and retains the shared summary. Older version-specific profiles keep their own
+capture and checks. Keep fixture setup and observation schemas scheme-specific.
 
 Import and adapt the research handoff's runner/case structure without treating it as library tests.
 Create disposable repository/workspace fixtures and isolated client configuration. Capture native

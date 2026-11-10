@@ -18,6 +18,8 @@ python -m scripts.ci native --backends compat --output-dir .local/ci
 
 This requires Git, Sapling (`sl`), and Jujutsu (`jj`) on `PATH`; it records both clients and the
 platform in the shared `summary.json` while retaining this oracle's scheme-specific capture format.
+Use `--sl <path>` and `--jj <path>` to select explicit or checksum-pinned executables instead of
+the commands found on `PATH`.
 
 The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64, Debian 13
 Linux aarch64 and x86_64, and Windows Server 2025 x64. Full Jujutsu 0.46.0 compatibility is retained

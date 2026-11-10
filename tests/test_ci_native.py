@@ -46,6 +46,15 @@ def test_compat_backend_requires_git_sapling_and_jujutsu(
         ci_native.require_tools(["compat"])
 
 
+def test_compat_backend_accepts_explicit_client_paths(monkeypatch: pytest.MonkeyPatch) -> None:
+    resolved: list[str] = []
+    monkeypatch.setattr(ci_native.shutil, "which", lambda name: resolved.append(name) or name)
+
+    ci_native.require_tools(["compat"], sl="/clients/sl", jj="/clients/jj")
+
+    assert set(resolved) == {"git", "/clients/sl", "/clients/jj"}
+
+
 def test_svn_config_backend_requires_docker(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(ci_native.shutil, "which", lambda _tool: None)
     with pytest.raises(RuntimeError, match="docker"):
@@ -128,6 +137,23 @@ def test_svn_captures_rule_cases_and_status_transitions(tmp_path: Path) -> None:
 def test_compat_backend_uses_existing_scheme_specific_capture(tmp_path: Path) -> None:
     arguments, paths = ci_native.capture_arguments("compat", tmp_path)
     assert arguments == ["oracle-compat", "--output", str(tmp_path / "compat-oracle.json")]
+    assert paths == [tmp_path / "compat-oracle.json"]
+
+
+def test_compat_capture_arguments_accept_pinned_executables(tmp_path: Path) -> None:
+    arguments, paths = ci_native.capture_arguments(
+        "compat", tmp_path, sl="/clients/sl", jj="/clients/jj"
+    )
+
+    assert arguments == [
+        "oracle-compat",
+        "--output",
+        str(tmp_path / "compat-oracle.json"),
+        "--sl",
+        "/clients/sl",
+        "--jj",
+        "/clients/jj",
+    ]
     assert paths == [tmp_path / "compat-oracle.json"]
 
 
@@ -269,12 +295,33 @@ def test_native_cli_accepts_optional_backend(
     backend: str, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     selected: list[str] = []
+    run_args: list[tuple[str, str]] = []
     monkeypatch.setattr(ci, "setup_env", lambda: None)
     monkeypatch.setattr(ci, "require_tools", lambda backends, **_kwargs: selected.extend(backends))
-    monkeypatch.setattr(ci, "run_native", lambda *_args, **_kwargs: 0)
+    monkeypatch.setattr(
+        ci,
+        "run_native",
+        lambda *_args, sl, jj, **_kwargs: run_args.append((sl, jj)) or 0,
+    )
 
-    assert ci.main(["native", "--backends", backend, "--output-dir", str(tmp_path)]) == 0
+    assert (
+        ci.main(
+            [
+                "native",
+                "--backends",
+                backend,
+                "--sl",
+                "/clients/sl",
+                "--jj",
+                "/clients/jj",
+                "--output-dir",
+                str(tmp_path),
+            ]
+        )
+        == 0
+    )
     assert selected == [backend]
+    assert run_args == [("/clients/sl", "/clients/jj")]
 
 
 def test_pre_push_stops_when_core_checks_fail(monkeypatch: pytest.MonkeyPatch) -> None:

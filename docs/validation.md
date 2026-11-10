@@ -83,7 +83,7 @@ runs only the native captures. Both accept `--backends` and `--output-dir`, as e
 | `python -m scripts.ci oracle-brz`                   | Capture Breezy ignore and status behavior in isolated disposable working trees; requires `brz`               |
 | `python -m scripts.ci oracle-darcs`                 | Capture Darcs boring-file behavior; requires `darcs`                                                         |
 | `python -m scripts.ci oracle-p4`                    | Capture `P4IGNORE` behavior using a disposable local server and workspace; requires `p4` and `p4d`           |
-| `python -m scripts.ci native --backends compat`     | Capture Sapling/Jujutsu compatibility; requires `git`, `sl`, and `jj` in disposable workspaces               |
+| `python -m scripts.ci native --backends compat`     | Capture Sapling/Jujutsu compatibility; requires Git, Sapling, and Jujutsu in disposable workspaces           |
 | `python -m scripts.ci native --backends svn-config` | Capture system/user Subversion precedence in an isolated Debian container; requires Docker                   |
 
 ## Full local pre-push gate
@@ -122,13 +122,15 @@ For a deliberately narrower check, select backends and a report directory explic
 python -m scripts.ci pre-push --backends hg svn brz
 python -m scripts.ci native --backends hg svn brz --output-dir .local/ci
 python -m scripts.ci native --backends compat --output-dir .local/ci
+python -m scripts.ci native --backends compat --sl /path/to/sl --jj /path/to/jj --output-dir .local/ci
 ```
 
 The first is a partial backend gate, not full backend coverage. `native` runs captures only; it does
 not replace tests, lint, typing, or packaging. `all` remains useful for quick iteration when native
 clients are unavailable, but is not the full pre-push gate. Sapling/Jujutsu tests replay versioned
 native captures. Sapling/Jujutsu direct captures can also use the shared summary by selecting the
-optional `compat` backend. Hosted Sapling/Jujutsu profiles remain pinned capture steps.
+optional `compat` backend. Windows CI passes its checksum-pinned baseline clients to that backend;
+additional release profiles keep their version-specific capture steps.
 
 The commands assume the virtual environment is active. Otherwise replace `python` with
 `.venv/bin/python` on macOS/Linux or `.\.venv\Scripts\python.exe` in PowerShell.

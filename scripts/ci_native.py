@@ -30,7 +30,13 @@ REQUIRED_TOOLS = {
 }
 
 
-def require_tools(backends: Sequence[str], *, include_git: bool = False) -> None:
+def require_tools(
+    backends: Sequence[str],
+    *,
+    include_git: bool = False,
+    sl: str = "sl",
+    jj: str = "jj",
+) -> None:
     """Reject missing selected clients instead of turning a skipped oracle into success."""
     if not backends:
         raise ValueError("select at least one native backend")
@@ -40,13 +46,21 @@ def require_tools(backends: Sequence[str], *, include_git: bool = False) -> None
     required = {tool for backend in backends for tool in REQUIRED_TOOLS[backend]}
     if include_git:
         required.add("git")
-    missing = sorted(tool for tool in required if shutil.which(tool) is None)
+    executable_overrides = {"sl": sl, "jj": jj}
+    missing = sorted(
+        tool for tool in required if shutil.which(executable_overrides.get(tool, tool)) is None
+    )
     if missing:
         raise RuntimeError("native CI requires these executables on PATH: " + ", ".join(missing))
 
 
 def capture_arguments(
-    backend: str, directory: Path, *, include_trust: bool = False
+    backend: str,
+    directory: Path,
+    *,
+    include_trust: bool = False,
+    sl: str = "sl",
+    jj: str = "jj",
 ) -> tuple[list[str], list[Path]]:
     output = directory / f"{backend}-oracle.json"
     arguments = [f"oracle-{backend}", "--output", str(output)]
@@ -60,6 +74,11 @@ def capture_arguments(
             arguments.append("--skip-trust")
     elif backend == "svn":
         outputs.append(directory / "svn-oracle.transitions.json")
+    elif backend == "compat":
+        if sl != "sl":
+            arguments.extend(["--sl", sl])
+        if jj != "jj":
+            arguments.extend(["--jj", jj])
     return arguments, outputs
 
 
@@ -130,16 +149,24 @@ def inspect_capture(path: Path, *, allow_skip: bool = False) -> dict[str, Any]:
 
 
 def run_native(
-    root: Path, backends: Sequence[str], output_dir: Path, *, include_trust: bool = False
+    root: Path,
+    backends: Sequence[str],
+    output_dir: Path,
+    *,
+    include_trust: bool = False,
+    sl: str = "sl",
+    jj: str = "jj",
 ) -> int:
     """Run every selected backend even after a failure, then return the combined outcome."""
-    require_tools(backends)
+    require_tools(backends, sl=sl, jj=jj)
     output_dir.mkdir(parents=True, exist_ok=True)
     # A fresh directory prevents a crashed command from reusing a previous successful capture.
     directory = Path(tempfile.mkdtemp(prefix="native-", dir=output_dir)).resolve()
     outcomes: list[dict[str, Any]] = []
     for backend in dict.fromkeys(backends):
-        arguments, paths = capture_arguments(backend, directory, include_trust=include_trust)
+        arguments, paths = capture_arguments(
+            backend, directory, include_trust=include_trust, sl=sl, jj=jj
+        )
         command = [sys.executable, "-m", "scripts.ci", *arguments]
         print(f"\n==> Native {backend}: {' '.join(command)}", flush=True)
         try:
