@@ -815,8 +815,9 @@ jobs:
           capture = json.loads(path.read_text(encoding="utf-8"))
           assert capture["status"] == "captured", capture
           assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103"), capture["clients"]
-          assert {case["id"] for case in capture["cases"]} == {"sapling.git-mode", "sapling.sl-mode"}
-          for case in capture["cases"]:
+          sapling_cases = [case for case in capture["cases"] if case["id"].startswith("sapling.")]
+          assert {case["id"] for case in sapling_cases} == {"sapling.git-mode", "sapling.sl-mode"}
+          for case in sapling_cases:
               assert case["candidate_matches"], case
               for probe in (
                   "source_discovery",
