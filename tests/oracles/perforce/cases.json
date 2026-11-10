@@ -187,6 +187,76 @@
       "release_gate": "Captured with P4 2026.1 and p4d 2026.1 on macOS arm64; see the profile result."
     },
     {
+      "id": "p4.double-star-crosses-multiple-directories",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "test/**/a.txt\n"
+        }
+      },
+      "query": "test/deep/a.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check that ** spans directory separators when slashes occur on both sides."
+    },
+    {
+      "id": "p4.double-star-empty-does-not-remove-separators",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "test/**/a.txt\n"
+        }
+      },
+      "query": "test/a.txt",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check that an empty ** match leaves both adjacent separators significant."
+    },
+    {
+      "id": "p4.double-star-empty-without-separator",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "test/**a.txt\n"
+        }
+      },
+      "query": "test/a.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check that ** may match an empty substring when the pattern has no intervening separator."
+    },
+    {
+      "id": "p4.double-star-leading-separator-is-significant",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "**/a.txt\n"
+        }
+      },
+      "query": "a.txt",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check that a leading slash following ** is still required for a basename."
+    },
+    {
+      "id": "p4.double-star-leading-nested-path",
+      "dimension": "glob",
+      "setup": {
+        "files": {
+          ".p4ignore": "**/a.txt\n"
+        }
+      },
+      "query": "nested/a.txt",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check the nested-path counterpart to the leading-separator boundary."
+    },
+    {
       "id": "p4.directory-only-does-not-match-file",
       "dimension": "file-kind",
       "setup": {

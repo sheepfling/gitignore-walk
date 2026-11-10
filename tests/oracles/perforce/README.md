@@ -13,7 +13,7 @@ Run from the repository root:
 python -m scripts.ci oracle-p4 --output /tmp/p4-oracle.json
 ```
 
-The 37 boolean candidates, one platform-dependent case, three add-command path-boundary cases, and
+The 42 boolean candidates, one platform-dependent case, three add-command path-boundary cases, and
 one client-view mapping probe are captured with P4 and P4 Server 2026.1 on macOS arm64, in a Debian
 13 x86_64 Docker container, and in an Ubuntu 24.04 x86_64 container. `p4 add -n` rejects a
 newline-bearing filename and names
@@ -28,8 +28,10 @@ selecting a different ignore source. All three profiles cover
 basename wildcards matching nested files, `*` versus `**` separator behavior, directory-only
 patterns, same-file negation, configured-list and default-file precedence, nested-source precedence,
 explicit `P4IGNORE` list replacement, root-anchored patterns, and the fact that `.p4ignore` is not
-itself implicitly ignored. All 37 boolean candidates and the platform-specific observation match
-their expected results in all three profiles. A recursive `p4 add -n ...` capture also matches the
+itself implicitly ignored. New `**` boundary cases confirm that it crosses separators and may match
+an empty substring, while separators beside it remain significant. All 42 boolean candidates and
+the platform-specific observation match their expected results in all three profiles. A recursive
+`p4 add -n ...` capture also matches the
 policy walk's included and ignored file sets in both top-down and bottom-up modes, including an
 exception beneath an ignored directory. These results
 are native evidence for these client/server profiles, not broad Perforce conformance. Lexical
@@ -52,8 +54,8 @@ P4IGNORE decisions and versioned membership.
 
 | Capture file                              | Environment                   | Python  | Cases matching                         |
 | ----------------------------------------- | ----------------------------- | ------- | -------------------------------------- |
-| `p4-2026.1-macos-arm64.json`              | macOS 26.6.2 arm64            | 3.12.16 | 37/37 + platform + 3 errors + view     |
-| `p4-2026.1-linux-x86_64.json`             | Debian 13 x86_64 in Docker    | 3.13.18 | 37/37 + platform + 3 errors + view     |
-| `p4-2026.1-linux-ubuntu24.04-x86_64.json` | Ubuntu 24.04 x86_64 in Docker | 3.12.3  | 37/37 + platform + 3 errors + view     |
+| `p4-2026.1-macos-arm64.json`              | macOS 26.6.2 arm64            | 3.12.16 | 42/42 + platform + 3 errors + view     |
+| `p4-2026.1-linux-x86_64.json`             | Debian 13 x86_64 in Docker    | 3.13.18 | 42/42 + platform + 3 errors + view     |
+| `p4-2026.1-linux-ubuntu24.04-x86_64.json` | Ubuntu 24.04 x86_64 in Docker | 3.12.3  | 42/42 + platform + 3 errors + view     |
 
 Perforce documents the syntax and file-list behavior in the [P4IGNORE reference](https://help.perforce.com/helix-core/server-apps/cmdref/current/Content/CmdRef/P4IGNORE.html?Highlight=workspace+root).

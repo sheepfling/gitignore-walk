@@ -1967,6 +1967,221 @@
           }
         }
       }
+    },
+    {
+      "id": "p4.double-star-crosses-multiple-directories",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "test/deep/a.txt",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "test/deep/a.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/test/deep/a.txt#1 - opened for add\n<workspace>/test/deep/a.txt - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "test/deep/a.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/test/deep/a.txt ignored by <workspace>/.p4ignore:1:test/**/a.txt\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
+      "walk_preview": null,
+      "where_results": {}
+    },
+    {
+      "id": "p4.double-star-empty-does-not-remove-separators",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "test/a.txt",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "test/a.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/test/a.txt#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "test/a.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/test/a.txt not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
+      "walk_preview": null,
+      "where_results": {}
+    },
+    {
+      "id": "p4.double-star-empty-without-separator",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "test/a.txt",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "test/a.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/test/a.txt#1 - opened for add\n<workspace>/test/a.txt - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "test/a.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/test/a.txt ignored by <workspace>/.p4ignore:1:test/**a.txt\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
+      "walk_preview": null,
+      "where_results": {}
+    },
+    {
+      "id": "p4.double-star-leading-separator-is-significant",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "a.txt",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "a.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 0,
+      "stdout": "//depot/a.txt#1 - opened for add\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "a.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": false,
+        "stdout": "<workspace>/a.txt not ignored\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
+      "walk_preview": null,
+      "where_results": {}
+    },
+    {
+      "id": "p4.double-star-leading-nested-path",
+      "dimension": "glob",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "query": "nested/a.txt",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "server_version": "P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)",
+      "client_version": "P4/MACOSX12ARM64/2026.1/3089746 (2026/10/07).",
+      "command": [
+        "p4",
+        "add",
+        "-n",
+        "nested/a.txt"
+      ],
+      "command_cwd": ".",
+      "exit_code": 1,
+      "stdout": "//depot/nested/a.txt#1 - opened for add\n<workspace>/nested/a.txt - ignored file can't be added.\n",
+      "stderr": "",
+      "ignore_check": {
+        "command": [
+          "p4",
+          "ignores",
+          "-i",
+          "-v",
+          "nested/a.txt"
+        ],
+        "exit_code": 0,
+        "observed_ignored": true,
+        "stdout": "<workspace>/nested/a.txt ignored by <workspace>/.p4ignore:1:**/a.txt\n",
+        "stderr": ""
+      },
+      "isolated_configuration": true,
+      "p4_set_exit_code": null,
+      "p4_set_output": null,
+      "server_root": "<temp>/server",
+      "workspace_root": "<temp>/workspace",
+      "client_root_probe": null,
+      "walk_preview": null,
+      "where_results": {}
     }
   ]
 }
