@@ -180,7 +180,10 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 "Options: noallwrite noclobber nocompress unlocked nomodtime normdir\n"
                 "LineEnd: local\n"
                 "View:\n"
-                f"\t//depot/... //{client_name}/...\n"
+                + "".join(
+                    f"\t{view.format(client=client_name)}\n"
+                    for view in setup.get("client_view", ["//depot/... //{client}/..."])
+                )
             )
             client = _run(
                 p4,
@@ -237,9 +240,17 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 if case.get("capture_walk")
                 else None
             )
+            where_results = {
+                path: _run(p4, ["where", path], cwd=workspace, environment=environment)
+                for path in case.get("capture_where", [])
+            }
             command_output = command.stdout + command.stderr
             ignored = "ignored file can't be added" in command_output
             expected_native_error = case.get("expected_native_error")
+            outside_client_view = (
+                case.get("expected_candidate") is None
+                and "file(s) not in client view." in command_output
+            )
             if expected_native_error is not None:
                 if expected_native_error not in command_output:
                     raise RuntimeError(
@@ -248,15 +259,17 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                         f"{command.returncode}, {command_output!r}"
                     )
                 ignored_result: bool | None = None
-            elif not ignored and (
-                command.returncode != 0 or "opened for add" not in command_output
+            elif (
+                not ignored
+                and not outside_client_view
+                and (command.returncode != 0 or "opened for add" not in command_output)
             ):
                 raise RuntimeError(
                     f"p4 add preview did not produce a recognized result for {case['id']}: "
                     f"{command.returncode}, {command.stdout!r}, {command.stderr!r}"
                 )
             else:
-                ignored_result = ignored
+                ignored_result = None if outside_client_view else ignored
             expected = case["expected_candidate"]
             observed_rule_match = _ignored_by_rules(ignore_check.stdout, ignore_check.stderr)
             expected_rule_match = case.get("expected_ignore_match")
@@ -365,6 +378,19 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                     if walk_preview
                     else None
                 ),
+                "where_results": {
+                    path: {
+                        "command": ["p4", "where", path],
+                        "exit_code": result.returncode,
+                        "stdout": result.stdout.replace(str(workspace), "<workspace>").replace(
+                            str(temp), "<temp>"
+                        ),
+                        "stderr": result.stderr.replace(str(workspace), "<workspace>").replace(
+                            str(temp), "<temp>"
+                        ),
+                    }
+                    for path, result in where_results.items()
+                },
             }
         finally:
             server.terminate()

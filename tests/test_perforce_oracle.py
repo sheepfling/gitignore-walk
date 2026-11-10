@@ -53,6 +53,19 @@ def test_perforce_capture_matches_versioned_candidates(case: dict[str, Any], pro
         assert ignore_check["observed_ignored"] is expected_ignore_match
         if "expected_ignore_match" in case:
             assert observation["ignore_check_matches"] is True
+    elif case.get("capture_where"):
+        assert expected is None
+        assert observation["observed_ignored"] is None
+        assert observation["candidate_matches"] is None
+        assert observation["exit_code"] == 0
+        assert "file(s) not in client view." in observation["stderr"]
+        assert observation["ignore_check"]["observed_ignored"] is False
+        assert {
+            path: {key: result[key] for key in ("stdout", "stderr")}
+            for path, result in observation["where_results"].items()
+        } == case["expected_where"]
+        assert all(result["exit_code"] == 0 for result in observation["where_results"].values())
+        assert observation["ignore_check_matches"] is True
     elif isinstance(expected, bool):
         assert observation["candidate_matches"] is True
         assert observation["observed_ignored"] is expected

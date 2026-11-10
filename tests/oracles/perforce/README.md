@@ -13,9 +13,10 @@ Run from the repository root:
 python -m scripts.ci oracle-p4 --output /tmp/p4-oracle.json
 ```
 
-The 37 boolean candidates, one platform-dependent case, and three add-command path-boundary cases
-are captured with P4 and P4 Server 2026.1 on macOS arm64, in a Debian 13 x86_64 Docker container,
-and in an Ubuntu 24.04 x86_64 container. `p4 add -n` rejects a newline-bearing filename and names
+The 37 boolean candidates, one platform-dependent case, three add-command path-boundary cases, and
+one client-view mapping probe are captured with P4 and P4 Server 2026.1 on macOS arm64, in a Debian
+13 x86_64 Docker container, and in an Ubuntu 24.04 x86_64 container. `p4 add -n` rejects a
+newline-bearing filename and names
 containing `#` before candidate evaluation; a separate `p4 ignores -i -v` query still reports the
 escaped-leading-`#` rule match. These are native path-boundary observations, not boolean
 add-eligibility comparisons.
@@ -43,10 +44,15 @@ directory reports the configured workspace root. A separate config-scope case fi
 P4IGNORE file above the client root. The Linux profile uses binaries fetched from the official
 Perforce 2026.1 release path and pinned by SHA-256 in CI.
 
-| Capture file                              | Environment                   | Python  | Cases matching              |
-| ----------------------------------------- | ----------------------------- | ------- | --------------------------- |
-| `p4-2026.1-macos-arm64.json`              | macOS 26.6.2 arm64            | 3.12.16 | 37/37 + platform + 3 errors |
-| `p4-2026.1-linux-x86_64.json`             | Debian 13 x86_64 in Docker    | 3.13.18 | 37/37 + platform + 3 errors |
-| `p4-2026.1-linux-ubuntu24.04-x86_64.json` | Ubuntu 24.04 x86_64 in Docker | 3.12.3  | 37/37 + platform + 3 errors |
+The client-view probe captures a mapped path, an explicitly excluded path, and a local path outside
+the view using both `p4 where` and `p4 add -n`. The excluded and unmapped files are not addable, while
+`p4 ignores -i -v` reports the excluded file as not ignored. This establishes that client-view
+eligibility is separate from ignore matching; the policy does not yet filter walks by client view.
+
+| Capture file                              | Environment                   | Python  | Cases matching                         |
+| ----------------------------------------- | ----------------------------- | ------- | -------------------------------------- |
+| `p4-2026.1-macos-arm64.json`              | macOS 26.6.2 arm64            | 3.12.16 | 37/37 + platform + 3 errors + view     |
+| `p4-2026.1-linux-x86_64.json`             | Debian 13 x86_64 in Docker    | 3.13.18 | 37/37 + platform + 3 errors + view     |
+| `p4-2026.1-linux-ubuntu24.04-x86_64.json` | Ubuntu 24.04 x86_64 in Docker | 3.12.3  | 37/37 + platform + 3 errors + view     |
 
 Perforce documents the syntax and file-list behavior in the [P4IGNORE reference](https://help.perforce.com/helix-core/server-apps/cmdref/current/Content/CmdRef/P4IGNORE.html?Highlight=workspace+root).

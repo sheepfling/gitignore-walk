@@ -634,6 +634,46 @@
       "evidence_status": "native-observed",
       "native_status": "captured",
       "release_gate": "Preserve spaces inside Perforce ignore patterns while trimming their edges."
+    },
+    {
+      "id": "p4.client-view-excludes-local-path",
+      "dimension": "workspace-view",
+      "setup": {
+        "client_view": [
+          "//depot/main/... //{client}/main/...",
+          "-//depot/main/private/... //{client}/main/private/..."
+        ],
+        "files": {
+          "main/visible.txt": "mapped path\n",
+          "main/private/secret.txt": "excluded path\n",
+          "outside.txt": "unmapped path\n"
+        }
+      },
+      "query": "main/private/secret.txt",
+      "expected_candidate": null,
+      "expected_ignore_match": false,
+      "capture_where": [
+        "main/visible.txt",
+        "main/private/secret.txt",
+        "outside.txt"
+      ],
+      "expected_where": {
+        "main/visible.txt": {
+          "stdout": "//depot/main/visible.txt //ignore-oracle/main/visible.txt <workspace>/main/visible.txt\n",
+          "stderr": ""
+        },
+        "main/private/secret.txt": {
+          "stdout": "-//depot/main/private/secret.txt //ignore-oracle/main/private/secret.txt <workspace>/main/private/secret.txt\n",
+          "stderr": ""
+        },
+        "outside.txt": {
+          "stdout": "",
+          "stderr": "outside.txt - file(s) not in client view.\n"
+        }
+      },
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Capture how native P4 distinguishes mapped, excluded, and unmapped local paths from P4IGNORE decisions."
     }
   ]
 }
