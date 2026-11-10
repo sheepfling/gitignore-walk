@@ -801,9 +801,10 @@ jobs:
           Expand-Archive -Path $archive -DestinationPath $saplingDir -Force
           $sl = Join-Path $saplingDir 'Sapling\sl.exe'
           if (-not (Test-Path $sl)) { throw "Sapling executable was not found: $sl" }
-          & $sl version
+          $jj = Join-Path (Join-Path $clientDir 'jj') 'jj.exe'
+          if (-not (Test-Path $jj)) { throw "Jujutsu executable was not found: $jj" }
           $output = Join-Path $nativeDir 'sapling-0.2.20261103-windows-x64.json'
-          python tests/oracles/compat/run.py --sl $sl --output $output
+          python tests/oracles/compat/run.py --sl $sl --jj $jj --output $output
           if ($LASTEXITCODE -ne 0) { throw "Sapling capture failed: $LASTEXITCODE" }
           @'
           import json
