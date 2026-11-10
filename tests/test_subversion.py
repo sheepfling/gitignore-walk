@@ -760,6 +760,145 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
     } <= included_paths
 
 
+def test_subversion_incomplete_checkout_keeps_root_membership_known(tmp_path: Path) -> None:
+    svn = shutil.which("svn")
+    svnadmin = shutil.which("svnadmin")
+    if svn is None or svnadmin is None:
+        pytest.skip("Subversion client tools are not installed")
+
+    repository = tmp_path / "repository"
+    source = tmp_path / "source"
+    root = tmp_path / "working-copy"
+    home = tmp_path / "home"
+    config_dir = tmp_path / "config"
+    home.mkdir()
+    config_dir.mkdir()
+    (config_dir / "config").write_text("[miscellany]\nglobal-ignores =\n", encoding="utf-8")
+    environment = {
+        "HOME": str(home),
+        "LC_ALL": "C",
+        "LANG": "C",
+        "PATH": os.environ.get("PATH", ""),
+    }
+    for name in ("SystemRoot", "WINDIR"):
+        if name in os.environ:
+            environment[name] = os.environ[name]
+
+    _run_svn([svnadmin, "create", str(repository)], cwd=tmp_path, environment=environment)
+    source.mkdir()
+    for index in range(6000):
+        (source / f"path-{index:05}.tmp").write_text("tracked file\n", encoding="utf-8")
+    repository_url = f"{repository.as_uri()}/trunk"
+    svn_prefix = [svn, "--config-dir", str(config_dir)]
+    _run_svn(
+        [*svn_prefix, "import", str(source), repository_url, "-m", "incomplete checkout probe"],
+        cwd=tmp_path,
+        environment=environment,
+    )
+
+    checkout = subprocess.Popen(
+        [*svn_prefix, "checkout", repository_url, str(root)],
+        cwd=tmp_path,
+        env=environment,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    incomplete_observed = False
+    deadline = time.monotonic() + 60
+    try:
+        while checkout.poll() is None and time.monotonic() < deadline:
+            if (root / ".svn" / "wc.db").exists():
+                native = subprocess.run(
+                    [
+                        *svn_prefix,
+                        "status",
+                        "--xml",
+                        "--verbose",
+                        "--no-ignore",
+                        "--depth",
+                        "infinity",
+                        ".",
+                    ],
+                    cwd=root,
+                    env=environment,
+                    capture_output=True,
+                    timeout=10,
+                    check=False,
+                )
+                if native.returncode == 0:
+                    document = ET.fromstring(native.stdout)
+                    observed = {
+                        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+                        for entry in document.findall("./target/entry")
+                        if (status := entry.find("wc-status")) is not None
+                    }
+                    if "incomplete" in observed.values():
+                        incomplete_observed = True
+                        break
+            time.sleep(0.005)
+    finally:
+        if checkout.poll() is None:
+            checkout.terminate()
+            try:
+                checkout.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                checkout.kill()
+                checkout.wait(timeout=10)
+
+    assert incomplete_observed, "native checkout did not expose an incomplete status"
+    native = _run_svn(
+        [
+            *svn_prefix,
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_items = {
+        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    assert native_items.get(".") == "incomplete"
+
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    assert policy.explain(".").membership == "versioned"
+    walker = IgnoreWalker(root, policy=policy)
+    included = set(walker.iter_files(selection="included"))
+    native_versioned_files = {
+        root / relative
+        for relative, item in native_items.items()
+        if item
+        in {
+            "normal",
+            "modified",
+            "added",
+            "deleted",
+            "replaced",
+            "conflicted",
+            "obstructed",
+            "incomplete",
+            "external",
+            "missing",
+            "excluded",
+        }
+        and (root / relative).is_file()
+    }
+    assert included == native_versioned_files
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_subversion_walk_round_trips_control_character_paths(tmp_path: Path, topdown: bool) -> None:
     if os.name == "nt":

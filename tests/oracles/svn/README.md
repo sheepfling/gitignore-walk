@@ -91,6 +91,12 @@ Subversion 1.14.3 and Windows SlikSvn 1.14.5 integration jobs. The native status
 stored in `results/svn-status-transitions-1.15.0-macos-arm64.json`; each native CI run writes its
 own transition capture alongside the standard Subversion oracle artifact.
 
+A separate live test checks an interrupted checkout. It polls native status while a disposable
+6,000-file checkout is in progress, terminates the checkout after the working-copy root is reported
+as `incomplete`, then confirms the status persists and membership-aware walking includes only file
+entries still reported as versioned. This exercises Subversion 1.15.0 locally; the Linux and Windows
+native test jobs also run the live probe.
+
 The package's initial `SubversionIgnorePolicy` uses the native client for working-copy and
 versioned-property discovery and receives the isolated runtime config directory explicitly; it then
 evaluates the supported glob rules in Python. Its matcher follows captured SVN/APR behavior for

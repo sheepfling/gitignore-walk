@@ -546,7 +546,9 @@ membership comparisons cover normal, modified, added, deleted, missing, replaced
 conflicted entries, plus ignored unversioned entries. Versioned directories and file/directory
 externals have separate native evidence. A new membership-aware walker check matches native
 selections inside directory externals in both traversal orders, using each external working copy's
-own status. Paths omitted by sparse status remain unknown by design.
+own status. A live interrupted-checkout probe records native `incomplete` status on the checkout
+root; membership discovery keeps that root versioned, and the walker selection matches the remaining
+native versioned file entries. Paths omitted by sparse status remain unknown by design.
 Further work is broader native status traversal and configuration-precedence profiles; do not
 classify omitted paths as unversioned without new native evidence.
 
