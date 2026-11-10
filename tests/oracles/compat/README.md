@@ -22,7 +22,7 @@ with `.jj` only. In all four layouts, `.gitignore` excludes `a.tmp`, while
 policy for the tested in-tree rule subset, with a caller-selected metadata baseline such as
 `.sl` or `.jj`.
 
-Sapling 0.2.20261028 has a version-scoped Debian 13 arm64 capture for source and global-configuration
+Sapling 0.2.20261028 has version-scoped Debian 13 arm64 and x86_64 captures for source and global-configuration
 behavior alongside Jujutsu 0.47.1. Its expanded Sapling path-pattern probes are explicitly skipped:
 that client panics with `StripPrefixError` when the shared pattern fixture is evaluated. The capture
 marks `sapling.pattern_discovery` in `excluded_probes`, while Jujutsu's pattern probes and both
@@ -158,6 +158,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261028 | 0.47.1  |
+| `sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`           | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`               | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.47.1  |

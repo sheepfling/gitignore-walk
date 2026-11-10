@@ -846,7 +846,9 @@ def test_membership_aware_policy_matches_native_status_classes(
     assert native_records["missing.txt"] == "!"
     assert native_records["removed.txt"] == "R"
     if dangling_link_created:
-        assert native_records["dangling-link"] == "C"
+        # Mercurial reports a tracked dangling symlink as modified on Windows, but clean on POSIX.
+        expected_dangling_status = "M" if os.name == "nt" else "C"
+        assert native_records["dangling-link"] == expected_dangling_status
     assert native_records["staged.tmp"] == "A"
     assert native_records["ignored.tmp"] == "I"
     assert native_records["unknown.txt"] == "?"

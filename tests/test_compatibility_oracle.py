@@ -68,11 +68,14 @@ JJ_045_FULL_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in JJ_045_FULL_CAPTURE_FILES
 }
-OLDER_SAPLING_PROFILE = json.loads(
-    (ORACLE_ROOT / "results" / "sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json").read_text(
-        encoding="utf-8"
-    )
+OLDER_SAPLING_PROFILE_FILES = (
+    "sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json",
+    "sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json",
 )
+OLDER_SAPLING_PROFILES = {
+    filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
+    for filename in OLDER_SAPLING_PROFILE_FILES
+}
 JJ_SYMLINK_VERSION_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in (
@@ -286,12 +289,14 @@ def test_jujutsu_045_capture_reconciles_config_profiles_and_legacy_symlink_behav
             assert case[name]["candidate_matches"] is True, (case["id"], name)
 
 
-def test_older_sapling_capture_keeps_pattern_probe_exclusion_explicit() -> None:
+@pytest.mark.parametrize("filename", OLDER_SAPLING_PROFILE_FILES)
+def test_older_sapling_capture_keeps_pattern_probe_exclusion_explicit(filename: str) -> None:
     """Validate old Sapling configuration while preserving its known pattern-probe limitation."""
-    capture = OLDER_SAPLING_PROFILE
+    capture = OLDER_SAPLING_PROFILES[filename]
     assert capture["status"] == "captured"
     assert capture["platform"].startswith("Linux-")
-    assert "aarch64" in capture["platform"]
+    expected_architecture = "aarch64" if "arm64" in filename else "x86_64"
+    assert expected_architecture in capture["platform"]
     assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261028")
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
     assert capture["excluded_probes"] == ["sapling.pattern_discovery"]

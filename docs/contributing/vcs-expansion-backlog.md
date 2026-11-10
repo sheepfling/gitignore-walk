@@ -506,8 +506,10 @@ walk selections in both orders; a tracked file matching `.hgignore` stays includ
 ignored unversioned file appears only in ignored/all selection. Paths omitted by native status remain
 unknown. Membership lookup retains the lexical query path for tracked symlinks, so a dangling
 tracked link remains versioned even when the policy resolves it for rule evaluation; this is
-covered with native Mercurial status and `explain`, `trace`, and `iter_explain`. Broader sparse,
-symlink, and cross-profile membership behavior remains open.
+covered with native Mercurial status and `explain`, `trace`, and `iter_explain`. Native Mercurial
+7.1.2 on Windows reports this tracked dangling link as modified (`M`) rather than clean (`C`) as on
+POSIX; both status classes indicate versioned membership and are included in the live cross-platform
+test. Broader sparse, symlink, and cross-profile membership behavior remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special
@@ -629,13 +631,12 @@ of full release-to-release dialect conformance. The official [0.2.20261103 relea
 also describe a `.gitignore` handling fix for the preceding release. Native CI downloads both
 checksum-pinned ARM64 clients and recaptures the paired profile.
 
-The 0.2.20261028 Sapling client also has a Debian 13 ARM64 source/configuration capture alongside
-Jujutsu 0.47.1. Its expanded Sapling path-pattern group is explicitly excluded because the native
-client panics with `StripPrefixError` while evaluating that shared fixture; the capture records the
-excluded group and still checks source discovery, global and conditional configuration,
+The 0.2.20261028 Sapling client also has Debian 13 ARM64 and x86_64 source/configuration captures
+alongside Jujutsu 0.47.1. Its expanded Sapling path-pattern group is explicitly excluded because the
+native client panics with `StripPrefixError` while evaluating that shared fixture; each capture
+records the excluded group and still checks source discovery, global and conditional configuration,
 environment-selected configuration, and repository-local precedence. Jujutsu's pattern group runs
-normally. Native CI recaptures this profile from the same checksum-pinned client already used for
-the release-specific behavior probe.
+normally. Native CI recaptures both profiles from checksum-pinned Sapling and Jujutsu clients.
 
 The nested-workspace boundary probe now confirms that Sapling stops at nested workspaces using the
 same storage marker, but traverses into a child using the other marker. Jujutsu stops at nested
