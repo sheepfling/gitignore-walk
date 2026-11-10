@@ -41,6 +41,7 @@ def _capture_sapling(
     fixture: Mapping[str, Any],
     *,
     skip_pattern_probes: bool = False,
+    pattern_skip_reason: str | None = None,
 ) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-{mode}-") as temporary:
         base = Path(temporary)
@@ -80,7 +81,7 @@ def _capture_sapling(
         if skip_pattern_probes:
             pattern_discovery = {
                 "native_status": "skipped",
-                "reason": "Excluded by --skip-sapling-pattern-probes.",
+                "reason": pattern_skip_reason or "Excluded by --skip-sapling-pattern-probes.",
             }
         else:
             _write_pattern_probes(root, fixture)
@@ -1763,6 +1764,7 @@ def capture(
     *,
     expected_jj_follows_symlink: bool = False,
     skip_sapling_pattern_probes: bool = False,
+    skip_sapling_pattern_modes: Sequence[str] = (),
 ) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
     client_versions = {"git": _version("git")}
@@ -1774,7 +1776,14 @@ def capture(
                 sapling,
                 mode,
                 fixture,
-                skip_pattern_probes=skip_sapling_pattern_probes,
+                skip_pattern_probes=(
+                    skip_sapling_pattern_probes or mode in skip_sapling_pattern_modes
+                ),
+                pattern_skip_reason=(
+                    f"Excluded by --skip-sapling-pattern-mode {mode}."
+                    if mode in skip_sapling_pattern_modes
+                    else None
+                ),
             )
             for mode in ("git", "sl")
         )
@@ -1810,7 +1819,10 @@ def capture(
         "excluded_probes": (
             ["sapling.pattern_discovery"]
             if sapling is not None and skip_sapling_pattern_probes
-            else []
+            else [
+                f"sapling.{mode}-mode.pattern_discovery"
+                for mode in sorted(set(skip_sapling_pattern_modes))
+            ]
         ),
         "cases": captures,
     }
@@ -2025,7 +2037,14 @@ def main() -> int:
     parser.add_argument(
         "--skip-sapling-pattern-probes",
         action="store_true",
-        help="omit Sapling path-pattern probes for a version-scoped capture",
+        help="omit all Sapling path-pattern probes (legacy; prefer a mode-specific exclusion)",
+    )
+    parser.add_argument(
+        "--skip-sapling-pattern-mode",
+        action="append",
+        choices=("git", "sl"),
+        default=[],
+        help="omit Sapling path-pattern probes for one storage mode; may be repeated",
     )
     parser.add_argument("--output", type=Path, required=True, help="capture JSON destination")
     arguments = parser.parse_args()
@@ -2042,13 +2061,13 @@ def main() -> int:
         arguments.linked_worktree_only or arguments.workspace_boundary_only
     ):
         parser.error("--expect-jj-follows-symlink applies only to a full or symlink-only capture")
-    if arguments.skip_sapling_pattern_probes and (
+    if (arguments.skip_sapling_pattern_probes or arguments.skip_sapling_pattern_mode) and (
         arguments.jj_only
         or arguments.symlink_only
         or arguments.linked_worktree_only
         or arguments.workspace_boundary_only
     ):
-        parser.error("--skip-sapling-pattern-probes applies only to a full Sapling capture")
+        parser.error("Sapling pattern exclusions apply only to a full Sapling capture")
     if arguments.symlink_only:
         result = capture_jj_symlink_profile(
             arguments.jj,
@@ -2070,6 +2089,7 @@ def main() -> int:
             arguments.jj,
             expected_jj_follows_symlink=arguments.expect_jj_follows_symlink,
             skip_sapling_pattern_probes=arguments.skip_sapling_pattern_probes,
+            skip_sapling_pattern_modes=arguments.skip_sapling_pattern_mode,
         )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")

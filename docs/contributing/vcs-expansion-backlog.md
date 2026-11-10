@@ -636,9 +636,10 @@ also describe a `.gitignore` handling fix for the preceding release. Native CI d
 checksum-pinned ARM64 clients and recaptures the paired profile.
 
 The 0.2.20261028 Sapling client also has Debian 13 ARM64 and x86_64 source/configuration captures
-alongside Jujutsu 0.47.1. Its expanded Sapling path-pattern group is explicitly excluded because the
-native client panics with `StripPrefixError` while evaluating that shared fixture; each capture
-records the excluded group and still checks source discovery, global and conditional configuration,
+alongside Jujutsu 0.47.1. The native client panics with `StripPrefixError` for the tested path-pattern
+groups in `.sl` storage mode, even when each pattern rule is isolated; the same 13 cases match in
+`.git` storage mode. Captures skip only `sapling.sl-mode.pattern_discovery` while checking the full
+pattern matrix in `.git` mode plus source discovery, global and conditional configuration,
 environment-selected configuration, and repository-local precedence. Jujutsu's pattern group runs
 normally. Native CI recaptures both profiles from checksum-pinned Sapling and Jujutsu clients.
 

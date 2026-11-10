@@ -299,7 +299,7 @@ def test_older_sapling_capture_keeps_pattern_probe_exclusion_explicit(filename: 
     assert expected_architecture in capture["platform"]
     assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261028")
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
-    assert capture["excluded_probes"] == ["sapling.pattern_discovery"]
+    assert capture["excluded_probes"] == ["sapling.sl-mode.pattern_discovery"]
     cases = {case["id"]: case for case in capture["cases"]}
     assert set(cases) == {
         "sapling.git-mode",
@@ -310,10 +310,16 @@ def test_older_sapling_capture_keeps_pattern_probe_exclusion_explicit(filename: 
     for case_id in ("sapling.git-mode", "sapling.sl-mode"):
         case = cases[case_id]
         assert case["candidate_matches"] is True
-        assert case["pattern_discovery"] == {
-            "native_status": "skipped",
-            "reason": "Excluded by --skip-sapling-pattern-probes.",
-        }
+        if case_id == "sapling.sl-mode":
+            assert case["pattern_discovery"] == {
+                "native_status": "skipped",
+                "reason": "Excluded by --skip-sapling-pattern-mode sl.",
+            }
+        else:
+            assert case["pattern_discovery"]["candidate_matches"] is True
+            assert case["pattern_discovery"]["query_files"] == PATTERN_QUERY_FILES
+            assert case["pattern_discovery"]["ignored"] == PATTERN_IGNORED
+            assert case["pattern_discovery"]["included"] == PATTERN_INCLUDED
         assert case["source_discovery"]["candidate_matches"] is True
         for name in (
             "configured_global",

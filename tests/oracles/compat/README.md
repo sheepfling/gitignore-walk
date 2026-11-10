@@ -22,12 +22,13 @@ with `.jj` only. In all four layouts, `.gitignore` excludes `a.tmp`, while
 policy for the tested in-tree rule subset, with a caller-selected metadata baseline such as
 `.sl` or `.jj`.
 
-Sapling 0.2.20261028 has version-scoped Debian 13 arm64 and x86_64 captures for source and global-configuration
-behavior alongside Jujutsu 0.47.1. Its expanded Sapling path-pattern probes are explicitly skipped:
-that client panics with `StripPrefixError` when the shared pattern fixture is evaluated. The capture
-marks `sapling.pattern_discovery` in `excluded_probes`, while Jujutsu's pattern probes and both
-clients' source/configuration probes still run and are checked. Reproduce it with
-`run.py --sl <older-sapling> --jj <jj> --skip-sapling-pattern-probes --output <capture.json>`.
+Sapling 0.2.20261028 has version-scoped Debian 13 arm64 and x86_64 captures for source, path-pattern,
+and global-configuration behavior alongside Jujutsu 0.47.1. In `.sl` storage mode, this release
+panics with `StripPrefixError` for each tested path-pattern group, so only that mode's pattern probes
+are explicitly skipped. Its `.git` mode matches the full 13-path pattern matrix. The capture marks
+`sapling.sl-mode.pattern_discovery` in `excluded_probes`; Jujutsu's pattern probes and both clients'
+source/configuration probes still run and are checked. Reproduce it with
+`run.py --sl <older-sapling> --jj <jj> --skip-sapling-pattern-mode sl --output <capture.json>`.
 
 Jujutsu 0.45.1, 0.46.0, and 0.47.1 are captured on Windows Server 2025 x64 in colocated and
 non-colocated modes. All three releases match the candidate, source/configuration, and path-pattern

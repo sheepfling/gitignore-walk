@@ -231,7 +231,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-probes --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
           python - <<'PY'
           import json
           import os
@@ -275,13 +275,16 @@ jobs:
                   assert set(case["ignored"]) == expected_by_mode[case["mode"]]
           old_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json"
           old_capture = json.loads(old_path.read_text(encoding="utf-8"))
-          assert old_capture["excluded_probes"] == ["sapling.pattern_discovery"]
+          assert old_capture["excluded_probes"] == ["sapling.sl-mode.pattern_discovery"]
           assert old_capture["clients"]["sapling"].startswith("Sapling 0.2.20261028")
           assert old_capture["clients"]["jujutsu"].startswith("jj 0.47.1")
           for case in old_capture["cases"]:
               assert case["candidate_matches"]
               if case["vcs"] == "sapling":
-                  assert case["pattern_discovery"]["native_status"] == "skipped"
+                  if case["id"] == "sapling.sl-mode":
+                      assert case["pattern_discovery"]["native_status"] == "skipped"
+                  else:
+                      assert case["pattern_discovery"]["candidate_matches"]
                   assert case["source_discovery"]["candidate_matches"]
                   assert all(case[key]["candidate_matches"] for key in (
                       "configured_global", "configured_system", "conditional_global",
@@ -359,7 +362,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj /tmp/jj046 && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-x64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj046 && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-probes --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --workspace-boundary-only --output /output/workspace-boundaries-jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --output /output/jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj /tmp/jj046 && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-x64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj046 && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --workspace-boundary-only --output /output/workspace-boundaries-jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --output /output/jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
           python - <<'PY'
           import json
           import os
@@ -400,13 +403,16 @@ jobs:
           assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
           older_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json"
           older = json.loads(older_path.read_text(encoding="utf-8"))
-          assert older["excluded_probes"] == ["sapling.pattern_discovery"]
+          assert older["excluded_probes"] == ["sapling.sl-mode.pattern_discovery"]
           assert older["clients"]["sapling"].startswith("Sapling 0.2.20261028")
           assert older["clients"]["jujutsu"].startswith("jj 0.47.1")
           for case in older["cases"]:
               assert case["candidate_matches"]
               if case["vcs"] == "sapling":
-                  assert case["pattern_discovery"]["native_status"] == "skipped"
+                  if case["id"] == "sapling.sl-mode":
+                      assert case["pattern_discovery"]["native_status"] == "skipped"
+                  else:
+                      assert case["pattern_discovery"]["candidate_matches"]
                   assert case["source_discovery"]["candidate_matches"]
                   assert all(case[key]["candidate_matches"] for key in (
                       "configured_global", "configured_system", "conditional_global",
