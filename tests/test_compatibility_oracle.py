@@ -8,6 +8,8 @@ from typing import Any
 
 import pytest
 
+from tests.oracles.compat.run import _sapling_status_paths
+
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
 CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
@@ -57,6 +59,22 @@ CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
 }
+
+
+def test_sapling_status_paths_normalize_windows_separators_without_rewriting_posix_names() -> None:
+    """Interpret native Windows separators while preserving literal POSIX backslashes."""
+    output = "? root.txt\0I nested\\probe.txt\0I literal\\name.txt\0"
+
+    assert _sapling_status_paths(output, windows_paths=True) == (
+        {"root.txt"},
+        {"nested/probe.txt", "literal/name.txt"},
+    )
+    assert _sapling_status_paths(output, windows_paths=False) == (
+        {"root.txt"},
+        {"nested\\probe.txt", "literal\\name.txt"},
+    )
+
+
 WINDOWS_JJ_CAPTURE = json.loads(
     (ORACLE_ROOT / "results" / "jj-0.47.1-windows-x64.json").read_text(encoding="utf-8")
 )

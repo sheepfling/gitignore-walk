@@ -1549,13 +1549,20 @@ def _expand_ignored_paths(ignored: set[str], query_files: set[str]) -> set[str]:
     }
 
 
-def _sapling_status_paths(output: str) -> tuple[set[str], set[str]]:
+def _sapling_status_paths(
+    output: str, *, windows_paths: bool | None = None
+) -> tuple[set[str], set[str]]:
+    """Split Sapling's NUL-delimited status and normalize native Windows separators."""
+    if windows_paths is None:
+        windows_paths = os.name == "nt"
     included: set[str] = set()
     ignored: set[str] = set()
     for line in output.split("\0"):
         if len(line) < 3 or line[1] != " ":
             continue
         path = line[2:].removeprefix("./")
+        if windows_paths:
+            path = path.replace("\\", "/")
         if line[0] == "I":
             ignored.add(path)
         elif line[0] in ("?", "A", "M", "R"):
