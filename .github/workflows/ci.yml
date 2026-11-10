@@ -100,6 +100,32 @@ jobs:
           python -m scripts.ci native --include-trust
           --backends hg svn fossil brz p4
           --output-dir "$RUNNER_TEMP/native"
+      - name: Check Breezy 3.3.11 on Debian 13
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          docker run --rm --platform linux/amd64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian@sha256:a72b4433de1cf7d6bae0c4cee74d0547f58601a643b3375f070c51600d63b6b2 \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq brz=3.3.11-1 python3 && python3 tests/oracles/breezy/run.py --brz brz --output /output/brz-3.3.11-linux-x86_64-py313.json'
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from scripts.ci_native import inspect_capture
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/brz-3.3.11-linux-x86_64-py313.json"
+          result = inspect_capture(path)
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert result["passed"], result
+          assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
+          assert capture["client"]["runner_python"].startswith("3.13.")
+          assert len(capture["cases"]) == 36
+          assert len(capture["excluded_cases"]) == 9
+          print(result)
+          PY
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -18,6 +18,7 @@ CAPTURE_FILES = (
     "brz-3.3.24-linux-aarch64-py312.json",
     "brz-3.3.24-linux-x86_64-py312.json",
     "brz-3.3.24-windows-x86_64-py312.json",
+    "brz-3.3.11-linux-x86_64-py313.json",
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
@@ -26,19 +27,48 @@ CAPTURES: dict[str, dict[str, Any]] = {
 
 
 @pytest.mark.parametrize(
-    ("system", "machine", "python_version", "expected"),
+    ("system", "machine", "python_version", "version_output", "expected"),
     [
-        ("Darwin", "arm64", (3, 12), "brz-3.3.24-macos-arm64.json"),
-        ("Linux", "aarch64", (3, 12), "brz-3.3.24-linux-aarch64-py312.json"),
-        ("Windows", "AMD64", (3, 12), "brz-3.3.24-windows-x86_64-py312.json"),
+        (
+            "Darwin",
+            "arm64",
+            (3, 12),
+            "Breezy (brz) 3.3.24",
+            "brz-3.3.24-macos-arm64.json",
+        ),
+        (
+            "Linux",
+            "aarch64",
+            (3, 12),
+            "Breezy (brz) 3.3.24",
+            "brz-3.3.24-linux-aarch64-py312.json",
+        ),
+        (
+            "Linux",
+            "x86_64",
+            (3, 13),
+            "Breezy (brz) 3.3.11",
+            "brz-3.3.11-linux-x86_64-py313.json",
+        ),
+        (
+            "Windows",
+            "AMD64",
+            (3, 12),
+            "Breezy (brz) 3.3.24",
+            "brz-3.3.24-windows-x86_64-py312.json",
+        ),
     ],
 )
 def test_breezy_profile_scoping_uses_capture_filename(
-    system: str, machine: str, python_version: tuple[int, int], expected: str
+    system: str,
+    machine: str,
+    python_version: tuple[int, int],
+    version_output: str,
+    expected: str,
 ) -> None:
     assert (
         _capture_profile_name(
-            "Breezy (brz) 3.3.24",
+            version_output,
             system=system,
             machine=machine,
             python_version=python_version,
@@ -121,6 +151,15 @@ def test_breezy_capture_commands_succeed_in_isolated_configuration(profile: str)
         for case in capture["cases"]
     )
     assert all(case["anchor_add_exit_code"] in (None, 0) for case in capture["cases"])
+
+
+def test_breezy_debian13_profile_records_exact_client_and_python() -> None:
+    capture = CAPTURES["brz-3.3.11-linux-x86_64-py313.json"]
+
+    assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
+    assert capture["client"]["runner_python"].startswith("3.13.")
+    assert len(capture["cases"]) == 36
+    assert len(capture["excluded_cases"]) == 9
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)

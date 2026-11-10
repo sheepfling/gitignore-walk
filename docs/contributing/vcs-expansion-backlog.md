@@ -170,6 +170,12 @@ no captured native result. The November
 7 checkpoint separately records seven Git probes. These captures do not establish complete
 cross-platform behavior.
 
+A fifth Breezy native profile now covers Debian 13 x86_64 with Breezy 3.3.11 and Python 3.13. Its 36
+shared probes include 33 boolean candidates, all matching the portable evaluator; nine explicitly
+profile-scoped cases remain excluded. Linux native CI recaptures and checks this older client profile
+in a pinned Debian image, adding cross-release evidence without claiming full RE or traversal
+conformance.
+
 The initial Perforce evaluator and typed selection are now implemented for the caller-selected
 workspace subset. It consumes explicit/environment `P4IGNORE` source lists or the two documented
 default names, supports the captured wildcard/directory/exception syntax, and keeps ignored

@@ -16,7 +16,11 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 
 Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
 aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original 33 boolean
-candidate cases and explicit regex/error cases are captured across all profiles. Three additional
+candidate cases and explicit regex/error cases are captured across all four profiles. An additional
+Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 33 boolean candidates
+match there as well, with nine newer or platform-scoped probes explicitly excluded. Linux native CI
+recaptures this profile in a digest-pinned Debian 13 image and checks the client/Python identity and
+candidate results. Three additional
 source-precedence cases are captured on macOS arm64 and Linux aarch64: with overlapping regular
 ignores, Breezy reports the global pattern before the built-in pattern, and the built-in pattern
 before the branch `.bzrignore` pattern. The policy now preserves this observed global, built-in,
