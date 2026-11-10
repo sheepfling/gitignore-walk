@@ -1135,13 +1135,18 @@ def test_subversion_ambient_user_config_is_discovered_and_matches_native_status(
     assert not policy.is_ignored("visible.ambient-show")
 
 
-@pytest.mark.skipif(os.name == "nt", reason="Windows uses APPDATA and Registry config sources")
 def test_subversion_explicit_config_dir_replaces_ambient_user_config(
     tmp_path: Path,
 ) -> None:
     case = CASES[0]
     root, environment, config_dir = _create_working_copy(tmp_path, case)
-    user_config = Path(environment["HOME"]) / ".subversion" / "config"
+    if os.name == "nt":
+        appdata = tmp_path / "appdata"
+        appdata.mkdir()
+        environment["APPDATA"] = str(appdata)
+        user_config = appdata / "Subversion" / "config"
+    else:
+        user_config = Path(environment["HOME"]) / ".subversion" / "config"
     user_config.parent.mkdir(parents=True)
     user_config.write_text("[miscellany]\nglobal-ignores = *.ambient-hide\n", encoding="utf-8")
     (config_dir / "config").write_text(

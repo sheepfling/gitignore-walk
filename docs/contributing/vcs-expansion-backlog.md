@@ -115,7 +115,8 @@ are implemented. Native precedence captures cover system-to-user INI files on De
 machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5. A macOS 1.15.0 capture confirms
 ambient user `HOME/.subversion/config` discovery. Versioned-directory membership is covered by a
 three-profile native fixture. A live Subversion 1.15.0/macOS comparison confirms an explicit
-`--config-dir` suppresses a conflicting ambient user config in both native status and the policy.
+`--config-dir` suppresses a conflicting ambient user config in both native status and the policy;
+the test also uses an isolated `APPDATA` config path on Windows for the hosted native suite.
 Broader precedence profiles and traversal/path behavior remain open.
 Fossil's 43-case
 ignore-glob corpus is captured on 2.28/macOS arm64, 2.26/Linux aarch64 and x86_64, and 2.23/Ubuntu
