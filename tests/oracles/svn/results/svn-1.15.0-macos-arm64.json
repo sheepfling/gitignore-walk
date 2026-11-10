@@ -1724,6 +1724,93 @@
         0,
         0
       ]
+    },
+    {
+      "id": "svn.sparse-immediates-retains-child-directory-properties",
+      "dimension": "sparse-working-copy-property-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/nested/loose.tmp",
+        "pkg/root.tmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/nested/loose.tmp",
+        "pkg/root.tmp"
+      ],
+      "expected_status_paths": [
+        "pkg/nested/deeper",
+        "pkg/nested/loose.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.tmp"
+      ],
+      "observed_status_paths": [
+        "pkg/nested/deeper",
+        "pkg/nested/loose.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.tmp"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "pkg/nested/tracked.tmp",
+        "pkg/root.txt"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-altf8xmq/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/nested/deeper",
+            "pkg/nested/visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/nested/deeper\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "925f532b137bc445fbe6ab74a926440ea961c7a81d0db0b803802474710a511c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/opt/homebrew/bin/svn",
+            "--config-dir",
+            "/var/folders/8k/dnkjxf3x3tv3f4r530drxx7c0000gn/T/gitignore-walk-svn-oracle-altf8xmq/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/nested/deeper",
+            "pkg/nested/loose.tmp",
+            "pkg/nested/visible.txt",
+            "pkg/root.tmp"
+          ],
+          "ignored_paths": [
+            "pkg/nested/loose.tmp",
+            "pkg/root.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/nested/deeper\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested/loose.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/root.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "b3a16a56dd33fafd4b799c06867a4108588bb2249de5dcd147474e8d4505e9e3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
     }
   ]
 }

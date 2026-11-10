@@ -72,6 +72,42 @@
       "evidence_status": "native-observed"
     },
     {
+      "id": "svn.sparse-immediates-retains-child-directory-properties",
+      "dimension": "sparse-working-copy-property-discovery",
+      "setup": {
+        "directories": ["pkg", "pkg/nested"],
+        "properties": {
+          "pkg": {
+            "svn:ignore": "*.tmp\n"
+          },
+          "pkg/nested": {
+            "svn:ignore": "*.tmp\n"
+          }
+        },
+        "versioned_files": {
+          "pkg/root.txt": "immediate file in sparse parent\n",
+          "pkg/nested/tracked.tmp": "versioned before sparse depth is reduced\n"
+        },
+        "sparse_depths": {
+          "pkg": "immediates"
+        },
+        "unversioned_files": {
+          "pkg/root.tmp": "ignored by parent property\n",
+          "pkg/nested/loose.tmp": "ignored by depth-empty child property\n",
+          "pkg/nested/visible.txt": "not ignored\n",
+          "pkg/nested/deeper/deep.tmp": "beneath a collapsed unversioned directory\n"
+        }
+      },
+      "expected_ignored_paths": ["pkg/nested/loose.tmp", "pkg/root.tmp"],
+      "expected_status_paths": [
+        "pkg/nested/deeper",
+        "pkg/nested/loose.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.tmp"
+      ],
+      "evidence_status": "native-observed"
+    },
+    {
       "id": "svn.sparse-files-collapses-unversioned-directory",
       "dimension": "sparse-working-copy-traversal-boundary",
       "setup": {

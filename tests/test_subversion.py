@@ -1080,6 +1080,94 @@ def test_sparse_empty_directory_keeps_its_native_ignore_property(tmp_path: Path)
     assert policy_ignored == native_ignored
 
 
+def test_sparse_immediates_retains_properties_on_depth_empty_child_directories(
+    tmp_path: Path,
+) -> None:
+    case = next(
+        case
+        for case in CASES
+        if case["id"] == "svn.sparse-immediates-retains-child-directory-properties"
+    )
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_items = {
+        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    assert native_items == {
+        ".": "normal",
+        "pkg": "normal",
+        "pkg/nested": "normal",
+        "pkg/nested/deeper": "unversioned",
+        "pkg/nested/loose.tmp": "ignored",
+        "pkg/nested/visible.txt": "unversioned",
+        "pkg/root.tmp": "ignored",
+        "pkg/root.txt": "normal",
+    }
+
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    assert policy.explain("pkg/nested").membership == "versioned"
+    assert policy.explain("pkg/nested/loose.tmp").membership == "unversioned"
+    assert policy.explain("pkg/nested/loose.tmp").ignored
+    collapsed_child = policy.explain("pkg/nested/deeper/deep.tmp")
+    assert collapsed_child.membership is None
+    assert not collapsed_child.ignored
+
+    walker = IgnoreWalker(root, policy=policy)
+    all_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    included_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    ignored_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    assert all_files == {
+        "pkg/nested/deeper/deep.tmp",
+        "pkg/nested/loose.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.tmp",
+        "pkg/root.txt",
+    }
+    assert included_files == {
+        "pkg/nested/deeper/deep.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.txt",
+    }
+    assert ignored_files == {"pkg/nested/loose.tmp", "pkg/root.tmp"}
+
+
 def test_sparse_files_depth_collapses_unversioned_directory_but_keeps_walking(
     tmp_path: Path,
 ) -> None:

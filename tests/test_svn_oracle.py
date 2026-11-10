@@ -90,6 +90,28 @@ def test_subversion_sparse_files_capture_preserves_collapsed_directory_status() 
     assert "pkg/nested/deep.tmp" not in default_status
 
 
+def test_subversion_sparse_immediates_capture_preserves_nested_ignore_property() -> None:
+    """Retain evidence that depth-empty child directories keep their ignore properties."""
+    capture = CAPTURES["svn-1.15.0-macos-arm64.json"]
+    case = next(
+        case
+        for case in capture["cases"]
+        if case["id"] == "svn.sparse-immediates-retains-child-directory-properties"
+    )
+    assert case["candidate_matches"]
+    assert case["observed_ignored_paths"] == ["pkg/nested/loose.tmp", "pkg/root.tmp"]
+    assert case["observed_status_paths"] == [
+        "pkg/nested/deeper",
+        "pkg/nested/loose.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.tmp",
+    ]
+    default_status = case["observations"]["default"]["paths"]
+    assert "pkg/nested/deeper" in default_status
+    assert "pkg/nested/loose.tmp" not in default_status
+    assert "pkg/nested/deeper/deep.tmp" not in default_status
+
+
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
 def test_subversion_capture_matches_candidate(profile: str, case: dict[str, Any]) -> None:
