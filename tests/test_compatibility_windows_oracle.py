@@ -13,6 +13,11 @@ CAPTURE_PATH = (
 )
 CAPTURE: dict[str, Any] = json.loads(CAPTURE_PATH.read_text(encoding="utf-8"))
 OBSERVATIONS = {case["id"]: case for case in CAPTURE["cases"]}
+FIXTURE_PATH = Path(__file__).parent / "oracles" / "compat" / "cases.json"
+PATTERN_FIXTURE = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+PATTERN_QUERY_FILES = sorted(PATTERN_FIXTURE["pattern_query_files"])
+PATTERN_IGNORED = sorted(PATTERN_FIXTURE["expected_pattern_ignored"])
+PATTERN_INCLUDED = sorted(set(PATTERN_QUERY_FILES) - set(PATTERN_IGNORED))
 
 
 def test_windows_jujutsu_capture_records_the_pinned_client_and_modes() -> None:
@@ -62,13 +67,9 @@ def test_windows_jujutsu_capture_reconciles_path_patterns(case_id: str) -> None:
     pattern_discovery = OBSERVATIONS[case_id]["pattern_discovery"]
 
     assert pattern_discovery["candidate_matches"] is True
-    assert pattern_discovery["ignored"] == [
-        "blocked/keep.txt",
-        "cache/drop.tmp",
-        "nested/deep/deep.log",
-        "root-only.tmp",
-    ]
-    assert pattern_discovery["included"] == ["cache/keep.tmp", "nested/root-only.tmp"]
+    assert pattern_discovery["query_files"] == PATTERN_QUERY_FILES
+    assert pattern_discovery["ignored"] == PATTERN_IGNORED
+    assert pattern_discovery["included"] == PATTERN_INCLUDED
 
 
 @pytest.mark.parametrize(
