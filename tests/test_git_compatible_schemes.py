@@ -48,6 +48,11 @@ _PATTERN_IGNORED = {
 }
 
 
+def _git_config_path(path: Path) -> str:
+    """Serialize an absolute path using Git config's portable slash form."""
+    return path.as_posix()
+
+
 def _git_supports_worktree_conditional_includes() -> bool:
     result = subprocess.run(["git", "--version"], capture_output=True, text=True, check=False)
     version = re.search(r"\b(\d+)\.(\d+)\.(\d+)\b", result.stdout)
@@ -271,7 +276,9 @@ def test_compatible_scheme_discovers_system_and_global_precedence(
     global_ignore = home / "global-ignore"
     global_ignore.write_text("*.global\n", encoding="utf-8")
     system_config = tmp_path / "system.gitconfig"
-    system_config.write_text(f"[core]\n\texcludesFile = {system_ignore}\n", encoding="utf-8")
+    system_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(system_ignore)}\n", encoding="utf-8"
+    )
     global_config = tmp_path / "global.gitconfig"
     if global_value is None:
         global_lines = ""
@@ -373,7 +380,9 @@ def test_compatible_scheme_uses_caller_gitdir_for_conditional_include(
     ignore_file = home / "caller-context-ignore"
     ignore_file.write_text("*.override\n", encoding="utf-8")
     included_config = home / "included.gitconfig"
-    included_config.write_text(f"[core]\n\texcludesFile = {ignore_file}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(ignore_file)}\n", encoding="utf-8"
+    )
     global_config = home / ".gitconfig"
     global_config.write_text(
         '[includeIf "gitdir:**/external.git"]\n\tpath = included.gitconfig\n', encoding="utf-8"
@@ -419,7 +428,9 @@ def test_compatible_scheme_discovers_onbranch_include_with_workspace_context(
     branch_ignore = home / "branch-ignore"
     branch_ignore.write_text("*.branch\n", encoding="utf-8")
     included_config = home / "included.gitconfig"
-    included_config.write_text(f"[core]\n\texcludesFile = {branch_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(branch_ignore)}\n", encoding="utf-8"
+    )
     global_config = home / ".gitconfig"
     global_config.write_text(
         '[includeIf "onbranch:main"]\n\tpath = included.gitconfig\n', encoding="utf-8"
@@ -493,7 +504,9 @@ def test_compatible_scheme_discovers_remote_url_conditional_include(
     remote_ignore = home / "remote-ignore"
     remote_ignore.write_text("*.remote\n", encoding="utf-8")
     included_config = home / "included.gitconfig"
-    included_config.write_text(f"[core]\n\texcludesFile = {remote_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(remote_ignore)}\n", encoding="utf-8"
+    )
     global_config = home / ".gitconfig"
     global_config.write_text(
         '[includeIf "hasconfig:remote.*.url:https://example.invalid/acme/**"]\n'
@@ -558,7 +571,7 @@ def test_compatible_scheme_discovers_case_insensitive_gitdir_include(
     custom_ignore = home / "case-insensitive-ignore"
     custom_ignore.write_text("*.casefold\n", encoding="utf-8")
     (home / "included.gitconfig").write_text(
-        f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8"
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
     )
     global_config = home / ".gitconfig"
     global_config.write_text(
@@ -628,7 +641,9 @@ def test_compatible_scheme_resolves_worktree_conditionals_with_git_256(
     custom_ignore = home / f"worktree{suffix}-ignore"
     custom_ignore.write_text(f"*.worktree{suffix}\n", encoding="utf-8")
     included_config = home / f"worktree{suffix}.gitconfig"
-    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
+    )
     global_config = home / ".gitconfig"
     path_pattern = root.resolve().as_posix()
     if condition.endswith("/i"):

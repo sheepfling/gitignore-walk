@@ -29,6 +29,11 @@ def _run(
     )
 
 
+def _git_config_path(path: Path) -> str:
+    """Serialize an absolute path using Git config's portable slash form."""
+    return path.as_posix()
+
+
 def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-{mode}-") as temporary:
         base = Path(temporary)
@@ -250,10 +255,10 @@ def _write_configured_global_probe(root: Path, home: Path, fixture: Mapping[str,
     system_ignore = home / "system-git-ignore"
     system_ignore.write_text(fixture["source_rules"]["system_core_excludes_file"], encoding="utf-8")
     (home / "system-git-config").write_text(
-        f"[core]\n\texcludesFile = {system_ignore}\n", encoding="utf-8"
+        f"[core]\n\texcludesFile = {_git_config_path(system_ignore)}\n", encoding="utf-8"
     )
     (home / "included-git-config").write_text(
-        f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8"
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
     )
     (home / ".gitconfig").write_text("[include]\n\tpath = included-git-config\n", encoding="utf-8")
     files: Mapping[str, str] = fixture["configured_global_probe_files"]
@@ -452,7 +457,9 @@ def _write_conditional_global_probe(
     custom_ignore = home / "conditional-git-ignore"
     custom_ignore.write_text(fixture["source_rules"]["core_excludes_file"], encoding="utf-8")
     included_config = home / "conditional-git-config"
-    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
+    )
     (home / ".gitconfig").write_text(
         '[includeIf "gitdir:**/workspace/.git"]\n\tpath = conditional-git-config\n',
         encoding="utf-8",
@@ -469,7 +476,9 @@ def _write_conditional_onbranch_probe(
     custom_ignore = home / "onbranch-git-ignore"
     custom_ignore.write_text(fixture["conditional_branch_ignore"], encoding="utf-8")
     included_config = home / "onbranch-git-config"
-    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
+    )
     (home / ".gitconfig").write_text(
         '[includeIf "onbranch:main"]\n\tpath = onbranch-git-config\n', encoding="utf-8"
     )
@@ -485,7 +494,9 @@ def _write_conditional_gitdir_i_probe(
     custom_ignore = home / "case-insensitive-gitdir-ignore"
     custom_ignore.write_text(fixture["conditional_gitdir_i_ignore"], encoding="utf-8")
     included_config = home / "case-insensitive-gitdir-config"
-    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
+    )
     (home / ".gitconfig").write_text(
         '[includeIf "gitdir/i:**/WORKSPACE/.GIT"]\n\tpath = case-insensitive-gitdir-config\n',
         encoding="utf-8",
@@ -520,7 +531,9 @@ def _capture_conditional_gitdir_override(
     custom_ignore = home / "gitdir-override-ignore"
     custom_ignore.write_text(fixture["conditional_gitdir_override_ignore"], encoding="utf-8")
     included_config = home / "gitdir-override-config"
-    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
+    )
     (home / ".gitconfig").write_text(
         '[includeIf "gitdir:**/external.git"]\n\tpath = gitdir-override-config\n',
         encoding="utf-8",
@@ -594,7 +607,9 @@ def _write_conditional_worktree_probe(
     custom_ignore = home / f"worktree{suffix}-conditional-ignore"
     custom_ignore.write_text(fixture[f"conditional_worktree{suffix}_ignore"], encoding="utf-8")
     included_config = home / f"worktree{suffix}-conditional-config"
-    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
+    )
     (home / ".gitconfig").write_text(
         f'[includeIf "{condition}:{path_pattern}"]\n\tpath = worktree{suffix}-conditional-config\n',
         encoding="utf-8",
@@ -634,7 +649,9 @@ def _write_conditional_remote_probe(
     custom_ignore = home / "remote-url-git-ignore"
     custom_ignore.write_text(fixture["conditional_remote_ignore"], encoding="utf-8")
     included_config = home / "remote-url-git-config"
-    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    included_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(custom_ignore)}\n", encoding="utf-8"
+    )
     url_pattern = fixture["conditional_remote_url"]
     (home / ".gitconfig").write_text(
         f'[includeIf "hasconfig:remote.*.url:{url_pattern}"]\n\tpath = remote-url-git-config\n',
