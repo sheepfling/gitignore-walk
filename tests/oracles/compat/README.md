@@ -10,10 +10,10 @@ Run from the repository root:
 python -m scripts.ci oracle-compat --output /tmp/vcs-compat.json
 ```
 
-The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64 and Debian 13
-Linux aarch64 and x86_64. Full Jujutsu 0.46.0 compatibility is retained on Debian 13 x86_64. Full
-0.45.1 compatibility captures are retained on macOS 26 arm64 and Debian 13 x86_64, extending the
-release-boundary evidence for nested `.gitignore` symlink handling. The Linux profiles
+The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64, Debian 13
+Linux aarch64 and x86_64, and Windows Server 2025 x64. Full Jujutsu 0.46.0 compatibility is retained
+on Debian 13 x86_64. Full 0.45.1 captures are retained on macOS 26 arm64 and Debian 13 x86_64 for a
+release-boundary comparison of nested `.gitignore` symlink handling. The Linux profiles
 download upstream release assets and verify their SHA-256
 digests before running them in isolated Debian containers. Each profile checks four layouts: Sapling
 with `.git`, Sapling with `.sl`, colocated Jujutsu with `.git` and `.jj`, and non-colocated Jujutsu
@@ -30,13 +30,18 @@ are explicitly skipped. Its `.git` mode matches the full 13-path pattern matrix.
 source/configuration probes still run and are checked. Reproduce it with
 `run.py --sl <older-sapling> --jj <jj> --skip-sapling-pattern-mode sl --output <capture.json>`.
 
+Sapling 0.2.20261103 is captured on Windows Server 2025 x64 in both `.git` and `.sl` modes alongside
+Jujutsu 0.47.1. The candidate, source/configuration, and path-pattern probes match in both Sapling
+modes. The symlink probe confirms Sapling `.sl` follows a nested `.gitignore` symlink while `.git`
+mode skips it. The isolated capture home retains an empty `~/.gitconfig` so Sapling's Windows
+timestamp translation works without adding any Git settings. Windows CI recaptures this profile
+from a checksum-pinned Sapling release asset and retains the artifact for seven days.
+
 Jujutsu 0.45.1, 0.46.0, and 0.47.1 are captured on Windows Server 2025 x64 in colocated and
 non-colocated modes. All three releases match the candidate, source/configuration, and path-pattern
 probes. The versioned captures also establish that 0.45.1 follows nested symlinked `.gitignore`
 files, while 0.46.0 and 0.47.1 skip them. Windows CI recaptures these profiles from checksum-pinned
-release assets and retains the run artifacts for seven days. Sapling's pinned Windows release
-aborts during `sl status` with `cannot set file timestamp to 0`, so this profile does not claim
-Sapling Windows conformance.
+release assets and retains the run artifacts for seven days.
 
 The isolated source probes also capture that Sapling in `.git` mode reads the XDG Git ignore file
 and `.git/info/exclude`; Sapling `.sl` mode reads neither. Jujutsu reads the XDG Git ignore file in
@@ -162,6 +167,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`                          | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-windows-x64.json`                          | Windows Server 2025 x64    | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`           | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |

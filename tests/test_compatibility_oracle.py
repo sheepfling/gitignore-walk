@@ -59,6 +59,10 @@ CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
 }
+WINDOWS_SAPLING_CAPTURE_FILE = "sapling-0.2.20261103-jj-0.47.1-windows-x64.json"
+WINDOWS_SAPLING_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / WINDOWS_SAPLING_CAPTURE_FILE).read_text(encoding="utf-8")
+)
 
 
 def test_sapling_status_paths_normalize_windows_separators_without_rewriting_posix_names() -> None:
@@ -73,6 +77,47 @@ def test_sapling_status_paths_normalize_windows_separators_without_rewriting_pos
         {"root.txt"},
         {"nested\\probe.txt", "literal\\name.txt"},
     )
+
+
+def test_sapling_windows_capture_reconciles_both_storage_modes() -> None:
+    """Retain the native Windows Sapling profile and its scheme-specific symlink result."""
+    capture = WINDOWS_SAPLING_CAPTURE
+    assert capture["status"] == "captured"
+    assert capture["platform"].startswith("Windows-2025Server-")
+    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+    cases = {case["id"]: case for case in capture["cases"]}
+    assert set(cases) == {
+        "sapling.git-mode",
+        "sapling.sl-mode",
+        "jj.colocated",
+        "jj.noncolocated",
+    }
+    for case_id in ("sapling.git-mode", "sapling.sl-mode"):
+        case = cases[case_id]
+        assert case["candidate_matches"] is True
+        for name in (
+            "source_discovery",
+            "pattern_discovery",
+            "configured_global",
+            "configured_system",
+            "conditional_global",
+            "conditional_gitdir_i",
+            "conditional_worktree",
+            "conditional_worktree_i",
+            "conditional_onbranch",
+            "conditional_remote_url",
+            "conditional_gitdir_override",
+            "configured_repository",
+            "environment_global",
+            "environment_count",
+        ):
+            assert case[name]["candidate_matches"] is True, (case_id, name)
+        symlink = case["symlinked_gitignore"]
+        assert symlink["candidate_matches"] is True
+        assert (
+            symlink["ignored"] == PATTERN_FIXTURE["expected_symlinked_gitignore_ignored"][case_id]
+        )
 
 
 WINDOWS_JJ_CAPTURE = json.loads(
