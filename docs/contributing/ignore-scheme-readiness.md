@@ -140,10 +140,10 @@ policy tests cover separator and quote forms, hash-leading patterns, literal bac
 classes, Unicode `?`, case
 sensitivity, class-negation markers, unmatched brackets, ASCII-only token separators, preservation
 of Unicode whitespace, no-negation behavior, effective-setting discovery, and ignored-directory
-pruning. A captured extras fixture checks included and ignored walk
-results against native output across macOS and both Linux profiles, including exclusion of the
-Fossil workspace marker. Opt-in file-membership discovery uses structured Fossil JSON directory
-and checkout-status responses, independently of ignore decisions; directories remain
+pruning. A captured extras fixture checks included and ignored walk results against native output
+across macOS and both Linux profiles, including exclusion of the Fossil workspace marker from
+included results. Opt-in file-membership discovery uses structured Fossil JSON directory and
+checkout-status responses, independently of ignore decisions; directories remain
 membership-unknown. Other tokenizer boundaries and broader native/platform profiles remain open.
 See the [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 [Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md).

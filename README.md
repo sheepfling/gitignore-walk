@@ -266,7 +266,8 @@ Fossil patterns match complete workspace-relative paths; `*` may cross `/`. ASCI
 commas separate patterns; Unicode whitespace remains pattern data. Quoted patterns can contain
 those separators, `#` is ordinary pattern
 data, and a backslash does not escape those separators. Patterns are additive with no `!` negation.
-Ignored directory matches can be pruned, and the walker omits the Fossil checkout marker by default.
+Ignored directory matches can be pruned. The default baseline excludes Fossil checkout markers from
+included walks; `selection="ignored"` and `selection="all"` can still return those marker files.
 Native `fossil extras` output agrees with included and ignored selections for the captured untracked
 traversal fixture. Decisions report ignore-rule matches independently from tracked membership. To
 query file membership as well, opt in with `FossilPolicyConfig(membership_aware=True)`; this reads
