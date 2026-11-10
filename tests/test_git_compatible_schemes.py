@@ -48,10 +48,16 @@ _PATTERN_IGNORED = {
     "root-only.tmp",
     "nested/deep/deep.log",
 }
+_COMPAT_ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
+_COMPAT_FIXTURE = json.loads((_COMPAT_ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))
 _JJ_046_CAPTURE = json.loads(
-    (
-        Path(__file__).parent / "oracles" / "compat" / "results" / "jj-0.46.0-debian13-x86_64.json"
-    ).read_text(encoding="utf-8")
+    (_COMPAT_ORACLE_ROOT / "results" / "jj-0.46.0-debian13-x86_64.json").read_text(encoding="utf-8")
+)
+_WORKSPACE_BOUNDARY_CASES = _COMPAT_FIXTURE["workspace_boundary"]
+_WORKSPACE_BOUNDARY_PROFILES = (
+    "workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
+    "workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
+    "workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
 
 
@@ -144,6 +150,110 @@ def test_sapling_sl_workspace_does_not_inherit_outer_git_info_exclude(tmp_path: 
 
     assert policy.workspace_root == workspace
     assert not policy.explain("inside.local").ignored
+
+
+@pytest.mark.parametrize(
+    ("parent_storage", "nested_storage", "nested_files_visible"),
+    tuple(
+        (case["parent_storage"], case["nested_storage"], case["expected_nested_visible"])
+        for case in _WORKSPACE_BOUNDARY_CASES["sapling_cases"]
+    ),
+)
+def test_sapling_walk_respects_captured_storage_specific_workspace_boundaries(
+    tmp_path: Path,
+    parent_storage: str,
+    nested_storage: str,
+    nested_files_visible: bool,
+) -> None:
+    """Stop only at nested Sapling workspaces with the parent's storage marker."""
+    root = tmp_path / "workspace"
+    root.mkdir()
+    environment = {
+        "HOME": str(tmp_path / "home"),
+        "XDG_CONFIG_HOME": str(tmp_path / "config"),
+    }
+    if parent_storage == "sl":
+        (root / ".sl").mkdir()
+    else:
+        _git_init(root)
+    (root / ".gitignore").write_text("outer.tmp\n", encoding="utf-8")
+    (root / "outer.tmp").touch()
+    nested = root / "nested"
+    nested.mkdir()
+    marker = ".sl" if nested_storage == "sl" else ".git"
+    (nested / marker).mkdir()
+    nested_file = nested / "child.log"
+    nested_file.touch()
+
+    policy = SaplingIgnorePolicy(root, environment=environment)
+    walker = IgnoreWalker(root, policy=policy)
+    all_files = {path.relative_to(root).as_posix() for path in walker.iter_files(selection="all")}
+    ignored_files = {
+        path.relative_to(root).as_posix() for path in walker.iter_files(selection="ignored")
+    }
+    assert not policy.explain("nested/child.log").ignored
+    assert "outer.tmp" in ignored_files
+    assert ("nested/child.log" in all_files) is nested_files_visible
+    if not nested_files_visible:
+        assert list(walker.iter_files(top=nested, selection="all")) == []
+
+
+@pytest.mark.parametrize("colocated", [False, True])
+def test_jujutsu_walk_stops_at_nested_workspace_and_metadata(
+    tmp_path: Path, colocated: bool
+) -> None:
+    """Keep nested `.jj` workspaces and colocated `.git` data outside a parent walk."""
+    root = tmp_path / "workspace"
+    root.mkdir()
+    environment = {
+        "HOME": str(tmp_path / "home"),
+        "XDG_CONFIG_HOME": str(tmp_path / "config"),
+    }
+    (root / ".jj").mkdir()
+    if colocated:
+        (root / ".git").mkdir()
+    (root / ".gitignore").write_text("outer.tmp\n", encoding="utf-8")
+    (root / "outer.tmp").touch()
+    nested = root / "nested"
+    nested.mkdir()
+    (nested / ".jj").mkdir()
+    nested_file = nested / "child.log"
+    nested_file.touch()
+
+    policy = JujutsuIgnorePolicy(root, environment=environment)
+    walker = IgnoreWalker(root, policy=policy)
+    all_files = {path.relative_to(root).as_posix() for path in walker.iter_files(selection="all")}
+    ignored_files = {
+        path.relative_to(root).as_posix() for path in walker.iter_files(selection="ignored")
+    }
+    assert not policy.explain("nested/child.log").ignored
+    assert "outer.tmp" in ignored_files
+    assert "nested/child.log" not in all_files
+    assert "nested/child.log" not in ignored_files
+    assert list(walker.iter_files(top=nested, selection="all")) == []
+
+
+@pytest.mark.parametrize(
+    "profile", _WORKSPACE_BOUNDARY_PROFILES, ids=lambda name: name.removesuffix(".json")
+)
+def test_workspace_boundary_native_profiles_match_the_captured_contract(profile: str) -> None:
+    """Keep Sapling's storage-specific and Jujutsu's nested-workspace boundaries evidenced."""
+    capture = json.loads((_COMPAT_ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
+    assert capture["status"] == "captured"
+    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+
+    cases = {case["id"]: case for case in capture["cases"]}
+    expected = {
+        probe["id"]: probe["expected_nested_visible"]
+        for probe in (
+            *_WORKSPACE_BOUNDARY_CASES["sapling_cases"],
+            *_WORKSPACE_BOUNDARY_CASES["jujutsu_cases"],
+        )
+    }
+    assert set(cases) == set(expected)
+    assert all(case["candidate_matches"] for case in cases.values())
+    assert {case_id: case["native_visible"] for case_id, case in cases.items()} == expected
 
 
 @pytest.mark.parametrize(

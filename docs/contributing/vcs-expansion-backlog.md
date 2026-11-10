@@ -600,6 +600,14 @@ environment-selected config. The behavior is captured on macOS arm64, Debian 13 
 x86_64 with Git 2.47.3, Debian 13 x86_64 with Git 2.56.0, and Windows Jujutsu. This adds one
 environment-selected config path; it does not close the wider client/version/profile coverage gap.
 
+The nested-workspace boundary probe now confirms that Sapling stops at nested workspaces using the
+same storage marker, but traverses into a child using the other marker. Jujutsu stops at nested
+`.jj` workspaces for all colocated/non-colocated parent and child combinations. The portable
+walkers now follow those boundaries and keep traversal out of `.jj`, `.git`, and the applicable
+`.sl` metadata. Disposable native captures cover macOS arm64 and Debian 13 Linux aarch64/x86_64;
+native CI recaptures Linux profiles and checks Jujutsu on Windows. These results cover workspace
+boundaries only, not VCS membership.
+
 The nested symlinked `.gitignore` probe now confirms a source-layout difference: Sapling `.sl` mode
 follows a symlink to an ignore file outside the workspace, while Sapling `.git` and Jujutsu skip
 that source. The portable Sapling policy follows this only in `.sl` mode. Committed macOS and Debian

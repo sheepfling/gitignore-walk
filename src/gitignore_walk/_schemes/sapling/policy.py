@@ -23,7 +23,8 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
     Sapling's `.sl` storage mode reads workspace `.gitignore` files but does not apply Git's XDG
     ignore file or `.git/info/exclude`. Sapling's `.git` mode uses all three sources with Git
     precedence. For nested `.gitignore` files, `.sl` mode follows symlinks while `.git` mode skips
-    them, matching the captured Sapling behavior. The policy discovers the nearest `.sl` or `.git`
+    them, matching the captured Sapling behavior. Walking stops at nested workspaces that use the
+    same storage marker as the selected workspace. The policy discovers the nearest `.sl` or `.git`
     workspace marker and keeps the caller's ``root`` as the query and traversal bound.
 
     This policy covers only the captured ignore dialect/source behavior. It does not query
@@ -71,6 +72,7 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         )
         super().__init__(caller_root, environment=environment, initial_excludes=excludes)
         self._allow_symlinked_gitignore = storage == "sl"
+        self._workspace_marker = ".sl" if storage == "sl" else ".git"
         self.workspace_root = workspace_root
         self._repository_root = workspace_root
         metadata = _find_repository_metadata(workspace_root)
@@ -95,6 +97,12 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
                 self._global_excludes = default_path
         else:
             self._global_excludes = None
+
+    def should_descend_directory(self, target: Path) -> bool:
+        """Keep walks out of Sapling metadata and nested same-storage workspaces."""
+        if target.name == ".git" or (self._workspace_marker == ".sl" and target.name == ".sl"):
+            return False
+        return not (target / self._workspace_marker).exists()
 
 
 def _find_workspace(root: Path) -> tuple[Path, str]:

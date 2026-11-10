@@ -19,7 +19,8 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
     The policy discovers the nearest `.jj` workspace. It reads workspace `.gitignore` files and
     the conventional XDG Git ignore file. A colocated `.git` directory contributes its
     `info/exclude`; an enclosing Git repository outside the Jujutsu workspace does not. This
-    read-only evaluator avoids invoking `jj` commands that snapshot the working copy.
+    read-only evaluator avoids invoking `jj` commands that snapshot the working copy. Walks stop at
+    nested Jujutsu workspaces and do not enter `.jj` or colocated `.git` metadata directories.
 
     This policy covers the captured source layout and Git-compatible ignore dialect. It does not
     report Jujutsu membership. Callers can pass ``core.excludesFile`` explicitly or opt in to Git
@@ -91,6 +92,12 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
                 default_path=self._global_excludes,
                 git_dir=git_dir,
             )
+
+    def should_descend_directory(self, target: Path) -> bool:
+        """Keep walks out of Jujutsu metadata and nested Jujutsu workspaces."""
+        if target.name in {".git", ".jj"}:
+            return False
+        return not (target / ".jj").exists()
 
 
 def _find_workspace(root: Path) -> Path:

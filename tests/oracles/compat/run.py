@@ -1462,6 +1462,167 @@ def _normalize_jujutsu_status(text: str) -> str:
     return re.sub(r"(Parent commit \(@-\): )\w+ [0-9a-f]{8}", r"\1<parent>", text)
 
 
+def _capture_sapling_workspace_boundary(
+    executable: str, probe: Mapping[str, Any], fixture: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Capture whether Sapling enters a nested workspace using the same storage marker."""
+    with tempfile.TemporaryDirectory(prefix="gitignore-walk-sapling-boundary-") as temporary:
+        base = Path(temporary)
+        root = base / "workspace"
+        root.mkdir()
+        home = base / "home"
+        home.mkdir()
+        environment = {
+            **os.environ,
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "SL_USER": "Oracle <oracle@example.invalid>",
+            "PAGER": "cat",
+            "HGPLAIN": "1",
+            "GIT_CONFIG_NOSYSTEM": "1",
+        }
+        if probe["parent_storage"] == "sl":
+            _require_success(
+                _run([executable, "init", str(root)], cwd=root, environment=environment),
+                "sl init parent workspace boundary probe",
+            )
+        else:
+            _require_success(
+                _run(["git", "init", "-q", str(root)], cwd=root, environment=environment),
+                "git init Sapling parent workspace boundary probe",
+            )
+            _set_oracle_branch(root, environment)
+            _set_oracle_remote(root, environment)
+        (root / ".gitignore").write_text(fixture["root_ignore"], encoding="utf-8")
+        (root / fixture["outer_probe"]).write_text("ignored by the parent\n", encoding="utf-8")
+
+        nested = root / "nested"
+        nested.mkdir()
+        if probe["nested_storage"] == "sl":
+            _require_success(
+                _run([executable, "init", str(nested)], cwd=root, environment=environment),
+                "sl init nested workspace boundary probe",
+            )
+        else:
+            _require_success(
+                _run(["git", "init", "-q", str(nested)], cwd=root, environment=environment),
+                "git init nested Sapling workspace boundary probe",
+            )
+        _write_files(root, {fixture["nested_probe"]: fixture["nested_probe_content"]})
+        status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
+        _require_success(status, "sl status nested workspace boundary probe")
+        included, ignored = _sapling_status_paths(status.stdout)
+        query = fixture["nested_probe"]
+        visible = query in included or query in ignored
+        expected = probe["expected_nested_visible"]
+        return {
+            **probe,
+            "native_status": "captured",
+            "nested_probe": query,
+            "native_visible": visible,
+            "native_included": sorted(included),
+            "native_ignored": sorted(ignored),
+            "candidate_matches": visible is expected,
+            "status_exit_code": status.returncode,
+            "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+            "status_stderr": status.stderr.replace(str(root), "<workspace>"),
+        }
+
+
+def _capture_jujutsu_workspace_boundary(
+    executable: str, probe: Mapping[str, Any], fixture: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Capture whether Jujutsu enters a nested `.jj` workspace in a parent file list."""
+    with tempfile.TemporaryDirectory(prefix="gitignore-walk-jj-boundary-") as temporary:
+        base = Path(temporary)
+        root = base / "workspace"
+        root.mkdir()
+        home = base / "home"
+        config_dir = home / ".config" / "jj"
+        config_dir.mkdir(parents=True)
+        (config_dir / "config.toml").write_text(
+            '[user]\nname = "Oracle"\nemail = "oracle@example.invalid"\n',
+            encoding="utf-8",
+        )
+        environment = {
+            **os.environ,
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "PAGER": "cat",
+            "GIT_CONFIG_NOSYSTEM": "1",
+        }
+        init = [executable, "git", "init"]
+        if probe["parent_mode"] == "noncolocated":
+            init.append("--no-colocate")
+        init.append(str(root))
+        _require_success(_run(init, cwd=root, environment=environment), "jj init parent workspace")
+        _set_oracle_branch(root, environment)
+        _set_oracle_remote_jj(executable, root, environment)
+        (root / ".gitignore").write_text(fixture["root_ignore"], encoding="utf-8")
+        (root / fixture["outer_probe"]).write_text("ignored by the parent\n", encoding="utf-8")
+
+        nested = root / "nested"
+        nested.mkdir()
+        child_init = [executable, "git", "init"]
+        if probe["child_mode"] == "noncolocated":
+            child_init.append("--no-colocate")
+        child_init.append(str(nested))
+        _require_success(
+            _run(child_init, cwd=root, environment=environment), "jj init nested workspace"
+        )
+        _write_files(root, {fixture["nested_probe"]: fixture["nested_probe_content"]})
+        status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
+        _require_success(status, "jj status nested workspace boundary probe")
+        listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+        _require_success(listed, "jj file list nested workspace boundary probe")
+        files = _jujutsu_paths(listed.stdout)
+        query = fixture["nested_probe"]
+        visible = query in files
+        expected = probe["expected_nested_visible"]
+        return {
+            **probe,
+            "native_status": "captured",
+            "nested_probe": query,
+            "native_visible": visible,
+            "native_files": sorted(files),
+            "candidate_matches": visible is expected,
+            "status_exit_code": status.returncode,
+            "status_stdout": _normalize_jujutsu_status(
+                status.stdout.replace(str(root), "<workspace>")
+            ),
+            "status_stderr": status.stderr.replace(str(root), "<workspace>"),
+            "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+        }
+
+
+def capture_workspace_boundaries(sapling: str | None, jj: str) -> dict[str, Any]:
+    """Capture nested workspace traversal boundaries for disposable Sapling/Jujutsu clients."""
+    fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))[
+        "workspace_boundary"
+    ]
+    client_versions = {"jujutsu": _version(jj)}
+    cases: list[dict[str, Any]] = []
+    if sapling is not None:
+        client_versions["sapling"] = _version(sapling)
+        cases.extend(
+            _capture_sapling_workspace_boundary(sapling, probe, fixture)
+            for probe in fixture["sapling_cases"]
+        )
+    cases.extend(
+        _capture_jujutsu_workspace_boundary(jj, probe, fixture)
+        for probe in fixture["jujutsu_cases"]
+    )
+    return {
+        "schema_version": 1,
+        "status": "captured",
+        "platform": platform.platform(),
+        "clients": client_versions,
+        "cases": cases,
+    }
+
+
 def capture(sapling: str | None, jj: str) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
     client_versions = {"git": _version("git")}
@@ -1690,6 +1851,11 @@ def main() -> int:
         help="capture Git, Sapling, and colocated Jujutsu linked-worktree excludes",
     )
     parser.add_argument(
+        "--workspace-boundary-only",
+        action="store_true",
+        help="capture whether native Sapling/Jujutsu walks enter nested workspaces",
+    )
+    parser.add_argument(
         "--expect-jj-follows-symlink",
         action="store_true",
         help="expect Jujutsu to follow the nested .gitignore symlink (pre-0.46.0 profile)",
@@ -1700,6 +1866,13 @@ def main() -> int:
         parser.error("--expect-jj-follows-symlink requires --symlink-only")
     if arguments.linked_worktree_only and arguments.symlink_only:
         parser.error("--linked-worktree-only and --symlink-only cannot be combined")
+    if arguments.workspace_boundary_only and (
+        arguments.linked_worktree_only or arguments.symlink_only
+    ):
+        parser.error(
+            "--workspace-boundary-only cannot be combined with --linked-worktree-only or "
+            "--symlink-only"
+        )
     if arguments.symlink_only:
         result = capture_jj_symlink_profile(
             arguments.jj,
@@ -1707,6 +1880,11 @@ def main() -> int:
         )
     elif arguments.linked_worktree_only:
         result = capture_linked_worktree_profile(
+            None if arguments.jj_only else arguments.sl,
+            arguments.jj,
+        )
+    elif arguments.workspace_boundary_only:
+        result = capture_workspace_boundaries(
             None if arguments.jj_only else arguments.sl,
             arguments.jj,
         )
@@ -1728,6 +1906,13 @@ def main() -> int:
     if arguments.linked_worktree_only:
         matched = sum(case["candidate_matches"] for case in result["cases"])
         print(f"Captured linked-worktree source cases matching: {matched}/{len(result['cases'])}")
+        print(f"Capture: {arguments.output}")
+        return 0 if matched == len(result["cases"]) else 1
+    if arguments.workspace_boundary_only:
+        matched = sum(case["candidate_matches"] for case in result["cases"])
+        print(
+            f"Captured nested-workspace boundary cases matching: {matched}/{len(result['cases'])}"
+        )
         print(f"Capture: {arguments.output}")
         return 0 if matched == len(result["cases"]) else 1
     matched = sum(

@@ -212,6 +212,24 @@
     "nested/deep/deep.log",
     "root-only.tmp"
   ],
+  "workspace_boundary": {
+    "root_ignore": "outer.tmp\n",
+    "outer_probe": "outer.tmp",
+    "nested_probe": "nested/child.log",
+    "nested_probe_content": "should be visible only when the parent client enters the nested workspace\n",
+    "sapling_cases": [
+      {"id": "sapling.sl-parent-sl-child", "parent_storage": "sl", "nested_storage": "sl", "expected_nested_visible": false},
+      {"id": "sapling.sl-parent-git-child", "parent_storage": "sl", "nested_storage": "git", "expected_nested_visible": true},
+      {"id": "sapling.git-parent-git-child", "parent_storage": "git", "nested_storage": "git", "expected_nested_visible": false},
+      {"id": "sapling.git-parent-sl-child", "parent_storage": "git", "nested_storage": "sl", "expected_nested_visible": true}
+    ],
+    "jujutsu_cases": [
+      {"id": "jj.colocated-parent-colocated-child", "parent_mode": "colocated", "child_mode": "colocated", "expected_nested_visible": false},
+      {"id": "jj.colocated-parent-noncolocated-child", "parent_mode": "colocated", "child_mode": "noncolocated", "expected_nested_visible": false},
+      {"id": "jj.noncolocated-parent-colocated-child", "parent_mode": "noncolocated", "child_mode": "colocated", "expected_nested_visible": false},
+      {"id": "jj.noncolocated-parent-noncolocated-child", "parent_mode": "noncolocated", "child_mode": "noncolocated", "expected_nested_visible": false}
+    ]
+  },
   "profiles": [
     {"id": "sapling.git-mode", "vcs": "sapling", "mode": "git"},
     {"id": "sapling.sl-mode", "vcs": "sapling", "mode": "sl"},

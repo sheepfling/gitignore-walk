@@ -175,7 +175,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json'
           python - <<'PY'
           import json
           import os
@@ -186,6 +186,8 @@ jobs:
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          boundary_path = Path(os.environ["RUNNER_TEMP"]) / "native/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
+          boundary = json.loads(boundary_path.read_text(encoding="utf-8"))
           linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
           linked = json.loads(linked_path.read_text(encoding="utf-8"))
           assert result["passed"], result
@@ -212,6 +214,15 @@ jobs:
               ["probe.worktreeignore"],
           ]
           assert all(case["candidate_matches"] for case in linked["cases"])
+          assert "Sapling 0.2.20261103" in boundary["clients"]["sapling"]
+          assert boundary["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert {case["id"] for case in boundary["cases"]} == {
+              "sapling.sl-parent-sl-child", "sapling.sl-parent-git-child",
+              "sapling.git-parent-git-child", "sapling.git-parent-sl-child",
+              "jj.colocated-parent-colocated-child", "jj.colocated-parent-noncolocated-child",
+              "jj.noncolocated-parent-colocated-child", "jj.noncolocated-parent-noncolocated-child",
+          }
+          assert all(case["candidate_matches"] for case in boundary["cases"])
           print(result)
           PY
       - name: Download pinned Sapling and Jujutsu x86_64 releases
@@ -243,7 +254,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj /tmp/jj046 && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj046 && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --output /output/jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj /tmp/jj046 && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj046 && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --output /output/jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
           python - <<'PY'
           import json
           import os
@@ -254,6 +265,8 @@ jobs:
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          boundary_path = Path(os.environ["RUNNER_TEMP"]) / "native/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json"
+          boundary = json.loads(boundary_path.read_text(encoding="utf-8"))
           linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json"
           linked = json.loads(linked_path.read_text(encoding="utf-8"))
           jj046_path = Path(os.environ["RUNNER_TEMP"]) / "native/jj-0.46.0-debian13-x86_64.json"
@@ -300,6 +313,10 @@ jobs:
               ["probe.worktreeignore"],
           ]
           assert all(case["candidate_matches"] for case in linked["cases"])
+          assert "Sapling 0.2.20261103" in boundary["clients"]["sapling"]
+          assert boundary["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert len(boundary["cases"]) == 8
+          assert all(case["candidate_matches"] for case in boundary["cases"])
           print(result)
           PY
       - name: Verify Jujutsu symlink behavior change across releases
@@ -493,6 +510,9 @@ jobs:
           $output = Join-Path $nativeDir 'jj-0.47.1-windows-x64.json'
           python tests/oracles/compat/run.py --jj $jj --jj-only --output $output
           if ($LASTEXITCODE -ne 0) { throw "Jujutsu capture failed: $LASTEXITCODE" }
+          $boundaryOutput = Join-Path $nativeDir 'workspace-boundaries-jj-0.47.1-windows-x64.json'
+          python tests/oracles/compat/run.py --jj $jj --jj-only --workspace-boundary-only --output $boundaryOutput
+          if ($LASTEXITCODE -ne 0) { throw "Jujutsu workspace-boundary capture failed: $LASTEXITCODE" }
           $linkedOutput = Join-Path $nativeDir 'linked-worktree-jj-0.47.1-windows-x64.json'
           python tests/oracles/compat/run.py --jj $jj --jj-only --linked-worktree-only --output $linkedOutput
           if ($LASTEXITCODE -ne 0) { throw "Jujutsu linked-worktree capture failed: $LASTEXITCODE" }
@@ -504,11 +524,16 @@ jobs:
           from scripts.ci_native import inspect_capture
 
           path = Path(os.environ["RUNNER_TEMP"]) / "native/jj-0.47.1-windows-x64.json"
+          boundary_path = Path(os.environ["RUNNER_TEMP"]) / "native/workspace-boundaries-jj-0.47.1-windows-x64.json"
           linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-jj-0.47.1-windows-x64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          boundary = json.loads(boundary_path.read_text(encoding="utf-8"))
           linked = json.loads(linked_path.read_text(encoding="utf-8"))
           assert result["passed"], result
+          assert len(boundary["cases"]) == 4
+          assert boundary["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert all(case["candidate_matches"] for case in boundary["cases"])
           assert len(capture["cases"]) == 2
           assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
           assert set(capture["clients"]) == {"git", "jujutsu"}

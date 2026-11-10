@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "Linux-7.0.12-linuxkit-x86_64-with-glibc2.41",
+  "clients": {
+    "jujutsu": "jj 0.47.1-d16ee1fc88a72c54142241b079a34bbf3b033bc0",
+    "sapling": "Sapling 0.2.20261103-145137+6282ac56"
+  },
+  "cases": [
+    {
+      "id": "sapling.sl-parent-sl-child",
+      "parent_storage": "sl",
+      "nested_storage": "sl",
+      "expected_nested_visible": false,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": false,
+      "native_included": [
+        ".gitignore"
+      ],
+      "native_ignored": [
+        "outer.tmp"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "? .gitignore\u0000I outer.tmp\u0000",
+      "status_stderr": ""
+    },
+    {
+      "id": "sapling.sl-parent-git-child",
+      "parent_storage": "sl",
+      "nested_storage": "git",
+      "expected_nested_visible": true,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": true,
+      "native_included": [
+        ".gitignore",
+        "nested/child.log"
+      ],
+      "native_ignored": [
+        "outer.tmp"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "? .gitignore\u0000? nested/child.log\u0000I outer.tmp\u0000",
+      "status_stderr": ""
+    },
+    {
+      "id": "sapling.git-parent-git-child",
+      "parent_storage": "git",
+      "nested_storage": "git",
+      "expected_nested_visible": false,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": false,
+      "native_included": [
+        ".gitignore"
+      ],
+      "native_ignored": [
+        "outer.tmp"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "? .gitignore\u0000I outer.tmp\u0000",
+      "status_stderr": ""
+    },
+    {
+      "id": "sapling.git-parent-sl-child",
+      "parent_storage": "git",
+      "nested_storage": "sl",
+      "expected_nested_visible": true,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": true,
+      "native_included": [
+        ".gitignore",
+        "nested/.sl/00changelog.i",
+        "nested/.sl/reponame",
+        "nested/.sl/requires",
+        "nested/.sl/store/metalog/blobs/index2-id",
+        "nested/.sl/store/metalog/blobs/log",
+        "nested/.sl/store/metalog/blobs/meta",
+        "nested/.sl/store/metalog/blobs/rlock",
+        "nested/.sl/store/metalog/roots/index2-reverse",
+        "nested/.sl/store/metalog/roots/log",
+        "nested/.sl/store/metalog/roots/meta",
+        "nested/.sl/store/metalog/roots/rlock",
+        "nested/.sl/store/requires",
+        "nested/child.log"
+      ],
+      "native_ignored": [
+        "outer.tmp"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "? .gitignore\u0000? nested/.sl/00changelog.i\u0000? nested/.sl/reponame\u0000? nested/.sl/requires\u0000? nested/.sl/store/metalog/blobs/index2-id\u0000? nested/.sl/store/metalog/blobs/log\u0000? nested/.sl/store/metalog/blobs/meta\u0000? nested/.sl/store/metalog/blobs/rlock\u0000? nested/.sl/store/metalog/roots/index2-reverse\u0000? nested/.sl/store/metalog/roots/log\u0000? nested/.sl/store/metalog/roots/meta\u0000? nested/.sl/store/metalog/roots/rlock\u0000? nested/.sl/store/requires\u0000? nested/child.log\u0000I outer.tmp\u0000",
+      "status_stderr": ""
+    },
+    {
+      "id": "jj.colocated-parent-colocated-child",
+      "parent_mode": "colocated",
+      "child_mode": "colocated",
+      "expected_nested_visible": false,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": false,
+      "native_files": [
+        ".gitignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nWorking copy  (@) : <working-copy> (no description set)\nParent commit (@-): <parent> (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": ".gitignore\n"
+    },
+    {
+      "id": "jj.colocated-parent-noncolocated-child",
+      "parent_mode": "colocated",
+      "child_mode": "noncolocated",
+      "expected_nested_visible": false,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": false,
+      "native_files": [
+        ".gitignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nWorking copy  (@) : <working-copy> (no description set)\nParent commit (@-): <parent> (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": ".gitignore\n"
+    },
+    {
+      "id": "jj.noncolocated-parent-colocated-child",
+      "parent_mode": "noncolocated",
+      "child_mode": "colocated",
+      "expected_nested_visible": false,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": false,
+      "native_files": [
+        ".gitignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nWorking copy  (@) : <working-copy> (no description set)\nParent commit (@-): <parent> (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": ".gitignore\n"
+    },
+    {
+      "id": "jj.noncolocated-parent-noncolocated-child",
+      "parent_mode": "noncolocated",
+      "child_mode": "noncolocated",
+      "expected_nested_visible": false,
+      "native_status": "captured",
+      "nested_probe": "nested/child.log",
+      "native_visible": false,
+      "native_files": [
+        ".gitignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nWorking copy  (@) : <working-copy> (no description set)\nParent commit (@-): <parent> (empty) (no description set)\n",
+      "status_stderr": "",
+      "file_list_stdout": ".gitignore\n"
+    }
+  ]
+}
