@@ -2536,6 +2536,117 @@
       "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "raw_stdout": "\u00e9 is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-quei1oa8/repo/.hgignore, line 2: '??')\n",
       "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-ascii-inline-flag",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u00e9"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "\u00e9 is not ignored\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "36e2af79002382fad41d48e2968ed248bacd81530b96f6ab202b85bb2fdad99d",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u00e9 is not ignored\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-locale-inline-flag",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "observed_ignored": false,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "\u00e9"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "not-ignored",
+      "stdout": "\u00e9 is not ignored\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "36e2af79002382fad41d48e2968ed248bacd81530b96f6ab202b85bb2fdad99d",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "\u00e9 is not ignored\n",
+      "raw_stderr": ""
+    },
+    {
+      "id": "hg.regex-verbose-inline-flag",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "foo"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "foo is ignored\n(ignore rule in <repo>/.hgignore, line 1: '(?x)^ f o o $')\n",
+      "stderr": "",
+      "configuration": null,
+      "normalized_stdout_sha256": "5f059ed536af32f0eb2bab07baec05c88f2c0ad95bb4c3bc5a20ddca4536c331",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "foo is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-lnke23jv/repo/.hgignore, line 1: '(?x)^ f o o $')\n",
+      "raw_stderr": ""
     }
   ]
 }

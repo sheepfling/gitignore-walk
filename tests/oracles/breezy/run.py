@@ -20,6 +20,49 @@ from unittest.mock import patch
 _BREEZY_API_READY = False
 
 
+def _capture_profile_name(
+    version_output: str,
+    *,
+    system: str | None = None,
+    machine: str | None = None,
+    python_version: tuple[int, int] | None = None,
+) -> str | None:
+    """Build the oracle filename used to scope profile-specific Breezy probes."""
+    version_match = re.search(r"\b(\d+\.\d+(?:\.\d+)*)\b", version_output)
+    if version_match is None:
+        return None
+    operating_system = (system or platform.system()).lower()
+    operating_system = {"darwin": "macos"}.get(operating_system, operating_system)
+    architecture = (machine or platform.machine()).lower()
+    architecture = {"amd64": "x86_64", "x64": "x86_64"}.get(architecture, architecture)
+    python_version = python_version or sys.version_info[:2]
+    python_suffix = (
+        "" if operating_system == "macos" else f"-py{python_version[0]}{python_version[1]}"
+    )
+    return f"brz-{version_match.group(1)}-{operating_system}-{architecture}{python_suffix}.json"
+
+
+def _select_cases_for_profile(
+    cases: Sequence[Mapping[str, Any]], capture_profile: str | None
+) -> tuple[list[Mapping[str, Any]], list[dict[str, Any]]]:
+    """Keep profile-scoped probes out of native profiles not named by the case."""
+    selected: list[Mapping[str, Any]] = []
+    excluded: list[dict[str, Any]] = []
+    for case in cases:
+        required_profiles = case.get("capture_profiles")
+        if required_profiles and capture_profile not in required_profiles:
+            excluded.append(
+                {
+                    "id": case["id"],
+                    "required_profiles": required_profiles,
+                    "current_profile": capture_profile,
+                }
+            )
+        else:
+            selected.append(case)
+    return selected, excluded
+
+
 def _invoke(
     command: Sequence[str], *, cwd: Path, environment: Mapping[str, str]
 ) -> subprocess.CompletedProcess[str]:
@@ -285,7 +328,11 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
                 cwd=home,
                 environment=environment,
             )
-        captured = [_capture_case(case, executable) for case in cases_data["cases"]]
+        capture_profile = _capture_profile_name(version_text[0] if version_text else "")
+        selected_cases, excluded_cases = _select_cases_for_profile(
+            cases_data["cases"], capture_profile
+        )
+        captured = [_capture_case(case, executable) for case in selected_cases]
         expected_invalid_patterns = {
             "brz.regex-invalid-pattern",
             "brz.regex-global-inline-flag-rejected",
@@ -318,6 +365,7 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
                 "stderr": defaults.stderr,
                 "isolated_configuration": True,
             },
+            "excluded_cases": excluded_cases,
             "cases": captured,
         }
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -331,6 +379,7 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
     print(f"Captured {len(result['cases'])} Breezy cases: {result['status']}")
     print(f"Boolean candidates matching: {matches}/{len(boolean_cases)}")
     print(f"Winning-pattern candidates matching: {pattern_matches}/{len(pattern_cases)}")
+    print(f"Cases outside their declared capture profiles: {len(result.get('excluded_cases', []))}")
     print(f"Capture: {output_path}")
     return 1 if result["status"] == "failed" else 0
 

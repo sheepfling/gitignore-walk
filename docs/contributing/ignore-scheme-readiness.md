@@ -76,9 +76,10 @@ capture covers the original 48 `hg debugignore` cases and six native status walk
 arm64 with Mercurial 7.2.4, Linux aarch64 and x86_64 with Mercurial 7.0.1, and Windows Server 2025
 x86_64 with Mercurial 7.1.2. Eight regex/glob byte-semantics cases are now captured on macOS and
 Linux aarch64/x86_64; tests compare them against the installed client on client-enabled profiles.
-Three additional inline-flag probes (`a`, `L`, and `x`) match Mercurial 7.2.4 on macOS arm64 and the
-portable evaluator. Live comparisons run on client-enabled profiles, while committed captures for
-other client versions remain open.
+Three additional inline-flag probes (`a`, `L`, and `x`) match Mercurial 7.2.4/macOS arm64 and
+6.7.2/hosted Ubuntu x86_64, as well as the portable evaluator. Mercurial 7.1.2/Windows x86_64 also
+matches these probes, with a platform-specific `(?L)` result for `é`. Live comparisons run on
+client-enabled profiles; committed captures for other client versions remain open.
 The full Mercurial test module passes in Debian 13 Linux containers on both architectures. The
 differential library tests replay captured observations for each profile, while native-skipped
 observations remain test skips. The

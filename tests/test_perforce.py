@@ -54,7 +54,7 @@ def _policy_for_case(root: Path, case: dict[str, Any]) -> PerforceIgnorePolicy:
             stream.write(contents)
     target = root / case["query"]
     target.parent.mkdir(parents=True, exist_ok=True)
-    if not target.exists():
+    if "\n" not in case["query"] and not target.exists():
         target.touch()
     environment = {}
     if "P4IGNORE" in case["setup"]:

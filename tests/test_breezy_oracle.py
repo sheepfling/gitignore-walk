@@ -9,6 +9,7 @@ from typing import Any
 import pytest
 
 from gitignore_walk import BreezyIgnorePolicy, IgnoreWalker
+from tests.oracles.breezy.run import _capture_profile_name, _select_cases_for_profile
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "breezy"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
@@ -22,6 +23,46 @@ CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
     for name in CAPTURE_FILES
 }
+
+
+@pytest.mark.parametrize(
+    ("system", "machine", "python_version", "expected"),
+    [
+        ("Darwin", "arm64", (3, 12), "brz-3.3.24-macos-arm64.json"),
+        ("Linux", "aarch64", (3, 12), "brz-3.3.24-linux-aarch64-py312.json"),
+        ("Windows", "AMD64", (3, 12), "brz-3.3.24-windows-x86_64-py312.json"),
+    ],
+)
+def test_breezy_profile_scoping_uses_capture_filename(
+    system: str, machine: str, python_version: tuple[int, int], expected: str
+) -> None:
+    assert (
+        _capture_profile_name(
+            "Breezy (brz) 3.3.24",
+            system=system,
+            machine=machine,
+            python_version=python_version,
+        )
+        == expected
+    )
+
+
+def test_breezy_capture_only_runs_cases_declared_for_the_current_profile() -> None:
+    cases = [
+        {"id": "shared"},
+        {"id": "mac-only", "capture_profiles": ["brz-3.3.24-macos-arm64.json"]},
+    ]
+
+    selected, excluded = _select_cases_for_profile(cases, "brz-3.3.24-windows-x86_64-py312.json")
+
+    assert [case["id"] for case in selected] == ["shared"]
+    assert excluded == [
+        {
+            "id": "mac-only",
+            "required_profiles": ["brz-3.3.24-macos-arm64.json"],
+            "current_profile": "brz-3.3.24-windows-x86_64-py312.json",
+        }
+    ]
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])

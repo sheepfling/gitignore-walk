@@ -21,8 +21,11 @@ source-precedence cases are captured on macOS arm64 and Linux aarch64: with over
 ignores, Breezy reports the global pattern before the built-in pattern, and the built-in pattern
 before the branch `.bzrignore` pattern. The policy now preserves this observed global, built-in,
 branch order for equal-priority rules. The live `oracle-brz` runner checks these expected winning
-patterns and exits nonzero if a known boolean or winning-pattern candidate mismatches. The four added
-regex cases establish whole-path matching rather than substring search, `!!RE` priority over an `!RE`
+patterns and exits nonzero if a known boolean or winning-pattern candidate mismatches.
+`capture_profiles` in `cases.json` scopes native-only probes to client profiles that have been
+observed. Other profiles list excluded probe IDs in `excluded_cases` instead of treating them as
+candidate mismatches or comparing their path-dependent outputs as conformance. The four added regex
+cases establish whole-path matching rather than substring search, `!!RE` priority over an `!RE`
 exception, and the 3.3.24 backslash normalization quirk on all four profiles. Boolean cases cover
 exception priority, `!!` strong-exclude priority, trailing slash normalization, basename matching,
 slash-rooted matching, whitespace preservation, no nested `.bzrignore` auto-discovery, global versus

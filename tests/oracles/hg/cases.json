@@ -705,6 +705,9 @@
       },
       "query": "é",
       "expected_candidate": false,
+      "expected_candidate_by_os": {
+        "nt": true
+      },
       "evidence_status": "native-observed",
       "source_ids": ["HG-IGNORE"],
       "release_gate": "Retain native byte-regex behavior for the locale inline flag."
