@@ -94,6 +94,21 @@ jobs:
             debian:13-slim \
             bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs python3 && python3 tests/oracles/darcs/run.py --output /output/darcs-oracle.json'
           python -c "from pathlib import Path; from scripts.ci_native import inspect_capture; path = Path(r'$RUNNER_TEMP/native/darcs-oracle.json'); result = inspect_capture(path); print(result); raise SystemExit(not result['passed'])"
+      - name: Enable ARM64 emulation for Darcs oracle
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm64
+      - name: Capture Darcs oracle on Debian 13 ARM64
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          docker run --rm --platform linux/arm64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs python3 && python3 tests/oracles/darcs/run.py --output /output/darcs-debian13-arm64.json'
+          python -c "from pathlib import Path; from scripts.ci_native import inspect_capture; path = Path(r'$RUNNER_TEMP/native/darcs-debian13-arm64.json'); result = inspect_capture(path); print(result); raise SystemExit(not result['passed'])"
       - name: Check selected Linux native captures
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-

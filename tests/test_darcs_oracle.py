@@ -13,6 +13,7 @@ CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["ca
 CAPTURE_FILES = (
     "darcs-2.18.5-macos-arm64.json",
     "darcs-debian13-x86_64.json",
+    "darcs-debian13-arm64.json",
 )
 CAPTURES = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))

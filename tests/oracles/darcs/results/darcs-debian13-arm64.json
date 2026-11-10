@@ -1,0 +1,317 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "version": "2.18.4 (release)",
+    "platform": "Linux-7.0.12-linuxkit-aarch64-with-glibc2.41"
+  },
+  "cases": [
+    {
+      "id": "darcs.ere-alternation",
+      "dimension": "regex",
+      "query": "x.pyc",
+      "expected_boring": true,
+      "observed_boring": true,
+      "candidate_paths": [],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 1,
+      "whatsnew_stdout": "No changes!\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.posix-character-class",
+      "dimension": "regex",
+      "query": "123",
+      "expected_boring": true,
+      "observed_boring": true,
+      "candidate_paths": [],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 1,
+      "whatsnew_stdout": "No changes!\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.boringfile-replaces-local",
+      "dimension": "discovery",
+      "query": "a.tmp",
+      "expected_boring": true,
+      "observed_boring": true,
+      "candidate_paths": [],
+      "tracked_paths": [
+        ".",
+        "policy"
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "A ./policy\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.boringfile-selects-versioned-source",
+      "dimension": "discovery",
+      "query": "a.bak",
+      "expected_boring": true,
+      "observed_boring": true,
+      "candidate_paths": [],
+      "tracked_paths": [
+        ".",
+        "policy"
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "A ./policy\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.global-additive",
+      "dimension": "discovery",
+      "query": "a.tmp",
+      "expected_boring": true,
+      "observed_boring": true,
+      "candidate_paths": [],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 1,
+      "whatsnew_stdout": "No changes!\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.tracked-boring-file-remains-managed",
+      "dimension": "membership",
+      "query": "a.tmp",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [],
+      "tracked_paths": [
+        ".",
+        "a.tmp"
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "A ./a.tmp\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.hash-leading-rule-is-comment",
+      "dimension": "lexing",
+      "query": "#literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "#literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./#literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.leading-space-is-rule-data",
+      "dimension": "lexing",
+      "query": "#literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "#literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./#literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.trailing-space-is-rule-data",
+      "dimension": "lexing",
+      "query": "literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.trailing-tab-is-rule-data",
+      "dimension": "lexing",
+      "query": "literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.inline-hash-is-pattern-data",
+      "dimension": "lexing",
+      "query": "literal",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "literal"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./literal\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.unicode-literal-match",
+      "dimension": "encoding",
+      "query": "\u00e9.tmp",
+      "expected_boring": true,
+      "observed_boring": true,
+      "candidate_paths": [],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 1,
+      "whatsnew_stdout": "No changes!\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.unicode-normalization-is-distinct",
+      "dimension": "encoding",
+      "query": "e\u0301.tmp",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "e\u0301.tmp"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./e\u0301.tmp\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.posix-alpha-class-on-unicode",
+      "dimension": "regex",
+      "query": "\u00e9.tmp",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "\u00e9.tmp"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./\u00e9.tmp\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.posix-alpha-class-on-unicode-utf8-locale",
+      "dimension": "locale",
+      "query": "\u00e9.tmp",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "\u00e9.tmp"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./\u00e9.tmp\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.comments-and-invalid-regex",
+      "dimension": "lexing",
+      "query": null,
+      "expected_boring": null,
+      "observed_boring": null,
+      "candidate_paths": [],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 1,
+      "whatsnew_stdout": "No changes!\n",
+      "whatsnew_stderr": "Warning: Ignored invalid boring regex: invalid[\n",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    }
+  ]
+}

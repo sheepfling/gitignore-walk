@@ -153,8 +153,9 @@ Hosted CI checks clean environments and differences that a developer's machine c
 - Five unchanged core lanes: Linux Python 3.10, 3.12, and 3.15; Windows and macOS Python 3.12.
   Linux Python 3.12 runs `all`; the other lanes run tests with only pytest installed.
 - One Linux native lane runs the native-backed policy suite and checks Mercurial
-  matching/walking/trust, Subversion, Fossil, Breezy, and Perforce. Darcs runs in a Debian 13
-  container because Ubuntu 24.04 no longer packages the required executable.
+  matching/walking/trust, Subversion, Fossil, Breezy, and Perforce. Darcs runs in Debian 13
+  containers on x86_64 and emulated ARM64 because Ubuntu 24.04 no longer packages the required
+  executable.
 - One Windows native lane installs clients once, runs Mercurial/Subversion/Breezy policy tests,
   checks those three captures, and retains the explicit Registry/INI precedence probe. Protocol
   based Subversion cases are explicit skips when the SlikSVN installer does not provide `svnserve`.

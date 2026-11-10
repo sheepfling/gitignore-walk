@@ -12,13 +12,15 @@ Run from the repository root:
 python -m scripts.ci oracle-darcs --output /tmp/darcs-oracle.json
 ```
 
-The current corpus has sixteen probes across macOS arm64 Darcs 2.18.5 and Debian 13 x86_64 Darcs
-2.18.4. Fifteen closed candidates cover ERE alternation, a POSIX character class, global boring
-rules, a configured boringfile, managed-file behavior, and lexical rules. Both profiles agree on all
-fifteen. Native probes confirm a `#` comment only at the start of a rule, leading/trailing spaces
+The current corpus has sixteen probes across macOS arm64 Darcs 2.18.5, Debian 13 x86_64, and Debian
+13 arm64 with Darcs 2.18.4 on both Linux profiles. Fifteen closed candidates cover ERE alternation,
+a POSIX character class, global boring rules, a configured boringfile, managed-file behavior, and
+lexical rules. All three profiles agree on all fifteen. Native probes confirm a `#` comment only at
+the start of a rule, leading/trailing spaces
 and tabs remain part of the regex, and `#` inside a rule is data. UTF-8 literal regexes match NFC
 names, distinguish NFD spellings, and keep `[[:alpha:]]` ASCII-only under both `LC_ALL=C` and
-`LC_ALL=C.UTF-8`. The final
+`LC_ALL=C.UTF-8`. Linux CI captures both architectures under Debian 13, using QEMU for the ARM64
+client on its x86_64 runner. The final
 probe captures how an invalid regular expression is reported.
 
 The [Darcs configuration guide](https://darcs.net/Using/Configuration) says `boringfile` overrides
@@ -33,13 +35,15 @@ Darcs boring rules control add-candidate discovery, not a membership-free filesy
 decision: already managed files are exempt. `DarcsBoringPolicy` preserves that distinction by
 combining native add-candidate and managed-path inventories; it does not evaluate ERE patterns in
 Python. Candidate summaries use line delimiters, so ambiguous summaries fall back to a targeted
-`darcs add --dry-run --reserved-ok` query. Native walker tests cover trailing-space and newline names
-on POSIX; broader configuration, platform behavior, and other Darcs versions remain open.
+`darcs add --dry-run --reserved-ok` query. Native walker tests cover included-only, ignored-only,
+and all-file selections in both traversal orders, plus trailing-space and newline names on POSIX;
+broader configuration, platform behavior, and other Darcs versions remain open.
 
 | Capture file                      | Environment                   | Darcs version | Closed candidates |
 | --------------------------------- | ----------------------------- | ------------- | ----------------- |
 | `darcs-2.18.5-macos-arm64.json`   | macOS 26.6.2 arm64            | 2.18.5        | 15/15             |
 | `darcs-debian13-x86_64.json`      | Debian 13 x86_64 in Docker    | 2.18.4        | 15/15             |
+| `darcs-debian13-arm64.json`       | Debian 13 arm64 in Docker     | 2.18.4        | 15/15             |
 
 The local capture does not establish behavior on Windows, older Darcs releases, or all POSIX
 regular-expression implementations.
