@@ -765,6 +765,67 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
     } <= included_paths
 
 
+def test_subversion_deleted_directory_keeps_descendant_membership(tmp_path: Path) -> None:
+    root, environment, config_dir = _create_working_copy(tmp_path, VERSIONED_DIRECTORY_CASE)
+    svn = shutil.which("svn")
+    assert svn is not None
+    _run_svn(
+        [svn, "--config-dir", str(config_dir), "delete", "--keep-local", "cache"],
+        cwd=root,
+        environment=environment,
+    )
+    native = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_items = {
+        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    assert native_items["cache"] == "deleted"
+    assert native_items["cache/tracked.tmp"] == "deleted"
+    assert native_items["cache/new.tmp"] == "unversioned"
+
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    assert policy.explain("cache").membership == "versioned"
+    assert policy.explain("cache").ignored
+    assert policy.explain("cache/tracked.tmp").membership == "versioned"
+    assert policy.explain("cache/new.tmp").membership == "unversioned"
+
+    walker = IgnoreWalker(root, policy=policy)
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included")
+        if ".svn" not in path.relative_to(root).parts
+    }
+    assert ignored == set()
+    assert included == {"cache/new.tmp", "cache/tracked.tmp", "visible.txt"}
+
+
 def test_subversion_incomplete_checkout_keeps_root_membership_known(tmp_path: Path) -> None:
     svn = shutil.which("svn")
     svnadmin = shutil.which("svnadmin")

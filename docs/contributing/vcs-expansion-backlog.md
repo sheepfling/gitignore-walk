@@ -550,7 +550,9 @@ checks are green.
 and opt-in membership are implemented. The 21-case oracle includes all 13 status-profile probes from
 the handoff; the two import-reference probes remain outside the status-walking contract. Live
 membership comparisons cover normal, modified, added, deleted, missing, replaced, obstructed, and
-conflicted entries, plus ignored unversioned entries. Versioned directories and file/directory
+conflicted entries, plus ignored unversioned entries. A scheduled directory deletion retains native
+membership for its deleted directory and tracked descendant while leaving a new child unversioned.
+Versioned directories and file/directory
 externals have separate native evidence. A new membership-aware walker check matches native
 selections inside directory externals in both traversal orders, using each external working copy's
 own status. A live interrupted-checkout probe records native `incomplete` status on the checkout

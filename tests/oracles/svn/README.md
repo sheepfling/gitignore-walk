@@ -86,7 +86,10 @@ then a native update. The test also checks that ignored versioned files remain i
 `included` selection, while the ignored unversioned file appears in its `ignored` selection. The
 obstructed directory case confirms that the walker traverses the directory and reports its ignored
 child. This exercises the tested status values without claiming that every Subversion working-copy
-status is covered. A queried but nonexistent path omitted from native status remains
+status is covered. A separate scheduled-directory-delete test verifies that native status keeps the
+directory and tracked descendants versioned while reporting a new child as unversioned; the walker
+preserves those distinctions even though the deleted directory itself matches an ignore rule. A
+queried but nonexistent path omitted from native status remains
 membership-unknown even when its name matches the ignore property. A separate excluded-depth check
 confirms that a child omitted from verbose native status remains membership-unknown, that discovery
 remains incomplete, and that the walker does not descend into the excluded subtree. The
