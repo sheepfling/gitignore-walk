@@ -132,6 +132,11 @@
           },
           {
             "value": "\"a\"b",
+            "query": "b",
+            "expected_candidate": true
+          },
+          {
+            "value": "\"a\"b",
             "query": "ab",
             "expected_candidate": false
           },

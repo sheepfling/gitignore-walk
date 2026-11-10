@@ -375,6 +375,17 @@
         },
         {
           "value": "\"a\"b",
+          "query": "b",
+          "exit_code": 0,
+          "stderr": "",
+          "extras_exit_code": 0,
+          "observed_ignored": true,
+          "listed_paths": [
+            "unterminated"
+          ]
+        },
+        {
+          "value": "\"a\"b",
           "query": "ab",
           "exit_code": 0,
           "stderr": "",

@@ -23,13 +23,14 @@ sensitivity, the distinction between `!` and `^` inside character classes, unmat
 and that only ASCII whitespace separates or trims list tokens. Unicode whitespace remains pattern
 data.
 Global fallback plus local/versioned setting precedence also match all four profiles.
-Eight malformed-quote,
+Nine malformed-quote,
 adjacent-token, escaped-separator, and empty-token
 probes also match captured native decisions on all four profiles and are checked against the local
-evaluator. Fifteen additional native probes cover the complete ASCII whitespace separator set,
-unquoted boundary trimming, whitespace around a quoted token, and an all-whitespace setting; these
-match all four profiles and the portable tokenizer. Other tokenizer boundaries remain open. A missing
-Fossil executable is recorded as skipped, not passed.
+evaluator. They confirm that plain text immediately after a closing quote starts a separate token
+(for example, `"a"b` matches both `a` and `b`). Fifteen additional native probes cover the complete
+ASCII whitespace separator set, unquoted boundary trimming, whitespace around a quoted token, and
+an all-whitespace setting; these match all four profiles and the portable tokenizer. Other tokenizer
+boundaries remain open. A missing Fossil executable is recorded as skipped, not passed.
 
 The native syntax reference defines whitespace as TAB, LF, VT, FF, CR, and SPACE; the
 [pinned Fossil 2.28 glob documentation](https://fossil-scm.org/home/doc/80ea65af53c5aefc/www/globs.md)
