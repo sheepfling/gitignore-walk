@@ -241,6 +241,9 @@ class SaplingPolicyConfig:
         git_config_timeout: Maximum duration in seconds for Git config discovery.
         initial_excludes: Optional hard baseline replacing the storage-mode default (`.sl` or
             `.git`).
+        membership_aware: Query Sapling status to annotate known versioned and unversioned paths.
+        sapling_executable: Sapling executable used for status queries.
+        timeout: Maximum duration in seconds for each Sapling query.
     """
 
     mode: Literal["sapling"] = field(default="sapling", init=False)
@@ -250,6 +253,9 @@ class SaplingPolicyConfig:
     read_git_config: bool = False
     git_executable: str = "git"
     git_config_timeout: float = 30.0
+    membership_aware: bool = False
+    sapling_executable: str = "sl"
+    timeout: float = 30.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -758,6 +764,9 @@ def select_policy(
                 git_executable=selected.git_executable,
                 git_config_timeout=selected.git_config_timeout,
                 initial_excludes=selected.initial_excludes,
+                membership_aware=selected.membership_aware,
+                sapling_executable=selected.sapling_executable,
+                timeout=selected.timeout,
             )
         )
 

@@ -88,7 +88,7 @@ def check_policy_selection(root: Path, git_executable: str) -> None:
     assert_type(darcs_result, DarcsPolicySelection)
     assert_type(darcs_result.policy, DarcsBoringPolicy)
 
-    sapling_result = select_policy(root, SaplingPolicyConfig())
+    sapling_result = select_policy(root, SaplingPolicyConfig(membership_aware=True))
     assert_type(sapling_result, SaplingPolicySelection)
     assert_type(sapling_result.policy, SaplingIgnorePolicy)
 

@@ -25,7 +25,7 @@ from ._schemes.git import (
 from ._schemes.jujutsu import JujutsuIgnorePolicy
 from ._schemes.mercurial import MercurialIgnoreError, MercurialIgnorePolicy
 from ._schemes.perforce import PerforceIgnoreError, PerforceIgnorePolicy
-from ._schemes.sapling import SaplingIgnorePolicy
+from ._schemes.sapling import SaplingIgnoreError, SaplingIgnorePolicy
 from ._schemes.subversion import SubversionIgnoreError, SubversionIgnorePolicy
 from ._selection import (
     BreezyPolicyConfig,
@@ -102,6 +102,7 @@ __all__ = [
     "PortablePolicySelection",
     "PreferGitPolicyConfig",
     "RegexMatcher",
+    "SaplingIgnoreError",
     "SaplingIgnorePolicy",
     "SaplingPolicyConfig",
     "SaplingPolicySelection",

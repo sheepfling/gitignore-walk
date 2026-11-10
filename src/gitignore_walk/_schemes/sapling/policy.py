@@ -6,15 +6,51 @@ from __future__ import annotations
 # workspace and source layout from native evidence.
 # pyright: reportPrivateUsage=false
 import os
-from collections.abc import Mapping, Sequence
-from pathlib import Path
+import subprocess
+from collections.abc import Iterable, Iterator, Mapping, Sequence
+from dataclasses import replace
+from math import isfinite
+from pathlib import Path, PurePath
+from typing import Literal
 
+from ..._policy import IgnoreDecision, IgnoreTrace, _IgnoreWalkSession
 from ..git._configuration import resolve_core_excludes_file
 from ..git.portable import (
     GitIgnorePolicy,
     _default_global_excludes_path,
     _find_repository_metadata,
+    _IgnoreSnapshot,
 )
+from .errors import SaplingIgnoreError
+
+
+class _SaplingWalkSession:
+    """Use one ignore-source and status snapshot for a Sapling walk."""
+
+    def __init__(self, policy: SaplingIgnorePolicy) -> None:
+        self._policy = policy
+        self._snapshot = _IgnoreSnapshot()
+        self._membership = policy._load_membership() if policy.membership_aware else None
+
+    def resolve_target(self, target: str | os.PathLike[str]) -> Path:
+        return self._policy.resolve_target(target)
+
+    def walk_top(self, target: str | os.PathLike[str]) -> Path:
+        return self.resolve_target(target)
+
+    def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
+        resolved = tuple(self.resolve_target(target) for target in targets)
+        decisions = self._policy._decisions(resolved, self._snapshot)
+        return [self._policy._with_membership(item, self._membership) for item in decisions]
+
+    def should_descend_directory(self, target: Path) -> bool:
+        return self._policy.should_descend_directory(target)
+
+    def should_select_file(self, target: Path) -> bool:
+        return self._policy.should_select_file(target)
+
+    def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
+        return self._policy.can_prune_ignored_directory(target, decision)
 
 
 class SaplingIgnorePolicy(GitIgnorePolicy):
@@ -52,6 +88,9 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         git_executable: str = "git",
         git_config_timeout: float = 30.0,
         initial_excludes: Sequence[str] | None = None,
+        membership_aware: bool = False,
+        sapling_executable: str = "sl",
+        timeout: float = 30.0,
     ) -> None:
         """Bind a caller root to a discovered Sapling `.sl` or `.git` workspace.
 
@@ -60,6 +99,10 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         selects a custom file. Set ``read_git_config`` to ask ``git config`` to resolve that
         setting (including global config includes); this requires ``git_executable`` to be
         available. `.sl` storage mode does not read a Git global ignore source.
+
+        Set ``membership_aware`` to query Sapling's NUL-delimited ``status --all`` output. The
+        native status distinguishes versioned files (including ignored tracked files) from
+        unversioned and ignored files; paths not reported by status remain unknown.
         """
         caller_root = Path(root).expanduser().resolve()
         if not caller_root.is_dir():
@@ -75,6 +118,12 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         self._workspace_marker = ".sl" if storage == "sl" else ".git"
         self.workspace_root = workspace_root
         self._repository_root = workspace_root
+        if not isfinite(timeout) or timeout <= 0:
+            raise ValueError("Sapling client timeout must be finite and positive")
+        self.membership_aware = membership_aware
+        self.sapling_executable = sapling_executable
+        self.environment = environment
+        self.timeout = timeout
         metadata = _find_repository_metadata(workspace_root)
         self._repository_excludes = (
             metadata.common_dir / "info" / "exclude"
@@ -97,6 +146,100 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
                 self._global_excludes = default_path
         else:
             self._global_excludes = None
+
+    def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
+        """Explain ignore rules and optionally annotate native Sapling membership."""
+        decision = super().explain(target)
+        membership = self._load_membership() if self.membership_aware else None
+        return self._with_membership(decision, membership)
+
+    def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
+        """Return the inherited rule trace and optional native membership annotation."""
+        trace = super().trace(target)
+        membership = self._load_membership() if self.membership_aware else None
+        return replace(trace, decision=self._with_membership(trace.decision, membership))
+
+    def iter_explain(
+        self,
+        targets: Iterable[str | os.PathLike[str]],
+        *,
+        batch_size: int = 256,
+    ) -> Iterator[IgnoreDecision]:
+        """Explain targets in order using one native membership snapshot per iteration."""
+        if batch_size < 1:
+            raise ValueError("batch_size must be positive")
+        membership = self._load_membership() if self.membership_aware else None
+        for decision in super().iter_explain(targets, batch_size=batch_size):
+            yield self._with_membership(decision, membership)
+
+    def _open_walk(self) -> _IgnoreWalkSession:
+        """Create a walk session with stable source and optional status snapshots."""
+        return _SaplingWalkSession(self)
+
+    @staticmethod
+    def _with_membership(
+        decision: IgnoreDecision,
+        membership: Mapping[Path, Literal["versioned", "unversioned"]] | None,
+    ) -> IgnoreDecision:
+        """Return a decision annotated with known native membership, if available."""
+        if membership is None:
+            return decision
+        return replace(decision, membership=membership.get(decision.path))
+
+    def _load_membership(self) -> dict[Path, Literal["versioned", "unversioned"]]:
+        """Capture Sapling status classes for one decision batch or walk."""
+        environment = dict(os.environ if self.environment is None else self.environment)
+        try:
+            result = subprocess.run(
+                [self.sapling_executable, "status", "--all", "--print0", "--root-relative"],
+                cwd=self.workspace_root,
+                env=environment,
+                capture_output=True,
+                timeout=self.timeout,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise SaplingIgnoreError(
+                f"Unable to discover Sapling working-copy membership: {error}",
+                operation="membership",
+            ) from error
+        if result.returncode != 0:
+            detail = result.stderr.decode(errors="replace").strip() or "unknown Sapling error"
+            raise SaplingIgnoreError(
+                f"Sapling working-copy membership query failed: {detail}",
+                operation="membership",
+            )
+
+        membership: dict[Path, Literal["versioned", "unversioned"]] = {}
+        for record in result.stdout.split(b"\0"):
+            if not record:
+                continue
+            if len(record) < 3 or record[1:2] != b" ":
+                raise SaplingIgnoreError(
+                    "Sapling returned an invalid NUL-delimited status record.",
+                    operation="membership",
+                )
+            code = record[:1]
+            relative = os.fsdecode(record[2:])
+            if os.name == "nt":
+                relative = relative.replace("\\", "/")
+            relative_path = PurePath(relative)
+            if relative_path.is_absolute() or relative_path.drive or ".." in relative_path.parts:
+                raise SaplingIgnoreError(
+                    "Sapling returned a status path outside its workspace.",
+                    operation="membership",
+                )
+            path = self.workspace_root / relative_path
+            if code in (b"C", b"M", b"A", b"R", b"!"):
+                membership[path] = "versioned"
+            elif code in (b"?", b"I"):
+                membership[path] = "unversioned"
+            else:
+                raise SaplingIgnoreError(
+                    f"Sapling returned unsupported status code {code!r}.",
+                    operation="membership",
+                )
+        return membership
 
     def should_descend_directory(self, target: Path) -> bool:
         """Keep walks out of Sapling metadata and nested same-storage workspaces."""

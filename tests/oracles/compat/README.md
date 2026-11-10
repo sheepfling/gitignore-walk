@@ -120,9 +120,11 @@ captures are also recaptured on Windows Server 2025 x64 by CI. The Jujutsu matri
 0.46.0 and 0.47.1 on macOS arm64 and Debian 13 x86_64, so the nested `.jj` boundary is checked
 across the release that changed symlink handling as well as the current pinned release.
 
-The capture supports the initial read-only `SaplingIgnorePolicy` and `JujutsuIgnorePolicy` scopes.
-The policies evaluate the captured Git-compatible rule dialect locally and do not invoke either
-client. Git-native selection remains appropriate only when an actual `.git` repository is available.
+The captures support the read-only ignore evaluation in `SaplingIgnorePolicy` and
+`JujutsuIgnorePolicy`. Ignore-only queries evaluate the captured Git-compatible rule dialect
+locally. Sapling's separate opt-in membership query uses NUL-delimited `sl status --all`; Jujutsu
+membership remains unavailable because its status command snapshots the working copy.
+Git-native selection remains appropriate only when an actual `.git` repository is available.
 
 Linked Git worktrees expose a source-location difference. Git and Sapling `.git` mode read
 `info/exclude` from the shared Git directory; colocated Jujutsu reads it from the linked worktree's
