@@ -19,38 +19,9 @@ from ..git.portable import (
     GitIgnorePolicy,
     _default_global_excludes_path,
     _find_repository_metadata,
-    _IgnoreSnapshot,
+    _GitIgnoreMembershipWalkSession,
 )
 from .errors import SaplingIgnoreError
-
-
-class _SaplingWalkSession:
-    """Use one ignore-source and status snapshot for a Sapling walk."""
-
-    def __init__(self, policy: SaplingIgnorePolicy) -> None:
-        self._policy = policy
-        self._snapshot = _IgnoreSnapshot()
-        self._membership = policy._load_membership() if policy.membership_aware else None
-
-    def resolve_target(self, target: str | os.PathLike[str]) -> Path:
-        return self._policy.resolve_target(target)
-
-    def walk_top(self, target: str | os.PathLike[str]) -> Path:
-        return self.resolve_target(target)
-
-    def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
-        resolved = tuple(self.resolve_target(target) for target in targets)
-        decisions = self._policy._decisions(resolved, self._snapshot)
-        return [self._policy._with_membership(item, self._membership) for item in decisions]
-
-    def should_descend_directory(self, target: Path) -> bool:
-        return self._policy.should_descend_directory(target)
-
-    def should_select_file(self, target: Path) -> bool:
-        return self._policy.should_select_file(target)
-
-    def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
-        return self._policy.can_prune_ignored_directory(target, decision)
 
 
 class SaplingIgnorePolicy(GitIgnorePolicy):
@@ -174,7 +145,8 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
 
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a walk session with stable source and optional status snapshots."""
-        return _SaplingWalkSession(self)
+        membership = self._load_membership() if self.membership_aware else None
+        return _GitIgnoreMembershipWalkSession(self, membership, self._with_membership)
 
     @staticmethod
     def _with_membership(

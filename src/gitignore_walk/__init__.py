@@ -22,7 +22,7 @@ from ._schemes.git import (
     matches_gitignore,
     parse_gitignore,
 )
-from ._schemes.jujutsu import JujutsuIgnorePolicy
+from ._schemes.jujutsu import JujutsuIgnoreError, JujutsuIgnorePolicy
 from ._schemes.mercurial import MercurialIgnoreError, MercurialIgnorePolicy
 from ._schemes.perforce import PerforceIgnoreError, PerforceIgnorePolicy
 from ._schemes.sapling import SaplingIgnoreError, SaplingIgnorePolicy
@@ -85,6 +85,7 @@ __all__ = [
     "IgnoreTraceMatch",
     "IgnoreWalkEntry",
     "IgnoreWalker",
+    "JujutsuIgnoreError",
     "JujutsuIgnorePolicy",
     "JujutsuPolicyConfig",
     "JujutsuPolicySelection",

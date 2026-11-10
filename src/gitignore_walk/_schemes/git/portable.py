@@ -6,10 +6,10 @@ from __future__ import annotations
 # pyright: reportPrivateUsage=false
 import os
 from abc import abstractmethod
-from collections.abc import Iterable, Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Final, NamedTuple
+from typing import Any, Final, Generic, NamedTuple, TypeVar
 
 from ..._environment import EnvVar
 from ..._policy import (
@@ -29,6 +29,7 @@ from ._ignore_protocols import GitIgnoreMatcher
 from ._ignore_types import GitIgnoreFile as _LoadedIgnore
 
 _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
+_Membership = TypeVar("_Membership")
 
 
 class _RepositoryMetadata(NamedTuple):
@@ -378,6 +379,27 @@ class _GitIgnoreWalkSession:
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy.can_prune_ignored_directory(target, decision)
+
+
+# Imported by the Sapling and Jujutsu adapters as their private walk-session implementation.
+class _GitIgnoreMembershipWalkSession(  # pyright: ignore[reportUnusedClass]
+    _GitIgnoreWalkSession, Generic[_Membership]
+):
+    """Add one stable scheme-specific membership snapshot to a Git-dialect walk."""
+
+    def __init__(
+        self,
+        policy: _GitIgnorePolicyBase,
+        membership: _Membership | None,
+        annotate: Callable[[IgnoreDecision, _Membership | None], IgnoreDecision],
+    ) -> None:
+        super().__init__(policy)
+        self._membership = membership
+        self._annotate = annotate
+
+    def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
+        decisions = super().explain_many(targets)
+        return [self._annotate(decision, self._membership) for decision in decisions]
 
 
 def _ancestor_directories(*, root: Path, target: Path) -> tuple[Path, ...]:

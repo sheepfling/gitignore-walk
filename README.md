@@ -386,14 +386,18 @@ certification. See the [oracle notes](tests/oracles/hg/README.md) for exact resu
 
 `SaplingPolicyConfig` and `JujutsuPolicyConfig` select policies for the captured Git-compatible
 ignore behavior. Both reuse the Git ignore matcher while resolving each system's workspace markers
-and supported sources separately. Ignore-only queries are client-independent; Sapling can
-optionally query native status for version-control membership:
+and supported sources separately. Ignore-only queries are client-independent; each scheme can
+optionally query native data for version-control membership:
 
 - Sapling discovers the nearest `.sl` or `.git` workspace. `.sl` mode reads workspace `.gitignore`
   files only. `.git` mode also reads XDG Git ignores and `.git/info/exclude`.
 - `SaplingPolicyConfig(membership_aware=True)` runs read-only `sl status --all --print0`. It
   reports known versioned and unversioned membership separately from ignore matches. Status-omitted
   paths remain unknown; the option requires Sapling to be installed.
+- `JujutsuPolicyConfig(membership_aware=True)` runs `jj --ignore-working-copy file list` so it
+  reads the saved working-copy tree without snapshotting filesystem changes. Saved-tree files are
+  versioned; present files absent from that tree are unversioned; absent unlisted paths and
+  directories remain unknown. This option requires Jujutsu to be installed.
 - Jujutsu discovers the nearest `.jj` workspace. Both colocated and non-colocated modes read
   workspace `.gitignore` files and XDG Git ignores. A colocated `.git/info/exclude` is read when
   present; an outer Git repository's exclude file is not inherited.
@@ -455,9 +459,9 @@ executable requirement.
 The caller's root remains the query and traversal bound, while `workspace_root` reports the
 discovered VCS root. The default walker baseline excludes `.sl` or `.git` for Sapling, depending on
 storage mode, and `.jj` for Jujutsu. By default, these policies do not query versioned membership or
-read Git config. Sapling can query membership with `membership_aware=True`; Jujutsu membership
-remains unavailable because its status command snapshots the workspace. Git config discovery
-requires `read_git_config=True` and Git. The captured behavior covers Sapling 0.2.20261103 and
+read Git config. Both can query membership with `membership_aware=True`; Jujutsu reads its saved tree
+without invoking the snapshotting status command. Git config discovery requires
+`read_git_config=True` and Git. The captured behavior covers Sapling 0.2.20261103 and
 Jujutsu 0.47.1 on macOS arm64 and Debian 13 Linux arm64/x86_64.
 The full native capture and limitations are in the
 [compatibility oracle notes](tests/oracles/compat/README.md).
@@ -642,6 +646,8 @@ Other available interfaces include:
 | `MercurialIgnoreError`                                | Report Mercurial source, pattern, and config-discovery errors                  |
 | `SaplingPolicyConfig(membership_aware=True)`          | Opt into native Sapling versioned/unversioned membership queries               |
 | `SaplingIgnoreError`                                  | Report Sapling native membership query failures                                |
+| `JujutsuPolicyConfig(membership_aware=True)`          | Opt into read-only Jujutsu saved-tree membership queries                       |
+| `JujutsuIgnoreError`                                  | Report Jujutsu native membership query failures                                |
 | `is_gitignored(root, target)`                         | Portable one-shot query                                                        |
 | `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec`                           |
 | `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                                                |

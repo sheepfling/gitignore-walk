@@ -276,6 +276,9 @@ class JujutsuPolicyConfig:
         initial_excludes: Hard baseline exclusions, defaulting to Jujutsu's `.jj` metadata.
         follow_symlinked_gitignore: Follow nested symlinked `.gitignore` sources, as Jujutsu did
             before version 0.46.0. The default skips these sources, matching 0.46.0 and newer.
+        membership_aware: Query Jujutsu's saved working-copy tree without snapshotting changes.
+        jujutsu_executable: Jujutsu executable used for saved-tree queries.
+        timeout: Maximum duration in seconds for each Jujutsu query.
     """
 
     mode: Literal["jujutsu"] = field(default="jujutsu", init=False)
@@ -286,6 +289,9 @@ class JujutsuPolicyConfig:
     git_executable: str = "git"
     git_config_timeout: float = 30.0
     follow_symlinked_gitignore: bool = False
+    membership_aware: bool = False
+    jujutsu_executable: str = "jj"
+    timeout: float = 30.0
 
 
 #: Discriminated configuration union accepted by :func:`select_policy`.
@@ -781,6 +787,9 @@ def select_policy(
                 git_config_timeout=selected.git_config_timeout,
                 initial_excludes=selected.initial_excludes,
                 follow_symlinked_gitignore=selected.follow_symlinked_gitignore,
+                membership_aware=selected.membership_aware,
+                jujutsu_executable=selected.jujutsu_executable,
+                timeout=selected.timeout,
             )
         )
 

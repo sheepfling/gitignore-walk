@@ -92,7 +92,7 @@ def check_policy_selection(root: Path, git_executable: str) -> None:
     assert_type(sapling_result, SaplingPolicySelection)
     assert_type(sapling_result.policy, SaplingIgnorePolicy)
 
-    jujutsu_result = select_policy(root, JujutsuPolicyConfig())
+    jujutsu_result = select_policy(root, JujutsuPolicyConfig(membership_aware=True))
     assert_type(jujutsu_result, JujutsuPolicySelection)
     assert_type(jujutsu_result.policy, JujutsuIgnorePolicy)
 

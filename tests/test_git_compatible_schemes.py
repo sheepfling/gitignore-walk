@@ -1111,7 +1111,7 @@ def test_compatible_scheme_selection_is_typed_and_explicit(tmp_path: Path) -> No
     (jj_root / ".jj").mkdir(parents=True)
 
     sapling = select_policy(sapling_root, SaplingPolicyConfig(membership_aware=True))
-    jujutsu = select_policy(jj_root, JujutsuPolicyConfig())
+    jujutsu = select_policy(jj_root, JujutsuPolicyConfig(membership_aware=True))
 
     assert isinstance(sapling, SaplingPolicySelection)
     assert isinstance(sapling.policy, SaplingIgnorePolicy)
@@ -1120,6 +1120,7 @@ def test_compatible_scheme_selection_is_typed_and_explicit(tmp_path: Path) -> No
     assert isinstance(jujutsu, JujutsuPolicySelection)
     assert isinstance(jujutsu.policy, JujutsuIgnorePolicy)
     assert jujutsu.backend == "jujutsu-gitignore-portable"
+    assert jujutsu.policy.membership_aware
 
 
 def _git_init(root: Path) -> None:

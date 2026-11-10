@@ -198,8 +198,9 @@ Invalid ERE lines produce a native warning and are skipped. See the
 
 Sapling `.git` and `.sl` modes and Jujutsu colocated and non-colocated modes share the tested
 Git-ignore dialect. Read-only ignore evaluation reuses that matcher with mode-specific source
-discovery. Sapling can optionally query NUL-delimited native status for membership; Jujutsu
-membership remains unavailable because `jj status` snapshots its workspace. XDG Git ignores,
+discovery. Sapling can optionally query NUL-delimited native status for membership; Jujutsu can
+read its saved working-copy tree using `jj file list --ignore-working-copy`, avoiding the
+snapshotting `jj status` command. XDG Git ignores,
 `.git/info/exclude`, and their precedence are captured on macOS 26 arm64 and Debian 13 Linux
 arm64; Windows, other global config sources, and broader patterns remain unverified. See the
 [compatibility probe notes](../../tests/oracles/compat/README.md).
