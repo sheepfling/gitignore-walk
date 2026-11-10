@@ -114,9 +114,9 @@ class PerforceIgnorePolicy(IgnorePolicy):
     directory. An explicit value is parsed as Perforce's semicolon-delimited source list and
     replaces those default names. Set ``read_client_config=True`` to query ``p4 set`` for the
     effective P4CONFIG-derived setting at each target; explicit ``p4ignore`` still takes
-    precedence. Set ``discover_client_workspace=True`` to query ``p4 -ztag info`` for the client
-    root; this does not widen the caller's traversal boundary. Server-provided views and the broader
-    wildcard/lexical grammar are not implemented yet.
+    precedence. Set ``discover_client_workspace=True`` to query a connected P4 client with
+    ``p4 -ztag info`` for the client root; this does not widen the caller's traversal boundary.
+    Server-provided views and the broader wildcard/lexical grammar are not implemented yet.
 
     Attributes:
         root: Caller-selected traversal boundary and target bound.
@@ -134,11 +134,31 @@ class PerforceIgnorePolicy(IgnorePolicy):
         try:
             relative_parent = source.parent.relative_to(self.workspace_root)
         except ValueError:
-            return (-1, source.parent.as_posix())
+            try:
+                relative_parent = Path(os.path.relpath(source.parent, self.workspace_root))
+            except ValueError:
+                return (-1, source.parent.as_posix())
+            depth = 0
+            for part in relative_parent.parts:
+                if part != "..":
+                    break
+                depth -= 1
+            return (depth, relative_parent.as_posix())
         return (
             len(relative_parent.parts),
             relative_parent.as_posix(),
         )
+
+    def _scope_label(self, scope: Path) -> str | None:
+        """Return a workspace-relative scope, including ``..`` for parent sources."""
+        try:
+            relative = scope.relative_to(self.workspace_root)
+        except ValueError:
+            try:
+                return Path(os.path.relpath(scope, self.workspace_root)).as_posix()
+            except ValueError:
+                return None
+        return relative.as_posix() or "."
 
     def __init__(
         self,
@@ -296,7 +316,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
                 ignored=not rule.negated,
                 effective=rule is effective_rule,
                 scheme=self.scheme,
-                scope=rule.scope.relative_to(self.workspace_root).as_posix() or ".",
+                scope=self._scope_label(rule.scope),
                 reason="matched-rule" if not rule.negated else "exception-rule",
             )
             for rule in matching
@@ -580,7 +600,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
             source=rule.source if rule else None,
             pattern=rule.pattern if rule else None,
             line=rule.line if rule else None,
-            scope=rule.scope.relative_to(self.workspace_root).as_posix() or "." if rule else None,
+            scope=self._scope_label(rule.scope) if rule else None,
             reason=("matched-rule" if ignored else "exception-rule")
             if rule
             else "no-matching-rule",

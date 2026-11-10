@@ -42,6 +42,11 @@ OBSERVATIONS = {
 
 def _policy_for_case(root: Path, case: dict[str, Any]) -> PerforceIgnorePolicy:
     root.mkdir(parents=True, exist_ok=True)
+    for relative, contents in case["setup"].get("parent_files", {}).items():
+        path = root.parent / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with path.open("w", encoding="utf-8", newline="") as stream:
+            stream.write(contents)
     for relative, contents in case["setup"].get("files", {}).items():
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)

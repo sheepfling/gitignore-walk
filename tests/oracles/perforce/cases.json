@@ -3,6 +3,26 @@
   "source": "vcs-ignore-implementation-research.zip and isolated local P4 client/server probes",
   "cases": [
     {
+      "id": "p4.parent-p4config-scope-outside-client-root",
+      "dimension": "configuration-scope",
+      "setup": {
+        "P4CONFIG": ".p4config",
+        "parent_files": {
+          ".p4config": "P4IGNORE=.p4ignore\n",
+          ".p4ignore": "*.tmp\n"
+        }
+      },
+      "query": "sub/a.tmp",
+      "query_cwd": "parent",
+      "capture_client_root": true,
+      "expected_candidate": true,
+      "expected_ignore_match": true,
+      "expected_client_root": "<workspace>",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "release_gate": "Check parent P4CONFIG discovery and the relative P4IGNORE scope above the client root."
+    },
+    {
       "id": "p4.discovers-client-root-from-descendant",
       "dimension": "workspace-discovery",
       "setup": {

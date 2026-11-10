@@ -184,15 +184,15 @@ effective `P4IGNORE` setting. This option invokes `p4 set` for each queried dire
 `p4ignore=` value takes precedence and keeps evaluation client-independent.
 Set `discover_client_workspace=True` to ask `p4 -ztag info` for the configured client root. This
 lets the evaluator find ignore files above a nested traversal root while continuing to reject
-targets outside the caller's root. Workspace discovery requires a configured P4 client and is
-independent of `read_client_config`.
+targets outside the caller's root. Workspace discovery requires a configured P4 client/server
+connection and is independent of `read_client_config`.
 The file list uses semicolon separators. The captured precedence is deepest source directory first,
 then earliest configured filename at that level, then the last matching line in that file. The
 supported subset includes `*`, `**`, leading-slash rules anchored to their ignore file, trailing-slash
 directory rules, and `!` exceptions. The walker does not prune ignored directories, so an exception
 can re-include a descendant. Server views and broader pattern edge cases are not implemented. It
 trims ASCII spaces around each rule, preserves interior spaces and tabs, and supports the documented
-`\#` comment escape. All 36 boolean candidates match native P4/P4
+`\#` comment escape. All 37 boolean candidates match native P4/P4
 Server 2026.1 profiles on macOS arm64, Debian 13 Linux x86_64, and Ubuntu 24.04 Linux x86_64; three
 path-boundary probes separately record cases where `p4 add` rejects a filename before ignore
 eligibility can be evaluated. See the

@@ -133,6 +133,7 @@ def test_perforce_walker_matches_recursive_native_add_preview(
         "p4.p4config-discovers-ignore-source",
         "p4.p4config-ignore-overrides-environment",
         "p4.nested-p4config-selects-nested-ignore-source",
+        "p4.parent-p4config-scope-outside-client-root",
     ],
 )
 def test_perforce_policy_matches_captured_p4config_settings(
@@ -145,6 +146,10 @@ def test_perforce_policy_matches_captured_p4config_settings(
     observation = OBSERVATIONS[profile][case_id]
     root = tmp_path / "workspace"
     root.mkdir()
+    for relative, contents in case["setup"].get("parent_files", {}).items():
+        path = root.parent / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
     for relative, contents in case["setup"].get("files", {}).items():
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -153,9 +158,21 @@ def test_perforce_policy_matches_captured_p4config_settings(
     query.parent.mkdir(parents=True, exist_ok=True)
     query.touch(exist_ok=True)
     query_cwd = query.parent if case.get("query_cwd") == "parent" else root
-    p4_set_output = observation["p4_set_output"].replace("<workspace>", str(root))
+    p4_set_output = (
+        observation["p4_set_output"]
+        .replace("<workspace>", str(root))
+        .replace("<temp>", str(root.parent))
+    )
+    client_root_output = observation.get("client_root_probe")
+    if client_root_output is not None:
+        client_root_output = client_root_output["stdout"].replace("<workspace>", str(root))
+    policy_root = query.parent if client_root_output is not None else root
 
     def captured_p4_set(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        if command[1:] == ["-ztag", "info"]:
+            assert Path(kwargs["cwd"]) == policy_root
+            assert client_root_output is not None
+            return subprocess.CompletedProcess(command, 0, client_root_output, "")
         assert command[1:] == ["set"]
         assert Path(kwargs["cwd"]) == query_cwd
         return subprocess.CompletedProcess(command, 0, p4_set_output, "")
@@ -167,10 +184,19 @@ def test_perforce_policy_matches_captured_p4config_settings(
     }
     if "P4IGNORE" in case["setup"]:
         environment["P4IGNORE"] = case["setup"]["P4IGNORE"]
-    policy = PerforceIgnorePolicy(root, environment=environment, read_client_config=True)
+    policy = PerforceIgnorePolicy(
+        policy_root,
+        environment=environment,
+        read_client_config=True,
+        discover_client_workspace=client_root_output is not None,
+    )
 
     assert observation["p4_set_exit_code"] == 0
-    assert policy.is_ignored(case["query"]) is observation["observed_ignored"]
+    assert policy.is_ignored(query) is observation["observed_ignored"]
+    if case_id == "p4.parent-p4config-scope-outside-client-root":
+        trace = policy.trace(query)
+        assert trace.decision.ignored is True
+        assert trace.matches[0].scope == ".."
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))

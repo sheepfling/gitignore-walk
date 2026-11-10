@@ -102,6 +102,7 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
         }
         if "P4IGNORE" in setup:
             environment["P4IGNORE"] = setup["P4IGNORE"]
+        _write_files(temp, setup.get("parent_files", {}))
         _write_files(workspace, setup.get("files", {}))
         target = (workspace / case["query"]).resolve()
         try:
@@ -314,21 +315,29 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 "command": ["p4", "add", "-n", case["query"]],
                 "command_cwd": query_cwd.relative_to(workspace).as_posix() or ".",
                 "exit_code": command.returncode,
-                "stdout": command.stdout.replace(str(workspace), "<workspace>"),
-                "stderr": command.stderr.replace(str(workspace), "<workspace>"),
+                "stdout": command.stdout.replace(str(workspace), "<workspace>").replace(
+                    str(temp), "<temp>"
+                ),
+                "stderr": command.stderr.replace(str(workspace), "<workspace>").replace(
+                    str(temp), "<temp>"
+                ),
                 "ignore_check": {
                     "command": ["p4", "ignores", "-i", "-v", query_argument],
                     "exit_code": ignore_check.returncode,
                     "observed_ignored": _ignored_by_rules(ignore_check.stdout, ignore_check.stderr),
-                    "stdout": ignore_check.stdout.replace(str(workspace), "<workspace>"),
-                    "stderr": ignore_check.stderr.replace(str(workspace), "<workspace>"),
+                    "stdout": ignore_check.stdout.replace(str(workspace), "<workspace>").replace(
+                        str(temp), "<temp>"
+                    ),
+                    "stderr": ignore_check.stderr.replace(str(workspace), "<workspace>").replace(
+                        str(temp), "<temp>"
+                    ),
                 },
                 "isolated_configuration": True,
                 "p4_set_exit_code": config_result.returncode if config_result else None,
                 "p4_set_output": (
-                    (config_result.stdout + config_result.stderr).replace(
-                        str(workspace), "<workspace>"
-                    )
+                    (config_result.stdout + config_result.stderr)
+                    .replace(str(workspace), "<workspace>")
+                    .replace(str(temp), "<temp>")
                     if config_result
                     else None
                 ),

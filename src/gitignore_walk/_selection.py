@@ -112,8 +112,8 @@ class PerforcePolicyConfig:
         environment: Optional complete environment replacing the process environment. The current
             evaluator reads ``P4IGNORE`` only unless ``read_client_config`` is enabled.
         read_client_config: Ask the P4 client for effective ``P4IGNORE`` settings at each target.
-        discover_client_workspace: Ask ``p4 -ztag info`` for the client root. The caller's root
-            remains the traversal and target boundary.
+        discover_client_workspace: Ask a connected P4 client with ``p4 -ztag info`` for its root.
+            The caller's root remains the traversal and target boundary.
         p4_executable: P4 client used for optional ``p4 set`` and ``p4 -ztag info`` queries.
         timeout: Maximum duration in seconds for each P4 configuration or workspace query.
         initial_excludes: Hard walker baseline exclusions, defaulting to none.
