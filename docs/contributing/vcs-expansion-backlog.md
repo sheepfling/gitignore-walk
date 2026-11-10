@@ -703,10 +703,11 @@ beyond the Windows profiles for Sapling 0.2.20261028/0.2.20261103 and Jujutsu 0.
 captured macOS/Linux clients. TFVC remains deferred until its workspace/server fixture is
 reproducible. Darcs walking has native membership-aware selection checks in both traversal orders
 and a cross-profile nested-repository case. Its local/global/configured source overlap matches on
-macOS arm64 and Debian Linux aarch64/x86_64. Darcs Windows remains unverified: the official download
-page lists a 2.16.3 binary, while 2.18.5 is current stable and the Windows packager role is
-unfilled. Native Windows CI now captures that pinned legacy binary as an explicitly historical
-observation and reports candidate differences without counting it as 2.18.5 conformance. TFVC's
+macOS arm64 and Debian Linux aarch64/x86_64. Darcs 2.16.3 is now captured on Windows and matches
+17/18 closed candidates; the sole version-specific difference is the documented `boringfile`
+override of local boring rules. The official download page lists 2.16.3 as its Windows binary,
+while 2.18.5 is current stable and the Windows packager role is unfilled, so current-release Windows
+conformance remains unverified. TFVC's
 seven research cases are source-derived/open; Microsoft's TFVC add and workspace docs require a
 configured workspace for `.tfignore` behavior ([TFVC-DOC]). This repository has neither a TFVC
 server/workspace fixture nor a configured server, so

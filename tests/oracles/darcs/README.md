@@ -53,14 +53,18 @@ profiles and both traversal orders.
 | `darcs-2.18.5-macos-arm64.json`   | macOS 26.6.2 arm64            | 2.18.5        | 18/18             |
 | `darcs-debian13-x86_64.json`      | Debian 13 x86_64 in Docker    | 2.18.4        | 18/18             |
 | `darcs-debian13-arm64.json`       | Debian 13 arm64 in Docker     | 2.18.4        | 18/18             |
+| `darcs-2.16.3-windows-x64.json`   | Windows Server 2025 x64       | 2.16.3        | 17/18             |
 
 The Windows native job captures the official Darcs 2.16.3 executable as a historical platform
 probe with the client's `DARCS_TESTING_PREFS_DIR` hook pointed at a disposable global-preferences
-directory, then uploads its raw comparison with the other native artifacts. That older client is
-not a current-release conformance profile: the [official download page](https://darcs.net/Binaries) lists
-2.16.3 as its Windows binary while the [project home page](https://darcs.net/) identifies 2.18.5 as
-the current stable release; the [team page](https://darcs.net/DarcsTeam) lists the Windows packager
-role as unfilled. Review any candidate differences in that artifact as version-specific observations.
+directory. The committed capture matches 17 of 18 closed candidates. The sole difference is
+`darcs.boringfile-replaces-local`: 2.16.3 replaces local boring rules with the configured
+`boringfile`, while the tested 2.18.4 and 2.18.5 clients keep those local rules active. That older
+client is not a current-release conformance profile: the [official download page](https://darcs.net/Binaries)
+lists 2.16.3 as its Windows binary while the [project home page](https://darcs.net/) identifies
+2.18.5 as the current stable release; the [team page](https://darcs.net/DarcsTeam) lists the Windows
+packager role as unfilled. The Windows workflow asserts this version-specific difference and the
+other 17 matches.
 The exact 2.16.3 source uses `DARCS_TESTING_PREFS_DIR` to select the global preferences directory
 ([`Darcs.Repository.Prefs`](https://hackage-content.haskell.org/package/darcs-2.16.3.tar.gz)).
 Other POSIX regular-expression implementations also remain untested.

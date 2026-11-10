@@ -25,6 +25,10 @@ OBSERVATIONS = {
     profile: {case["id"]: case for case in capture["cases"]}
     for profile, capture in CAPTURES.items()
 }
+LEGACY_WINDOWS_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / "darcs-2.16.3-windows-x64.json").read_text(encoding="utf-8")
+)
+LEGACY_WINDOWS_OBSERVATIONS = {case["id"]: case for case in LEGACY_WINDOWS_CAPTURE["cases"]}
 
 
 @pytest.mark.parametrize(
@@ -55,6 +59,31 @@ def test_darcs_capture_profiles_are_isolated_and_complete(profile: str) -> None:
     assert capture["client"]["version"].startswith("2.18.")
     assert {case["id"] for case in capture["cases"]} == {case["id"] for case in CASES}
     assert all(case["setup_isolated"] is True for case in capture["cases"])
+
+
+def test_historical_windows_profile_retains_its_version_specific_precedence() -> None:
+    assert LEGACY_WINDOWS_CAPTURE["status"] == "captured"
+    assert LEGACY_WINDOWS_CAPTURE["client"]["version"].startswith("2.16.3")
+    assert LEGACY_WINDOWS_CAPTURE["client"]["platform"].startswith("Windows-")
+    assert {case["id"] for case in LEGACY_WINDOWS_CAPTURE["cases"]} == {
+        case["id"] for case in CASES
+    }
+    closed = [case for case in CASES if case["expected_boring"] is not None]
+    assert (
+        sum(
+            LEGACY_WINDOWS_OBSERVATIONS[case["id"]]["observed_boring"] == case["expected_boring"]
+            for case in closed
+        )
+        == 17
+    )
+    assert (
+        LEGACY_WINDOWS_OBSERVATIONS["darcs.boringfile-replaces-local"]["observed_boring"] is False
+    )
+    assert all(
+        LEGACY_WINDOWS_OBSERVATIONS[case["id"]]["observed_boring"] is case["expected_boring"]
+        for case in closed
+        if case["id"] != "darcs.boringfile-replaces-local"
+    )
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))
