@@ -281,6 +281,7 @@ jobs:
           if (-not (Test-Path $jj)) { throw "Jujutsu executable was not found: $jj" }
           $output = Join-Path $nativeDir 'sapling-0.2.20261103-jj-0.47.1-windows-x64.json'
           python tests/oracles/compat/run.py --sl $sl --jj $jj --output $output
+          if ($LASTEXITCODE -ne 0) { throw "Sapling/Jujutsu capture failed: $LASTEXITCODE" }
           @'
           import json
           import os

@@ -236,7 +236,14 @@ def _write_files(root: Path, files: Mapping[str, str]) -> None:
 
 
 def _version(executable: str) -> str:
-    result = subprocess.run([executable, "--version"], capture_output=True, text=True, timeout=30)
+    with tempfile.TemporaryDirectory(prefix="gitignore-walk-compat-version-") as temporary:
+        result = subprocess.run(
+            [executable, "--version"],
+            cwd=temporary,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
     if result.returncode != 0:
         raise RuntimeError(f"unable to get version for {executable}: {result.stderr.strip()}")
     return result.stdout.strip()
