@@ -242,6 +242,24 @@ def test_compatibility_capture_reconciles_case_insensitive_worktree_include(
     )
 
 
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_records_caller_gitdir_context_divergence(
+    profile: str, case_id: str
+) -> None:
+    conditional_override = OBSERVATIONS[profile][case_id]["conditional_gitdir_override"]
+
+    assert conditional_override["git_config_matches"] is True
+    assert conditional_override["git_config_path"] == "<home>/gitdir-override-ignore"
+    assert conditional_override["native_matches_git_config"] is False
+    assert conditional_override["candidate_matches"] is True
+    assert conditional_override["ignored"] == []
+    assert conditional_override["query_files"] == [
+        "conditional.gitdiroverride",
+        "conditional.gitdirvisible",
+    ]
+
+
 def test_git_256_profile_records_jujutsu_worktree_include_divergence() -> None:
     profile = "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json"
     capture = CAPTURES[profile]

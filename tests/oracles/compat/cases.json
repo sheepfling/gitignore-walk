@@ -91,6 +91,17 @@
     "jj.colocated": ["conditional.casefold"],
     "jj.noncolocated": []
   },
+  "conditional_gitdir_override_probe_files": {
+    "conditional.gitdiroverride": "Git config selects this only with the caller's GIT_DIR context\n",
+    "conditional.gitdirvisible": "control file for caller-provided GIT_DIR context\n"
+  },
+  "conditional_gitdir_override_ignore": "*.gitdiroverride\n",
+  "expected_conditional_gitdir_override_ignored": {
+    "sapling.git-mode": [],
+    "sapling.sl-mode": [],
+    "jj.colocated": [],
+    "jj.noncolocated": []
+  },
   "conditional_worktree_probe_files": {
     "conditional.worktree": "must be ignored by a matching worktree include\n",
     "conditional.visible": "must remain visible when the worktree include does not match\n"

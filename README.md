@@ -397,7 +397,9 @@ matcher while resolving each system's workspace markers and supported sources se
   system and user values. Native captures also cover `gitdir`, `onbranch:main`, matching
   `hasconfig:remote.*.url` conditional includes, and repository-local precedence. For
   non-colocated Jujutsu, the policy uses the workspace's internal Git store as condition context
-  unless the caller supplies `GIT_DIR`. Git documents config scope and include behavior in
+  unless the caller supplies `GIT_DIR`. That caller context affects the Git config lookup; native
+  Sapling and Jujutsu probes kept their workspace context and did not apply a `gitdir` include
+  selected by the alternate `GIT_DIR`. Git documents config scope and include behavior in
   [git-config](https://git-scm.com/docs/git-config), and ignore precedence in the
   [Git ignore documentation](https://git-scm.com/docs/gitignore).
 

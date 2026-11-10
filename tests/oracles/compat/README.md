@@ -46,8 +46,11 @@ selects the user file in Sapling `.git` mode and colocated Jujutsu; non-colocate
 configured system source for that condition. Both `onbranch:main` and a matching
 `hasconfig:remote.*.url` include are honored by Sapling `.git` mode and both Jujutsu modes. The
 policy supplies Jujutsu's internal Git store as context for non-colocated workspaces;
-caller-provided `GIT_DIR` still takes precedence. Other conditional forms and client/platform
-profiles remain open.
+caller-provided `GIT_DIR` still takes precedence for the Git config lookup. A separate native probe
+shows that Git resolves a matching include for that caller context while Sapling and Jujutsu keep
+using their own workspace context and leave the probe visible. This divergence is captured on macOS
+and Debian Linux; Windows CI asserts it for both Jujutsu modes. Other conditional forms and
+client/platform profiles remain open.
 
 The conditional-include matrix also exercises `gitdir/i` with an uppercase `WORKSPACE/.GIT`
 pattern against the lowercase disposable workspace path. On macOS 26 arm64, the case matches for

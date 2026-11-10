@@ -361,6 +361,52 @@ def test_compatible_scheme_discovers_gitdir_conditional_include(tmp_path: Path, 
 
 @pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
 @pytest.mark.parametrize("mode", ["sapling-git", "jj-colocated", "jj-noncolocated"])
+def test_compatible_scheme_uses_caller_gitdir_for_conditional_include(
+    tmp_path: Path, mode: str
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    external_git_dir = tmp_path / "external.git"
+    subprocess.run(["git", "init", "--bare", "-q", str(external_git_dir)], check=True)
+    ignore_file = home / "caller-context-ignore"
+    ignore_file.write_text("*.override\n", encoding="utf-8")
+    included_config = home / "included.gitconfig"
+    included_config.write_text(f"[core]\n\texcludesFile = {ignore_file}\n", encoding="utf-8")
+    global_config = home / ".gitconfig"
+    global_config.write_text(
+        '[includeIf "gitdir:**/external.git"]\n\tpath = included.gitconfig\n', encoding="utf-8"
+    )
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_DIR": str(external_git_dir),
+    }
+    if mode == "sapling-git":
+        _git_init(root)
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    else:
+        (root / ".jj").mkdir()
+        if mode == "jj-colocated":
+            _git_init(root)
+        else:
+            internal_git_dir = root / ".jj" / "repo" / "store" / "git"
+            subprocess.run(["git", "init", "--bare", "-q", str(internal_git_dir)], check=True)
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    (root / "caller.override").touch()
+
+    selection = select_policy(root, config)
+
+    assert selection.policy.explain("caller.override").ignored is True
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize("mode", ["sapling-git", "jj-colocated", "jj-noncolocated"])
 def test_compatible_scheme_discovers_onbranch_include_with_workspace_context(
     tmp_path: Path, mode: str
 ) -> None:

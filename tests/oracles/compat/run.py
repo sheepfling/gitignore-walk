@@ -83,6 +83,9 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             conditional_remote,
             configured_repository,
         ) = _capture_configured_global_sapling(executable, mode, root, home, environment, fixture)
+        conditional_gitdir_override = _capture_conditional_gitdir_override(
+            executable, "sapling", mode, root, home, environment, fixture
+        )
         return {
             "id": f"sapling.{mode}-mode",
             "vcs": "sapling",
@@ -117,6 +120,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             "conditional_worktree_i": conditional_worktree_i,
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
+            "conditional_gitdir_override": conditional_gitdir_override,
             "configured_repository": configured_repository,
         }
 
@@ -180,6 +184,9 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             conditional_remote,
             configured_repository,
         ) = _capture_configured_global_jj(executable, mode, root, home, environment, fixture)
+        conditional_gitdir_override = _capture_conditional_gitdir_override(
+            executable, "jujutsu", mode, root, home, environment, fixture
+        )
         return {
             "id": f"jj.{mode}",
             "vcs": "jujutsu",
@@ -216,6 +223,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "conditional_worktree_i": conditional_worktree_i,
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
+            "conditional_gitdir_override": conditional_gitdir_override,
             "configured_repository": configured_repository,
         }
 
@@ -485,6 +493,88 @@ def _write_conditional_gitdir_i_probe(
     files: Mapping[str, str] = fixture["conditional_gitdir_i_probe_files"]
     _write_files(root, files)
     return sorted(files)
+
+
+def _capture_conditional_gitdir_override(
+    executable: str,
+    vcs: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Compare native ignores with a Git-dir include selected by caller-provided context."""
+    external_git_dir = home / "external.git"
+    isolated_environment = _isolated_worktree_environment(home, environment)
+    for name in ("GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"):
+        isolated_environment.pop(name, None)
+    _require_success(
+        _run(
+            ["git", "init", "--bare", "-q", str(external_git_dir)],
+            cwd=root,
+            environment=isolated_environment,
+        ),
+        "initialize external Git-dir context",
+    )
+    custom_ignore = home / "gitdir-override-ignore"
+    custom_ignore.write_text(fixture["conditional_gitdir_override_ignore"], encoding="utf-8")
+    included_config = home / "gitdir-override-config"
+    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    (home / ".gitconfig").write_text(
+        '[includeIf "gitdir:**/external.git"]\n\tpath = gitdir-override-config\n',
+        encoding="utf-8",
+    )
+    query_files = sorted(fixture["conditional_gitdir_override_probe_files"])
+    _write_files(root, fixture["conditional_gitdir_override_probe_files"])
+    probe_environment = dict(isolated_environment)
+    probe_environment["GIT_DIR"] = str(external_git_dir)
+    git_config = _run(
+        ["git", "config", "--includes", "--path", "--get", "core.excludesFile"],
+        cwd=root,
+        environment=probe_environment,
+    )
+    if git_config.returncode not in (0, 1) or git_config.stderr:
+        _require_success(git_config, "git config caller-provided GIT_DIR include")
+    git_config_path = Path(git_config.stdout.strip()) if git_config.stdout.strip() else None
+    git_config_matches = git_config_path == custom_ignore
+
+    if vcs == "sapling":
+        status = _run(
+            [executable, "status", "-iu", "--print0"], cwd=root, environment=probe_environment
+        )
+        _require_success(status, "sl status caller-provided GIT_DIR include")
+        _, ignored_paths = _sapling_status_paths(status.stdout)
+        ignored = sorted(ignored_paths & set(query_files))
+        output = {"status_stdout": status.stdout.replace(str(root), "<workspace>")}
+    else:
+        status = _run([executable, "status", "--no-pager"], cwd=root, environment=probe_environment)
+        _require_success(status, "jj status caller-provided GIT_DIR include")
+        listed = _run([executable, "file", "list"], cwd=root, environment=probe_environment)
+        _require_success(listed, "jj file list caller-provided GIT_DIR include")
+        included_paths = _jujutsu_paths(listed.stdout)
+        ignored = sorted(set(query_files) - included_paths)
+        output = {
+            "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+            "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+        }
+
+    expected_key = f"{vcs}.{mode}-mode" if vcs == "sapling" else f"jj.{mode}"
+    expected = fixture["expected_conditional_gitdir_override_ignored"][expected_key]
+    return {
+        "query_files": query_files,
+        "git_config_path": (
+            str(git_config_path).replace(str(home), "<home>")
+            if git_config_path is not None
+            else None
+        ),
+        "git_config_matches": git_config_matches,
+        "ignored": ignored,
+        "included": sorted(set(query_files) - set(ignored)),
+        "native_matches_git_config": bool(ignored) == git_config_matches,
+        "candidate_matches": ignored == expected,
+        **output,
+    }
 
 
 def _write_conditional_worktree_probe(
