@@ -36,17 +36,14 @@ The hosted Linux 6.7.2 profile has 64 matching boolean comparisons and a matchin
 invalid-syntax result; the nested-subinclude and include-cycle behaviors remain open native errors.
 Its six captured walk fixtures all match.
 Fourteen regex-extension probes cover lookaround, word boundaries, backreferences, newline matching,
-and inline flags. All fourteen captures on macOS arm64, hosted Ubuntu x86_64, and Windows Server
-2025 x86_64 agree with the evaluator. Debian 13's Mercurial 7.0.1 captures include eleven; the
-three inline-flag probes are exercised by live-client differential tests but do not have versioned
-Debian capture records.
+and inline flags. All fourteen captures on macOS arm64, Debian 13 Linux aarch64 and x86_64, hosted
+Ubuntu x86_64, and Windows Server 2025 x86_64 agree with the evaluator.
 Three additional probes cover the `a`, `L`, and `x` inline regex flags. Captures on Mercurial
 7.2.4/macOS arm64, 6.7.2/hosted Ubuntu x86_64, and 7.1.2/Windows x86_64 match the evaluator: ASCII
 and locale byte classes reject a UTF-8 non-ASCII letter under `LC_ALL=C`, while verbose mode accepts
 whitespace and a trailing regex comment. Mercurial 7.1.2 on Windows matches the same `é` path with
 `(?L)`; the policy reflects this platform result using Windows' active code page. All three cases
-are included in live-client differential tests. Their versioned captures remain absent from Debian
-13's Mercurial 7.0.1 profiles.
+are included in live-client differential tests and both versioned Debian 13 Mercurial 7.0.1 profiles.
 An unreadable
 included file is skipped by native Mercurial with a warning; the
 policy reports `discovery_complete=False` with a source-unavailable diagnostic. Config discovery

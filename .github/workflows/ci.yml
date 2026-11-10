@@ -99,6 +99,50 @@ jobs:
         uses: docker/setup-qemu-action@v4
         with:
           platforms: arm64
+      - name: Recapture Mercurial 7.0.1 on Debian 13
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/native"
+          docker run --rm --platform linux/amd64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 util-linux && su -s /bin/sh nobody -c "python3 tests/oracles/hg/run.py --output /tmp/hg-7.0.1-linux-x86_64.json" && cp /tmp/hg-7.0.1-linux-x86_64.json /output/hg-7.0.1-linux-x86_64.json'
+          docker run --rm --platform linux/arm64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 util-linux && su -s /bin/sh nobody -c "python3 tests/oracles/hg/run.py --output /tmp/hg-7.0.1-linux-aarch64.json" && cp /tmp/hg-7.0.1-linux-aarch64.json /output/hg-7.0.1-linux-aarch64.json'
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          directory = Path(os.environ["RUNNER_TEMP"]) / "native"
+          expected_flags = {
+              "hg.regex-ascii-inline-flag": False,
+              "hg.regex-locale-inline-flag": False,
+              "hg.regex-verbose-inline-flag": True,
+          }
+          for filename, architecture in (
+              ("hg-7.0.1-linux-aarch64.json", "aarch64"),
+              ("hg-7.0.1-linux-x86_64.json", "x86_64"),
+          ):
+              capture = json.loads((directory / filename).read_text(encoding="utf-8"))
+              assert capture["status"] == "captured"
+              assert capture["client"]["version"] == "Mercurial Distributed SCM (version 7.0.1)"
+              assert architecture in capture["client"]["platform"]
+              assert len(capture["cases"]) == 71
+              assert not any(case["candidate_matches"] is False for case in capture["cases"])
+              observations = {case["id"]: case for case in capture["cases"]}
+              for case_id, expected in expected_flags.items():
+                  case = observations[case_id]
+                  assert case["native_status"] == "captured"
+                  assert case["candidate_matches"] is True
+                  assert case["observed_ignored"] is expected
+          PY
       - name: Capture Darcs oracle on Debian 13 ARM64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |

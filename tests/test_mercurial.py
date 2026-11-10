@@ -266,6 +266,8 @@ def test_nested_subinclude_preserves_portable_result_when_native_matcher_fails(
     for profile in (
         "hg-7.2.4-macos-arm64.json",
         "hg-6.7.2-linux-x86_64.json",
+        "hg-7.0.1-linux-aarch64.json",
+        "hg-7.0.1-linux-x86_64.json",
         "hg-7.1.2-windows-x86_64.json",
     ):
         observation = MATCHING_OBSERVATIONS[profile][case["id"]]
@@ -280,6 +282,29 @@ def test_nested_subinclude_preserves_portable_result_when_native_matcher_fails(
     assert decision.pattern == "config.tmp"
     assert decision.scope == "config"
     assert decision.diagnostics == ()
+
+
+@pytest.mark.parametrize(
+    "profile",
+    ("hg-7.0.1-linux-aarch64.json", "hg-7.0.1-linux-x86_64.json"),
+)
+@pytest.mark.parametrize(
+    ("case_id", "expected_ignored"),
+    (
+        ("hg.regex-ascii-inline-flag", False),
+        ("hg.regex-locale-inline-flag", False),
+        ("hg.regex-verbose-inline-flag", True),
+    ),
+)
+def test_debian_13_profiles_capture_regex_inline_flags(
+    profile: str, case_id: str, expected_ignored: bool
+) -> None:
+    """Keep Mercurial 7.0.1 inline-flag native evidence present and matching."""
+    observation = MATCHING_OBSERVATIONS[profile][case_id]
+
+    assert observation["native_status"] == "captured"
+    assert observation["candidate_matches"] is True
+    assert observation["observed_ignored"] is expected_ignored
 
 
 LIVE_PATTERN_SEMANTIC_CASES = [
@@ -493,7 +518,11 @@ def test_configured_ignore_sources_keep_captured_native_order(tmp_path: Path, pr
 
 @pytest.mark.parametrize(
     "profile",
-    ("hg-7.2.4-macos-arm64.json", "hg-7.0.1-linux-x86_64.json"),
+    (
+        "hg-7.2.4-macos-arm64.json",
+        "hg-7.0.1-linux-aarch64.json",
+        "hg-7.0.1-linux-x86_64.json",
+    ),
 )
 def test_workspace_ignore_precedes_duplicate_configured_source(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, profile: str
