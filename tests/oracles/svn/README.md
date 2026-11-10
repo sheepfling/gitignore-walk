@@ -53,6 +53,9 @@ run this extra status query. Sparse-depth fixtures confirm a versioned directory
 `empty` retains its `svn:ignore` property, while an excluded directory is reported as one unversioned
 path without listing files beneath it. A switched-subtree case confirms that inherited
 `svn:global-ignores` are discovered at the switched root and do not leak to sibling paths. The
+live nested-caller-root check constructs the policy and walker at a versioned subdirectory, compares
+its membership with native verbose status from that directory, and confirms the walk stays within
+the caller's boundary. The
 original 19 cases and 20th ignored-directory case are captured on Subversion 1.15.0/macOS arm64,
 1.14.3/Ubuntu 24.04 x86_64, and 1.14.5/SlikSvn Windows Server 2025 x86_64. The 21st
 versioned-directory case matches all three profiles.

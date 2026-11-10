@@ -533,6 +533,61 @@ def test_subversion_versioned_directory_keeps_matching_rules_separate_from_membe
     assert included == {"cache/new.tmp", "cache/tracked.tmp", "visible.txt"}
 
 
+def test_subversion_membership_walk_is_bounded_to_nested_caller_root(tmp_path: Path) -> None:
+    root, environment, config_dir = _create_working_copy(tmp_path, VERSIONED_DIRECTORY_CASE)
+    nested_root = root / "cache"
+    policy = SubversionIgnorePolicy(
+        nested_root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=nested_root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_entries = {
+        entry.attrib["path"].replace("\\", "/"): status.attrib["item"]
+        for entry in document.findall("./target/entry")
+        if (status := entry.find("wc-status")) is not None
+    }
+    assert native_entries == {".": "normal", "new.tmp": "unversioned", "tracked.tmp": "normal"}
+
+    tracked = policy.explain("tracked.tmp")
+    unversioned = policy.explain("new.tmp")
+    assert tracked.membership == "versioned"
+    assert unversioned.membership == "unversioned"
+
+    walker = IgnoreWalker(nested_root, policy=policy)
+    included = {
+        path.relative_to(nested_root).as_posix()
+        for path in walker.iter_files(selection="included")
+        if ".svn" not in path.relative_to(nested_root).parts
+    }
+    ignored = {
+        path.relative_to(nested_root).as_posix()
+        for path in walker.iter_files(selection="ignored")
+        if ".svn" not in path.relative_to(nested_root).parts
+    }
+    assert included == {"new.tmp", "tracked.tmp"}
+    assert ignored == set()
+
+
 def test_subversion_file_external_keeps_rule_matching_separate_from_membership(
     tmp_path: Path,
 ) -> None:
