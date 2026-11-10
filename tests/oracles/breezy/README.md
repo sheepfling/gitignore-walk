@@ -17,10 +17,14 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
 aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original 33 boolean
 candidate cases and explicit regex/error cases are captured across all four profiles. An additional
-Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 33 boolean candidates
-match there as well, with nine newer or platform-scoped probes explicitly excluded. Linux native CI
-recaptures this profile in a digest-pinned Debian 13 image and checks the client/Python identity and
-candidate results. Three additional
+Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 37 boolean candidates
+match there, and all three source-precedence probes match their expected winning patterns. Four
+newer or platform-scoped probes are explicitly excluded. The Unicode `\\w` and `\\d` probes remain
+scoped to Breezy 3.3.24/macOS: an exploratory 3.3.11/Linux run under `LC_ALL=C` omitted the queried
+Unicode paths from both `brz ignored` and status when those regex rules were present, so the behavior
+needs investigation before it can be treated as a comparable result. Linux native CI recaptures this
+profile in a digest-pinned Debian 13 image and checks the client/Python identity and candidate results.
+Three additional
 source-precedence cases are captured on macOS arm64 and Linux aarch64: with overlapping regular
 ignores, Breezy reports the global pattern before the built-in pattern, and the built-in pattern
 before the branch `.bzrignore` pattern. The policy now preserves this observed global, built-in,
@@ -50,7 +54,8 @@ captured status unknown/ignored paths when an exception opens an ignored parent 
 siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
 the ignored subtree hidden. The local policy is checked against all 36 boolean candidate cases on
-macOS arm64 and Linux aarch64; the other two committed profiles retain 33 checked cases. Additional
+macOS arm64 and Linux aarch64; the other two Breezy 3.3.24 committed profiles retain 33 checked
+cases. The Debian Breezy 3.3.11 profile checks 37 boolean candidates. Additional
 regex probes cover Unicode `\\w` and `\\d`, fixed-width lookbehind, and Breezy's native parse error
 for a numeric backreference to its open regex wrapper. These four probes are currently captured on
 macOS arm64 only. Native fixtures now cover both sides of root-anchored exception pruning on Breezy

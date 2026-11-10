@@ -158,8 +158,10 @@ def test_breezy_debian13_profile_records_exact_client_and_python() -> None:
 
     assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
     assert capture["client"]["runner_python"].startswith("3.13.")
-    assert len(capture["cases"]) == 36
-    assert len(capture["excluded_cases"]) == 9
+    assert len(capture["cases"]) == 41
+    assert len(capture["excluded_cases"]) == 4
+    assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 37
+    assert sum(case["winning_pattern_matches"] is not None for case in capture["cases"]) == 3
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)

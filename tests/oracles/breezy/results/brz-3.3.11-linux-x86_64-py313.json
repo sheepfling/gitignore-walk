@@ -34,30 +34,6 @@
   },
   "excluded_cases": [
     {
-      "id": "brz.global-ignore-over-local-ignore",
-      "required_profiles": [
-        "brz-3.3.24-macos-arm64.json",
-        "brz-3.3.24-linux-aarch64-py312.json"
-      ],
-      "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
-    },
-    {
-      "id": "brz.local-ignore-over-default-ignore",
-      "required_profiles": [
-        "brz-3.3.24-macos-arm64.json",
-        "brz-3.3.24-linux-aarch64-py312.json"
-      ],
-      "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
-    },
-    {
-      "id": "brz.global-ignore-over-default-ignore",
-      "required_profiles": [
-        "brz-3.3.24-macos-arm64.json",
-        "brz-3.3.24-linux-aarch64-py312.json"
-      ],
-      "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
-    },
-    {
       "id": "brz.walk-root-anchored-nested-exception",
       "required_profiles": [
         "brz-3.3.24-macos-arm64.json"
@@ -72,13 +48,6 @@
       "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
     },
     {
-      "id": "brz.regex-backreference-invalid-pattern",
-      "required_profiles": [
-        "brz-3.3.24-macos-arm64.json"
-      ],
-      "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
-    },
-    {
       "id": "brz.regex-unicode-word-class",
       "required_profiles": [
         "brz-3.3.24-macos-arm64.json"
@@ -87,13 +56,6 @@
     },
     {
       "id": "brz.regex-unicode-digit-class",
-      "required_profiles": [
-        "brz-3.3.24-macos-arm64.json"
-      ],
-      "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
-    },
-    {
-      "id": "brz.regex-fixed-lookbehind",
       "required_profiles": [
         "brz-3.3.24-macos-arm64.json"
       ],
@@ -1163,6 +1125,151 @@
       "global_ignore_exists_after": true
     },
     {
+      "id": "brz.global-ignore-over-local-ignore",
+      "dimension": "source-precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "keep.tmp",
+      "observed_ignored": true,
+      "observed_pattern": "*.tmp",
+      "expected_winning_pattern": "*.tmp",
+      "winning_pattern_matches": true,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "keep.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "keep.tmp                                           *.tmp\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n",
+      "status_stderr": "",
+      "stdout_sha256": "36f40bc75a88f9887abe93091ac2ef2329000b8af26e79fcf8c57abe9769d50f",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": true,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.local-ignore-over-default-ignore",
+      "dimension": "source-precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "module.pyc",
+      "observed_ignored": true,
+      "observed_pattern": "*.py[co]",
+      "expected_winning_pattern": "*.py[co]",
+      "winning_pattern_matches": true,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "module.pyc"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "module.pyc                                         *.py[co]\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n",
+      "status_stderr": "",
+      "stdout_sha256": "c2e8b7ceb1017282da43f889f33d70f9a45614a7c556d6ec19a823b4cd7e4d65",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.global-ignore-over-default-ignore",
+      "dimension": "source-precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "module.pyc",
+      "observed_ignored": true,
+      "observed_pattern": "module.*",
+      "expected_winning_pattern": "module.*",
+      "winning_pattern_matches": true,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "module.pyc"
+      ],
+      "unknown_paths": [],
+      "stdout": "module.pyc                                         module.*\n",
+      "stderr": "",
+      "status_stdout": "",
+      "status_stderr": "",
+      "stdout_sha256": "480e1bfeb407c592f5b5ff9d91209ff35ba934d45fb368762fee0e111539ad99",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": true,
+      "global_ignore_exists_after": true
+    },
+    {
       "id": "brz.regex-global-inline-flag-rejected",
       "dimension": "regex",
       "evidence_status": "native-observed",
@@ -1835,6 +1942,100 @@
       "status_stdout": "?   .bzrignore\n",
       "status_stderr": "",
       "stdout_sha256": "7aac33feb127fe6d2239c756e0eae44247a86a847d63964f76c10555b72ae7d6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-backreference-invalid-pattern",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": null,
+      "query": "cache/src-src.tmp",
+      "observed_ignored": false,
+      "observed_pattern": null,
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": null,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 3,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 3,
+      "ignored_paths": [],
+      "unknown_paths": [],
+      "stdout": "",
+      "stderr": "brz: ERROR: Invalid pattern(s) found. File ~/.config/breezy/ignore or .bzrignore contains error(s).\n  RE:^cache/(src)-\\1\\.tmp$\n",
+      "status_stdout": "",
+      "status_stderr": "brz: ERROR: Invalid pattern(s) found. File ~/.config/breezy/ignore or .bzrignore contains error(s).\n  RE:^cache/(src)-\\1\\.tmp$\n",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "4a93d000aaca377d97d1cd0f11d3edb5dede31f9f02df07d5a95a895ce4ca6f1",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-fixed-lookbehind",
+      "dimension": "regex",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "cache/keep.tmp",
+      "observed_ignored": true,
+      "observed_pattern": "RE:^cache/(?<=cache/)keep\\.tmp$",
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "cache/keep.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "cache/keep.tmp                                     RE:^cache/(?<=cache/)keep\\.tmp$\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  cache\n+N  cache/.oracle-walk-anchor\n",
+      "status_stderr": "",
+      "stdout_sha256": "5da029db08be7ad7963d58f802599a7fee7144a36350485f33f9fc810063daa2",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "isolated_configuration": true,
       "global_ignore_existed_before": false,

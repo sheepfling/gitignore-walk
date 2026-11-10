@@ -1936,7 +1936,8 @@
     {
       "id": "brz.regex-backreference-invalid-pattern",
       "required_profiles": [
-        "brz-3.3.24-macos-arm64.json"
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
     },
@@ -1957,7 +1958,8 @@
     {
       "id": "brz.regex-fixed-lookbehind",
       "required_profiles": [
-        "brz-3.3.24-macos-arm64.json"
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
     }

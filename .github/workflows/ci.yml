@@ -122,8 +122,8 @@ jobs:
           assert result["passed"], result
           assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
           assert capture["client"]["runner_python"].startswith("3.13.")
-          assert len(capture["cases"]) == 36
-          assert len(capture["excluded_cases"]) == 9
+          assert len(capture["cases"]) == 41
+          assert len(capture["excluded_cases"]) == 4
           print(result)
           PY
       - uses: actions/upload-artifact@v4

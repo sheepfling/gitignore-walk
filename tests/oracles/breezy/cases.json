@@ -384,7 +384,8 @@
       "expected_winning_pattern": "*.tmp",
       "capture_profiles": [
         "brz-3.3.24-macos-arm64.json",
-        "brz-3.3.24-linux-aarch64-py312.json"
+        "brz-3.3.24-linux-aarch64-py312.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
@@ -403,7 +404,8 @@
       "expected_winning_pattern": "*.py[co]",
       "capture_profiles": [
         "brz-3.3.24-macos-arm64.json",
-        "brz-3.3.24-linux-aarch64-py312.json"
+        "brz-3.3.24-linux-aarch64-py312.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
@@ -422,7 +424,8 @@
       "expected_winning_pattern": "module.*",
       "capture_profiles": [
         "brz-3.3.24-macos-arm64.json",
-        "brz-3.3.24-linux-aarch64-py312.json"
+        "brz-3.3.24-linux-aarch64-py312.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
@@ -726,7 +729,8 @@
       "query": "cache/src-src.tmp",
       "expected_candidate": null,
       "capture_profiles": [
-        "brz-3.3.24-macos-arm64.json"
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
@@ -777,7 +781,8 @@
       "query": "cache/keep.tmp",
       "expected_candidate": true,
       "capture_profiles": [
-        "brz-3.3.24-macos-arm64.json"
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
