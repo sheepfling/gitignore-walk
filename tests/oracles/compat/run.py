@@ -46,7 +46,7 @@ def _capture_sapling(
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-{mode}-") as temporary:
         base = Path(temporary)
         home = base / "home"
-        home.mkdir()
+        _prepare_sapling_oracle_home(home)
         root = base / "workspace"
         root.mkdir()
         environment = {
@@ -311,6 +311,17 @@ def _symlink_result(
     }
 
 
+def _prepare_sapling_oracle_home(home: Path) -> None:
+    """Create an isolated Sapling home with a nonzero-mtime empty Git config file.
+
+    Sapling's Windows `.git` mode copies the Git config timestamp onto translated config files.
+    When the user config is absent it tries to set a zero timestamp, which Windows rejects.
+    An empty config keeps the effective settings unchanged while avoiding that client failure.
+    """
+    home.mkdir()
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+
+
 def _symlink_probe_environment(home: Path, *, sapling: bool) -> dict[str, str]:
     """Isolate probe settings from ambient Git and Sapling workspace overrides."""
     environment = {
@@ -346,7 +357,7 @@ def _capture_symlinked_gitignore_sapling(
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-symlink-{mode_id}-") as temporary:
         base = Path(temporary)
         home = base / "home"
-        home.mkdir()
+        _prepare_sapling_oracle_home(home)
         root = base / "workspace"
         root.mkdir()
         environment = _symlink_probe_environment(home, sapling=True)
@@ -433,7 +444,6 @@ def _write_environment_global_probe(
     root: Path, home: Path, fixture: Mapping[str, Any]
 ) -> tuple[list[str], dict[str, str]]:
     """Select an alternate global Git config path through the documented environment variable."""
-    (home / ".gitconfig").unlink(missing_ok=True)
     ignore_file = home / "environment-global-ignore"
     ignore_file.write_text(fixture["environment_global_ignore"], encoding="utf-8")
     alternate_config = home / "alternate-gitconfig"
@@ -465,7 +475,7 @@ def _capture_environment_global_sapling(
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-global-{mode}-") as temporary:
         base = Path(temporary)
         home = base / "home"
-        home.mkdir()
+        _prepare_sapling_oracle_home(home)
         root = base / "workspace"
         root.mkdir()
         query_files, probe_environment = _write_environment_global_probe(root, home, fixture)
@@ -572,7 +582,7 @@ def _capture_environment_count_sapling(
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-count-{mode}-") as temporary:
         base = Path(temporary)
         home = base / "home"
-        home.mkdir()
+        _prepare_sapling_oracle_home(home)
         root = base / "workspace"
         root.mkdir()
         query_files, environment = _environment_count_probe(home, fixture)
@@ -1606,7 +1616,7 @@ def _capture_sapling_workspace_boundary(
         root = base / "workspace"
         root.mkdir()
         home = base / "home"
-        home.mkdir()
+        _prepare_sapling_oracle_home(home)
         environment = {
             **os.environ,
             "HOME": str(home),
@@ -1851,7 +1861,10 @@ def capture_linked_worktree_profile(sapling: str | None, jj: str) -> dict[str, A
     with tempfile.TemporaryDirectory(prefix="gitignore-walk-linked-worktree-") as temporary:
         base = Path(temporary)
         home = base / "home"
-        home.mkdir()
+        if sapling is not None:
+            _prepare_sapling_oracle_home(home)
+        else:
+            home.mkdir()
         common_root = base / "main"
         common_root.mkdir()
         worktree = base / "linked"
