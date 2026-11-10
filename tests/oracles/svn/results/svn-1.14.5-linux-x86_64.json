@@ -4,7 +4,8 @@
   "client": {
     "svn": {
       "executable": "/usr/bin/svn",
-      "version": "1.14.5"
+      "version": "1.14.5",
+      "apr_build": "APR 1.7.5 (compiled with 1.7.5)"
     },
     "svnadmin": {
       "executable": "/usr/bin/svnadmin",
@@ -1270,6 +1271,539 @@
       "setup_exit_codes": [
         0,
         0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.sparse-immediates-retains-child-directory-properties",
+      "dimension": "sparse-working-copy-property-discovery",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/nested/loose.tmp",
+        "pkg/root.tmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/nested/loose.tmp",
+        "pkg/root.tmp"
+      ],
+      "expected_status_paths": [
+        "pkg/nested/deeper",
+        "pkg/nested/loose.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.tmp"
+      ],
+      "observed_status_paths": [
+        "pkg/nested/deeper",
+        "pkg/nested/loose.tmp",
+        "pkg/nested/visible.txt",
+        "pkg/root.tmp"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "pkg/nested/tracked.tmp",
+        "pkg/root.txt"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-b1rlnlev/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/nested/deeper",
+            "pkg/nested/visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/nested/deeper\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested/visible.txt\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "a0f090b5de7669ff3f71763ff7ddd4a2d1594c26f5111f6dbe9f44aaf01f186a",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-b1rlnlev/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/nested/deeper",
+            "pkg/nested/loose.tmp",
+            "pkg/nested/visible.txt",
+            "pkg/root.tmp"
+          ],
+          "ignored_paths": [
+            "pkg/nested/loose.tmp",
+            "pkg/root.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/nested/deeper\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested/loose.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/root.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "b3a16a56dd33fafd4b799c06867a4108588bb2249de5dcd147474e8d4505e9e3",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.sparse-files-collapses-unversioned-directory",
+      "dimension": "sparse-working-copy-traversal-boundary",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/loose.tmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/loose.tmp"
+      ],
+      "expected_status_paths": [
+        "pkg/loose.tmp",
+        "pkg/nested",
+        "pkg/visible.txt"
+      ],
+      "observed_status_paths": [
+        "pkg/loose.tmp",
+        "pkg/nested",
+        "pkg/visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "pkg/tracked.tmp"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-x5k84_6f/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/nested",
+            "pkg/visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/nested\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "687c69854737f109f4cf86dd0891fda7f7d30bbc9cc2298416a72cc7d8f2d975",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-x5k84_6f/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/loose.tmp",
+            "pkg/nested",
+            "pkg/visible.txt"
+          ],
+          "ignored_paths": [
+            "pkg/loose.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"pkg/loose.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/nested\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "9bc449b788ed399d315c3344eaccf25874c186a456e7b6edff5c8196fb0a1cb2",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.glob-apr-default-flags",
+      "dimension": "apr-glob-flags",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp"
+      ],
+      "observed_ignored_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp"
+      ],
+      "expected_status_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp",
+        "upper/CASE.TMP"
+      ],
+      "observed_status_paths": [
+        "hidden/.hidden.tmp",
+        "lower/case.tmp",
+        "upper/CASE.TMP"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-chgvphko/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "upper/CASE.TMP"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"upper/CASE.TMP\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "b82dc244c444fe9a7f3498855519287711f8d9c9bc926934449e320992849a5f",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-chgvphko/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "hidden/.hidden.tmp",
+            "lower/case.tmp",
+            "upper/CASE.TMP"
+          ],
+          "ignored_paths": [
+            "hidden/.hidden.tmp",
+            "lower/case.tmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"hidden/.hidden.tmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"lower/case.tmp\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"upper/CASE.TMP\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "3f4820769812cae917fa6afad06fa0af407cf3f71f2effcb6df6e29172975821",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.switched-subtree-inherits-global-ignores",
+      "dimension": "switched-working-copy-property-inheritance",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/ignored.branchtmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/ignored.branchtmp"
+      ],
+      "expected_status_paths": [
+        "outside.branchtmp",
+        "pkg",
+        "pkg/ignored.branchtmp"
+      ],
+      "observed_status_paths": [
+        "outside.branchtmp",
+        "pkg",
+        "pkg/ignored.branchtmp"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "pkg/base.txt"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-kkt3ve41/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "outside.branchtmp",
+            "pkg"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"outside.branchtmp\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg\">\n<wc-status\n   switched=\"true\"\n   item=\"normal\"\n   revision=\"5\"\n   props=\"none\">\n<commit\n   revision=\"5\">\n<author>root</author>\n<date>2026-11-10T04:21:06.321345Z</date>\n</commit>\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "13c15a1c4d5d721cededbb3f05e6f0522003cd28c0e67081f96652197ead12b0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-kkt3ve41/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "outside.branchtmp",
+            "pkg",
+            "pkg/ignored.branchtmp"
+          ],
+          "ignored_paths": [
+            "pkg/ignored.branchtmp"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"outside.branchtmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"pkg\">\n<wc-status\n   item=\"normal\"\n   revision=\"5\"\n   props=\"none\"\n   switched=\"true\">\n<commit\n   revision=\"5\">\n<author>root</author>\n<date>2026-11-10T04:21:06.321345Z</date>\n</commit>\n</wc-status>\n</entry>\n<entry\n   path=\"pkg/ignored.branchtmp\">\n<wc-status\n   item=\"ignored\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "adab2ea539492b05a75f27df361fb9fb2e126d931baab7555935ddab7b7da5e6",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.collapsed-unversioned-directory-membership",
+      "dimension": "collapsed-unversioned-directory-enumeration",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_status_paths": [
+        "cache"
+      ],
+      "observed_status_paths": [
+        "cache"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-vktnfqqn/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "469536f50033df603939b2789a3de56acaf554c0e16aaa628c6b2a9f7eb2b8ac",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-vktnfqqn/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache\">\n<wc-status\n   props=\"none\"\n   item=\"unversioned\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "e392bd36b8ae36f86e94d73082d11a4fc9067a020fa1a8dc49fccf85a30261c1",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.ignored-unversioned-directory-collapses",
+      "dimension": "ignored-directory-status-traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "cache"
+      ],
+      "observed_ignored_paths": [
+        "cache"
+      ],
+      "expected_status_paths": [
+        "cache",
+        "visible.txt"
+      ],
+      "observed_status_paths": [
+        "cache",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-1juarf_q/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "db084a4243808d901763423df1a6f728930d43ab0e660a93354e1a36ef057ce0",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-1juarf_q/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache",
+            "visible.txt"
+          ],
+          "ignored_paths": [
+            "cache"
+          ],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache\">\n<wc-status\n   props=\"none\"\n   item=\"ignored\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "6a20e0e39329cf927aa3b616fe6dbdac52b6ff6b6d7d9a1fe3c4c3c8a8ec121c",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "svn.versioned-directory-ignore-membership",
+      "dimension": "versioned-directory-membership",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_status_paths": [
+        "cache/new.tmp",
+        "visible.txt"
+      ],
+      "observed_status_paths": [
+        "cache/new.tmp",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "versioned_files": [
+        "cache/tracked.tmp"
+      ],
+      "observations": {
+        "default": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-x3gtytfs/config",
+            "status",
+            "--xml"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache/new.tmp",
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache/new.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "0748f7134e82e327bb765d9df1f5657e483b39bd22dc0615b703b65e1d699f46",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "no_ignore": {
+          "command": [
+            "/usr/bin/svn",
+            "--config-dir",
+            "/tmp/gitignore-walk-svn-oracle-x3gtytfs/config",
+            "status",
+            "--xml",
+            "--no-ignore"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache/new.tmp",
+            "visible.txt"
+          ],
+          "ignored_paths": [],
+          "stdout": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<status>\n<target\n   path=\".\">\n<entry\n   path=\"cache/new.tmp\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n<entry\n   path=\"visible.txt\">\n<wc-status\n   item=\"unversioned\"\n   props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>\n",
+          "stderr": "",
+          "stdout_sha256": "0748f7134e82e327bb765d9df1f5657e483b39bd22dc0615b703b65e1d699f46",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "setup_exit_codes": [
         0,
         0,
         0,

@@ -68,8 +68,9 @@ the caller's boundary. The
 original 19 cases and 20th ignored-directory case are captured on Subversion 1.15.0/macOS arm64,
 1.14.3/Ubuntu 24.04 x86_64, and 1.14.5/SlikSvn Windows Server 2025 x86_64. The 21st
 versioned-directory case matches all three profiles. The 22nd sparse-files and 23rd
-sparse-immediates cases match on Subversion 1.15.0/macOS arm64 and are retained in
-`results/svn-1.15.0-macos-arm64.json`. Fresh CI oracle artifacts will extend the profile coverage.
+sparse-immediates cases match on Subversion 1.15.0/macOS arm64 and 1.14.5/Debian 13 Linux x86_64.
+Their captures are retained in `results/svn-1.15.0-macos-arm64.json` and
+`results/svn-1.14.5-linux-x86_64.json`. Fresh CI oracle artifacts will extend profile coverage.
 Platform-constrained cases are recorded as skips. The APR build lines are retained for these
 profiles: 1.7.6, 1.7.2, and 1.7.5, respectively. The 16 earlier cases also match on Subversion
 Subversion 1.14.5/Linux aarch64 and x86_64. The file-external case is captured on macOS, both
