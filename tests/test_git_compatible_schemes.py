@@ -80,8 +80,10 @@ def test_native_captured_ignore_sources_match_read_only_policy(tmp_path: Path, m
         (root / ".jj").mkdir(exist_ok=True)
 
     (root / ".gitignore").write_text("*.tmp\n!local.priority\n", encoding="utf-8")
-    git_info = root / ".git" / "info"
-    if git_info.is_dir():
+    git_directory = root / ".git"
+    if git_directory.is_dir():
+        git_info = git_directory / "info"
+        git_info.mkdir(parents=True, exist_ok=True)
         (git_info / "exclude").write_text(
             "*.local\n!priority.global\ninfo.priority\nlocal.priority\n", encoding="utf-8"
         )
@@ -125,6 +127,7 @@ def test_sapling_sl_workspace_does_not_inherit_outer_git_info_exclude(tmp_path: 
     outer.mkdir()
     _git_init(outer)
     info = outer / ".git" / "info" / "exclude"
+    info.parent.mkdir(parents=True, exist_ok=True)
     info.write_text("*.local\n", encoding="utf-8")
     workspace = outer / "sapling"
     (workspace / ".sl").mkdir(parents=True)
@@ -141,6 +144,7 @@ def test_jujutsu_workspace_does_not_inherit_outer_git_info_exclude(tmp_path: Pat
     outer.mkdir()
     _git_init(outer)
     info = outer / ".git" / "info" / "exclude"
+    info.parent.mkdir(parents=True, exist_ok=True)
     info.write_text("*.local\n", encoding="utf-8")
     workspace = outer / "jujutsu"
     (workspace / ".jj").mkdir(parents=True)
