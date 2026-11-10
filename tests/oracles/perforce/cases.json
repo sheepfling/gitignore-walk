@@ -653,17 +653,49 @@
       "expected_candidate": null,
       "expected_ignore_match": false,
       "capture_where": [
+        "main",
+        "main/private",
         "main/visible.txt",
         "main/private/secret.txt",
         "outside.txt"
       ],
       "expected_where": {
+        "main": {
+          "stdout": "",
+          "stderr": "main - file(s) not in client view.\n"
+        },
+        "main/private": {
+          "stdout": "//depot/main/private //ignore-oracle/main/private <workspace>/main/private\n",
+          "stderr": ""
+        },
         "main/visible.txt": {
           "stdout": "//depot/main/visible.txt //ignore-oracle/main/visible.txt <workspace>/main/visible.txt\n",
           "stderr": ""
         },
         "main/private/secret.txt": {
           "stdout": "-//depot/main/private/secret.txt //ignore-oracle/main/private/secret.txt <workspace>/main/private/secret.txt\n",
+          "stderr": ""
+        },
+        "outside.txt": {
+          "stdout": "",
+          "stderr": "outside.txt - file(s) not in client view.\n"
+        }
+      },
+      "expected_tagged_where": {
+        "main": {
+          "stdout": "",
+          "stderr": "main - file(s) not in client view.\n"
+        },
+        "main/private": {
+          "stdout": "... depotFile //depot/main/private\n... clientFile //ignore-oracle/main/private\n... path <workspace>/main/private\n\n",
+          "stderr": ""
+        },
+        "main/visible.txt": {
+          "stdout": "... depotFile //depot/main/visible.txt\n... clientFile //ignore-oracle/main/visible.txt\n... path <workspace>/main/visible.txt\n\n",
+          "stderr": ""
+        },
+        "main/private/secret.txt": {
+          "stdout": "... unmap \n... depotFile //depot/main/private/secret.txt\n... clientFile //ignore-oracle/main/private/secret.txt\n... path <workspace>/main/private/secret.txt\n\n",
           "stderr": ""
         },
         "outside.txt": {

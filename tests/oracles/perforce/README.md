@@ -44,10 +44,11 @@ directory reports the configured workspace root. A separate config-scope case fi
 P4IGNORE file above the client root. The Linux profile uses binaries fetched from the official
 Perforce 2026.1 release path and pinned by SHA-256 in CI.
 
-The client-view probe captures a mapped path, an explicitly excluded path, and a local path outside
-the view using both `p4 where` and `p4 add -n`. The excluded and unmapped files are not addable, while
-`p4 ignores -i -v` reports the excluded file as not ignored. This establishes that client-view
-eligibility is separate from ignore matching; the policy does not yet filter walks by client view.
+The client-view probe captures tagged `p4 where` results for a mapped file, an explicitly excluded
+file, and a local path outside the view. An unmapped parent directory can still contain a mapped
+descendant, so client-view-aware walks filter files and keep directories traversable. The opt-in
+`client_view_aware` selection requires client-root discovery; its checks remain independent of
+P4IGNORE decisions and versioned membership.
 
 | Capture file                              | Environment                   | Python  | Cases matching                         |
 | ----------------------------------------- | ----------------------------- | ------- | -------------------------------------- |

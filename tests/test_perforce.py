@@ -142,6 +142,75 @@ def test_perforce_can_discover_workspace_without_widening_caller_bound(
         selection.policy.explain("../outside.tmp")
 
 
+def test_perforce_client_view_filters_files_without_pruning_unmapped_directories(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspace = tmp_path / "workspace"
+    (workspace / "main").mkdir(parents=True)
+    (workspace / "main" / "visible.txt").touch()
+    (workspace / "main" / "private").mkdir()
+    (workspace / "main" / "private" / "secret.txt").touch()
+    (workspace / "outside.txt").touch()
+    where_paths: list[Path] = []
+
+    def captured_p4(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        if command[1:] == ["-ztag", "info"]:
+            return subprocess.CompletedProcess(command, 0, f"... clientRoot {workspace}\n", "")
+        assert command[1:3] == ["-ztag", "where"]
+        path = Path(command[3])
+        where_paths.append(path)
+        relative = path.relative_to(workspace).as_posix()
+        if relative == "main/visible.txt":
+            output = (
+                "... depotFile //depot/main/visible.txt\n"
+                "... clientFile //client/main/visible.txt\n"
+                f"... path {path}\n\n"
+            )
+            return subprocess.CompletedProcess(command, 0, output, "")
+        if relative == "main/private/secret.txt":
+            output = (
+                "... unmap \n"
+                "... depotFile //depot/main/private/secret.txt\n"
+                "... clientFile //client/main/private/secret.txt\n"
+                f"... path {path}\n\n"
+            )
+            return subprocess.CompletedProcess(command, 0, output, "")
+        return subprocess.CompletedProcess(
+            command, 0, "", f"{relative} - file(s) not in client view.\n"
+        )
+
+    monkeypatch.setattr(perforce_policy_module.subprocess, "run", captured_p4)
+    selection = select_policy(
+        workspace,
+        PerforcePolicyConfig(
+            environment={"P4CLIENT": "client"},
+            discover_client_workspace=True,
+            client_view_aware=True,
+        ),
+    )
+    assert isinstance(selection, PerforcePolicySelection)
+    policy = selection.policy
+
+    selected = {
+        path.relative_to(workspace).as_posix()
+        for path in IgnoreWalker(workspace, policy=policy).iter_files()
+    }
+
+    assert selected == {"main/visible.txt"}
+    assert {path.relative_to(workspace).as_posix() for path in where_paths} == {
+        "main/visible.txt",
+        "main/private/secret.txt",
+        "outside.txt",
+    }
+    assert policy.explain("main/private/secret.txt").ignored is False
+
+
+def test_perforce_client_view_filter_requires_client_workspace_discovery(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="client_view_aware requires discover_client_workspace"):
+        PerforceIgnorePolicy(tmp_path, client_view_aware=True)
+
+
 def test_perforce_workspace_discovery_requires_a_tagged_client_root(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -103,6 +103,9 @@ class _SubversionWalkSession:
             target, self._external_roots, self._snapshot.excluded_roots
         )
 
+    def should_select_file(self, target: Path) -> bool:
+        return self._policy.should_select_file(target)
+
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy.can_prune_ignored_directory(target, decision)
 

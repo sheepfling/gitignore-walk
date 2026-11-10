@@ -241,7 +241,10 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                 else None
             )
             where_results = {
-                path: _run(p4, ["where", path], cwd=workspace, environment=environment)
+                path: (
+                    _run(p4, ["where", path], cwd=workspace, environment=environment),
+                    _run(p4, ["-ztag", "where", path], cwd=workspace, environment=environment),
+                )
                 for path in case.get("capture_where", [])
             }
             command_output = command.stdout + command.stderr
@@ -388,8 +391,18 @@ def _capture_case(case: Mapping[str, Any], p4: str, p4d: str) -> dict[str, Any]:
                         "stderr": result.stderr.replace(str(workspace), "<workspace>").replace(
                             str(temp), "<temp>"
                         ),
+                        "tagged": {
+                            "command": ["p4", "-ztag", "where", path],
+                            "exit_code": tagged.returncode,
+                            "stdout": tagged.stdout.replace(str(workspace), "<workspace>").replace(
+                                str(temp), "<temp>"
+                            ),
+                            "stderr": tagged.stderr.replace(str(workspace), "<workspace>").replace(
+                                str(temp), "<temp>"
+                            ),
+                        },
                     }
-                    for path, result in where_results.items()
+                    for path, (result, tagged) in where_results.items()
                 },
             }
         finally:

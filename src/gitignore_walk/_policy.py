@@ -132,6 +132,8 @@ class _IgnoreWalkSession(Protocol):
 
     def should_descend_directory(self, target: Path) -> bool: ...
 
+    def should_select_file(self, target: Path) -> bool: ...
+
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool: ...
 
 
@@ -152,6 +154,9 @@ class _DefaultIgnoreWalkSession:
 
     def should_descend_directory(self, target: Path) -> bool:
         return self._policy.should_descend_directory(target)
+
+    def should_select_file(self, target: Path) -> bool:
+        return self._policy.should_select_file(target)
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy.can_prune_ignored_directory(target, decision)
@@ -199,6 +204,16 @@ class IgnorePolicy(ABC):
 
         Policies can use this hook for workspace boundaries or other traversal barriers that are
         not represented by an ignored decision. The default permits descent.
+        """
+        del target
+        return True
+
+    def should_select_file(self, target: Path) -> bool:
+        """Return whether a regular file belongs in this policy's walk scope.
+
+        This scope check is independent of ignore matching and version-control membership. Policies
+        may use it for native workspace boundaries, such as client-view exclusions. The default
+        keeps every regular file eligible for the caller-selected walk.
         """
         del target
         return True

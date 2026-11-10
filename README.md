@@ -186,11 +186,15 @@ Set `discover_client_workspace=True` to ask `p4 -ztag info` for the configured c
 lets the evaluator find ignore files above a nested traversal root while continuing to reject
 targets outside the caller's root. Workspace discovery requires a configured P4 client/server
 connection and is independent of `read_client_config`.
+Set `client_view_aware=True` with workspace discovery to omit files that `p4 -ztag where` reports as
+unmapped or explicitly excluded. This affects walker file selection only; it does not alter
+P4IGNORE decisions or report versioned membership. Directories remain traversable because an
+unmapped directory can still contain files mapped by a wildcard view rule.
 The file list uses semicolon separators. The captured precedence is deepest source directory first,
 then earliest configured filename at that level, then the last matching line in that file. The
 supported subset includes `*`, `**`, leading-slash rules anchored to their ignore file, trailing-slash
 directory rules, and `!` exceptions. The walker does not prune ignored directories, so an exception
-can re-include a descendant. Server views and broader pattern edge cases are not implemented. It
+can re-include a descendant. Broader pattern edge cases are not implemented. It
 trims ASCII spaces around each rule, preserves interior spaces and tabs, and supports the documented
 `\#` comment escape. All 37 boolean candidates match native P4/P4
 Server 2026.1 profiles on macOS arm64, Debian 13 Linux x86_64, and Ubuntu 24.04 Linux x86_64; three
@@ -558,7 +562,7 @@ Other available interfaces include:
 | `DarcsPolicySelection`                                | Typed result identifying the Darcs native candidate backend                       |
 | `DarcsBoringError`                                    | Report Darcs native candidate or managed-path discovery failures                  |
 | `PerforceIgnorePolicy`                                | Evaluate the supported P4IGNORE subset within a caller-selected traversal root    |
-| `PerforcePolicyConfig`                                | Explicit selection, source-list configuration, and optional client-root discovery |
+| `PerforcePolicyConfig`                                | Explicit selection, source-list, client-root, and client-view options             |
 | `PerforcePolicySelection`                             | Typed result identifying the selected Perforce policy and backend                 |
 | `PerforceIgnoreError`                                 | Report Perforce source, pattern, configuration, and workspace errors              |
 | `MercurialIgnorePolicy`                               | Portable Mercurial `.hgignore` evaluation                                         |

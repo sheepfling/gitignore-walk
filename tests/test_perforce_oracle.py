@@ -65,6 +65,13 @@ def test_perforce_capture_matches_versioned_candidates(case: dict[str, Any], pro
             for path, result in observation["where_results"].items()
         } == case["expected_where"]
         assert all(result["exit_code"] == 0 for result in observation["where_results"].values())
+        assert {
+            path: {key: result["tagged"][key] for key in ("stdout", "stderr")}
+            for path, result in observation["where_results"].items()
+        } == case["expected_tagged_where"]
+        assert all(
+            result["tagged"]["exit_code"] == 0 for result in observation["where_results"].values()
+        )
         assert observation["ignore_check_matches"] is True
     elif isinstance(expected, bool):
         assert observation["candidate_matches"] is True

@@ -80,6 +80,9 @@ class _BreezyWalkSession:
     def should_descend_directory(self, target: Path) -> bool:
         return self._policy.should_descend_directory(target)
 
+    def should_select_file(self, target: Path) -> bool:
+        return self._policy.should_select_file(target)
+
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy._can_prune(target, decision, self._snapshot)
 

@@ -68,6 +68,7 @@ class _PerforceWalkSession:
         self._source_rules: dict[Path, tuple[_PerforceRule, ...]] = {}
         self._checked_directories: set[tuple[Path, tuple[str, ...], Path]] = set()
         self._configurations: dict[Path, tuple[tuple[str, ...], Path, str | None]] = {}
+        self._view_membership: dict[Path, bool] = {}
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         return self._policy.resolve_target(target)
@@ -96,6 +97,11 @@ class _PerforceWalkSession:
     def should_descend_directory(self, target: Path) -> bool:
         return self._policy.should_descend_directory(target)
 
+    def should_select_file(self, target: Path) -> bool:
+        return self._policy.should_select_file(target) and self._policy._in_client_view(
+            target, self._view_membership
+        )
+
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy.can_prune_ignored_directory(target, decision)
 
@@ -116,7 +122,10 @@ class PerforceIgnorePolicy(IgnorePolicy):
     effective P4CONFIG-derived setting at each target; explicit ``p4ignore`` still takes
     precedence. Set ``discover_client_workspace=True`` to query a connected P4 client with
     ``p4 -ztag info`` for the client root; this does not widen the caller's traversal boundary.
-    Server-provided views and the broader wildcard/lexical grammar are not implemented yet.
+    Set ``client_view_aware=True`` to have walks omit files outside that client's view. This
+    requires ``discover_client_workspace=True`` and does not change ignore decisions or versioned
+    membership. Directories remain traversable because an unmapped directory can contain mapped
+    descendants.
 
     Attributes:
         root: Caller-selected traversal boundary and target bound.
@@ -168,6 +177,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
         p4ignore: str | None = None,
         read_client_config: bool = False,
         discover_client_workspace: bool = False,
+        client_view_aware: bool = False,
         p4_executable: str = "p4",
         timeout: float = 30.0,
         initial_excludes: Sequence[str] = (),
@@ -193,6 +203,9 @@ class PerforceIgnorePolicy(IgnorePolicy):
                 operation="workspace",
             )
         self._read_client_config = read_client_config and p4ignore is None
+        if client_view_aware and not discover_client_workspace:
+            raise ValueError("client_view_aware requires discover_client_workspace=True")
+        self._client_view_aware = client_view_aware
         selected = p4ignore if p4ignore is not None else self._environment.get("P4IGNORE")
         self._ignore_files = (
             _DEFAULT_IGNORE_FILES
@@ -327,6 +340,72 @@ class PerforceIgnorePolicy(IgnorePolicy):
         """Keep ignored directories traversable because later child rules can re-include paths."""
         del target, decision
         return False
+
+    def should_select_file(self, target: Path) -> bool:
+        """Keep regular files in scope unless client-view filtering is enabled."""
+        del target
+        return True
+
+    def should_descend_directory(self, target: Path) -> bool:
+        """Keep directories traversable because unmapped parents can have mapped descendants."""
+        del target
+        return True
+
+    def _in_client_view(self, target: Path, cache: dict[Path, bool]) -> bool:
+        """Return a native P4 mapping result, preserving unknown mappings conservatively."""
+        if not self._client_view_aware:
+            return True
+        path = self.resolve_target(target)
+        if path not in cache:
+            try:
+                result = subprocess.run(
+                    [self._p4_executable, "-ztag", "where", str(path)],
+                    cwd=self.root,
+                    env=self._environment,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    timeout=self._timeout,
+                    check=False,
+                )
+            except (OSError, subprocess.TimeoutExpired) as error:
+                raise PerforceIgnoreError(
+                    f"Unable to discover Perforce client view for {path}: {error}",
+                    operation="client-view",
+                    source=str(path),
+                ) from error
+            if result.returncode != 0:
+                detail = result.stderr.strip() or result.stdout.strip() or "unknown P4 error"
+                raise PerforceIgnoreError(
+                    f"Perforce client-view query failed: {detail}",
+                    operation="client-view",
+                    source=str(path),
+                )
+            elif "file(s) not in client view." in result.stderr:
+                in_view = False
+            else:
+                records: list[dict[str, str]] = []
+                for block in result.stdout.strip().split("\n\n"):
+                    record: dict[str, str] = {}
+                    for line in block.splitlines():
+                        if not line.startswith("... "):
+                            record.clear()
+                            break
+                        name, separator, value = line[4:].partition(" ")
+                        if separator:
+                            record[name] = value
+                    if record:
+                        records.append(record)
+                if len(records) == 1 and "unmap" in records[0]:
+                    in_view = False
+                elif len(records) == 1 and {"depotFile", "clientFile", "path"}.issubset(records[0]):
+                    in_view = True
+                else:
+                    # Overlays and unknown tagged records need an explicit precedence contract.
+                    in_view = True
+            cache[path] = in_view
+        return cache[path]
 
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a walk session that caches ignore files as their directories are visited."""

@@ -48,7 +48,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<temp>/.p4config' )\nP4IGNORE=.p4ignore (config '<temp>/.p4config')\nP4PORT=127.0.0.1:59741\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:59741_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<temp>/.p4config' )\nP4IGNORE=.p4ignore (config '<temp>/.p4config')\nP4PORT=127.0.0.1:61713\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61713_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": {
@@ -60,7 +60,7 @@
         "command_cwd": "sub",
         "exit_code": 0,
         "client_root": "<workspace>",
-        "stdout": "... userName super\n... password enabled\n... clientName ignore-oracle\n... clientRoot <workspace>\n... clientLock none\n... clientCwd <workspace>/sub\n... clientHost <local-client>\n... clientCase insensitive\n... peerAddress 127.0.0.1:59749\n... clientAddress 127.0.0.1\n... monitor enabled\n... security enabled\n... serverAddress localhost:59741\n... serverRoot <temp>/server\n... serverDate 2026/11/09 20:12:50 -0600 CST\n... tzoffset -21600\n... serverUptime 00:00:01\n... serverVersion P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)\n... serverServices standard\n... serverLicense none\n... caseHandling insensitive\n... allowStreamSpecInteg 1\n... parentViewDefault inheritAll\n... unloadSupport disabled\n... extensionsSupport enabled\n... resourcePressureLastUpdate 0\n... resourcePressureCPU 0\n... resourcePressureMem 0\n\n",
+        "stdout": "... userName super\n... password enabled\n... clientName ignore-oracle\n... clientRoot <workspace>\n... clientLock none\n... clientCwd <workspace>/sub\n... clientHost <local-client>\n... clientCase insensitive\n... peerAddress 127.0.0.1:61721\n... clientAddress 127.0.0.1\n... monitor enabled\n... security enabled\n... serverAddress localhost:61713\n... serverRoot <temp>/server\n... serverDate 2026/11/09 20:37:10 -0600 CST\n... tzoffset -21600\n... serverUptime 00:00:00\n... serverVersion P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)\n... serverServices standard\n... serverLicense none\n... caseHandling insensitive\n... allowStreamSpecInteg 1\n... parentViewDefault inheritAll\n... unloadSupport disabled\n... extensionsSupport enabled\n... resourcePressureLastUpdate 0\n... resourcePressureCPU 0\n... resourcePressureMem 0\n\n",
         "stderr": ""
       },
       "walk_preview": null,
@@ -114,7 +114,7 @@
         "command_cwd": "sub",
         "exit_code": 0,
         "client_root": "<workspace>",
-        "stdout": "... userName super\n... password enabled\n... clientName ignore-oracle\n... clientRoot <workspace>\n... clientLock none\n... clientCwd <workspace>/sub\n... clientHost <local-client>\n... clientCase insensitive\n... peerAddress 127.0.0.1:59758\n... clientAddress 127.0.0.1\n... monitor enabled\n... security enabled\n... serverAddress localhost:59750\n... serverRoot <temp>/server\n... serverDate 2026/11/09 20:12:50 -0600 CST\n... tzoffset -21600\n... serverUptime 00:00:00\n... serverVersion P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)\n... serverServices standard\n... serverLicense none\n... caseHandling insensitive\n... allowStreamSpecInteg 1\n... parentViewDefault inheritAll\n... unloadSupport disabled\n... extensionsSupport enabled\n... resourcePressureLastUpdate 0\n... resourcePressureCPU 0\n... resourcePressureMem 0\n\n",
+        "stdout": "... userName super\n... password enabled\n... clientName ignore-oracle\n... clientRoot <workspace>\n... clientLock none\n... clientCwd <workspace>/sub\n... clientHost <local-client>\n... clientCase insensitive\n... peerAddress 127.0.0.1:61730\n... clientAddress 127.0.0.1\n... monitor enabled\n... security enabled\n... serverAddress localhost:61722\n... serverRoot <temp>/server\n... serverDate 2026/11/09 20:37:10 -0600 CST\n... tzoffset -21600\n... serverUptime 00:00:00\n... serverVersion P4D/MACOSX12ARM64/2026.1/3089746 (2026/10/07)\n... serverServices standard\n... serverLicense none\n... caseHandling insensitive\n... allowStreamSpecInteg 1\n... parentViewDefault inheritAll\n... unloadSupport disabled\n... extensionsSupport enabled\n... resourcePressureLastUpdate 0\n... resourcePressureCPU 0\n... resourcePressureMem 0\n\n",
         "stderr": ""
       },
       "walk_preview": null,
@@ -200,7 +200,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=custom.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:59768\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:59768_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=custom.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:61740\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61740_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -243,7 +243,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=config.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:59776\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:59776_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4IGNORE=config.ignore (config '<workspace>/.p4config')\nP4PORT=127.0.0.1:61748\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61748_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -286,7 +286,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/sub/.p4config', '<workspace>/.p4config' )\nP4IGNORE=child.ignore (config '<workspace>/sub/.p4config')\nP4PORT=127.0.0.1:59785\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:59785_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/sub/.p4config', '<workspace>/.p4config' )\nP4IGNORE=child.ignore (config '<workspace>/sub/.p4config')\nP4PORT=127.0.0.1:61756\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61756_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -1242,7 +1242,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:59970\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:59970_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:61937\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61937_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -1285,7 +1285,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config '<workspace>/p4config.txt' )\nP4PORT=127.0.0.1:59978\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:59978_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config '<workspace>/p4config.txt' )\nP4PORT=127.0.0.1:61945\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61945_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -1328,7 +1328,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config 'noconfig')\nP4PORT=127.0.0.1:59986\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:59986_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=p4config.txt (config 'noconfig')\nP4PORT=127.0.0.1:61953\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61953_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -1500,7 +1500,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:60019\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:60019_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:61986\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61986_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -1543,7 +1543,7 @@
       },
       "isolated_configuration": true,
       "p4_set_exit_code": 0,
-      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:60027\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:60027_CHARSET=none (enviro)\n",
+      "p4_set_output": "P4CLIENT=ignore-oracle\nP4CONFIG=.p4config (config '<workspace>/.p4config' )\nP4PORT=127.0.0.1:61994\nP4TICKETS=<temp>/tickets\nP4TRUST=<temp>/trust\nP4USER=super\nP4_127.0.0.1:61994_CHARSET=none (enviro)\n",
       "server_root": "<temp>/server",
       "workspace_root": "<temp>/workspace",
       "client_root_probe": null,
@@ -1861,6 +1861,48 @@
       "client_root_probe": null,
       "walk_preview": null,
       "where_results": {
+        "main": {
+          "command": [
+            "p4",
+            "where",
+            "main"
+          ],
+          "exit_code": 0,
+          "stdout": "",
+          "stderr": "main - file(s) not in client view.\n",
+          "tagged": {
+            "command": [
+              "p4",
+              "-ztag",
+              "where",
+              "main"
+            ],
+            "exit_code": 0,
+            "stdout": "",
+            "stderr": "main - file(s) not in client view.\n"
+          }
+        },
+        "main/private": {
+          "command": [
+            "p4",
+            "where",
+            "main/private"
+          ],
+          "exit_code": 0,
+          "stdout": "//depot/main/private //ignore-oracle/main/private <workspace>/main/private\n",
+          "stderr": "",
+          "tagged": {
+            "command": [
+              "p4",
+              "-ztag",
+              "where",
+              "main/private"
+            ],
+            "exit_code": 0,
+            "stdout": "... depotFile //depot/main/private\n... clientFile //ignore-oracle/main/private\n... path <workspace>/main/private\n\n",
+            "stderr": ""
+          }
+        },
         "main/visible.txt": {
           "command": [
             "p4",
@@ -1869,7 +1911,18 @@
           ],
           "exit_code": 0,
           "stdout": "//depot/main/visible.txt //ignore-oracle/main/visible.txt <workspace>/main/visible.txt\n",
-          "stderr": ""
+          "stderr": "",
+          "tagged": {
+            "command": [
+              "p4",
+              "-ztag",
+              "where",
+              "main/visible.txt"
+            ],
+            "exit_code": 0,
+            "stdout": "... depotFile //depot/main/visible.txt\n... clientFile //ignore-oracle/main/visible.txt\n... path <workspace>/main/visible.txt\n\n",
+            "stderr": ""
+          }
         },
         "main/private/secret.txt": {
           "command": [
@@ -1879,7 +1932,18 @@
           ],
           "exit_code": 0,
           "stdout": "-//depot/main/private/secret.txt //ignore-oracle/main/private/secret.txt <workspace>/main/private/secret.txt\n",
-          "stderr": ""
+          "stderr": "",
+          "tagged": {
+            "command": [
+              "p4",
+              "-ztag",
+              "where",
+              "main/private/secret.txt"
+            ],
+            "exit_code": 0,
+            "stdout": "... unmap \n... depotFile //depot/main/private/secret.txt\n... clientFile //ignore-oracle/main/private/secret.txt\n... path <workspace>/main/private/secret.txt\n\n",
+            "stderr": ""
+          }
         },
         "outside.txt": {
           "command": [
@@ -1889,7 +1953,18 @@
           ],
           "exit_code": 0,
           "stdout": "",
-          "stderr": "outside.txt - file(s) not in client view.\n"
+          "stderr": "outside.txt - file(s) not in client view.\n",
+          "tagged": {
+            "command": [
+              "p4",
+              "-ztag",
+              "where",
+              "outside.txt"
+            ],
+            "exit_code": 0,
+            "stdout": "",
+            "stderr": "outside.txt - file(s) not in client view.\n"
+          }
         }
       }
     }

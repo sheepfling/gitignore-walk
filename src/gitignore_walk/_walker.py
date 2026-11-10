@@ -200,7 +200,10 @@ class IgnoreWalker:
                 and session.should_descend_directory(session.resolve_target(current / name))
             ]
             safe_filenames = [
-                name for name in filenames if _is_regular_file(current / name, onerror=onerror)
+                name
+                for name in filenames
+                if _is_regular_file(current / name, onerror=onerror)
+                and session.should_select_file(session.resolve_target(current / name))
             ]
             dir_names[:] = safe_dir_names
 
