@@ -691,6 +691,13 @@ The full Jujutsu policy corpus is also captured against 0.46.0 on Debian 13 x86_
 recaptures it and checks both workspace modes, source precedence, pattern decisions, and config
 probes against the candidate contract.
 
+The Git-compatible path corpus now includes five additional probes for character-class ranges,
+nested basename matching, and directory-only rules with a same-named file control. All five match
+on macOS for Sapling 0.2.20261103 and Jujutsu 0.45.1/0.47.1, and on Windows for Sapling 0.2.20261103
+and Jujutsu 0.45.1/0.46.0/0.47.1. Captures are incorporated into the versioned compatibility
+profiles. Debian 13 ARM64 and x86_64 recaptures are running in native CI; broaden these path probes
+further only where native behavior or a concrete consumer need identifies a meaningful gap.
+
 **Linked Git worktree source layout:** native captures now confirm Git and Sapling `.git` mode read
 `info/exclude` from the shared Git directory, while colocated Jujutsu reads the linked worktree's
 own Git directory. The policy metadata retains both paths and each scheme selects its captured
