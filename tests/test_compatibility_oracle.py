@@ -103,6 +103,7 @@ def test_sapling_windows_capture_reconciles_both_storage_modes() -> None:
         for name in (
             "source_discovery",
             "pattern_discovery",
+            "extended_pattern_discovery",
             "configured_global",
             "configured_system",
             "conditional_global",
@@ -122,6 +123,13 @@ def test_sapling_windows_capture_reconciles_both_storage_modes() -> None:
         assert (
             symlink["ignored"] == PATTERN_FIXTURE["expected_symlinked_gitignore_ignored"][case_id]
         )
+    expected_query_files = sorted(PATTERN_FIXTURE["extended_pattern_query_files"])
+    expected_ignored = sorted(PATTERN_FIXTURE["expected_extended_pattern_ignored"])
+    for case in capture["cases"]:
+        extended = case["extended_pattern_discovery"]
+        assert extended["query_files"] == expected_query_files
+        assert extended["ignored"] == expected_ignored
+        assert extended["included"] == sorted(set(expected_query_files) - set(expected_ignored))
 
 
 def test_older_sapling_windows_capture_records_version_scoped_pattern_limit() -> None:
@@ -350,12 +358,7 @@ def test_git_256_captures_reconcile_the_earlier_path_pattern_subset(
 
 def test_extended_compatibility_patterns_match_the_captured_macos_clients() -> None:
     """Retain native evidence for class ranges, basename rules, and directory-only rules."""
-    capture_path = (
-        ORACLE_ROOT
-        / "results"
-        / "sapling-0.2.20261103-jj-0.47.1-extended-patterns-macos-arm64.json"
-    )
-    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    capture = CAPTURES[CAPTURE_FILES[0]]
     assert capture["status"] == "captured"
     assert capture["platform"].startswith("macOS-26")
     assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
@@ -369,6 +372,24 @@ def test_extended_compatibility_patterns_match_the_captured_macos_clients() -> N
         "jj.colocated",
         "jj.noncolocated",
     }
+    for case in capture["cases"]:
+        pattern = case["extended_pattern_discovery"]
+        assert pattern["candidate_matches"] is True
+        assert pattern["query_files"] == expected_query_files
+        assert pattern["ignored"] == expected_ignored
+        assert pattern["included"] == sorted(set(expected_query_files) - set(expected_ignored))
+
+
+def test_extended_compatibility_patterns_match_jujutsu_045_macos() -> None:
+    """Check the extended path subset against the pre-0.46 Jujutsu client profile."""
+    capture = JJ_045_FULL_CAPTURES["jj-0.45.1-macos-arm64.json"]
+    assert capture["status"] == "captured"
+    assert capture["platform"].startswith("macOS-26")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.45.1-")
+
+    expected_query_files = sorted(PATTERN_FIXTURE["extended_pattern_query_files"])
+    expected_ignored = sorted(PATTERN_FIXTURE["expected_extended_pattern_ignored"])
+    assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
     for case in capture["cases"]:
         pattern = case["extended_pattern_discovery"]
         assert pattern["candidate_matches"] is True

@@ -102,6 +102,7 @@ def test_windows_jujutsu_versioned_captures_cover_both_workspace_modes(version: 
         for probe in (
             "source_discovery",
             "pattern_discovery",
+            "extended_pattern_discovery",
             "configured_global",
             "configured_system",
             "conditional_global",
@@ -116,6 +117,13 @@ def test_windows_jujutsu_versioned_captures_cover_both_workspace_modes(version: 
             "environment_count",
         )
     )
+    expected_query_files = sorted(PATTERN_FIXTURE["extended_pattern_query_files"])
+    expected_ignored = sorted(PATTERN_FIXTURE["expected_extended_pattern_ignored"])
+    for case in capture["cases"]:
+        extended = case["extended_pattern_discovery"]
+        assert extended["query_files"] == expected_query_files
+        assert extended["ignored"] == expected_ignored
+        assert extended["included"] == sorted(set(expected_query_files) - set(expected_ignored))
 
 
 @pytest.mark.parametrize(

@@ -118,9 +118,11 @@ certification.
 An extended path probe adds a character-class range, a basename pattern matched below a nested
 directory, and a directory-only pattern paired with a same-named file control. Sapling 0.2.20261103
 and Jujutsu 0.47.1 match all five queried paths in both storage modes on macOS arm64; the native
-capture is retained as `results/sapling-0.2.20261103-jj-0.47.1-extended-patterns-macos-arm64.json`.
-The portable policy and walker tests replay these cases. Linux and Windows native recaptures are
-checked by the compatibility CI jobs; those profiles are not yet committed as historical captures.
+capture is recorded in `results/sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`. Jujutsu 0.45.1
+also matches in both modes on macOS arm64, preserving evidence across the 0.46 symlink-behavior
+release boundary. Windows captures match on Sapling 0.2.20261103 and Jujutsu 0.45.1, 0.46.0, and
+0.47.1 in their respective storage modes. The portable policy and walker tests replay these cases.
+The Linux recaptures run in the native CI job and will be retained in the next evidence update.
 
 A separate nested-source probe places `nested/.gitignore` as a symlink to an ignore file outside
 the workspace. Sapling `.sl` mode follows the symlink and ignores `nested/probe.symlink`; Sapling

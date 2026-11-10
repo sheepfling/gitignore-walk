@@ -307,7 +307,29 @@
         "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA conditional.branch\nA conditional.casefold\nA conditional.custom\nA conditional.global\nA conditional.remote\nA conditional.visible\nA conditional.worktree\nA conditional.worktreei\nA configured.custom\nA configured.global\nA configured.system\nA configured.visible\nA global.global\nA local.priority\nA nested/root-only.tmp\nA priority.global\nA repository.global\nA repository.system\nA repository.visible\nA src/nested/temp.txt\nA system.custom\nA system.system\nA system.visible\nA visible.txt\nWorking copy  (@) : psvzyrlk 5c1a06b9 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nconditional.branch\nconditional.casefold\nconditional.custom\nconditional.global\nconditional.remote\nconditional.visible\nconditional.worktree\nconditional.worktreei\nconfigured.custom\nconfigured.global\nconfigured.system\nconfigured.visible\nglobal.global\nlocal.priority\nnested/root-only.tmp\npriority.global\nrepository.global\nrepository.system\nrepository.visible\nsrc/nested/temp.txt\nsystem.custom\nsystem.system\nsystem.visible\nvisible.txt\n"
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "extended_pattern_discovery": {
+        "query_files": [
+          "classes/letter-b.txt",
+          "classes/letter-q.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp",
+          "nested/directory-only"
+        ],
+        "ignored": [
+          "classes/letter-b.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp"
+        ],
+        "included": [
+          "classes/letter-q.txt",
+          "nested/directory-only"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA classes/letter-q.txt\nA local.priority\nA nested/directory-only\nA nested/root-only.tmp\nA priority.global\nA src/nested/temp.txt\nA visible.txt\nWorking copy  (@) : sxuwzmpz 0778a89f (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nclasses/letter-q.txt\nlocal.priority\nnested/directory-only\nnested/root-only.tmp\npriority.global\nsrc/nested/temp.txt\nvisible.txt\n",
+        "candidate_matches": true
+      }
     },
     {
       "id": "jj.noncolocated",
@@ -606,7 +628,29 @@
         "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA conditional.branch\nA conditional.casefold\nA conditional.custom\nA conditional.global\nA conditional.remote\nA conditional.visible\nA conditional.worktree\nA conditional.worktreei\nA configured.custom\nA configured.global\nA configured.system\nA configured.visible\nA global.global\nA info.priority\nA local.local\nA local.priority\nA nested/root-only.tmp\nA priority.global\nA repository.global\nA repository.system\nA repository.visible\nA src/nested/temp.txt\nA system.custom\nA system.system\nA system.visible\nA visible.txt\nWorking copy  (@) : rxmtlwuk a1de2414 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nconditional.branch\nconditional.casefold\nconditional.custom\nconditional.global\nconditional.remote\nconditional.visible\nconditional.worktree\nconditional.worktreei\nconfigured.custom\nconfigured.global\nconfigured.system\nconfigured.visible\nglobal.global\ninfo.priority\nlocal.local\nlocal.priority\nnested/root-only.tmp\npriority.global\nrepository.global\nrepository.system\nrepository.visible\nsrc/nested/temp.txt\nsystem.custom\nsystem.system\nsystem.visible\nvisible.txt\n"
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "extended_pattern_discovery": {
+        "query_files": [
+          "classes/letter-b.txt",
+          "classes/letter-q.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp",
+          "nested/directory-only"
+        ],
+        "ignored": [
+          "classes/letter-b.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp"
+        ],
+        "included": [
+          "classes/letter-q.txt",
+          "nested/directory-only"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA classes/letter-q.txt\nA info.priority\nA local.local\nA local.priority\nA nested/directory-only\nA nested/root-only.tmp\nA src/nested/temp.txt\nA visible.txt\nWorking copy  (@) : ttostwxm 63ced906 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nclasses/letter-q.txt\ninfo.priority\nlocal.local\nlocal.priority\nnested/directory-only\nnested/root-only.tmp\nsrc/nested/temp.txt\nvisible.txt\n",
+        "candidate_matches": true
+      }
     }
   ]
 }

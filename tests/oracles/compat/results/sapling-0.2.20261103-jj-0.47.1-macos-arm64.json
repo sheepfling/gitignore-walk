@@ -290,6 +290,27 @@
         ],
         "candidate_matches": true,
         "status_stdout": "? environment.visible\u0000I environment.count\u0000"
+      },
+      "extended_pattern_discovery": {
+        "query_files": [
+          "classes/letter-b.txt",
+          "classes/letter-q.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp",
+          "nested/directory-only"
+        ],
+        "ignored": [
+          "classes/letter-b.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp"
+        ],
+        "included": [
+          "classes/letter-q.txt",
+          "nested/directory-only"
+        ],
+        "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? a.tmp\u0000? b.log\u0000? cache/keep.tmp\u0000? classes/letter-q.txt\u0000? nested/directory-only\u0000? nested/root-only.tmp\u0000? priority.global\u0000? src/nested/temp.txt\u0000? visible.txt\u0000I !literal\u0000I #literal\u0000I blocked/keep.txt\u0000I cache/drop.tmp\u0000I classes/letter-b.txt\u0000I directory-only/deep/probe.txt\u0000I global.global\u0000I info.priority\u0000I local.local\u0000I local.priority\u0000I nested/deep/deep.log\u0000I nested/deeper/basename.tmp\u0000I nested/zero.txt\u0000I root-only.tmp\u0000I src/nested/temp2.txt\u0000I src/temp1.txt\u0000I zero.txt\u0000",
+        "status_stderr": "",
+        "candidate_matches": true
       }
     },
     {
@@ -566,6 +587,27 @@
         ],
         "candidate_matches": true,
         "status_stdout": "? environment.count\u0000? environment.visible\u0000"
+      },
+      "extended_pattern_discovery": {
+        "query_files": [
+          "classes/letter-b.txt",
+          "classes/letter-q.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp",
+          "nested/directory-only"
+        ],
+        "ignored": [
+          "classes/letter-b.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp"
+        ],
+        "included": [
+          "classes/letter-q.txt",
+          "nested/directory-only"
+        ],
+        "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? a.tmp\u0000? b.log\u0000? cache/keep.tmp\u0000? classes/letter-q.txt\u0000? global.global\u0000? info.priority\u0000? local.local\u0000? local.priority\u0000? nested/directory-only\u0000? nested/root-only.tmp\u0000? priority.global\u0000? src/nested/temp.txt\u0000? visible.txt\u0000I !literal\u0000I #literal\u0000I blocked/keep.txt\u0000I cache/drop.tmp\u0000I classes/letter-b.txt\u0000I directory-only/deep/probe.txt\u0000I nested/deep/deep.log\u0000I nested/deeper/basename.tmp\u0000I nested/zero.txt\u0000I root-only.tmp\u0000I src/nested/temp2.txt\u0000I src/temp1.txt\u0000I zero.txt\u0000",
+        "status_stderr": "",
+        "candidate_matches": true
       }
     },
     {
@@ -866,6 +908,28 @@
         "candidate_matches": true,
         "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : qonvqnzu 28f05fac (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": "environment.visible\n"
+      },
+      "extended_pattern_discovery": {
+        "query_files": [
+          "classes/letter-b.txt",
+          "classes/letter-q.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp",
+          "nested/directory-only"
+        ],
+        "ignored": [
+          "classes/letter-b.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp"
+        ],
+        "included": [
+          "classes/letter-q.txt",
+          "nested/directory-only"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA classes/letter-q.txt\nA local.priority\nA nested/directory-only\nA nested/root-only.tmp\nA priority.global\nA src/nested/temp.txt\nA visible.txt\nWorking copy  (@) : unztyxrk 7bb35ccf (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nclasses/letter-q.txt\nlocal.priority\nnested/directory-only\nnested/root-only.tmp\npriority.global\nsrc/nested/temp.txt\nvisible.txt\n",
+        "candidate_matches": true
       }
     },
     {
@@ -1163,6 +1227,28 @@
         "candidate_matches": true,
         "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : kmxxlzzl 06d645c1 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": "environment.visible\n"
+      },
+      "extended_pattern_discovery": {
+        "query_files": [
+          "classes/letter-b.txt",
+          "classes/letter-q.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp",
+          "nested/directory-only"
+        ],
+        "ignored": [
+          "classes/letter-b.txt",
+          "directory-only/deep/probe.txt",
+          "nested/deeper/basename.tmp"
+        ],
+        "included": [
+          "classes/letter-q.txt",
+          "nested/directory-only"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA classes/letter-q.txt\nA info.priority\nA local.local\nA local.priority\nA nested/directory-only\nA nested/root-only.tmp\nA src/nested/temp.txt\nA visible.txt\nWorking copy  (@) : oskovlzp fef351e0 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nclasses/letter-q.txt\ninfo.priority\nlocal.local\nlocal.priority\nnested/directory-only\nnested/root-only.tmp\nsrc/nested/temp.txt\nvisible.txt\n",
+        "candidate_matches": true
       }
     }
   ]
