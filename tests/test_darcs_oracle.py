@@ -32,6 +32,14 @@ OBSERVATIONS = {
     [
         (False, {"HOME": "/tmp/home", "APPDATA": "/tmp/appdata"}, "/tmp/home/.darcs/boring"),
         (True, {"HOME": "/tmp/home", "APPDATA": "/tmp/appdata"}, "/tmp/appdata/darcs/boring"),
+        (
+            True,
+            {
+                "APPDATA": "/tmp/appdata",
+                "DARCS_TESTING_PREFS_DIR": "/tmp/darcs-test-prefs",
+            },
+            "/tmp/darcs-test-prefs/boring",
+        ),
     ],
 )
 def test_darcs_global_boring_path_uses_platform_configuration_directory(

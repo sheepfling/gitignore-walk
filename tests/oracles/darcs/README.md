@@ -55,10 +55,12 @@ profiles and both traversal orders.
 | `darcs-debian13-arm64.json`       | Debian 13 arm64 in Docker     | 2.18.4        | 18/18             |
 
 The Windows native job captures the official Darcs 2.16.3 executable as a historical platform
-probe with an isolated `%APPDATA%` directory and no `HOME` override, then uploads its raw comparison
-with the other native artifacts. That older client is not a
-current-release conformance profile: the [official download page](https://darcs.net/Binaries) lists
+probe with the client's `DARCS_TESTING_PREFS_DIR` hook pointed at a disposable global-preferences
+directory, then uploads its raw comparison with the other native artifacts. That older client is
+not a current-release conformance profile: the [official download page](https://darcs.net/Binaries) lists
 2.16.3 as its Windows binary while the [project home page](https://darcs.net/) identifies 2.18.5 as
 the current stable release; the [team page](https://darcs.net/DarcsTeam) lists the Windows packager
 role as unfilled. Review any candidate differences in that artifact as version-specific observations.
+The exact 2.16.3 source uses `DARCS_TESTING_PREFS_DIR` to select the global preferences directory
+([`Darcs.Repository.Prefs`](https://hackage-content.haskell.org/package/darcs-2.16.3.tar.gz)).
 Other POSIX regular-expression implementations also remain untested.

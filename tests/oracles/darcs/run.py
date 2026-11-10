@@ -57,6 +57,9 @@ def _paths_from_annotated_lines(output: str, marker: str) -> set[str]:
 
 def _global_boring_path(environment: Mapping[str, str], *, windows: bool | None = None) -> Path:
     """Return Darcs' per-user boring-file path for the selected platform."""
+    testing_directory = environment.get("DARCS_TESTING_PREFS_DIR")
+    if testing_directory is not None:
+        return Path(testing_directory) / "boring"
     if windows is None:
         windows = os.name == "nt"
     if windows:
@@ -75,11 +78,13 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         base = Path(temporary)
         home = base / "home"
         home.mkdir()
+        global_prefs = base / "darcs-global-prefs"
         repository = base / "repository"
         repository.mkdir()
         setup = case["setup"]
         environment = {
             "APPDATA": str(home),
+            "DARCS_TESTING_PREFS_DIR": str(global_prefs),
             "PATH": os.environ.get("PATH", ""),
             "DARCS_PAGER": "cat",
             "PAGER": "cat",
