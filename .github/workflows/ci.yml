@@ -478,6 +478,7 @@ jobs:
               ["probe.commonignore"],
               ["probe.worktreeignore"],
           ]
+          assert "Working copy  (@) : <working-copy>" in linked["cases"][1]["status_stdout"]
           assert all(case["candidate_matches"] for case in linked["cases"])
           print(result)
           '@ | python -

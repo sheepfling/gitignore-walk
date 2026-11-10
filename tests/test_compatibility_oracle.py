@@ -113,6 +113,8 @@ def test_linked_worktree_windows_capture_records_the_pinned_clients() -> None:
     assert capture["clients"]["git"].startswith("git version 2.56.0.windows")
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
     assert capture["cases"][0]["query_stdout"].startswith("<temporary>/main/.git/info/exclude")
+    assert "Working copy  (@) : <working-copy>" in capture["cases"][1]["status_stdout"]
+    assert "Parent commit (@-): <parent>" in capture["cases"][1]["status_stdout"]
 
 
 @pytest.mark.parametrize(

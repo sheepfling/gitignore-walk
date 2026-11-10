@@ -115,8 +115,9 @@ Linked Git worktrees expose a source-location difference. Git and Sapling `.git`
 `info/exclude` from the shared Git directory; colocated Jujutsu reads it from the linked worktree's
 Git directory. The dedicated probe creates both files with distinct patterns and checks all three
 clients against the same candidate set. This is captured on macOS arm64 and Debian 13 Linux
-arm64/x86_64. The Python policy tests assert that the corresponding source directories remain
-scheme-specific.
+arm64/x86_64, plus Git/Jujutsu on Windows Server 2025 x64. The runner normalizes both temporary
+path spellings and Jujutsu's generated change IDs. The Python policy tests assert that the
+corresponding source directories remain scheme-specific.
 
 | Capture file                                                          | Environment                | Sapling      | Jujutsu |
 | --------------------------------------------------------------------- | -------------------------- | ------------ | ------- |

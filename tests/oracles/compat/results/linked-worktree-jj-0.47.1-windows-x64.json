@@ -45,7 +45,7 @@
       ],
       "candidate_matches": true,
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA probe.commonignore\nA probe.visible\nWorking copy  (@) : snstzzwr b0fc05f8 (no description set)\nParent commit (@-): vtpltulm 7ceefa45 linked master | seed\n",
+      "status_stdout": "Working copy changes:\nA probe.commonignore\nA probe.visible\nWorking copy  (@) : <working-copy> (no description set)\nParent commit (@-): <parent> linked master | seed\n",
       "status_stderr": "",
       "file_list_stdout": "probe.commonignore\nprobe.visible\ntracked.txt\n"
     }

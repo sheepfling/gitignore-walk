@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import subprocess
 import tempfile
 from collections.abc import Mapping, Sequence
@@ -1455,6 +1456,12 @@ def _redact_path(text: str, path: Path, replacement: str) -> str:
     return text
 
 
+def _normalize_jujutsu_status(text: str) -> str:
+    """Replace per-workspace change identifiers with stable placeholders."""
+    text = re.sub(r"(Working copy  \(@\) : )\w+ [0-9a-f]{8}", r"\1<working-copy>", text)
+    return re.sub(r"(Parent commit \(@-\): )\w+ [0-9a-f]{8}", r"\1<parent>", text)
+
+
 def capture(sapling: str | None, jj: str) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
     client_versions = {"git": _version("git")}
@@ -1640,7 +1647,9 @@ def capture_linked_worktree_profile(sapling: str | None, jj: str) -> dict[str, A
                 "expected_ignored": expected,
                 "candidate_matches": jj_ignored == expected,
                 "status_exit_code": status.returncode,
-                "status_stdout": _redact_path(status.stdout, worktree, "<worktree>"),
+                "status_stdout": _normalize_jujutsu_status(
+                    _redact_path(status.stdout, worktree, "<worktree>")
+                ),
                 "status_stderr": _redact_path(status.stderr, worktree, "<worktree>"),
                 "file_list_stdout": _redact_path(listed.stdout, worktree, "<worktree>"),
             }
