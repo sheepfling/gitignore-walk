@@ -704,11 +704,12 @@ captured macOS/Linux clients. TFVC remains deferred until its workspace/server f
 reproducible. Darcs walking has native membership-aware selection checks in both traversal orders
 and a cross-profile nested-repository case. Its local/global/configured source overlap matches on
 macOS arm64 and Debian Linux aarch64/x86_64. Darcs Windows remains unverified: the official download
-page lists a 2.16.3 binary,
-while 2.18.5 is current stable and the Windows packager role is unfilled. TFVC's seven research
-cases are source-derived/open; Microsoft's TFVC add and workspace docs require a configured workspace
-for `.tfignore` behavior ([TFVC-DOC]). This repository has neither a TFVC server/workspace fixture nor
-a configured server, so
+page lists a 2.16.3 binary, while 2.18.5 is current stable and the Windows packager role is
+unfilled. Native Windows CI now captures that pinned legacy binary as an explicitly historical
+observation and reports candidate differences without counting it as 2.18.5 conformance. TFVC's
+seven research cases are source-derived/open; Microsoft's TFVC add and workspace docs require a
+configured workspace for `.tfignore` behavior ([TFVC-DOC]). This repository has neither a TFVC
+server/workspace fixture nor a configured server, so
 keep those cases unrun instead of treating Visual Studio availability as a native oracle.
 
 The SVN baseline is retained below for reference: its initial property policy, inherited

@@ -626,6 +626,44 @@ jobs:
           python -m pytest tests/test_mercurial.py tests/test_subversion.py
           tests/test_subversion_unit.py tests/test_svn_oracle.py
           tests/test_breezy.py tests/test_breezy_oracle.py -q
+      - name: Capture historical Darcs Windows profile
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $nativeDir = Join-Path $env:RUNNER_TEMP 'native'
+          New-Item -ItemType Directory -Force -Path $nativeDir | Out-Null
+          $darcs = Join-Path $env:RUNNER_TEMP 'darcs-2.16.3.exe'
+          Invoke-WebRequest `
+            -Uri 'https://darcs.net/binaries/windows/darcs-2.16.3.exe' `
+            -OutFile $darcs
+          $digest = (Get-FileHash -Algorithm SHA256 $darcs).Hash.ToLowerInvariant()
+          if ($digest -ne '9003fe97e154db1bb4e028c0e93d8cc4eae9fa69a9752b04a2e6c24a5be1764b') {
+            throw "Darcs 2.16.3 Windows binary checksum mismatch: $digest"
+          }
+          & $darcs --version
+          if ($LASTEXITCODE -ne 0) { throw "Darcs --version failed: $LASTEXITCODE" }
+          $output = Join-Path $nativeDir 'darcs-2.16.3-windows-x64.json'
+          python tests/oracles/darcs/run.py --darcs $darcs --output $output
+          $captureExit = $LASTEXITCODE
+          if ($captureExit -notin @(0, 1)) { throw "Darcs capture failed: $captureExit" }
+          @'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/darcs-2.16.3-windows-x64.json"
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert capture["status"] == "captured", capture
+          assert capture["client"]["version"].startswith("2.16.3"), capture["client"]
+          closed = [case for case in capture["cases"] if case["expected_boring"] is not None]
+          assert len(closed) == 18, len(closed)
+          mismatches = [
+              case["id"] for case in closed
+              if case["expected_boring"] != case["observed_boring"]
+          ]
+          print("Historical Darcs 2.16.3 Windows observations; not current-release conformance.")
+          print("Closed observations:", len(closed), "mismatches:", mismatches)
+          '@ | python -
       - name: Check Windows native captures
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-
