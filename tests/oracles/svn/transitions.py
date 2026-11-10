@@ -23,6 +23,7 @@ EXPECTED_STATUS_ITEMS = {
     "missing.tmp": "missing",
     "replaced.tmp": "replaced",
     "obstructed.tmp": "obstructed",
+    "obstructed.tmp/child.txt": None,
     "conflicted.tmp": "conflicted",
     "loose.tmp": "ignored",
 }

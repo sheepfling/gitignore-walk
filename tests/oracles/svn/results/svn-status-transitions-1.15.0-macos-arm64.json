@@ -26,6 +26,7 @@
         "missing.tmp": "missing",
         "replaced.tmp": "replaced",
         "obstructed.tmp": "obstructed",
+        "obstructed.tmp/child.txt": null,
         "conflicted.tmp": "conflicted",
         "loose.tmp": "ignored"
       },
@@ -37,6 +38,7 @@
         "missing.tmp": "missing",
         "replaced.tmp": "replaced",
         "obstructed.tmp": "obstructed",
+        "obstructed.tmp/child.txt": null,
         "conflicted.tmp": "conflicted",
         "loose.tmp": "ignored"
       },

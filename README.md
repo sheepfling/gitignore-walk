@@ -166,9 +166,10 @@ versioned entries are selected as included even if a rule matches. This option a
 command for each discovered working-copy snapshot. Status values such as normal, modified, added,
 deleted, missing, replaced, obstructed, and conflicted are treated as versioned; native unversioned
 and ignored entries are treated as unversioned. The live status-transition test covers these states.
-The walker keeps ignored directories traversable and excludes `.svn` metadata by default. Walks stop
-nested `.svn` working
-copies and follow externals that native `svn status` identifies. It loads versioned ignore
+A file below an obstructed directory can still be reached by filesystem traversal even though native
+status omits it; its membership stays unknown. The walker keeps ignored directories traversable,
+excludes `.svn` metadata by default, and stops at nested `.svn` working copies. It follows externals
+that native `svn status` identifies and loads versioned ignore
 properties within each listed external working copy, including nested externals; properties from an
 outer working copy do not leak across a nested external boundary. This initial policy is compared
 against Subversion 1.15.0/macOS

@@ -724,6 +724,7 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         "loose.tmp": "ignored",
     }
     assert {path: native_items.get(path) for path in expected_items} == expected_items
+    assert "obstructed.tmp/child.txt" not in native_items
 
     policy = SubversionIgnorePolicy(
         root,
@@ -741,6 +742,11 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
     assert absent.ignored
     assert absent.membership is None
     assert absent.discovery_complete
+    obstructed_child = policy.explain("obstructed.tmp/child.txt")
+    assert not obstructed_child.ignored
+    assert obstructed_child.membership is None
+    assert obstructed_child.discovery_complete
+    assert not obstructed_child.diagnostics
 
     walker = IgnoreWalker(root, policy=policy)
     ignored_paths = {

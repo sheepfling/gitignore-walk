@@ -103,7 +103,9 @@ file external as a normal versioned file, and the ignore policy keeps its name m
 that membership result. The opt-in membership-aware file-external test passes on all four profiles.
 The SlikSvn Windows suite passed with 99 passed and 12 skipped in the latest hosted run; the macOS
 and Linux suites pass with 107 passed and 4 skipped each. Native status paths omitted by sparse
-working-copy depth remain unknown.
+working-copy depth remain unknown. The status-transition fixture also confirms Subversion omits a
+filesystem child below an obstructed directory; the policy walk still reaches that child, keeps
+its membership unknown, and continues to report ignore matching independently.
 An unversioned-directory fixture also confirms that native status collapses `cache/` into one
 unversioned entry on macOS Subversion 1.15.0, hosted Ubuntu 1.14.3, and Windows SlikSvn 1.14.5.
 The policy keeps rule matching separate from native membership when status collapses an

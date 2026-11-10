@@ -163,6 +163,7 @@ def test_subversion_status_transition_capture_matches_expected_states() -> None:
     assert case["candidate_matches"]
     assert case["expected_status_items"] == EXPECTED_STATUS_ITEMS
     assert case["observed_status_items"] == EXPECTED_STATUS_ITEMS
+    assert case["normalized_stdout"].count('path="obstructed.tmp/child.txt"') == 0
     assert (
         hashlib.sha256(case["normalized_stdout"].encode()).hexdigest()
         == case["normalized_stdout_sha256"]
