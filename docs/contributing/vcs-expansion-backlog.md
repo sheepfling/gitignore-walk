@@ -605,8 +605,9 @@ same storage marker, but traverses into a child using the other marker. Jujutsu 
 `.jj` workspaces for all colocated/non-colocated parent and child combinations. The portable
 walkers now follow those boundaries and keep traversal out of `.jj`, `.git`, and the applicable
 `.sl` metadata. Disposable native captures cover macOS arm64 and Debian 13 Linux aarch64/x86_64;
-native CI recaptures Linux profiles and checks Jujutsu on Windows. These results cover workspace
-boundaries only, not VCS membership.
+Jujutsu's nested `.jj` behavior is additionally captured on version 0.46.0/macOS arm64 and Debian
+13 x86_64. Native CI recaptures the Linux profile and checks Jujutsu on Windows.
+These results cover workspace boundaries only, not VCS membership.
 
 The nested symlinked `.gitignore` probe now confirms a source-layout difference: Sapling `.sl` mode
 follows a symlink to an ignore file outside the workspace, while Sapling `.git` and Jujutsu skip

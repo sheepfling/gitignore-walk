@@ -115,7 +115,9 @@ child workspace. Sapling stops at a nested workspace with the same storage marke
 all colocated/non-colocated parent and child combinations. The portable walkers mirror these
 boundaries and do not descend into `.jj`, `.sl` (for Sapling `.sl` mode), or `.git` metadata.
 Captures cover Sapling/Jujutsu on macOS arm64 and Debian 13 Linux aarch64/x86_64; Jujutsu-only
-captures are also recaptured on Windows Server 2025 x64 by CI.
+captures are also recaptured on Windows Server 2025 x64 by CI. The Jujutsu matrix includes both
+0.46.0 and 0.47.1 on macOS arm64 and Debian 13 x86_64, so the nested `.jj` boundary is checked
+across the release that changed symlink handling as well as the current pinned release.
 
 The capture supports the initial read-only `SaplingIgnorePolicy` and `JujutsuIgnorePolicy` scopes.
 The policies evaluate the captured Git-compatible rule dialect locally and do not invoke either
@@ -146,6 +148,8 @@ corresponding source directories remain scheme-specific.
 | `workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`  | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
 | `workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json` | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `workspace-boundaries-jj-0.46.0-macos-arm64.json`                          | macOS 26 arm64             | —            | 0.46.0  |
+| `workspace-boundaries-jj-0.46.0-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | —            | 0.46.0  |
 | `jj-0.45.1-macos-arm64-symlink.json`                                       | macOS 26 arm64             | —            | 0.45.1  |
 | `jj-0.45.1-debian13-x86_64-symlink.json`                                   | Debian 13 x86_64 in Docker | —            | 0.45.1  |
 | `jj-0.46.0-macos-arm64-symlink.json`                                       | macOS 26 arm64             | —            | 0.46.0  |

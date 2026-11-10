@@ -59,6 +59,10 @@ _WORKSPACE_BOUNDARY_PROFILES = (
     "workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
+_JJ_046_WORKSPACE_BOUNDARY_PROFILES = (
+    "workspace-boundaries-jj-0.46.0-macos-arm64.json",
+    "workspace-boundaries-jj-0.46.0-debian13-x86_64.json",
+)
 
 
 def _git_config_path(path: Path) -> str:
@@ -251,6 +255,24 @@ def test_workspace_boundary_native_profiles_match_the_captured_contract(profile:
             *_WORKSPACE_BOUNDARY_CASES["jujutsu_cases"],
         )
     }
+    assert set(cases) == set(expected)
+    assert all(case["candidate_matches"] for case in cases.values())
+    assert {case_id: case["native_visible"] for case_id, case in cases.items()} == expected
+
+
+@pytest.mark.parametrize(
+    "profile", _JJ_046_WORKSPACE_BOUNDARY_PROFILES, ids=lambda name: name.removesuffix(".json")
+)
+def test_jujutsu_046_workspace_boundaries_match_the_captured_contract(profile: str) -> None:
+    """Keep nested Jujutsu workspace behavior checked against the older supported profile."""
+    capture = json.loads((_COMPAT_ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
+    assert capture["status"] == "captured"
+    assert capture["clients"]["jujutsu"].startswith("jj 0.46.0-")
+    expected = {
+        probe["id"]: probe["expected_nested_visible"]
+        for probe in _WORKSPACE_BOUNDARY_CASES["jujutsu_cases"]
+    }
+    cases = {case["id"]: case for case in capture["cases"]}
     assert set(cases) == set(expected)
     assert all(case["candidate_matches"] for case in cases.values())
     assert {case_id: case["native_visible"] for case_id, case in cases.items()} == expected
