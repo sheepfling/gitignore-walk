@@ -364,7 +364,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 >/dev/null && mkdir -p /tmp/jj-0.45.1 /tmp/jj-0.46.0 && tar -xzf /clients/jj-0.45.1-linux-x64.tar.gz -C /tmp/jj-0.45.1 && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj-0.46.0 && python3 tests/oracles/compat/run.py --jj /tmp/jj-0.45.1/jj --symlink-only --expect-jj-follows-symlink --output /output/jj-0.45.1-debian13-x86_64-symlink.json && python3 tests/oracles/compat/run.py --jj /tmp/jj-0.46.0/jj --symlink-only --output /output/jj-0.46.0-debian13-x86_64-symlink.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 >/dev/null && mkdir -p /tmp/jj-0.45.1 /tmp/jj-0.46.0 && tar -xzf /clients/jj-0.45.1-linux-x64.tar.gz -C /tmp/jj-0.45.1 && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj-0.46.0 && python3 tests/oracles/compat/run.py --jj /tmp/jj-0.45.1/jj --jj-only --expect-jj-follows-symlink --output /output/jj-0.45.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj-0.45.1/jj --symlink-only --expect-jj-follows-symlink --output /output/jj-0.45.1-debian13-x86_64-symlink.json && python3 tests/oracles/compat/run.py --jj /tmp/jj-0.46.0/jj --symlink-only --output /output/jj-0.46.0-debian13-x86_64-symlink.json'
           python - <<'PY'
           import json
           import os
@@ -385,6 +385,15 @@ jobs:
               assert capture["expected_follow_symlink"] is follows
               expected_ignored = ["nested/probe.symlink"] if follows else []
               assert all(case["ignored"] == expected_ignored for case in capture["cases"])
+          full_path = directory / "jj-0.45.1-debian13-x86_64.json"
+          full_result = inspect_capture(full_path)
+          full_capture = json.loads(full_path.read_text(encoding="utf-8"))
+          assert full_result["passed"], full_result
+          assert full_capture["clients"]["jujutsu"].startswith("jj 0.45.1")
+          assert {case["id"] for case in full_capture["cases"]} == {
+              "jj.colocated", "jj.noncolocated"
+          }
+          assert all(case["candidate_matches"] for case in full_capture["cases"])
           PY
       - name: Capture worktree conditional behavior with Git 2.56
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

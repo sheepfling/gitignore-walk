@@ -600,7 +600,12 @@ Git 2.56's `worktree:` and case-insensitive `worktree/i:` conditionals are captu
 `core.excludesFile` values, while Jujutsu 0.47.1 colocated mode does not honor either include
 natively even though `git config` resolves them; the read-Git-config policy follows Git's result.
 Non-colocated Jujutsu does not match because its internal store is bare. The policy contract now
-documents this concrete divergence. Broader client/platform profiles remain open.
+documents this concrete divergence. Broader client/platform profiles remain open. A full Jujutsu
+0.45.1 capture extends the configuration matrix to the pre-0.46 client on Debian 13 x86_64; its
+captured global, conditional, environment, repository-local, and pattern probes match the candidate
+behavior, while the expected legacy symlink-following result is recorded explicitly. Native CI
+recaptures this full profile with the pinned release asset and verifies it alongside the focused
+0.45.1/0.46.0 symlink boundary.
 
 **Additional configuration evidence:** an isolated Sapling/Jujutsu workspace sets
 `GIT_CONFIG_GLOBAL` before initialization. Sapling `.git` mode and both Jujutsu modes use the
@@ -673,8 +678,9 @@ source. This is covered on macOS arm64 and Debian 13 Linux aarch64/x86_64.
 The Jujutsu-only linked-worktree probe is also captured on macOS arm64 and Windows Server 2025 x64;
 the Windows job recaptures it against pinned Jujutsu 0.47.1 and checks the Git/Jujutsu distinction.
 
-**Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
-deferred until its workspace/server fixture is reproducible. Darcs walking has native
+**Next unfinished slice:** broaden Sapling client/platform profiles and Jujutsu configuration
+profiles beyond the current Linux x86_64 older-client capture; keep TFVC deferred until its
+workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders and a cross-profile nested-repository
 case. Its local/global/configured source overlap matches on macOS arm64 and Debian Linux
 aarch64/x86_64. Darcs Windows remains unverified: the official download page lists a 2.16.3 binary,

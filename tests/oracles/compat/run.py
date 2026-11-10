@@ -137,7 +137,13 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
         }
 
 
-def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[str, Any]:
+def _capture_jj(
+    executable: str,
+    mode: str,
+    fixture: Mapping[str, Any],
+    *,
+    expected_follow_symlink: bool = False,
+) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-jj-{mode}-") as temporary:
         base = Path(temporary)
         home = base / "home"
@@ -201,7 +207,14 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         )
         environment_global = _capture_environment_global_jj(executable, mode, fixture)
         environment_count = _capture_environment_count_jj(executable, mode, fixture)
-        symlinked_gitignore = _capture_symlinked_gitignore_jj(executable, mode, fixture)
+        symlinked_gitignore = _capture_symlinked_gitignore_jj(
+            executable,
+            mode,
+            fixture,
+            expected_ignored=(
+                fixture["symlinked_gitignore_query_files"] if expected_follow_symlink else []
+            ),
+        )
         return {
             "id": f"jj.{mode}",
             "vcs": "jujutsu",
@@ -1731,7 +1744,12 @@ def capture_workspace_boundaries(sapling: str | None, jj: str) -> dict[str, Any]
     }
 
 
-def capture(sapling: str | None, jj: str) -> dict[str, Any]:
+def capture(
+    sapling: str | None,
+    jj: str,
+    *,
+    expected_jj_follows_symlink: bool = False,
+) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
     client_versions = {"git": _version("git")}
     captures = []
@@ -1739,7 +1757,15 @@ def capture(sapling: str | None, jj: str) -> dict[str, Any]:
         client_versions["sapling"] = _version(sapling)
         captures.extend(_capture_sapling(sapling, mode, fixture) for mode in ("git", "sl"))
     client_versions["jujutsu"] = _version(jj)
-    captures.extend(_capture_jj(jj, mode, fixture) for mode in ("colocated", "noncolocated"))
+    captures.extend(
+        _capture_jj(
+            jj,
+            mode,
+            fixture,
+            expected_follow_symlink=expected_jj_follows_symlink,
+        )
+        for mode in ("colocated", "noncolocated")
+    )
     expected_included = sorted(fixture["expected_included"])
     expected_ignored = sorted(fixture["expected_ignored"])
     for result in captures:
@@ -1970,8 +1996,6 @@ def main() -> int:
     )
     parser.add_argument("--output", type=Path, required=True, help="capture JSON destination")
     arguments = parser.parse_args()
-    if arguments.expect_jj_follows_symlink and not arguments.symlink_only:
-        parser.error("--expect-jj-follows-symlink requires --symlink-only")
     if arguments.linked_worktree_only and arguments.symlink_only:
         parser.error("--linked-worktree-only and --symlink-only cannot be combined")
     if arguments.workspace_boundary_only and (
@@ -1981,6 +2005,10 @@ def main() -> int:
             "--workspace-boundary-only cannot be combined with --linked-worktree-only or "
             "--symlink-only"
         )
+    if arguments.expect_jj_follows_symlink and (
+        arguments.linked_worktree_only or arguments.workspace_boundary_only
+    ):
+        parser.error("--expect-jj-follows-symlink applies only to a full or symlink-only capture")
     if arguments.symlink_only:
         result = capture_jj_symlink_profile(
             arguments.jj,
@@ -1997,7 +2025,11 @@ def main() -> int:
             arguments.jj,
         )
     else:
-        result = capture(None if arguments.jj_only else arguments.sl, arguments.jj)
+        result = capture(
+            None if arguments.jj_only else arguments.sl,
+            arguments.jj,
+            expected_jj_follows_symlink=arguments.expect_jj_follows_symlink,
+        )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     if arguments.symlink_only:

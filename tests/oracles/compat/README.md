@@ -11,8 +11,9 @@ python -m scripts.ci oracle-compat --output /tmp/vcs-compat.json
 ```
 
 The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64 and Debian 13
-Linux aarch64 and x86_64. A full Jujutsu 0.46.0 compatibility capture is also retained on Debian
-13 x86_64 to cover the release that changed nested `.gitignore` symlink handling. The Linux profiles
+Linux aarch64 and x86_64. Full Jujutsu 0.46.0 and 0.45.1 compatibility captures are also retained
+on Debian 13 x86_64, covering the release boundary for nested `.gitignore` symlink handling. The
+Linux profiles
 download upstream release assets and verify their SHA-256
 digests before running them in isolated Debian containers. Each profile checks four layouts: Sapling
 with `.git`, Sapling with `.sl`, colocated Jujutsu with `.git` and `.jj`, and non-colocated Jujutsu
@@ -97,9 +98,12 @@ Jujutsu's behavior depends on its release. Version 0.45.1 follows the symlink in
 version 0.46.0 changed to skip it, and 0.47.1 retains the new behavior. The policy defaults to the
 0.46.0+ behavior. Set `JujutsuPolicyConfig(follow_symlinked_gitignore=True)` to model 0.45.1.
 Focused macOS 26 arm64 and Debian 13 x86_64 captures for 0.45.1 and 0.46.0 are retained in
-`results/`, and native CI recaptures the Linux cases. Reproduce them with
+`results/`, and native CI recaptures the Linux cases. The full 0.45.1 capture also records the global
+configuration and pattern probes on Debian 13 x86_64; its only version-specific behavior in this
+matrix is following the symlink. Reproduce the focused capture with
 `run.py --jj <jj-executable> --symlink-only --output <capture.json>`; add
-`--expect-jj-follows-symlink` for the 0.45.1 profile. The v0.46.0 [release notes](https://github.com/jj-vcs/jj/releases/tag/v0.46.0)
+`--expect-jj-follows-symlink` for the 0.45.1 profile. Use that flag without `--symlink-only` to
+capture the full older-client profile. The v0.46.0 [release notes](https://github.com/jj-vcs/jj/releases/tag/v0.46.0)
 document this change. The official assets were SHA-256 verified before capture:
 `jj-v0.45.1-aarch64-apple-darwin.tar.gz` (`51ba42e3d0682616f6eb015045bfe45289b396f03511f9897f645ce8e9272743`)
 and `jj-v0.46.0-aarch64-apple-darwin.tar.gz`
@@ -149,6 +153,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`           | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`               | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.47.1  |
+| `jj-0.45.1-debian13-x86_64.json`                                           | Debian 13 x86_64 in Docker | —            | 0.45.1  |
 | `jj-0.46.0-macos-arm64.json`                                               | macOS 26 arm64             | —            | 0.46.0  |
 | `jj-0.46.0-debian13-x86_64.json`                                           | Debian 13 x86_64 in Docker | —            | 0.46.0  |
 | `workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |

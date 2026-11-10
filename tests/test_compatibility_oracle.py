@@ -60,6 +60,9 @@ CAPTURES: dict[str, dict[str, Any]] = {
 WINDOWS_JJ_CAPTURE = json.loads(
     (ORACLE_ROOT / "results" / "jj-0.47.1-windows-x64.json").read_text(encoding="utf-8")
 )
+JJ_045_FULL_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / "jj-0.45.1-debian13-x86_64.json").read_text(encoding="utf-8")
+)
 JJ_SYMLINK_VERSION_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in (
@@ -231,6 +234,39 @@ def test_jujutsu_windows_capture_reconciles_the_expanded_pattern_matrix() -> Non
         assert pattern["query_files"] == PATTERN_QUERY_FILES
         assert pattern["ignored"] == PATTERN_IGNORED
         assert pattern["included"] == PATTERN_INCLUDED
+
+
+def test_jujutsu_045_capture_reconciles_config_profiles_and_legacy_symlink_behavior() -> None:
+    """Keep the full 0.45.1 profile, including its pre-0.46 symlink behavior, reviewable."""
+    capture = JJ_045_FULL_CAPTURE
+    assert capture["status"] == "captured"
+    assert capture["platform"].startswith("Linux-")
+    assert "x86_64" in capture["platform"]
+    assert capture["clients"]["jujutsu"].startswith("jj 0.45.1")
+    cases = {case["id"]: case for case in capture["cases"]}
+    assert set(cases) == {"jj.colocated", "jj.noncolocated"}
+    for case in cases.values():
+        assert case["isolated_temporary_workspace"] is True
+        assert case["candidate_matches"] is True
+        assert case["source_discovery"]["candidate_matches"] is True
+        assert case["pattern_discovery"]["candidate_matches"] is True
+        assert case["symlinked_gitignore"]["candidate_matches"] is True
+        assert case["symlinked_gitignore"]["ignored"] == ["nested/probe.symlink"]
+        for name in (
+            "configured_global",
+            "configured_system",
+            "conditional_global",
+            "conditional_gitdir_i",
+            "conditional_worktree",
+            "conditional_worktree_i",
+            "conditional_onbranch",
+            "conditional_remote_url",
+            "conditional_gitdir_override",
+            "environment_global",
+            "environment_count",
+            "configured_repository",
+        ):
+            assert case[name]["candidate_matches"] is True, (case["id"], name)
 
 
 @pytest.mark.parametrize("profile", SYMLINK_CAPTURE_FILES)
