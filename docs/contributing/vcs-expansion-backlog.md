@@ -362,16 +362,17 @@ The policy uses provisional graph guards (32 include levels, 256 source visits, 
 source-graph overflows report incomplete discovery while pattern overflow raises a contextual parse
 error. A source-size measurement covered the
 [Mercurial 7.2.4 release archive](https://www.mercurial-scm.org/release/mercurial-7.2.4.tar.gz)
-(SHA-256 `85839e0f39e6cb893a88932aa36ef661759f3c5c5de4551ad26bd9df53cb71a2`), plus the
+(SHA-256 `85839e0f39e6cb893a88932aa36ef661759f3c5c5de4551ad26bd9df53cb71a2`), the
 [evolve](https://foss.heptapod.net/mercurial/evolve) working tree at
-`bcdd16c129b305f2383262f867515e77d3d2afd6` and
-[hg-git](https://foss.heptapod.net/mercurial/hg-git) at
-`0fe9af40ab8e4e615d29e9b891f39d9cefb05e55`. Their root `.hgignore` files contain 1,188, 417, and
-134 bytes, with 77, 27, and 11 parsed rules; the largest literal rule is 39 bytes and the largest
-compiled expression is 66 bytes. None uses `include:` or `subinclude:`, so the
-profiles establish large headroom for source and pattern sizes but do not measure real graph depth or
-source count. Keep the graph ceilings provisional until a representative include-heavy corpus is
-measured. Expose configuration only if user need justifies it.
+`bcdd16c129b305f2383262f867515e77d3d2afd6`, [hg-git](https://foss.heptapod.net/mercurial/hg-git)
+at `0fe9af40ab8e4e615d29e9b891f39d9cefb05e55`, and [PyPy `.hgignore`](https://foss.heptapod.net/pypy/pypy/-/raw/d8cbd8b59d6bc13f2fe25a640eac0de2217b0fc0/.hgignore).
+Their root `.hgignore` files contain 1,188, 417,
+134, and 2,885 bytes, with 77, 27, 11, and 105 parsed rules. The largest literal rule is 60 bytes
+and the largest compiled expression is 66 bytes. None uses `include:` or `subinclude:`, so the
+profiles establish over 1,400-fold headroom for per-source bytes and over 300-fold headroom for
+compiled pattern size, but do not measure real graph depth or source count. Keep the graph ceilings
+provisional until a representative include-heavy corpus is measured. Expose configuration only if
+user need justifies it.
 
 ### VCS-02 — Build a reusable native conformance harness
 
