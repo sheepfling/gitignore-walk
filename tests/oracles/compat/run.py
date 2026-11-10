@@ -1483,6 +1483,10 @@ def _capture_configured_repository_sapling(
 ) -> dict[str, Any]:
     """Capture Sapling's repository-local ``core.excludesFile`` behavior."""
     query_files = _write_configured_repository_probe(root, home, environment, fixture)
+    # Sapling's Windows `.git` mode attempts to copy the user config timestamp
+    # onto translated config files. Keep an empty file so the config remains
+    # semantically absent without triggering its zero-timestamp failure.
+    (home / ".gitconfig").write_text("", encoding="utf-8")
     status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
     _require_success(status, "sl status repository core.excludesFile")
     _, ignored_paths = _sapling_status_paths(status.stdout)
