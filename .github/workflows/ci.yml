@@ -149,6 +149,7 @@ jobs:
           assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
@@ -194,6 +195,7 @@ jobs:
           assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
@@ -339,6 +341,7 @@ jobs:
           assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
           print(result)
           '@ | python -
       - name: Check Windows Registry and INI precedence

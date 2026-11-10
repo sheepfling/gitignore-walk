@@ -174,6 +174,28 @@ def test_compatibility_capture_reconciles_conditional_global_ignore(
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 @pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_case_insensitive_gitdir_include(
+    profile: str, case_id: str
+) -> None:
+    conditional_gitdir_i = OBSERVATIONS[profile][case_id]["conditional_gitdir_i"]
+    expected_ignored = {
+        "sapling.git-mode": ["conditional.casefold"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["conditional.casefold"],
+        "jj.noncolocated": [],
+    }
+
+    assert conditional_gitdir_i["candidate_matches"] is True
+    assert conditional_gitdir_i["query_files"] == [
+        "conditional.casefold",
+        "conditional.global",
+        "conditional.visible",
+    ]
+    assert conditional_gitdir_i["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
 def test_compatibility_capture_reconciles_onbranch_conditional_global_ignore(
     profile: str, case_id: str
 ) -> None:

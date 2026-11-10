@@ -48,6 +48,13 @@ policy supplies Jujutsu's internal Git store as context for non-colocated worksp
 caller-provided `GIT_DIR` still takes precedence. Other conditional forms and client/platform
 profiles remain open.
 
+The conditional-include matrix also exercises `gitdir/i` with an uppercase `WORKSPACE/.GIT`
+pattern against the lowercase disposable workspace path. On macOS 26 arm64, the case matches for
+Sapling `.git` mode and colocated Jujutsu, and does not match Sapling `.sl` or non-colocated
+Jujutsu. Linux and Windows captures are checked by native CI; committed Linux captures are kept
+alongside this probe when recaptured. Git documents `gitdir/i` as `gitdir` matching without case
+sensitivity ([Git config documentation](https://git-scm.com/docs/git-config#_conditional_includes)).
+
 A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
 ignored parent directory; a child negation can re-include a file when only the parent's contents
 are ignored; `/root-only.tmp` is anchored to the workspace root; and `**/deep.log` matches a nested

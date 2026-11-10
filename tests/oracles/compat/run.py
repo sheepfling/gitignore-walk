@@ -76,6 +76,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             configured_global,
             configured_system,
             conditional_global,
+            conditional_gitdir_i,
             conditional_onbranch,
             conditional_remote,
             configured_repository,
@@ -109,6 +110,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             "configured_global": configured_global,
             "configured_system": configured_system,
             "conditional_global": conditional_global,
+            "conditional_gitdir_i": conditional_gitdir_i,
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
             "configured_repository": configured_repository,
@@ -167,6 +169,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             configured_global,
             configured_system,
             conditional_global,
+            conditional_gitdir_i,
             conditional_onbranch,
             conditional_remote,
             configured_repository,
@@ -202,6 +205,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "configured_global": configured_global,
             "configured_system": configured_system,
             "conditional_global": conditional_global,
+            "conditional_gitdir_i": conditional_gitdir_i,
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
             "configured_repository": configured_repository,
@@ -263,6 +267,7 @@ def _capture_configured_global_sapling(
     dict[str, Any],
     dict[str, Any],
     dict[str, Any],
+    dict[str, Any],
 ]:
     """Capture Sapling's global-over-system and system-over-XDG source selection."""
     query_files = _write_configured_global_probe(root, home, fixture)
@@ -302,6 +307,9 @@ def _capture_configured_global_sapling(
     conditional_global = _capture_conditional_global_sapling(
         executable, mode, root, home, probe_environment, fixture
     )
+    conditional_gitdir_i = _capture_conditional_gitdir_i_sapling(
+        executable, mode, root, home, probe_environment, fixture
+    )
     conditional_onbranch = _capture_conditional_onbranch_sapling(
         executable, mode, root, home, probe_environment, fixture
     )
@@ -315,6 +323,7 @@ def _capture_configured_global_sapling(
         configured_global,
         configured_system,
         conditional_global,
+        conditional_gitdir_i,
         conditional_onbranch,
         conditional_remote,
         configured_repository,
@@ -329,6 +338,7 @@ def _capture_configured_global_jj(
     environment: Mapping[str, str],
     fixture: Mapping[str, Any],
 ) -> tuple[
+    dict[str, Any],
     dict[str, Any],
     dict[str, Any],
     dict[str, Any],
@@ -376,6 +386,9 @@ def _capture_configured_global_jj(
     conditional_global = _capture_conditional_global_jj(
         executable, mode, root, home, probe_environment, fixture
     )
+    conditional_gitdir_i = _capture_conditional_gitdir_i_jj(
+        executable, mode, root, home, probe_environment, fixture
+    )
     conditional_onbranch = _capture_conditional_onbranch_jj(
         executable, mode, root, home, probe_environment, fixture
     )
@@ -389,6 +402,7 @@ def _capture_configured_global_jj(
         configured_global,
         configured_system,
         conditional_global,
+        conditional_gitdir_i,
         conditional_onbranch,
         conditional_remote,
         configured_repository,
@@ -424,6 +438,23 @@ def _write_conditional_onbranch_probe(
         '[includeIf "onbranch:main"]\n\tpath = onbranch-git-config\n', encoding="utf-8"
     )
     files: Mapping[str, str] = fixture["conditional_branch_probe_files"]
+    _write_files(root, files)
+    return sorted(files)
+
+
+def _write_conditional_gitdir_i_probe(
+    root: Path, home: Path, fixture: Mapping[str, Any]
+) -> list[str]:
+    """Configure a case-insensitive Git-dir include and create its decision probes."""
+    custom_ignore = home / "case-insensitive-gitdir-ignore"
+    custom_ignore.write_text(fixture["conditional_gitdir_i_ignore"], encoding="utf-8")
+    included_config = home / "case-insensitive-gitdir-config"
+    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    (home / ".gitconfig").write_text(
+        '[includeIf "gitdir/i:**/WORKSPACE/.GIT"]\n\tpath = case-insensitive-gitdir-config\n',
+        encoding="utf-8",
+    )
+    files: Mapping[str, str] = fixture["conditional_gitdir_i_probe_files"]
     _write_files(root, files)
     return sorted(files)
 
@@ -546,6 +577,30 @@ def _capture_conditional_global_sapling(
     }
 
 
+def _capture_conditional_gitdir_i_sapling(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Sapling's case-insensitive Git-dir conditional ignore behavior."""
+    query_files = _write_conditional_gitdir_i_probe(root, home, fixture)
+    status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
+    _require_success(status, "sl status case-insensitive gitdir core.excludesFile")
+    _, ignored_paths = _sapling_status_paths(status.stdout)
+    ignored = sorted(ignored_paths & set(query_files))
+    expected = fixture["expected_conditional_gitdir_i_ignored"][f"sapling.{mode}-mode"]
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) - set(ignored)),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+    }
+
+
 def _capture_conditional_global_jj(
     executable: str,
     mode: str,
@@ -563,6 +618,33 @@ def _capture_conditional_global_jj(
     included_paths = _jujutsu_paths(listed.stdout)
     ignored = sorted(set(query_files) - included_paths)
     expected = fixture["expected_conditional_global_ignored"][f"jj.{mode}"]
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) & included_paths),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+    }
+
+
+def _capture_conditional_gitdir_i_jj(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Jujutsu's case-insensitive Git-dir conditional ignore behavior."""
+    query_files = _write_conditional_gitdir_i_probe(root, home, fixture)
+    status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
+    _require_success(status, "jj status case-insensitive gitdir core.excludesFile")
+    listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+    _require_success(listed, "jj file list case-insensitive gitdir core.excludesFile")
+    included_paths = _jujutsu_paths(listed.stdout)
+    ignored = sorted(set(query_files) - included_paths)
+    expected = fixture["expected_conditional_gitdir_i_ignored"][f"jj.{mode}"]
     return {
         "query_files": query_files,
         "ignored": ignored,
@@ -844,6 +926,7 @@ def main() -> int:
         and case["configured_global"]["candidate_matches"]
         and case["configured_system"]["candidate_matches"]
         and case["conditional_global"]["candidate_matches"]
+        and case["conditional_gitdir_i"]["candidate_matches"]
         and case["conditional_onbranch"]["candidate_matches"]
         and case["conditional_remote_url"]["candidate_matches"]
         and case["configured_repository"]["candidate_matches"]

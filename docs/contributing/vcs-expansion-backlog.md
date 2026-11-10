@@ -578,6 +578,9 @@ not read Git global sources. Native `gitdir`, `onbranch:main`, and matching
 aarch64/x86_64. Repository-local `core.excludesFile` precedence is captured for Sapling `.git` mode
 and both Jujutsu modes; Sapling `.sl` ignores Git config. The Jujutsu policy supplies its internal
 Git store as condition context for non-colocated workspaces unless the caller provides `GIT_DIR`.
+Case-insensitive `gitdir/i` matching is additionally captured on macOS and Debian 13 Linux: an
+uppercase path pattern matches Sapling `.git` mode and colocated Jujutsu, while Sapling `.sl` and
+non-colocated Jujutsu do not match. Windows capture validates the Jujutsu modes in native CI.
 Other conditional forms and broader client/platform profiles remain open.
 
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC

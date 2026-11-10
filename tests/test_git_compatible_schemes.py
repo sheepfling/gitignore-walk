@@ -485,6 +485,69 @@ def test_compatible_scheme_discovers_remote_url_conditional_include(
     assert repository_selection.policy.explain("configured.repository").ignored is True
 
 
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize(
+    ("mode", "expected_ignored"),
+    [
+        ("sapling-git", True),
+        ("sapling-sl", False),
+        ("jj-colocated", True),
+        ("jj-noncolocated", False),
+    ],
+)
+def test_compatible_scheme_discovers_case_insensitive_gitdir_include(
+    tmp_path: Path, mode: str, expected_ignored: bool
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    custom_ignore = home / "case-insensitive-ignore"
+    custom_ignore.write_text("*.casefold\n", encoding="utf-8")
+    (home / "included.gitconfig").write_text(
+        f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8"
+    )
+    global_config = home / ".gitconfig"
+    global_config.write_text(
+        '[includeIf "gitdir/i:**/WORKSPACE/.GIT"]\n\tpath = included.gitconfig\n',
+        encoding="utf-8",
+    )
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    if mode == "sapling-git":
+        _git_init(root)
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    elif mode == "sapling-sl":
+        (root / ".sl").mkdir()
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    elif mode == "jj-colocated":
+        (root / ".jj").mkdir()
+        _git_init(root)
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    else:
+        (root / ".jj").mkdir()
+        git_dir = root / ".jj" / "repo" / "store" / "git"
+        subprocess.run(["git", "init", "--bare", "-q", str(git_dir)], check=True)
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+
+    (root / "conditional.casefold").touch()
+    selection = select_policy(root, config)
+    decision = selection.policy.explain("conditional.casefold")
+    ignored_by_walker = [
+        path.name
+        for path in IgnoreWalker(root, policy=selection.policy).iter_files(selection="ignored")
+    ]
+
+    assert decision.ignored is expected_ignored
+    assert ("conditional.casefold" in ignored_by_walker) is expected_ignored
+
+
 def test_compatible_scheme_config_discovery_errors_if_git_is_missing(tmp_path: Path) -> None:
     root = tmp_path / "workspace"
     root.mkdir()
