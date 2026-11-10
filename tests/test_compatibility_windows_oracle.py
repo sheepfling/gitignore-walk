@@ -8,10 +8,15 @@ from typing import Any
 
 import pytest
 
-CAPTURE_PATH = (
-    Path(__file__).parent / "oracles" / "compat" / "results" / "jj-0.47.1-windows-x64.json"
-)
-CAPTURE: dict[str, Any] = json.loads(CAPTURE_PATH.read_text(encoding="utf-8"))
+RESULTS_DIR = Path(__file__).parent / "oracles" / "compat" / "results"
+VERSIONS = ("0.45.1", "0.46.0", "0.47.1")
+CAPTURES: dict[str, dict[str, Any]] = {
+    version: json.loads(
+        (RESULTS_DIR / f"jj-{version}-windows-x64.json").read_text(encoding="utf-8")
+    )
+    for version in VERSIONS
+}
+CAPTURE = CAPTURES["0.47.1"]
 OBSERVATIONS = {case["id"]: case for case in CAPTURE["cases"]}
 FIXTURE_PATH = Path(__file__).parent / "oracles" / "compat" / "cases.json"
 PATTERN_FIXTURE = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
@@ -80,3 +85,55 @@ def test_windows_jujutsu_modes_keep_their_distinct_repository_markers(
     case_id: str, expected_markers: list[str]
 ) -> None:
     assert OBSERVATIONS[case_id]["metadata_markers"] == expected_markers
+
+
+@pytest.mark.parametrize("version", VERSIONS)
+def test_windows_jujutsu_versioned_captures_cover_both_workspace_modes(version: str) -> None:
+    capture = CAPTURES[version]
+
+    assert capture["status"] == "captured"
+    assert capture["platform"].startswith("Windows-2025Server")
+    assert capture["clients"]["jujutsu"].startswith(f"jj {version}")
+    assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
+    assert all(case["candidate_matches"] for case in capture["cases"])
+    assert all(
+        case[probe]["candidate_matches"]
+        for case in capture["cases"]
+        for probe in (
+            "source_discovery",
+            "pattern_discovery",
+            "configured_global",
+            "configured_system",
+            "conditional_global",
+            "conditional_gitdir_i",
+            "conditional_worktree",
+            "conditional_worktree_i",
+            "conditional_onbranch",
+            "conditional_remote_url",
+            "conditional_gitdir_override",
+            "configured_repository",
+            "environment_global",
+            "environment_count",
+        )
+    )
+
+
+@pytest.mark.parametrize(
+    ("version", "expected_ignored"),
+    [
+        ("0.45.1", ["nested/probe.symlink"]),
+        ("0.46.0", []),
+        ("0.47.1", []),
+    ],
+)
+@pytest.mark.parametrize("case_id", ["jj.colocated", "jj.noncolocated"])
+def test_windows_jujutsu_captures_the_symlink_source_version_boundary(
+    version: str, expected_ignored: list[str], case_id: str
+) -> None:
+    symlink = next(case for case in CAPTURES[version]["cases"] if case["id"] == case_id)[
+        "symlinked_gitignore"
+    ]
+
+    assert symlink["native_status"] == "captured"
+    assert symlink["ignored"] == expected_ignored
+    assert symlink["candidate_matches"] is True

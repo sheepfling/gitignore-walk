@@ -29,11 +29,13 @@ marks `sapling.pattern_discovery` in `excluded_probes`, while Jujutsu's pattern 
 clients' source/configuration probes still run and are checked. Reproduce it with
 `run.py --sl <older-sapling> --jj <jj> --skip-sapling-pattern-probes --output <capture.json>`.
 
-Jujutsu 0.47.1 is also captured on Windows Server 2025 x64 in colocated and non-colocated modes.
-Both Windows cases match the same candidates, global-source precedence, path-pattern matrix, and
-the `gitdir/i`, `worktree`, `worktree/i`, `onbranch`, and `hasconfig:remote.*.url` include probes.
-Sapling's pinned Windows release aborts during `sl status` with `cannot set file timestamp to 0`,
-so this profile does not claim Sapling Windows conformance.
+Jujutsu 0.45.1, 0.46.0, and 0.47.1 are captured on Windows Server 2025 x64 in colocated and
+non-colocated modes. All three releases match the candidate, source/configuration, and path-pattern
+probes. The versioned captures also establish that 0.45.1 follows nested symlinked `.gitignore`
+files, while 0.46.0 and 0.47.1 skip them. Windows CI recaptures these profiles from checksum-pinned
+release assets and retains the run artifacts for seven days. Sapling's pinned Windows release
+aborts during `sl status` with `cannot set file timestamp to 0`, so this profile does not claim
+Sapling Windows conformance.
 
 The isolated source probes also capture that Sapling in `.git` mode reads the XDG Git ignore file
 and `.git/info/exclude`; Sapling `.sl` mode reads neither. Jujutsu reads the XDG Git ignore file in
@@ -164,6 +166,8 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`           | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`               | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.47.1  |
+| `jj-0.46.0-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.46.0  |
+| `jj-0.45.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.45.1  |
 | `jj-0.45.1-macos-arm64.json`                                               | macOS 26 arm64             | —            | 0.45.1  |
 | `jj-0.45.1-debian13-x86_64.json`                                           | Debian 13 x86_64 in Docker | —            | 0.45.1  |
 | `jj-0.46.0-macos-arm64.json`                                               | macOS 26 arm64             | —            | 0.46.0  |

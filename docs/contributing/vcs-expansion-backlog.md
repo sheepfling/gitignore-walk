@@ -608,9 +608,10 @@ x86_64; their captured global, conditional, environment, repository-local, and p
 the candidate behavior, while the expected legacy symlink-following result is recorded explicitly.
 Native CI recaptures this full profile with the pinned release asset and verifies it alongside the
 focused 0.45.1/0.46.0 symlink boundary. The Windows native job also captures the complete 0.45.1
-Jujutsu configuration and pattern matrix, retaining the artifact for seven days. Windows CI now
-captures the same full 0.46.0 matrix, checking the client-version transition where nested symlinked
-`.gitignore` files stopped being followed; symlink creation may be explicitly skipped by the runner.
+Jujutsu configuration and pattern matrix, and the same full 0.46.0 matrix. Committed Windows
+captures assert the version boundary: 0.45.1 follows nested symlinked `.gitignore` files, while
+0.46.0 and 0.47.1 skip them. Fresh run artifacts are retained for seven days; symlink creation may
+be explicitly skipped by the runner.
 
 **Additional configuration evidence:** an isolated Sapling/Jujutsu workspace sets
 `GIT_CONFIG_GLOBAL` before initialization. Sapling `.git` mode and both Jujutsu modes use the
