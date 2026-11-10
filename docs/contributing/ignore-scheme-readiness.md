@@ -184,8 +184,9 @@ Darcs now has an initial native candidate policy. It combines `darcs whatsnew --
 `darcs show files`, preserving the distinction between untracked add candidates, boring paths, and
 already managed paths. Captures on Darcs 2.18.5/macOS arm64 and 2.18.4/Debian 13 x86_64 agree on
 fifteen closed candidates, including an ASCII-only `[[:alpha:]]` result under both `C` and `C.UTF-8`
-locales. The policy walker matches a native ignored-directory and tracked-file fixture
-in both traversal orders. Managed inventory uses `darcs show files --null`; ambiguous candidate
+locales. The policy walker matches a native ignored-directory and tracked-file fixture in
+included-only, ignored-only, and all-file selection modes in both traversal orders. Managed
+inventory uses `darcs show files --null`; ambiguous candidate
 summaries fall back to path-specific `darcs add --dry-run --reserved-ok` checks. This preserves
 trailing spaces and handles newline-bearing names without parsing their display output. The policy
 delegates ERE parsing and preference discovery to Darcs and holds one inventory for each walk. Darcs

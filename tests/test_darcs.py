@@ -302,5 +302,20 @@ def test_native_darcs_walker_matches_membership_aware_boring_behavior(
         expected_files.add(root / newline_name)
         expected_files.add(root / managed_newline_name)
     assert set(walker.iter_files(topdown=topdown)) == expected_files
+    ignored_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(topdown=topdown, selection="ignored")
+        if "_darcs" not in path.relative_to(root).parts
+    }
+    assert ignored_files == {"cache/ignored.txt"}
+    all_workspace_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(topdown=topdown, selection="all")
+        if "_darcs" not in path.relative_to(root).parts
+    }
+    assert (
+        all_workspace_files
+        == {path.relative_to(root).as_posix() for path in expected_files} | ignored_files
+    )
     assert policy.explain("tracked.tmp").ignored is False
     assert policy.explain("cache/ignored.txt").ignored is True
