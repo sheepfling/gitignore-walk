@@ -106,8 +106,9 @@ version 0.46.0 changed to skip it, and 0.47.1 retains the new behavior. The poli
 0.46.0+ behavior. Set `JujutsuPolicyConfig(follow_symlinked_gitignore=True)` to model 0.45.1.
 Focused macOS 26 arm64 and Debian 13 x86_64 captures for 0.45.1 and 0.46.0 are retained in
 `results/`, and native CI recaptures the Linux cases. The full 0.45.1 captures also record the
-global configuration and pattern probes on macOS arm64 and Debian 13 x86_64; its only
-version-specific behavior in this matrix is following the symlink. Reproduce the focused capture with
+global configuration and pattern probes on macOS arm64 and Debian 13 x86_64; Windows native CI now
+recaptures and checks the full 0.45.1 matrix as an artifact. The only version-specific behavior
+observed in this matrix is following the symlink. Reproduce the focused capture with
 `run.py --jj <jj-executable> --symlink-only --output <capture.json>`; add
 `--expect-jj-follows-symlink` for the 0.45.1 profile. Use that flag without `--symlink-only` to
 capture the full older-client profile. The v0.46.0 [release notes](https://github.com/jj-vcs/jj/releases/tag/v0.46.0)

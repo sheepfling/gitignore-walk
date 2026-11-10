@@ -607,7 +607,8 @@ documents this concrete divergence. Broader client/platform profiles remain open
 x86_64; their captured global, conditional, environment, repository-local, and pattern probes match
 the candidate behavior, while the expected legacy symlink-following result is recorded explicitly.
 Native CI recaptures this full profile with the pinned release asset and verifies it alongside the
-focused 0.45.1/0.46.0 symlink boundary.
+focused 0.45.1/0.46.0 symlink boundary. The Windows native job also captures the complete 0.45.1
+Jujutsu configuration and pattern matrix, retaining the artifact for seven days.
 
 **Additional configuration evidence:** an isolated Sapling/Jujutsu workspace sets
 `GIT_CONFIG_GLOBAL` before initialization. Sapling `.git` mode and both Jujutsu modes use the

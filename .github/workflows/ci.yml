@@ -633,6 +633,7 @@ jobs:
           $nativeDir = Join-Path $env:RUNNER_TEMP 'native'
           New-Item -ItemType Directory -Force -Path $clientDir, $nativeDir | Out-Null
           $jjArchive = Join-Path $clientDir 'jj-windows-x64.zip'
+          $jj045Archive = Join-Path $clientDir 'jj-0.45.1-windows-x64.zip'
           Invoke-WebRequest `
             -Uri 'https://github.com/jj-vcs/jj/releases/download/v0.47.1/jj-v0.47.1-x86_64-pc-windows-msvc.zip' `
             -OutFile $jjArchive
@@ -640,13 +641,27 @@ jobs:
           if ($jjDigest -ne '72f9f80bc99d07a7f48d5f219cf5bab91f7e906e4b53f6c827948e646cd1152f') {
             throw "Jujutsu release checksum mismatch: $jjDigest"
           }
+          Invoke-WebRequest `
+            -Uri 'https://github.com/jj-vcs/jj/releases/download/v0.45.1/jj-v0.45.1-x86_64-pc-windows-msvc.zip' `
+            -OutFile $jj045Archive
+          $jj045Digest = (Get-FileHash -Algorithm SHA256 $jj045Archive).Hash.ToLowerInvariant()
+          if ($jj045Digest -ne '5dbf2619272c897394d34190a94b21a6ab8d1e8e59fcf7dfc173d8fa8aa90bf0') {
+            throw "Jujutsu 0.45.1 release checksum mismatch: $jj045Digest"
+          }
           $jjDir = Join-Path $clientDir 'jj'
           Expand-Archive -Path $jjArchive -DestinationPath $jjDir -Force
           $jj = Join-Path $jjDir 'jj.exe'
           if (-not (Test-Path $jj)) { throw "Jujutsu executable was not found: $jj" }
+          $jj045Dir = Join-Path $clientDir 'jj-0.45.1'
+          Expand-Archive -Path $jj045Archive -DestinationPath $jj045Dir -Force
+          $jj045 = Join-Path $jj045Dir 'jj.exe'
+          if (-not (Test-Path $jj045)) { throw "Jujutsu 0.45.1 executable was not found: $jj045" }
           $output = Join-Path $nativeDir 'jj-0.47.1-windows-x64.json'
           python tests/oracles/compat/run.py --jj $jj --jj-only --output $output
           if ($LASTEXITCODE -ne 0) { throw "Jujutsu capture failed: $LASTEXITCODE" }
+          $olderOutput = Join-Path $nativeDir 'jj-0.45.1-windows-x64.json'
+          python tests/oracles/compat/run.py --jj $jj045 --jj-only --expect-jj-follows-symlink --output $olderOutput
+          if ($LASTEXITCODE -ne 0) { throw "Jujutsu 0.45.1 capture failed: $LASTEXITCODE" }
           $boundaryOutput = Join-Path $nativeDir 'workspace-boundaries-jj-0.47.1-windows-x64.json'
           python tests/oracles/compat/run.py --jj $jj --jj-only --workspace-boundary-only --output $boundaryOutput
           if ($LASTEXITCODE -ne 0) { throw "Jujutsu workspace-boundary capture failed: $LASTEXITCODE" }
@@ -661,13 +676,39 @@ jobs:
           from scripts.ci_native import inspect_capture
 
           path = Path(os.environ["RUNNER_TEMP"]) / "native/jj-0.47.1-windows-x64.json"
+          older_path = Path(os.environ["RUNNER_TEMP"]) / "native/jj-0.45.1-windows-x64.json"
           boundary_path = Path(os.environ["RUNNER_TEMP"]) / "native/workspace-boundaries-jj-0.47.1-windows-x64.json"
           linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-jj-0.47.1-windows-x64.json"
           result = inspect_capture(path)
+          older_result = inspect_capture(older_path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          older = json.loads(older_path.read_text(encoding="utf-8"))
           boundary = json.loads(boundary_path.read_text(encoding="utf-8"))
           linked = json.loads(linked_path.read_text(encoding="utf-8"))
           assert result["passed"], result
+          assert older_result["passed"], older_result
+          assert older["clients"]["jujutsu"].startswith("jj 0.45.1")
+          assert {case["id"] for case in older["cases"]} == {"jj.colocated", "jj.noncolocated"}
+          assert all(case["candidate_matches"] for case in older["cases"])
+          assert all(case["source_discovery"]["candidate_matches"] for case in older["cases"])
+          assert all(case["pattern_discovery"]["candidate_matches"] for case in older["cases"])
+          assert all(
+              case["symlinked_gitignore"]["candidate_matches"]
+              or case["symlinked_gitignore"]["native_status"] == "skipped"
+              for case in older["cases"]
+          )
+          assert all(case["configured_global"]["candidate_matches"] for case in older["cases"])
+          assert all(case["configured_system"]["candidate_matches"] for case in older["cases"])
+          assert all(case["conditional_global"]["candidate_matches"] for case in older["cases"])
+          assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in older["cases"])
+          assert all(case["conditional_worktree"]["candidate_matches"] for case in older["cases"])
+          assert all(case["conditional_worktree_i"]["candidate_matches"] for case in older["cases"])
+          assert all(case["conditional_onbranch"]["candidate_matches"] for case in older["cases"])
+          assert all(case["conditional_remote_url"]["candidate_matches"] for case in older["cases"])
+          assert all(case["conditional_gitdir_override"]["candidate_matches"] for case in older["cases"])
+          assert all(case["configured_repository"]["candidate_matches"] for case in older["cases"])
+          assert all(case["environment_global"]["candidate_matches"] for case in older["cases"])
+          assert all(case["environment_count"]["candidate_matches"] for case in older["cases"])
           assert len(boundary["cases"]) == 4
           assert boundary["clients"]["jujutsu"].startswith("jj 0.47.1")
           assert all(case["candidate_matches"] for case in boundary["cases"])
