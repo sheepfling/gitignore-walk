@@ -544,7 +544,9 @@ and opt-in membership are implemented. The 21-case oracle includes all 13 status
 the handoff; the two import-reference probes remain outside the status-walking contract. Live
 membership comparisons cover normal, modified, added, deleted, missing, replaced, obstructed, and
 conflicted entries, plus ignored unversioned entries. Versioned directories and file/directory
-externals have separate native evidence. Paths omitted by sparse status remain unknown by design.
+externals have separate native evidence. A new membership-aware walker check matches native
+selections inside directory externals in both traversal orders, using each external working copy's
+own status. Paths omitted by sparse status remain unknown by design.
 Further work is broader native status traversal and configuration-precedence profiles; do not
 classify omitted paths as unversioned without new native evidence.
 

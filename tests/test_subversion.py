@@ -1112,8 +1112,9 @@ def test_subversion_walk_follows_native_listed_externals(tmp_path: Path, topdown
     }
 
 
+@pytest.mark.parametrize("topdown", [True, False])
 def test_subversion_directory_external_membership_uses_its_own_status_scope(
-    tmp_path: Path,
+    tmp_path: Path, topdown: bool
 ) -> None:
     case = next(case for case in CASES if case["id"] == "svn.walk-descends-into-externals")
     root, environment, config_dir = _create_working_copy(tmp_path, case)
@@ -1161,6 +1162,25 @@ def test_subversion_directory_external_membership_uses_its_own_status_scope(
     assert external_file.membership == "unversioned"
     assert external_ignored.ignored
     assert external_ignored.membership == "unversioned"
+
+    walker = IgnoreWalker(root, policy=policy)
+    native_status_files = {
+        root / relative for relative in case["expected_status_paths"] if (root / relative).is_file()
+    }
+    expected_ignored = {root / relative for relative in case["expected_ignored_paths"]}
+    included = {
+        path
+        for path in walker.iter_files(selection="included", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+    ignored = {
+        path
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
+    }
+
+    assert included == native_status_files - expected_ignored
+    assert ignored == expected_ignored
 
 
 @pytest.mark.parametrize("topdown", [True, False])

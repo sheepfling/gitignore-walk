@@ -84,6 +84,8 @@ status remains membership-unknown, that discovery remains incomplete, and that t
 descend into the excluded subtree. The directory-external membership check confirms the containing
 working copy reports the external root as `external`; the policy treats that root as versioned and
 reads descendant status from the external working copy itself.
+Membership-aware walks in both traversal orders classify files inside listed directory externals
+from each external working copy's own native status, matching the native ignore selection.
 This live transition test passed locally with Subversion 1.15.0 and runs in the hosted Ubuntu
 Subversion 1.14.3 and Windows SlikSvn 1.14.5 integration jobs. The native status sequence is also
 stored in `results/svn-status-transitions-1.15.0-macos-arm64.json`; each native CI run writes its
