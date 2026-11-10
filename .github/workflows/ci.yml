@@ -94,7 +94,7 @@ jobs:
             debian:13-slim \
             bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs python3 && python3 tests/oracles/darcs/run.py --output /output/darcs-oracle.json'
           python -c "from pathlib import Path; from scripts.ci_native import inspect_capture; path = Path(r'$RUNNER_TEMP/native/darcs-oracle.json'); result = inspect_capture(path); print(result); raise SystemExit(not result['passed'])"
-      - name: Enable ARM64 emulation for Darcs oracle
+      - name: Enable ARM64 emulation for native oracles
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         uses: docker/setup-qemu-action@v4
         with:
@@ -109,6 +109,45 @@ jobs:
             debian:13-slim \
             bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs python3 && python3 tests/oracles/darcs/run.py --output /output/darcs-debian13-arm64.json'
           python -c "from pathlib import Path; from scripts.ci_native import inspect_capture; path = Path(r'$RUNNER_TEMP/native/darcs-debian13-arm64.json'); result = inspect_capture(path); print(result); raise SystemExit(not result['passed'])"
+      - name: Download pinned Sapling and Jujutsu ARM64 releases
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/compat-clients"
+          curl --fail --location --silent --show-error \
+            'https://github.com/meta/sapling/releases/download/0.2.20261103-145137%2B6282ac56/sapling-0.2.20261103-145137+6282ac56-linux-arm64.tar.xz' \
+            --output "$RUNNER_TEMP/compat-clients/sapling-linux-arm64.tar.xz"
+          curl --fail --location --silent --show-error \
+            'https://github.com/jj-vcs/jj/releases/download/v0.47.1/jj-v0.47.1-aarch64-unknown-linux-musl.tar.gz' \
+            --output "$RUNNER_TEMP/compat-clients/jj-linux-arm64.tar.gz"
+          echo 'a8bb6388703c30630219933e482955faa33744cfb06bcd201910785cbe3c5749  '"$RUNNER_TEMP/compat-clients/sapling-linux-arm64.tar.xz" | sha256sum --check
+          echo '0f300e1576de8dabe0a9dedf0b87ae44f8accea5cf54d9a342a51061c1fb1bcd  '"$RUNNER_TEMP/compat-clients/jj-linux-arm64.tar.gz" | sha256sum --check
+      - name: Capture Sapling and Jujutsu on Debian 13 ARM64
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          docker run --rm --platform linux/arm64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/compat-clients:/clients:ro" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json'
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from scripts.ci_native import inspect_capture
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
+          result = inspect_capture(path)
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert result["passed"], result
+          assert len(capture["cases"]) == 4
+          assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
+          assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          print(result)
+          PY
       - name: Check selected Linux native captures
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-

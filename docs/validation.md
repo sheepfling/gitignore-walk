@@ -155,7 +155,8 @@ Hosted CI checks clean environments and differences that a developer's machine c
 - One Linux native lane runs the native-backed policy suite and checks Mercurial
   matching/walking/trust, Subversion, Fossil, Breezy, and Perforce. Darcs runs in Debian 13
   containers on x86_64 and emulated ARM64 because Ubuntu 24.04 no longer packages the required
-  executable.
+  executable. The same ARM64 container profile runs the pinned Sapling and Jujutsu compatibility
+  capture.
 - One Windows native lane installs clients once, runs Mercurial/Subversion/Breezy policy tests,
   checks those three captures, and retains the explicit Registry/INI precedence probe. Protocol
   based Subversion cases are explicit skips when the SlikSVN installer does not provide `svnserve`.

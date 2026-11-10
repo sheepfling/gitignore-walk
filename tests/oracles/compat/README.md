@@ -10,9 +10,11 @@ Run from the repository root:
 python -m scripts.ci oracle-compat --output /tmp/vcs-compat.json
 ```
 
-The current capture uses Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS arm64. It checks four
-layouts: Sapling with `.git`, Sapling with `.sl`, colocated Jujutsu with `.git` and `.jj`, and
-non-colocated Jujutsu with `.jj` only. In all four layouts, `.gitignore` excludes `a.tmp`, while
+The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64 and Debian 13
+Linux arm64. The Linux profile downloads the upstream release assets and verifies their SHA-256
+digests before running them in an isolated Debian container. Each profile checks four layouts: Sapling
+with `.git`, Sapling with `.sl`, colocated Jujutsu with `.git` and `.jj`, and non-colocated Jujutsu
+with `.jj` only. In all four layouts, `.gitignore` excludes `a.tmp`, while
 `.hgignore` and `.jjignore` do not exclude `b.log`. This supports using the existing Git-ignore
 policy for the tested in-tree rule subset, with a caller-selected metadata baseline such as
 `.sl` or `.jj`.
@@ -21,8 +23,8 @@ The isolated source probes also capture that Sapling in `.git` mode reads the XD
 and `.git/info/exclude`; Sapling `.sl` mode reads neither. Jujutsu reads the XDG Git ignore file in
 both modes and reads `.git/info/exclude` only when colocated. In modes with all three sources,
 `.gitignore` overrides `.git/info/exclude`, which overrides the XDG ignore file. These observations
-are captured with Sapling 0.2.20261103 and Jujutsu 0.47.1. They do not establish alternate global
-config files, path encoding, or broader VCS behavior.
+are captured against both named client versions on macOS and Debian Linux arm64. They do not
+establish alternate global config files, path encoding, or broader VCS behavior.
 
 A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
 ignored parent directory; a child negation can re-include a file when only the parent's contents
@@ -39,3 +41,8 @@ without a separate read-only inventory interface.
 The capture supports the initial read-only `SaplingIgnorePolicy` and `JujutsuIgnorePolicy` scopes.
 The policies evaluate the captured Git-compatible rule dialect locally and do not invoke either
 client. Git-native selection remains appropriate only when an actual `.git` repository is available.
+
+| Capture file                                         | Environment               | Sapling      | Jujutsu |
+| ---------------------------------------------------- | ------------------------- | ------------ | ------- |
+| `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`    | macOS 26 arm64            | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json` | Debian 13 arm64 in Docker | 0.2.20261103 | 0.47.1  |

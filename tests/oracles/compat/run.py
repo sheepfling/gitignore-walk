@@ -249,6 +249,7 @@ def _require_success(result: subprocess.CompletedProcess[str], operation: str) -
 
 def capture(sapling: str, jj: str) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
+    client_versions = {"sapling": _version(sapling), "jujutsu": _version(jj)}
     captures = [_capture_sapling(sapling, mode, fixture) for mode in ("git", "sl")] + [
         _capture_jj(jj, mode, fixture) for mode in ("colocated", "noncolocated")
     ]
@@ -269,6 +270,7 @@ def capture(sapling: str, jj: str) -> dict[str, Any]:
         "schema_version": 1,
         "status": "captured",
         "platform": platform.platform(),
+        "clients": client_versions,
         "cases": captures,
     }
 

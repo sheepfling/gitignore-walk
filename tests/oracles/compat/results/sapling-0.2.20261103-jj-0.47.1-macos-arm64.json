@@ -2,6 +2,10 @@
   "schema_version": 1,
   "status": "captured",
   "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "clients": {
+    "sapling": "Sapling 0.2.20261103-145137",
+    "jujutsu": "jj 0.47.1"
+  },
   "cases": [
     {
       "id": "sapling.git-mode",
@@ -141,7 +145,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.priority\nA priority.global\nA visible.txt\nWorking copy  (@) : ktzrxvsq 12879419 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.priority\nA priority.global\nA visible.txt\nWorking copy  (@) : xnvnpwuz 11616497 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".git",
@@ -187,7 +191,7 @@
           "cache/keep.tmp",
           "nested/root-only.tmp"
         ],
-        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA local.priority\nA nested/root-only.tmp\nA priority.global\nA visible.txt\nWorking copy  (@) : ktzrxvsq 3355f587 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA local.priority\nA nested/root-only.tmp\nA priority.global\nA visible.txt\nWorking copy  (@) : xnvnpwuz 57105181 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "status_stderr": "",
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nlocal.priority\nnested/root-only.tmp\npriority.global\nvisible.txt\n",
         "candidate_matches": true
@@ -207,7 +211,7 @@
         "a.tmp"
       ],
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA info.priority\nA local.local\nA local.priority\nA visible.txt\nWorking copy  (@) : wpprtzmq b67c897f (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA info.priority\nA local.local\nA local.priority\nA visible.txt\nWorking copy  (@) : kvxuyxzp 03a23d79 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
       "status_stderr": "",
       "metadata_markers": [
         ".jj"
@@ -252,7 +256,7 @@
           "cache/keep.tmp",
           "nested/root-only.tmp"
         ],
-        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA info.priority\nA local.local\nA local.priority\nA nested/root-only.tmp\nA visible.txt\nWorking copy  (@) : wpprtzmq 44bcbcb5 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA info.priority\nA local.local\nA local.priority\nA nested/root-only.tmp\nA visible.txt\nWorking copy  (@) : kvxuyxzp aecfee3a (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "status_stderr": "",
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\ninfo.priority\nlocal.local\nlocal.priority\nnested/root-only.tmp\nvisible.txt\n",
         "candidate_matches": true
