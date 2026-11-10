@@ -1062,6 +1062,13 @@ def test_current_sapling_jujutsu_captures_match_the_expanded_pattern_matrix(prof
         pattern = case["pattern_discovery"]
         assert pattern["candidate_matches"]
         assert set(pattern["ignored"]) == _PATTERN_IGNORED
+        if profile.endswith("macos-arm64.json"):
+            count_config = case["environment_count"]
+            assert count_config["config_environment_variable"] == "GIT_CONFIG_COUNT"
+            assert count_config["candidate_matches"]
+            assert set(count_config["ignored"]) == set(
+                _COMPAT_FIXTURE["expected_environment_count_ignored"][case["id"]]
+            )
 
 
 @pytest.mark.parametrize(

@@ -73,6 +73,17 @@
     "environment.visible": "must remain visible\n"
   },
   "environment_global_ignore": "*.global\n",
+  "environment_count_probe_files": {
+    "environment.count": "must be excluded by GIT_CONFIG_COUNT when honored\n",
+    "environment.visible": "must remain visible\n"
+  },
+  "environment_count_ignore": "*.count\n",
+  "expected_environment_count_ignored": {
+    "sapling.git-mode": ["environment.count"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["environment.count"],
+    "jj.noncolocated": ["environment.count"]
+  },
   "expected_environment_global_ignored": {
     "sapling.git-mode": ["environment.global"],
     "sapling.sl-mode": [],

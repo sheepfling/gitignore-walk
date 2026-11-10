@@ -93,6 +93,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             executable, "sapling", mode, root, home, environment, fixture
         )
         environment_global = _capture_environment_global_sapling(executable, mode, fixture)
+        environment_count = _capture_environment_count_sapling(executable, mode, fixture)
         symlinked_gitignore = _capture_symlinked_gitignore_sapling(executable, mode, fixture)
         return {
             "id": f"sapling.{mode}-mode",
@@ -130,6 +131,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             "conditional_remote_url": conditional_remote,
             "conditional_gitdir_override": conditional_gitdir_override,
             "environment_global": environment_global,
+            "environment_count": environment_count,
             "symlinked_gitignore": symlinked_gitignore,
             "configured_repository": configured_repository,
         }
@@ -198,6 +200,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             executable, "jujutsu", mode, root, home, environment, fixture
         )
         environment_global = _capture_environment_global_jj(executable, mode, fixture)
+        environment_count = _capture_environment_count_jj(executable, mode, fixture)
         symlinked_gitignore = _capture_symlinked_gitignore_jj(executable, mode, fixture)
         return {
             "id": f"jj.{mode}",
@@ -237,6 +240,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "conditional_remote_url": conditional_remote,
             "conditional_gitdir_override": conditional_gitdir_override,
             "environment_global": environment_global,
+            "environment_count": environment_count,
             "symlinked_gitignore": symlinked_gitignore,
             "configured_repository": configured_repository,
         }
@@ -503,6 +507,110 @@ def _capture_environment_global_jj(
         expected = fixture["expected_environment_global_ignored"][f"jj.{mode}"]
         return {
             "config_environment_variable": "GIT_CONFIG_GLOBAL",
+            "query_files": query_files,
+            "ignored": ignored,
+            "included": sorted(set(query_files) & included_paths),
+            "candidate_matches": ignored == expected,
+            "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+            "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+        }
+
+
+def _environment_count_probe(
+    home: Path, fixture: Mapping[str, Any]
+) -> tuple[list[str], dict[str, str]]:
+    """Configure one injected Git config entry and write its ignore probes."""
+    ignore_file = home / "environment-count-ignore"
+    ignore_file.write_text(fixture["environment_count_ignore"], encoding="utf-8")
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "PAGER": "cat",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_COUNT": "1",
+        "GIT_CONFIG_KEY_0": "core.excludesFile",
+        "GIT_CONFIG_VALUE_0": str(ignore_file),
+        "HGPLAIN": "1",
+        "SL_USER": "Oracle <oracle@example.invalid>",
+    }
+    return sorted(fixture["environment_count_probe_files"]), environment
+
+
+def _capture_environment_count_sapling(
+    executable: str, mode: str, fixture: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Capture Sapling behavior for an injected Git config entry."""
+    with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-count-{mode}-") as temporary:
+        base = Path(temporary)
+        home = base / "home"
+        home.mkdir()
+        root = base / "workspace"
+        root.mkdir()
+        query_files, environment = _environment_count_probe(home, fixture)
+        _write_files(root, fixture["environment_count_probe_files"])
+        if mode == "git":
+            _require_success(
+                _run(["git", "init", "-q", str(root)], cwd=root, environment=environment),
+                "git init GIT_CONFIG_COUNT",
+            )
+            _set_oracle_branch(root, environment)
+            _set_oracle_remote(root, environment)
+        else:
+            _require_success(
+                _run([executable, "init", str(root)], cwd=root, environment=environment),
+                "sl init GIT_CONFIG_COUNT",
+            )
+        status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
+        _require_success(status, "sl status GIT_CONFIG_COUNT")
+        _, ignored_paths = _sapling_status_paths(status.stdout)
+        ignored = sorted(ignored_paths & set(query_files))
+        expected = fixture["expected_environment_count_ignored"][f"sapling.{mode}-mode"]
+        return {
+            "config_environment_variable": "GIT_CONFIG_COUNT",
+            "query_files": query_files,
+            "ignored": ignored,
+            "included": sorted(set(query_files) - set(ignored)),
+            "candidate_matches": ignored == expected,
+            "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        }
+
+
+def _capture_environment_count_jj(
+    executable: str, mode: str, fixture: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Capture Jujutsu behavior for an injected Git config entry."""
+    with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-jj-count-{mode}-") as temporary:
+        base = Path(temporary)
+        home = base / "home"
+        config_dir = home / ".config" / "jj"
+        config_dir.mkdir(parents=True)
+        (config_dir / "config.toml").write_text(
+            '[user]\nname = "Oracle"\nemail = "oracle@example.invalid"\n', encoding="utf-8"
+        )
+        root = base / "workspace"
+        root.mkdir()
+        query_files, environment = _environment_count_probe(home, fixture)
+        _write_files(root, fixture["environment_count_probe_files"])
+        command = [executable, "git", "init"]
+        if mode == "noncolocated":
+            command.append("--no-colocate")
+        command.append(str(root))
+        _require_success(
+            _run(command, cwd=root, environment=environment), "jj git init GIT_CONFIG_COUNT"
+        )
+        _set_oracle_branch(root, environment)
+        _set_oracle_remote_jj(executable, root, environment)
+        status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
+        _require_success(status, "jj status GIT_CONFIG_COUNT")
+        listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+        _require_success(listed, "jj file list GIT_CONFIG_COUNT")
+        included_paths = _jujutsu_paths(listed.stdout)
+        ignored = sorted(set(query_files) - included_paths)
+        expected = fixture["expected_environment_count_ignored"][f"jj.{mode}"]
+        return {
+            "config_environment_variable": "GIT_CONFIG_COUNT",
             "query_files": query_files,
             "ignored": ignored,
             "included": sorted(set(query_files) & included_paths),
@@ -1929,6 +2037,7 @@ def main() -> int:
         and case["conditional_remote_url"]["candidate_matches"]
         and case["configured_repository"]["candidate_matches"]
         and case["environment_global"]["candidate_matches"]
+        and case["environment_count"]["candidate_matches"]
         and case["symlinked_gitignore"]["native_status"] == "captured"
         and case["symlinked_gitignore"]["candidate_matches"]
         for case in result["cases"]

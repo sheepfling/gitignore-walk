@@ -275,7 +275,22 @@
         "candidate_matches": true,
         "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? a.tmp\u0000? b.log\u0000? cache/keep.tmp\u0000? conditional.branch\u0000? conditional.casefold\u0000? conditional.custom\u0000? conditional.global\u0000? conditional.remote\u0000? conditional.visible\u0000? conditional.worktree\u0000? conditional.worktreei\u0000? configured.custom\u0000? configured.global\u0000? configured.system\u0000? configured.visible\u0000? global.global\u0000? nested/root-only.tmp\u0000? priority.global\u0000? repository.global\u0000? repository.system\u0000? repository.visible\u0000? src/nested/temp.txt\u0000? system.custom\u0000? system.system\u0000? system.visible\u0000? visible.txt\u0000I !literal\u0000I #literal\u0000I blocked/keep.txt\u0000I cache/drop.tmp\u0000I info.priority\u0000I local.local\u0000I local.priority\u0000I nested/deep/deep.log\u0000I nested/zero.txt\u0000I repository.local\u0000I root-only.tmp\u0000I src/nested/temp2.txt\u0000I src/temp1.txt\u0000I zero.txt\u0000"
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "environment_count": {
+        "config_environment_variable": "GIT_CONFIG_COUNT",
+        "query_files": [
+          "environment.count",
+          "environment.visible"
+        ],
+        "ignored": [
+          "environment.count"
+        ],
+        "included": [
+          "environment.visible"
+        ],
+        "candidate_matches": true,
+        "status_stdout": "? environment.visible\u0000I environment.count\u0000"
+      }
     },
     {
       "id": "sapling.sl-mode",
@@ -537,7 +552,21 @@
         "candidate_matches": true,
         "status_stdout": "? .gitignore\u0000? .hgignore\u0000? .jjignore\u0000? a.tmp\u0000? b.log\u0000? cache/keep.tmp\u0000? conditional.branch\u0000? conditional.casefold\u0000? conditional.custom\u0000? conditional.global\u0000? conditional.remote\u0000? conditional.visible\u0000? conditional.worktree\u0000? conditional.worktreei\u0000? configured.custom\u0000? configured.global\u0000? configured.system\u0000? configured.visible\u0000? global.global\u0000? info.priority\u0000? local.local\u0000? local.priority\u0000? nested/root-only.tmp\u0000? priority.global\u0000? repository.global\u0000? repository.local\u0000? repository.system\u0000? repository.visible\u0000? src/nested/temp.txt\u0000? system.custom\u0000? system.system\u0000? system.visible\u0000? visible.txt\u0000I !literal\u0000I #literal\u0000I blocked/keep.txt\u0000I cache/drop.tmp\u0000I nested/deep/deep.log\u0000I nested/zero.txt\u0000I root-only.tmp\u0000I src/nested/temp2.txt\u0000I src/temp1.txt\u0000I zero.txt\u0000"
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "environment_count": {
+        "config_environment_variable": "GIT_CONFIG_COUNT",
+        "query_files": [
+          "environment.count",
+          "environment.visible"
+        ],
+        "ignored": [],
+        "included": [
+          "environment.count",
+          "environment.visible"
+        ],
+        "candidate_matches": true,
+        "status_stdout": "? environment.count\u0000? environment.visible\u0000"
+      }
     },
     {
       "id": "jj.colocated",
@@ -821,7 +850,23 @@
         "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA conditional.branch\nA conditional.casefold\nA conditional.custom\nA conditional.global\nA conditional.remote\nA conditional.visible\nA conditional.worktree\nA conditional.worktreei\nA configured.custom\nA configured.global\nA configured.system\nA configured.visible\nA global.global\nA local.priority\nA nested/root-only.tmp\nA priority.global\nA repository.global\nA repository.system\nA repository.visible\nA src/nested/temp.txt\nA system.custom\nA system.system\nA system.visible\nA visible.txt\nWorking copy  (@) : tunvpnwv ef256db1 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nconditional.branch\nconditional.casefold\nconditional.custom\nconditional.global\nconditional.remote\nconditional.visible\nconditional.worktree\nconditional.worktreei\nconfigured.custom\nconfigured.global\nconfigured.system\nconfigured.visible\nglobal.global\nlocal.priority\nnested/root-only.tmp\npriority.global\nrepository.global\nrepository.system\nrepository.visible\nsrc/nested/temp.txt\nsystem.custom\nsystem.system\nsystem.visible\nvisible.txt\n"
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "environment_count": {
+        "config_environment_variable": "GIT_CONFIG_COUNT",
+        "query_files": [
+          "environment.count",
+          "environment.visible"
+        ],
+        "ignored": [
+          "environment.count"
+        ],
+        "included": [
+          "environment.visible"
+        ],
+        "candidate_matches": true,
+        "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : qonvqnzu 28f05fac (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "file_list_stdout": "environment.visible\n"
+      }
     },
     {
       "id": "jj.noncolocated",
@@ -1102,7 +1147,23 @@
         "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache/keep.tmp\nA conditional.branch\nA conditional.casefold\nA conditional.custom\nA conditional.global\nA conditional.remote\nA conditional.visible\nA conditional.worktree\nA conditional.worktreei\nA configured.custom\nA configured.global\nA configured.system\nA configured.visible\nA global.global\nA info.priority\nA local.local\nA local.priority\nA nested/root-only.tmp\nA priority.global\nA repository.global\nA repository.system\nA repository.visible\nA src/nested/temp.txt\nA system.custom\nA system.system\nA system.visible\nA visible.txt\nWorking copy  (@) : pwqolpot c55fad1d (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache/keep.tmp\nconditional.branch\nconditional.casefold\nconditional.custom\nconditional.global\nconditional.remote\nconditional.visible\nconditional.worktree\nconditional.worktreei\nconfigured.custom\nconfigured.global\nconfigured.system\nconfigured.visible\nglobal.global\ninfo.priority\nlocal.local\nlocal.priority\nnested/root-only.tmp\npriority.global\nrepository.global\nrepository.system\nrepository.visible\nsrc/nested/temp.txt\nsystem.custom\nsystem.system\nsystem.visible\nvisible.txt\n"
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "environment_count": {
+        "config_environment_variable": "GIT_CONFIG_COUNT",
+        "query_files": [
+          "environment.count",
+          "environment.visible"
+        ],
+        "ignored": [
+          "environment.count"
+        ],
+        "included": [
+          "environment.visible"
+        ],
+        "candidate_matches": true,
+        "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : kmxxlzzl 06d645c1 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "file_list_stdout": "environment.visible\n"
+      }
     }
   ]
 }
