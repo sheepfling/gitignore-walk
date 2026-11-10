@@ -128,6 +128,9 @@ client. The default list follows Apache Subversion's
 [`SVN_CONFIG_DEFAULT_GLOBAL_IGNORES`](https://svn.apache.org/repos/asf/subversion/site/staging/docs/api/1.15/svn__config_8h_source.html)
 for the tested 1.15 client profile. Without an explicit config directory, it reads standard
 system and per-user INI files; a live comparison verifies per-user settings against native status.
+An additional live comparison passes an explicit config directory while a conflicting ambient
+user config is present; native status and the policy both use only the explicit directory's
+patterns on the tested POSIX profile.
 The policy reads machine and user Windows Registry values during ambient discovery. The opt-in
 `windows_registry.py` probe sets and restores the current user's `global-ignores` value on an
 ephemeral Windows runner, compares registry-only behavior with native status, then checks that the

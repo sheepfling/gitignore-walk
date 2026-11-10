@@ -1135,6 +1135,43 @@ def test_subversion_ambient_user_config_is_discovered_and_matches_native_status(
     assert not policy.is_ignored("visible.ambient-show")
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Windows uses APPDATA and Registry config sources")
+def test_subversion_explicit_config_dir_replaces_ambient_user_config(
+    tmp_path: Path,
+) -> None:
+    case = CASES[0]
+    root, environment, config_dir = _create_working_copy(tmp_path, case)
+    user_config = Path(environment["HOME"]) / ".subversion" / "config"
+    user_config.parent.mkdir(parents=True)
+    user_config.write_text("[miscellany]\nglobal-ignores = *.ambient-hide\n", encoding="utf-8")
+    (config_dir / "config").write_text(
+        "[miscellany]\nglobal-ignores = *.explicit-hide\n", encoding="utf-8"
+    )
+    (root / "ambient.ambient-hide").write_text("ambient-only pattern\n", encoding="utf-8")
+    (root / "explicit.explicit-hide").write_text("explicit pattern\n", encoding="utf-8")
+
+    policy = SubversionIgnorePolicy(root, config_dir=config_dir, environment=environment)
+    svn = shutil.which("svn")
+    assert svn is not None
+    native = _run_svn(
+        [svn, "--config-dir", str(config_dir), "status", "--xml", "--no-ignore", "."],
+        cwd=root,
+        environment=environment,
+    )
+    document = ET.fromstring(native.stdout)
+    native_ignored = {
+        entry.attrib["path"].replace("\\", "/")
+        for entry in document.findall(".//entry")
+        if (status := entry.find("wc-status")) is not None
+        and status.attrib.get("item") == "ignored"
+    }
+
+    assert policy.is_ignored("explicit.explicit-hide")
+    assert not policy.is_ignored("ambient.ambient-hide")
+    assert "explicit.explicit-hide" in native_ignored
+    assert "ambient.ambient-hide" not in native_ignored
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_subversion_walk_keeps_membership_separate_and_does_not_prune(
     subversion_policy: SubversionIgnorePolicy, topdown: bool
