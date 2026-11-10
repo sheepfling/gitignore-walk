@@ -79,7 +79,6 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         repository.mkdir()
         setup = case["setup"]
         environment = {
-            "HOME": str(home),
             "APPDATA": str(home),
             "PATH": os.environ.get("PATH", ""),
             "DARCS_PAGER": "cat",
@@ -88,6 +87,8 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "LANG": setup.get("locale", "C"),
             "TZ": "UTC",
         }
+        if os.name != "nt":
+            environment["HOME"] = str(home)
         init = _run(
             executable,
             ["init", "--repodir", str(repository)],
