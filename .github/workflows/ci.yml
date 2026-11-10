@@ -243,7 +243,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj /tmp/jj046 && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj046 && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --output /output/jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
           python - <<'PY'
           import json
           import os
@@ -256,6 +256,9 @@ jobs:
           capture = json.loads(path.read_text(encoding="utf-8"))
           linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json"
           linked = json.loads(linked_path.read_text(encoding="utf-8"))
+          jj046_path = Path(os.environ["RUNNER_TEMP"]) / "native/jj-0.46.0-debian13-x86_64.json"
+          jj046_result = inspect_capture(jj046_path)
+          jj046 = json.loads(jj046_path.read_text(encoding="utf-8"))
           assert result["passed"], result
           assert len(capture["cases"]) == 4
           assert "x86_64" in capture["platform"]
@@ -275,6 +278,21 @@ jobs:
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
+          assert jj046_result["passed"], jj046_result
+          assert "x86_64" in jj046["platform"]
+          assert jj046["clients"]["jujutsu"].startswith("jj 0.46.0-")
+          assert {case["id"] for case in jj046["cases"]} == {"jj.colocated", "jj.noncolocated"}
+          assert all(case["candidate_matches"] for case in jj046["cases"])
+          for case in jj046["cases"]:
+              assert case["source_discovery"]["candidate_matches"]
+              assert case["pattern_discovery"]["candidate_matches"]
+              assert case["symlinked_gitignore"]["candidate_matches"]
+              assert all(case[key]["candidate_matches"] for key in (
+                  "configured_global", "configured_system", "conditional_global",
+                  "conditional_gitdir_i", "conditional_worktree", "conditional_worktree_i",
+                  "conditional_onbranch", "conditional_remote_url", "conditional_gitdir_override",
+                  "environment_global", "configured_repository",
+              ))
           assert "x86_64" in linked["platform"]
           assert [case["ignored"] for case in linked["cases"]] == [
               ["probe.commonignore"],

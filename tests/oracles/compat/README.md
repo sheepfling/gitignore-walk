@@ -11,7 +11,9 @@ python -m scripts.ci oracle-compat --output /tmp/vcs-compat.json
 ```
 
 The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64 and Debian 13
-Linux aarch64 and x86_64. The Linux profiles download upstream release assets and verify their SHA-256
+Linux aarch64 and x86_64. A full Jujutsu 0.46.0 compatibility capture is also retained on Debian
+13 x86_64 to cover the release that changed nested `.gitignore` symlink handling. The Linux profiles
+download upstream release assets and verify their SHA-256
 digests before running them in isolated Debian containers. Each profile checks four layouts: Sapling
 with `.git`, Sapling with `.sl`, colocated Jujutsu with `.git` and `.jj`, and non-colocated Jujutsu
 with `.jj` only. In all four layouts, `.gitignore` excludes `a.tmp`, while
@@ -132,6 +134,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`      | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`          | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                          | Windows Server 2025 x64    | —            | 0.47.1  |
+| `jj-0.46.0-debian13-x86_64.json`                                      | Debian 13 x86_64 in Docker | —            | 0.46.0  |
 | `jj-0.45.1-macos-arm64-symlink.json`                                  | macOS 26 arm64             | —            | 0.45.1  |
 | `jj-0.45.1-debian13-x86_64-symlink.json`                              | Debian 13 x86_64 in Docker | —            | 0.45.1  |
 | `jj-0.46.0-macos-arm64-symlink.json`                                  | macOS 26 arm64             | —            | 0.46.0  |

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import shutil
@@ -47,6 +48,11 @@ _PATTERN_IGNORED = {
     "root-only.tmp",
     "nested/deep/deep.log",
 }
+_JJ_046_CAPTURE = json.loads(
+    (
+        Path(__file__).parent / "oracles" / "compat" / "results" / "jj-0.46.0-debian13-x86_64.json"
+    ).read_text(encoding="utf-8")
+)
 
 
 def _git_config_path(path: Path) -> str:
@@ -888,6 +894,43 @@ def test_compatible_schemes_match_captured_negation_and_path_patterns(
         if path.relative_to(root).as_posix() in _PATTERN_FILES
     }
     assert walked_included == set(_PATTERN_FILES) - _PATTERN_IGNORED
+
+
+def test_jujutsu_046_debian_capture_covers_the_supported_policy_subset() -> None:
+    """Keep the 0.46.0 symlink-boundary profile checked against captured policy fixtures."""
+    assert _JJ_046_CAPTURE["status"] == "captured"
+    assert _JJ_046_CAPTURE["clients"]["jujutsu"].startswith("jj 0.46.0-")
+    assert _JJ_046_CAPTURE["platform"].startswith("Linux-")
+
+    cases = {case["id"]: case for case in _JJ_046_CAPTURE["cases"]}
+    assert set(cases) == {"jj.colocated", "jj.noncolocated"}
+    for case_id, source_expectation in (
+        ("jj.colocated", _SOURCE_EXPECTATIONS["jj-colocated"]),
+        ("jj.noncolocated", _SOURCE_EXPECTATIONS["jj-noncolocated"]),
+    ):
+        case = cases[case_id]
+        assert case["candidate_matches"]
+        assert case["source_discovery"]["candidate_matches"]
+        assert case["source_discovery"]["ignored"] == source_expectation
+        assert case["pattern_discovery"]["candidate_matches"]
+        assert set(case["pattern_discovery"]["ignored"]) == _PATTERN_IGNORED
+        assert case["symlinked_gitignore"]["candidate_matches"]
+        assert all(
+            case[key]["candidate_matches"]
+            for key in (
+                "configured_global",
+                "configured_system",
+                "conditional_global",
+                "conditional_gitdir_i",
+                "conditional_worktree",
+                "conditional_worktree_i",
+                "conditional_onbranch",
+                "conditional_remote_url",
+                "conditional_gitdir_override",
+                "environment_global",
+                "configured_repository",
+            )
+        )
 
 
 def test_compatible_scheme_selection_is_typed_and_explicit(tmp_path: Path) -> None:
