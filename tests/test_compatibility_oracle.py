@@ -16,6 +16,27 @@ CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
+PATTERN_CAPTURE_FILES = (CAPTURE_FILES[0], CAPTURE_FILES[3], CAPTURE_FILES[4])
+EARLIER_PATTERN_CAPTURE_FILES = (CAPTURE_FILES[1], CAPTURE_FILES[2])
+PATTERN_FIXTURE = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))
+PATTERN_QUERY_FILES = sorted(PATTERN_FIXTURE["pattern_query_files"])
+PATTERN_IGNORED = sorted(PATTERN_FIXTURE["expected_pattern_ignored"])
+PATTERN_INCLUDED = sorted(set(PATTERN_QUERY_FILES) - set(PATTERN_IGNORED))
+EARLIER_PATTERN_QUERY_FILES = [
+    "blocked/keep.txt",
+    "cache/drop.tmp",
+    "cache/keep.tmp",
+    "nested/deep/deep.log",
+    "nested/root-only.tmp",
+    "root-only.tmp",
+]
+EARLIER_PATTERN_IGNORED = [
+    "blocked/keep.txt",
+    "cache/drop.tmp",
+    "nested/deep/deep.log",
+    "root-only.tmp",
+]
+EARLIER_PATTERN_INCLUDED = ["cache/keep.tmp", "nested/root-only.tmp"]
 LINKED_WORKTREE_CAPTURE_FILES = (
     "linked-worktree-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
     "linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
@@ -165,7 +186,7 @@ def test_compatibility_capture_reconciles_ignore_source_discovery(
     assert source_discovery["ignored"] == expected_ignored[case_id]
 
 
-@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("profile", PATTERN_CAPTURE_FILES)
 @pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
 def test_compatibility_capture_reconciles_path_pattern_discovery(
     profile: str, case_id: str
@@ -173,21 +194,23 @@ def test_compatibility_capture_reconciles_path_pattern_discovery(
     pattern_discovery = OBSERVATIONS[profile][case_id]["pattern_discovery"]
 
     assert pattern_discovery["candidate_matches"] is True
-    assert pattern_discovery["query_files"] == [
-        "blocked/keep.txt",
-        "cache/drop.tmp",
-        "cache/keep.tmp",
-        "nested/deep/deep.log",
-        "nested/root-only.tmp",
-        "root-only.tmp",
-    ]
-    assert pattern_discovery["ignored"] == [
-        "blocked/keep.txt",
-        "cache/drop.tmp",
-        "nested/deep/deep.log",
-        "root-only.tmp",
-    ]
-    assert pattern_discovery["included"] == ["cache/keep.tmp", "nested/root-only.tmp"]
+    assert pattern_discovery["query_files"] == PATTERN_QUERY_FILES
+    assert pattern_discovery["ignored"] == PATTERN_IGNORED
+    assert pattern_discovery["included"] == PATTERN_INCLUDED
+
+
+@pytest.mark.parametrize("profile", EARLIER_PATTERN_CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[1]]))
+def test_git_256_captures_reconcile_the_earlier_path_pattern_subset(
+    profile: str, case_id: str
+) -> None:
+    """Retain integrity checks for Git 2.56 profiles captured before the expanded matrix."""
+    pattern_discovery = OBSERVATIONS[profile][case_id]["pattern_discovery"]
+
+    assert pattern_discovery["candidate_matches"] is True
+    assert pattern_discovery["query_files"] == EARLIER_PATTERN_QUERY_FILES
+    assert pattern_discovery["ignored"] == EARLIER_PATTERN_IGNORED
+    assert pattern_discovery["included"] == EARLIER_PATTERN_INCLUDED
 
 
 @pytest.mark.parametrize("profile", SYMLINK_CAPTURE_FILES)
