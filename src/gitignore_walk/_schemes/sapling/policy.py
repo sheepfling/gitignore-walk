@@ -69,6 +69,7 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
             else initial_excludes
         )
         super().__init__(caller_root, environment=environment, initial_excludes=excludes)
+        self._allow_symlinked_gitignore = storage == "sl"
         self.workspace_root = workspace_root
         self._repository_root = workspace_root
         metadata = _find_repository_metadata(workspace_root)

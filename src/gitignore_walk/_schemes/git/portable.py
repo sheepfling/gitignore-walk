@@ -107,6 +107,7 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
             None if metadata is None else metadata.common_dir / "info" / "exclude"
         )
         self._global_excludes = _default_global_excludes_path(environment)
+        self._allow_symlinked_gitignore = False
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Return the effective decision and matching policy source for one target."""
@@ -133,6 +134,7 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
                 global_excludes=self._global_excludes,
                 repository_excludes=self._repository_excludes,
                 matcher=self.matcher,
+                allow_symlinked_gitignore=self._allow_symlinked_gitignore,
             )
         )
         effective_index = next(
@@ -204,6 +206,7 @@ class GitIgnorePolicy(_GitIgnorePolicyBase):
             global_excludes=self._global_excludes,
             repository_excludes=self._repository_excludes,
             matcher=self.matcher,
+            allow_symlinked_gitignore=self._allow_symlinked_gitignore,
         )
         if policy_match is not None:
             return _decision_from_match(path=target, match=policy_match, scheme=self.scheme)
@@ -415,6 +418,7 @@ def _gitignore_path_decision(
     global_excludes: Path | None = None,
     repository_excludes: Path | None = None,
     matcher: GitIgnoreMatcher[Any] = DEFAULT_MATCHER,
+    allow_symlinked_gitignore: bool = False,
 ) -> _PatternMatch | None:
     """Return the effective ignore match for one target, if ignored."""
     matches = _gitignore_path_matches(
@@ -424,6 +428,7 @@ def _gitignore_path_decision(
         global_excludes=global_excludes,
         repository_excludes=repository_excludes,
         matcher=matcher,
+        allow_symlinked_gitignore=allow_symlinked_gitignore,
     )
     if not matches:
         return None
@@ -439,6 +444,7 @@ def _gitignore_path_matches(
     global_excludes: Path | None,
     repository_excludes: Path | None,
     matcher: GitIgnoreMatcher[Any],
+    allow_symlinked_gitignore: bool,
 ) -> list[_PatternMatch]:
     """Collect each applicable source's final matching rule in precedence order."""
     directories = _ancestor_directories(root=root, target=target)
@@ -456,6 +462,7 @@ def _gitignore_path_matches(
                 global_excludes=global_excludes,
                 repository_excludes=repository_excludes,
                 matcher=matcher,
+                allow_symlinked_gitignore=allow_symlinked_gitignore,
             )
         )
         if matches and matches[-1].ignored:
@@ -470,6 +477,7 @@ def _gitignore_path_matches(
             global_excludes=global_excludes,
             repository_excludes=repository_excludes,
             matcher=matcher,
+            allow_symlinked_gitignore=allow_symlinked_gitignore,
         )
     )
     return matches
@@ -485,6 +493,7 @@ def _gitignore_matches_for_path(
     global_excludes: Path | None,
     repository_excludes: Path | None,
     matcher: GitIgnoreMatcher[Any],
+    allow_symlinked_gitignore: bool,
 ) -> list[_PatternMatch]:
     matches: list[_PatternMatch] = []
     relative_to_root = path.relative_to(root).as_posix()
@@ -504,9 +513,17 @@ def _gitignore_matches_for_path(
                 matches.append(matched)
     for ignore_root in roots:
         loaded = (
-            _load_gitignore(ignore_root / ".gitignore", matcher=matcher)
+            _load_gitignore(
+                ignore_root / ".gitignore",
+                matcher=matcher,
+                allow_symlink=allow_symlinked_gitignore,
+            )
             if snapshot is None
-            else snapshot.load(ignore_root / ".gitignore", matcher=matcher)
+            else snapshot.load(
+                ignore_root / ".gitignore",
+                matcher=matcher,
+                allow_symlink=allow_symlinked_gitignore,
+            )
         )
         if loaded is not None:
             matched = _match_loaded_ignore(
