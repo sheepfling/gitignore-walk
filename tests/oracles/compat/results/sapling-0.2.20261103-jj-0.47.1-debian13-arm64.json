@@ -246,6 +246,21 @@
         ],
         "candidate_matches": true,
         "status_stdout": "? environment.visible\u0000I environment.global\u0000"
+      },
+      "symlinked_gitignore": {
+        "native_status": "captured",
+        "source": "nested/.gitignore",
+        "source_is_symlink": true,
+        "source_target_outside_workspace": true,
+        "query_files": [
+          "nested/probe.symlink"
+        ],
+        "ignored": [],
+        "candidate_matches": true,
+        "mode": "sapling.git-mode",
+        "status_exit_code": 0,
+        "status_stdout": "? nested/.gitignore\u0000? nested/probe.symlink\u0000",
+        "status_stderr": ""
       }
     },
     {
@@ -477,6 +492,23 @@
         ],
         "candidate_matches": true,
         "status_stdout": "? environment.global\u0000? environment.visible\u0000"
+      },
+      "symlinked_gitignore": {
+        "native_status": "captured",
+        "source": "nested/.gitignore",
+        "source_is_symlink": true,
+        "source_target_outside_workspace": true,
+        "query_files": [
+          "nested/probe.symlink"
+        ],
+        "ignored": [
+          "nested/probe.symlink"
+        ],
+        "candidate_matches": true,
+        "mode": "sapling.sl-mode",
+        "status_exit_code": 0,
+        "status_stdout": "? nested/.gitignore\u0000I nested/probe.symlink\u0000",
+        "status_stderr": ""
       }
     },
     {
@@ -731,6 +763,22 @@
         "candidate_matches": true,
         "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : xtqzxyrn e1fe52f3 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": "environment.visible\n"
+      },
+      "symlinked_gitignore": {
+        "native_status": "captured",
+        "source": "nested/.gitignore",
+        "source_is_symlink": true,
+        "source_target_outside_workspace": true,
+        "query_files": [
+          "nested/probe.symlink"
+        ],
+        "ignored": [],
+        "candidate_matches": true,
+        "mode": "jj.colocated",
+        "status_exit_code": 0,
+        "status_stdout": "Working copy changes:\nA nested/.gitignore\nA nested/probe.symlink\nWorking copy  (@) : mpmynqtl 3bf6152f (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": "nested/.gitignore\nnested/probe.symlink\n"
       }
     },
     {
@@ -982,6 +1030,22 @@
         "candidate_matches": true,
         "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : zukloyzv fea7c86f (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
         "file_list_stdout": "environment.visible\n"
+      },
+      "symlinked_gitignore": {
+        "native_status": "captured",
+        "source": "nested/.gitignore",
+        "source_is_symlink": true,
+        "source_target_outside_workspace": true,
+        "query_files": [
+          "nested/probe.symlink"
+        ],
+        "ignored": [],
+        "candidate_matches": true,
+        "mode": "jj.noncolocated",
+        "status_exit_code": 0,
+        "status_stdout": "Working copy changes:\nA nested/.gitignore\nA nested/probe.symlink\nWorking copy  (@) : qszomltk 9f5344cc (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": "nested/.gitignore\nnested/probe.symlink\n"
       }
     }
   ]

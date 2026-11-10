@@ -22,8 +22,9 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
 
     Sapling's `.sl` storage mode reads workspace `.gitignore` files but does not apply Git's XDG
     ignore file or `.git/info/exclude`. Sapling's `.git` mode uses all three sources with Git
-    precedence. The policy discovers the nearest `.sl` or `.git` workspace marker and keeps the
-    caller's ``root`` as the query and traversal bound.
+    precedence. For nested `.gitignore` files, `.sl` mode follows symlinks while `.git` mode skips
+    them, matching the captured Sapling behavior. The policy discovers the nearest `.sl` or `.git`
+    workspace marker and keeps the caller's ``root`` as the query and traversal bound.
 
     This policy covers only the captured ignore dialect/source behavior. It does not query
     Sapling membership or discover ``core.excludesFile`` from Git configuration; callers can pass

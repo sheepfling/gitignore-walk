@@ -159,6 +159,7 @@ jobs:
           assert all(not case["conditional_gitdir_override"]["native_matches_git_config"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
           print(result)
           PY
       - name: Download pinned Sapling and Jujutsu x86_64 releases
@@ -211,6 +212,7 @@ jobs:
           assert all(not case["conditional_gitdir_override"]["native_matches_git_config"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
           print(result)
           PY
       - name: Capture worktree conditional behavior with Git 2.56
@@ -243,6 +245,7 @@ jobs:
           assert all(case["conditional_gitdir_override"]["git_config_matches"] for case in capture["cases"])
           assert all(not case["conditional_gitdir_override"]["native_matches_git_config"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
           observations = {case["id"]: case for case in capture["cases"]}
           for key, expected in (("conditional_worktree", "conditional.worktree"), ("conditional_worktree_i", "conditional.worktreei")):
             assert observations["sapling.git-mode"][key]["ignored"] == [expected]
@@ -400,6 +403,11 @@ jobs:
           assert all(case["conditional_gitdir_override"]["git_config_matches"] for case in capture["cases"])
           assert all(not case["conditional_gitdir_override"]["native_matches_git_config"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(
+              case["symlinked_gitignore"]["candidate_matches"]
+              or case["symlinked_gitignore"]["native_status"] == "skipped"
+              for case in capture["cases"]
+          )
           print(result)
           '@ | python -
       - name: Check Windows Registry and INI precedence

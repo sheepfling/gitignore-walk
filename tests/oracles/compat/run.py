@@ -92,6 +92,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             executable, "sapling", mode, root, home, environment, fixture
         )
         environment_global = _capture_environment_global_sapling(executable, mode, fixture)
+        symlinked_gitignore = _capture_symlinked_gitignore_sapling(executable, mode, fixture)
         return {
             "id": f"sapling.{mode}-mode",
             "vcs": "sapling",
@@ -128,6 +129,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             "conditional_remote_url": conditional_remote,
             "conditional_gitdir_override": conditional_gitdir_override,
             "environment_global": environment_global,
+            "symlinked_gitignore": symlinked_gitignore,
             "configured_repository": configured_repository,
         }
 
@@ -195,6 +197,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             executable, "jujutsu", mode, root, home, environment, fixture
         )
         environment_global = _capture_environment_global_jj(executable, mode, fixture)
+        symlinked_gitignore = _capture_symlinked_gitignore_jj(executable, mode, fixture)
         return {
             "id": f"jj.{mode}",
             "vcs": "jujutsu",
@@ -233,8 +236,156 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "conditional_remote_url": conditional_remote,
             "conditional_gitdir_override": conditional_gitdir_override,
             "environment_global": environment_global,
+            "symlinked_gitignore": symlinked_gitignore,
             "configured_repository": configured_repository,
         }
+
+
+def _symlink_result(
+    root: Path, home: Path, fixture: Mapping[str, Any], mode_id: str
+) -> dict[str, Any]:
+    """Create a nested symlinked ignore file, recording unsupported links as explicit skips."""
+    ignore_source = home / "external.gitignore"
+    ignore_source.write_text(fixture["symlinked_gitignore_source"], encoding="utf-8")
+    nested = root / "nested"
+    nested.mkdir()
+    link = nested / ".gitignore"
+    try:
+        link.symlink_to(ignore_source)
+    except OSError as error:
+        return {
+            "native_status": "skipped",
+            "reason": f"unable to create symlink: {error}",
+            "source": "nested/.gitignore",
+            "source_is_symlink": False,
+            "query_files": fixture["symlinked_gitignore_query_files"],
+            "ignored": [],
+            "candidate_matches": None,
+        }
+    for relative, content in fixture["symlinked_gitignore_probe_files"].items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8")
+    return {
+        "native_status": "captured",
+        "source": "nested/.gitignore",
+        "source_is_symlink": link.is_symlink(),
+        "source_target_outside_workspace": not ignore_source.is_relative_to(root),
+        "query_files": fixture["symlinked_gitignore_query_files"],
+        "ignored": [],
+        "candidate_matches": None,
+        "mode": mode_id,
+    }
+
+
+def _symlink_probe_environment(home: Path, *, sapling: bool) -> dict[str, str]:
+    """Isolate probe settings from ambient Git and Sapling workspace overrides."""
+    environment = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("GIT_CONFIG_")
+        and key not in {"GIT_DIR", "GIT_WORK_TREE", "GIT_INDEX_FILE", "GIT_COMMON_DIR"}
+    }
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "PAGER": "cat",
+            "GIT_CONFIG_NOSYSTEM": "1",
+        }
+    )
+    if sapling:
+        environment.update(
+            {
+                "SL_USER": "Oracle <oracle@example.invalid>",
+                "HGPLAIN": "1",
+            }
+        )
+    return environment
+
+
+def _capture_symlinked_gitignore_sapling(
+    executable: str, mode: str, fixture: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Capture Sapling's handling of a nested symlinked `.gitignore`."""
+    mode_id = f"sapling.{mode}-mode"
+    with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-symlink-{mode_id}-") as temporary:
+        base = Path(temporary)
+        home = base / "home"
+        home.mkdir()
+        root = base / "workspace"
+        root.mkdir()
+        environment = _symlink_probe_environment(home, sapling=True)
+        if mode == "git":
+            _require_success(
+                _run(["git", "init", "-q", str(root)], cwd=root, environment=environment),
+                "git init symlink probe",
+            )
+            _set_oracle_branch(root, environment)
+            _set_oracle_remote(root, environment)
+        else:
+            _require_success(
+                _run([executable, "init", str(root)], cwd=root, environment=environment),
+                "sl init symlink probe",
+            )
+        result = _symlink_result(root, home, fixture, mode_id)
+        if result["native_status"] == "skipped":
+            return result
+        native = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
+        _require_success(native, "sl status symlink probe")
+        _, ignored = _sapling_status_paths(native.stdout)
+        query_files = set(fixture["symlinked_gitignore_query_files"])
+        result["ignored"] = sorted(ignored & query_files)
+        expected = fixture["expected_symlinked_gitignore_ignored"][mode_id]
+        result["candidate_matches"] = result["ignored"] == expected
+        result["status_exit_code"] = native.returncode
+        result["status_stdout"] = native.stdout.replace(str(root), "<workspace>")
+        result["status_stderr"] = native.stderr.replace(str(root), "<workspace>")
+        return result
+
+
+def _capture_symlinked_gitignore_jj(
+    executable: str, mode: str, fixture: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Capture Jujutsu's handling of a nested symlinked `.gitignore`."""
+    mode_id = f"jj.{mode}"
+    with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-symlink-{mode_id}-") as temporary:
+        base = Path(temporary)
+        home = base / "home"
+        config_dir = home / ".config" / "jj"
+        config_dir.mkdir(parents=True)
+        (config_dir / "config.toml").write_text(
+            '[user]\nname = "Oracle"\nemail = "oracle@example.invalid"\n',
+            encoding="utf-8",
+        )
+        root = base / "workspace"
+        root.mkdir()
+        environment = _symlink_probe_environment(home, sapling=False)
+        command = [executable, "git", "init"]
+        if mode == "noncolocated":
+            command.append("--no-colocate")
+        command.append(str(root))
+        _require_success(_run(command, cwd=root, environment=environment), "jj git init")
+        _set_oracle_branch(root, environment)
+        _set_oracle_remote_jj(executable, root, environment)
+        result = _symlink_result(root, home, fixture, mode_id)
+        if result["native_status"] == "skipped":
+            return result
+        status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
+        _require_success(status, "jj status symlink probe")
+        listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+        _require_success(listed, "jj file list symlink probe")
+        files = _jujutsu_paths(listed.stdout)
+        query_files = set(fixture["symlinked_gitignore_query_files"])
+        result["ignored"] = sorted(query_files - files)
+        expected = fixture["expected_symlinked_gitignore_ignored"][mode_id]
+        result["candidate_matches"] = result["ignored"] == expected
+        result["status_exit_code"] = status.returncode
+        result["status_stdout"] = status.stdout.replace(str(root), "<workspace>")
+        result["status_stderr"] = status.stderr.replace(str(root), "<workspace>")
+        result["file_list_stdout"] = listed.stdout.replace(str(root), "<workspace>")
+        return result
 
 
 def _write_environment_global_probe(
@@ -1343,13 +1494,20 @@ def main() -> int:
         and case["conditional_remote_url"]["candidate_matches"]
         and case["configured_repository"]["candidate_matches"]
         and case["environment_global"]["candidate_matches"]
+        and case["symlinked_gitignore"]["native_status"] == "captured"
+        and case["symlinked_gitignore"]["candidate_matches"]
         for case in result["cases"]
+    )
+    skipped = sum(
+        case["symlinked_gitignore"]["native_status"] == "skipped" for case in result["cases"]
     )
     vcs_names = "Sapling/Jujutsu" if "sapling" in result["clients"] else "Jujutsu"
     print(f"Captured {len(result['cases'])} {vcs_names} cases")
-    print(f"Ignore, source, and path-pattern candidates matching: {matched}/{len(result['cases'])}")
+    print(f"All probe candidates matching: {matched}/{len(result['cases'])}")
+    if skipped:
+        print(f"Symlink probes explicitly skipped: {skipped}/{len(result['cases'])}")
     print(f"Capture: {arguments.output}")
-    return 0 if matched == len(result["cases"]) else 1
+    return 0 if matched + skipped == len(result["cases"]) else 1
 
 
 if __name__ == "__main__":

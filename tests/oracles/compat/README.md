@@ -81,6 +81,13 @@ the same rules through both direct explanations and included/ignored walker sele
 match on macOS arm64 and Debian 13 Linux aarch64 and x86_64. This remains a small compatibility
 subset, not broad Git-dialect certification.
 
+A separate nested-source probe places `nested/.gitignore` as a symlink to an ignore file outside
+the workspace. Sapling `.sl` mode follows the symlink and ignores `nested/probe.symlink`; Sapling
+`.git` mode and both Jujutsu modes skip the symlinked ignore source and leave the candidate visible.
+The portable policies now preserve this mode-specific behavior. Committed macOS and Debian 13 Linux
+captures on aarch64 and x86_64 record all four native results. If a host cannot create the symlink,
+the oracle records an explicit skip rather than claiming a match.
+
 Jujutsu's `status` command snapshots the working copy. The probes run it only in disposable
 repositories, then inspect the resulting file list. This is not a safe per-file adapter strategy for
 an existing workspace. A Jujutsu-specific native policy should not call status on user repositories

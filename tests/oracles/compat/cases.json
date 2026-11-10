@@ -79,6 +79,17 @@
     "jj.colocated": ["environment.global"],
     "jj.noncolocated": ["environment.global"]
   },
+  "symlinked_gitignore_source": "*.symlink\n",
+  "symlinked_gitignore_probe_files": {
+    "nested/probe.symlink": "ignored only when the client follows a symlinked nested .gitignore\n"
+  },
+  "symlinked_gitignore_query_files": ["nested/probe.symlink"],
+  "expected_symlinked_gitignore_ignored": {
+    "sapling.git-mode": [],
+    "sapling.sl-mode": ["nested/probe.symlink"],
+    "jj.colocated": [],
+    "jj.noncolocated": []
+  },
   "conditional_global_probe_files": {
     "conditional.custom": "must be ignored only by a matching gitdir include\n",
     "conditional.global": "must be ignored by XDG when no include condition matches\n",

@@ -22,6 +22,7 @@ ENVIRONMENT_GLOBAL_CAPTURE_FILES = (
     CAPTURE_FILES[3],
     CAPTURE_FILES[4],
 )
+SYMLINK_CAPTURE_FILES = (CAPTURE_FILES[0], CAPTURE_FILES[3], CAPTURE_FILES[4])
 CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
@@ -113,6 +114,26 @@ def test_compatibility_capture_reconciles_path_pattern_discovery(
         "root-only.tmp",
     ]
     assert pattern_discovery["included"] == ["cache/keep.tmp", "nested/root-only.tmp"]
+
+
+@pytest.mark.parametrize("profile", SYMLINK_CAPTURE_FILES)
+def test_native_capture_reconciles_symlinked_nested_gitignore(profile: str) -> None:
+    observations = OBSERVATIONS[profile]
+    expected_ignored = {
+        "sapling.git-mode": [],
+        "sapling.sl-mode": ["nested/probe.symlink"],
+        "jj.colocated": [],
+        "jj.noncolocated": [],
+    }
+
+    for case_id, observation in observations.items():
+        probe = observation["symlinked_gitignore"]
+        assert probe["native_status"] == "captured"
+        assert probe["source_is_symlink"] is True
+        assert probe["source_target_outside_workspace"] is True
+        assert probe["candidate_matches"] is True
+        assert probe["query_files"] == ["nested/probe.symlink"]
+        assert probe["ignored"] == expected_ignored[case_id]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
