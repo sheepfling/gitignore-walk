@@ -148,6 +148,45 @@ jobs:
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
           print(result)
           PY
+      - name: Download pinned Sapling and Jujutsu x86_64 releases
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          curl --fail --location --silent --show-error \
+            'https://github.com/meta/sapling/releases/download/0.2.20261103-145137%2B6282ac56/sapling-0.2.20261103-145137+6282ac56-linux-x64.tar.xz' \
+            --output "$RUNNER_TEMP/compat-clients/sapling-linux-x64.tar.xz"
+          curl --fail --location --silent --show-error \
+            'https://github.com/jj-vcs/jj/releases/download/v0.47.1/jj-v0.47.1-x86_64-unknown-linux-musl.tar.gz' \
+            --output "$RUNNER_TEMP/compat-clients/jj-linux-x64.tar.gz"
+          echo '682f965b3abeae0a5ca0e1d64f35558679bad2fc79d5f6df34c7e82a52f9788c  '"$RUNNER_TEMP/compat-clients/sapling-linux-x64.tar.xz" | sha256sum --check
+          echo 'd4b657f622ee50929c8916466dfa3d6a6c17a0a32b50e7b2c793707ec9ebcad7  '"$RUNNER_TEMP/compat-clients/jj-linux-x64.tar.gz" | sha256sum --check
+      - name: Capture Sapling and Jujutsu on Debian 13 x86_64
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          docker run --rm --platform linux/amd64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/compat-clients:/clients:ro" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          from scripts.ci_native import inspect_capture
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json"
+          result = inspect_capture(path)
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert result["passed"], result
+          assert len(capture["cases"]) == 4
+          assert "x86_64" in capture["platform"]
+          assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
+          assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          print(result)
+          PY
       - name: Check selected Linux native captures
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-

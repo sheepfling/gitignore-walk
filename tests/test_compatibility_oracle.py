@@ -12,6 +12,7 @@ ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
 CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
+    "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
@@ -30,6 +31,19 @@ def test_compatibility_capture_records_exact_client_families(profile: str) -> No
     assert capture["status"] == "captured"
     assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+
+
+@pytest.mark.parametrize(
+    ("profile", "architecture"),
+    [
+        ("sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json", "aarch64"),
+        ("sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json", "x86_64"),
+    ],
+)
+def test_linux_compatibility_capture_records_its_architecture(
+    profile: str, architecture: str
+) -> None:
+    assert architecture in CAPTURES[profile]["platform"]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
