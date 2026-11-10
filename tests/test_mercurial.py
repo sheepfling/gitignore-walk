@@ -522,6 +522,7 @@ def test_configured_ignore_sources_keep_captured_native_order(tmp_path: Path, pr
         "hg-7.2.4-macos-arm64.json",
         "hg-7.0.1-linux-aarch64.json",
         "hg-7.0.1-linux-x86_64.json",
+        "hg-7.1.2-windows-x86_64.json",
     ),
 )
 def test_workspace_ignore_precedes_duplicate_configured_source(
@@ -541,8 +542,9 @@ def test_workspace_ignore_precedes_duplicate_configured_source(
         "extra.ignore",
     ]
     assert native["candidate_matches"]
-    assert "ignore rule in <repo>/.hgignore" in native["stdout"]
-    assert "extra.ignore" not in native["stdout"]
+    normalized_stdout = native["stdout"].replace("\\", "/")
+    assert "ignore rule in <repo>/.hgignore" in normalized_stdout
+    assert "extra.ignore" not in normalized_stdout
 
 
 @pytest.mark.parametrize(

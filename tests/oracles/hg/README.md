@@ -55,9 +55,10 @@ UTF-8 path. The test suite also compares these patterns directly with the instal
 each client-enabled CI profile. The Windows capture now contains all 67 path cases, including the
 additional byte-semantics and nested-subinclude failure probes.
 An additional source-precedence probe gives `.hgignore` and a configured `ui.ignore` file the same
-matching rule. On Mercurial 7.2.4/macOS arm64 and 7.0.1/Debian 13 Linux x86_64, native `debugignore`
-attributes the decision to the workspace `.hgignore`; the policy trace retains both sources and
-marks `.hgignore` effective. The captures are in the matching profile results.
+matching rule. On Mercurial 7.2.4/macOS arm64, 7.0.1/Debian 13 Linux x86_64, and 7.1.2/Windows
+x86_64, native `debugignore` attributes the decision to the workspace `.hgignore`; the policy trace
+retains both sources and marks `.hgignore` effective. The captures are in the matching profile
+results, and the regression test checks all four profiles.
 The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
 The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: 60 closed

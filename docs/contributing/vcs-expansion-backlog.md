@@ -31,9 +31,11 @@ match native results on macOS arm64 and Debian 13 Linux aarch64 and x86_64; the 
 also compares them with the installed Mercurial on each platform. Fourteen regex-extension probes
 match native on macOS arm64, hosted Ubuntu x86_64, Windows Server 2025 x86_64, and both Debian 13
 Linux architectures. The live-client differential test exercises the full set.
-Two symlink-source boundary probes match on macOS and Debian Linux x86_64. A self-referential
-include-source loop also matches on macOS and Windows. Live-client tests exercise
-the regex cases. The latest full Mercurial module run on macOS passes with 591 passed and 11 skipped.
+Workspace `.hgignore` precedence over a matching configured `ui.ignore` source is now captured and
+checked on macOS, Linux x86_64, and Windows. Two symlink-source boundary probes match on macOS and
+Debian Linux x86_64. A self-referential include-source loop also matches on macOS and Windows.
+Live-client tests exercise the regex cases. The latest Mercurial module run on macOS passes with
+631 passed and 11 skipped.
 All 46 original boolean expectations
 and the structured invalid-syntax expectation agree across the original profiles, as do all six
 walk fixtures. Parent
@@ -458,7 +460,7 @@ with the native client for the supported profile; all unsupported discovery path
 **Priority:** P1 · **Depends on:** VCS-01, VCS-02, VCS-03
 
 **Status:** The portable evaluator and captured-profile tests are implemented. The latest full test
-module run on macOS passes with 591 passed and 11 skipped. Earlier Debian 13 runs passed with 446
+module run on macOS passes with 631 passed and 11 skipped. Earlier Debian 13 runs passed with 446
 passed and 11 skipped on each aarch64/x86_64 container; rerun those profiles when extending native
 coverage.
 Regex rules compile and match UTF-8 path bytes with `surrogateescape`, matching native ASCII
