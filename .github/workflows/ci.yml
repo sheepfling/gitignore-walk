@@ -544,6 +544,7 @@ jobs:
           assert set(capture["clients"]) == {"git", "jujutsu"}
           assert capture["clients"]["git"].startswith("git version ")
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert all(case["pattern_discovery"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])

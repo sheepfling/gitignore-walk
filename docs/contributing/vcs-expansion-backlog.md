@@ -609,6 +609,13 @@ Jujutsu's nested `.jj` behavior is additionally captured on version 0.46.0/macOS
 13 x86_64. Native CI recaptures the Linux profile and checks Jujutsu on Windows.
 These results cover workspace boundaries only, not VCS membership.
 
+The Git-compatible rule matrix now also checks escaped leading `#`/`!`, zero-directory `**/`
+matching, and `?` inside recursive path components, with a length-control path. Native Sapling and
+Jujutsu 0.47.1 results match on macOS arm64 and Debian 13 Linux aarch64/x86_64; Jujutsu 0.46.0
+matches on macOS arm64 and Debian 13 x86_64. Both Jujutsu releases are recaptured in CI where the
+pinned client is available. Walker and direct-decision tests replay these cases. The matrix remains
+a focused syntax sample rather than complete Git-ignore dialect coverage.
+
 The nested symlinked `.gitignore` probe now confirms a source-layout difference: Sapling `.sl` mode
 follows a symlink to an ignore file outside the workspace, while Sapling `.git` and Jujutsu skip
 that source. The portable Sapling policy follows this only in `.sl` mode. Committed macOS and Debian

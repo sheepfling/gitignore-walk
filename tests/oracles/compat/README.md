@@ -75,13 +75,14 @@ Jujutsu's own interpretation for these newer include types: it follows the confi
 executable, as the option specifies. Git's release notes record the feature addition in
 [v2.56.0](https://github.com/git/git/blob/v2.56.0/Documentation/RelNotes/2.56.0.adoc).
 
-A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
-ignored parent directory; a child negation can re-include a file when only the parent's contents
-are ignored; `/root-only.tmp` is anchored to the workspace root; and `**/deep.log` matches a nested
-path. All four Sapling/Jujutsu mode results match these candidates. The portable policy tests replay
-the same rules through both direct explanations and included/ignored walker selections. These cases
-match on macOS arm64 and Debian 13 Linux aarch64 and x86_64. This remains a small compatibility
-subset, not broad Git-dialect certification.
+The native pattern matrix now checks 13 cases on each Sapling/Jujutsu mode: ignored-parent and
+contents-only negation, root anchoring, recursive `**`, escaped leading `#` and `!`, zero-directory
+`**/` matches, and `?` within a recursive component, including a nonmatching length control. All
+four Sapling/Jujutsu mode results match the candidates. The portable policy tests replay the same
+rules through direct explanations and included/ignored walker selections. Sapling/Jujutsu 0.47.1
+matches on macOS arm64 and Debian 13 Linux aarch64/x86_64; Jujutsu 0.46.0 also matches on macOS
+arm64 and Debian 13 x86_64. This remains a focused compatibility subset, not broad Git-dialect
+certification.
 
 A separate nested-source probe places `nested/.gitignore` as a symlink to an ignore file outside
 the workspace. Sapling `.sl` mode follows the symlink and ignores `nested/probe.symlink`; Sapling
@@ -144,6 +145,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`           | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`               | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.47.1  |
+| `jj-0.46.0-macos-arm64.json`                                               | macOS 26 arm64             | —            | 0.46.0  |
 | `jj-0.46.0-debian13-x86_64.json`                                           | Debian 13 x86_64 in Docker | —            | 0.46.0  |
 | `workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`  | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |

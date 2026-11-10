@@ -195,22 +195,42 @@
     "cache/keep.tmp": "re-included child\n",
     "root-only.tmp": "root-anchored match\n",
     "nested/root-only.tmp": "nested root-anchored control\n",
-    "nested/deep/deep.log": "recursive double-star match\n"
+    "nested/deep/deep.log": "recursive double-star match\n",
+    "#literal": "escaped leading hash is a filename pattern\n",
+    "!literal": "escaped leading bang is a filename pattern\n",
+    "zero.txt": "double-star slash matches zero directories\n",
+    "nested/zero.txt": "double-star slash matches nested directories\n",
+    "src/temp1.txt": "double-star component can be empty\n",
+    "src/nested/temp2.txt": "double-star component can match directories\n",
+    "src/nested/temp.txt": "question mark must match exactly one character\n"
   },
-  "pattern_rules": "blocked/\n!blocked/keep.txt\ncache/*\n!cache/keep.tmp\n/root-only.tmp\n**/deep.log\n",
+  "pattern_rules": "blocked/\n!blocked/keep.txt\ncache/*\n!cache/keep.tmp\n/root-only.tmp\n**/deep.log\n\\#literal\n\\!literal\n**/zero.txt\nsrc/**/temp?.txt\n",
   "pattern_query_files": [
     "blocked/keep.txt",
     "cache/drop.tmp",
     "cache/keep.tmp",
     "root-only.tmp",
     "nested/root-only.tmp",
-    "nested/deep/deep.log"
+    "nested/deep/deep.log",
+    "#literal",
+    "!literal",
+    "zero.txt",
+    "nested/zero.txt",
+    "src/temp1.txt",
+    "src/nested/temp2.txt",
+    "src/nested/temp.txt"
   ],
   "expected_pattern_ignored": [
+    "!literal",
+    "#literal",
     "blocked/keep.txt",
     "cache/drop.tmp",
     "nested/deep/deep.log",
-    "root-only.tmp"
+    "nested/zero.txt",
+    "root-only.tmp",
+    "src/nested/temp2.txt",
+    "src/temp1.txt",
+    "zero.txt"
   ],
   "workspace_boundary": {
     "root_ignore": "outer.tmp\n",

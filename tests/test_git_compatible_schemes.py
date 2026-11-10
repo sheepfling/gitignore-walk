@@ -33,6 +33,7 @@ _SOURCE_EXPECTATIONS = {
 
 _PATTERN_RULES = (
     "blocked/\n!blocked/keep.txt\ncache/*\n!cache/keep.tmp\n/root-only.tmp\n**/deep.log\n"
+    "\\#literal\n\\!literal\n**/zero.txt\nsrc/**/temp?.txt\n"
 )
 _PATTERN_FILES = (
     "blocked/keep.txt",
@@ -41,17 +42,36 @@ _PATTERN_FILES = (
     "root-only.tmp",
     "nested/root-only.tmp",
     "nested/deep/deep.log",
+    "#literal",
+    "!literal",
+    "zero.txt",
+    "nested/zero.txt",
+    "src/temp1.txt",
+    "src/nested/temp2.txt",
+    "src/nested/temp.txt",
 )
 _PATTERN_IGNORED = {
     "blocked/keep.txt",
     "cache/drop.tmp",
     "root-only.tmp",
     "nested/deep/deep.log",
+    "#literal",
+    "!literal",
+    "zero.txt",
+    "nested/zero.txt",
+    "src/temp1.txt",
+    "src/nested/temp2.txt",
 }
 _COMPAT_ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
 _COMPAT_FIXTURE = json.loads((_COMPAT_ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))
-_JJ_046_CAPTURE = json.loads(
-    (_COMPAT_ORACLE_ROOT / "results" / "jj-0.46.0-debian13-x86_64.json").read_text(encoding="utf-8")
+_JJ_046_FULL_CAPTURE_PROFILES = (
+    "jj-0.46.0-macos-arm64.json",
+    "jj-0.46.0-debian13-x86_64.json",
+)
+_CURRENT_PATTERN_CAPTURE_PROFILES = (
+    "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
+    "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
+    "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
 _WORKSPACE_BOUNDARY_CASES = _COMPAT_FIXTURE["workspace_boundary"]
 _WORKSPACE_BOUNDARY_PROFILES = (
@@ -1028,13 +1048,32 @@ def test_compatible_schemes_match_captured_negation_and_path_patterns(
     assert walked_included == set(_PATTERN_FILES) - _PATTERN_IGNORED
 
 
-def test_jujutsu_046_debian_capture_covers_the_supported_policy_subset() -> None:
-    """Keep the 0.46.0 symlink-boundary profile checked against captured policy fixtures."""
-    assert _JJ_046_CAPTURE["status"] == "captured"
-    assert _JJ_046_CAPTURE["clients"]["jujutsu"].startswith("jj 0.46.0-")
-    assert _JJ_046_CAPTURE["platform"].startswith("Linux-")
+@pytest.mark.parametrize(
+    "profile", _CURRENT_PATTERN_CAPTURE_PROFILES, ids=lambda name: name.removesuffix(".json")
+)
+def test_current_sapling_jujutsu_captures_match_the_expanded_pattern_matrix(profile: str) -> None:
+    """Keep current native profiles aligned with escaped and recursive Git-ignore patterns."""
+    capture = json.loads((_COMPAT_ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
+    assert capture["status"] == "captured"
+    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+    assert len(capture["cases"]) == 4
+    for case in capture["cases"]:
+        pattern = case["pattern_discovery"]
+        assert pattern["candidate_matches"]
+        assert set(pattern["ignored"]) == _PATTERN_IGNORED
 
-    cases = {case["id"]: case for case in _JJ_046_CAPTURE["cases"]}
+
+@pytest.mark.parametrize(
+    "profile", _JJ_046_FULL_CAPTURE_PROFILES, ids=lambda name: name.removesuffix(".json")
+)
+def test_jujutsu_046_captures_cover_the_supported_policy_subset(profile: str) -> None:
+    """Keep the Jujutsu 0.46.0 pattern and source subset checked on two native profiles."""
+    capture = json.loads((_COMPAT_ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
+    assert capture["status"] == "captured"
+    assert capture["clients"]["jujutsu"].startswith("jj 0.46.0-")
+
+    cases = {case["id"]: case for case in capture["cases"]}
     assert set(cases) == {"jj.colocated", "jj.noncolocated"}
     for case_id, source_expectation in (
         ("jj.colocated", _SOURCE_EXPECTATIONS["jj-colocated"]),
