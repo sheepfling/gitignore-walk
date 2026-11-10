@@ -771,7 +771,10 @@ jobs:
           ]
           assert "Working copy  (@) : <working-copy>" in linked["cases"][1]["status_stdout"]
           assert all(case["candidate_matches"] for case in linked["cases"])
-          print(result)
+          print("Validated Jujutsu Windows profiles:", [
+              case["clients"]["jujutsu"]
+              for case in (capture, middle, older)
+          ])
           '@ | python -
       - name: Check Windows Registry and INI precedence
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
