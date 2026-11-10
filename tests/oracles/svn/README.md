@@ -79,11 +79,13 @@ then a native update. The test also checks that ignored versioned files remain i
 `included` selection, while the ignored unversioned file appears in its `ignored` selection. The
 obstructed directory case confirms that the walker traverses the directory and reports its ignored
 child. This exercises the tested status values without claiming that every Subversion working-copy
-status is covered. A separate excluded-depth check confirms that a child omitted from verbose native
-status remains membership-unknown, that discovery remains incomplete, and that the walker does not
-descend into the excluded subtree. The directory-external membership check confirms the containing
-working copy reports the external root as `external`; the policy treats that root as versioned and
-reads descendant status from the external working copy itself.
+status is covered. A queried but nonexistent path omitted from native status remains
+membership-unknown even when its name matches the ignore property. A separate excluded-depth check
+confirms that a child omitted from verbose native status remains membership-unknown, that discovery
+remains incomplete, and that the walker does not descend into the excluded subtree. The
+directory-external membership check confirms the containing working copy reports the external root
+as `external`; the policy treats that root as versioned and reads descendant status from the
+external working copy itself.
 Membership-aware walks in both traversal orders classify files inside listed directory externals
 from each external working copy's own native status, matching the native ignore selection.
 This live transition test passed locally with Subversion 1.15.0 and runs in the hosted Ubuntu

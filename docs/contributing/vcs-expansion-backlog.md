@@ -552,6 +552,8 @@ selections inside directory externals in both traversal orders, using each exter
 own status. A live interrupted-checkout probe records native `incomplete` status on the checkout
 root; membership discovery keeps that root versioned, and the walker selection matches the remaining
 native versioned file entries. Paths omitted by sparse status remain unknown by design.
+An absent queried candidate omitted from verbose status also remains membership-unknown even when
+an ignore property matches its name.
 Further work is broader native status traversal and configuration-precedence profiles; do not
 classify omitted paths as unversioned without new native evidence.
 

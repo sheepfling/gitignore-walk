@@ -736,6 +736,11 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
     for path in expected_items.keys() - {"loose.tmp"}:
         assert decisions[path].membership == "versioned"
     assert decisions["loose.tmp"].membership == "unversioned"
+    assert "absent.tmp" not in native_items
+    absent = policy.explain("absent.tmp")
+    assert absent.ignored
+    assert absent.membership is None
+    assert absent.discovery_complete
 
     walker = IgnoreWalker(root, policy=policy)
     ignored_paths = {
