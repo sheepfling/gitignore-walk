@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "clients": {
+    "git": "git version 2.54.0 (Apple Git-157)",
+    "jujutsu": "jj 0.47.1"
+  },
+  "workspace": "Git linked worktree",
+  "common_exclude_scope": "main Git directory/info/exclude",
+  "worktree_exclude_scope": "linked worktree Git directory/info/exclude",
+  "cases": [
+    {
+      "id": "git",
+      "native_status": "captured",
+      "query_files": [
+        "probe.commonignore",
+        "probe.visible",
+        "probe.worktreeignore"
+      ],
+      "ignored": [
+        "probe.commonignore"
+      ],
+      "expected_ignored": [
+        "probe.commonignore"
+      ],
+      "candidate_matches": true,
+      "query_exit_code": 0,
+      "query_stdout": "/private<temporary>/main/.git/info/exclude:1:*.commonignore\tprobe.commonignore\n",
+      "query_stderr": ""
+    },
+    {
+      "id": "jj.colocated",
+      "native_status": "captured",
+      "query_files": [
+        "probe.commonignore",
+        "probe.visible",
+        "probe.worktreeignore"
+      ],
+      "ignored": [
+        "probe.worktreeignore"
+      ],
+      "expected_ignored": [
+        "probe.worktreeignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA probe.commonignore\nA probe.visible\nWorking copy  (@) : mpylmrqv 21b6ecb0 (no description set)\nParent commit (@-): vsosmpks 49d9710a linked master | seed\n",
+      "status_stderr": "",
+      "file_list_stdout": "probe.commonignore\nprobe.visible\ntracked.txt\n"
+    }
+  ]
+}

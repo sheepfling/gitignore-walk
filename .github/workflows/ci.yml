@@ -431,6 +431,9 @@ jobs:
           $output = Join-Path $nativeDir 'jj-0.47.1-windows-x64.json'
           python tests/oracles/compat/run.py --jj $jj --jj-only --output $output
           if ($LASTEXITCODE -ne 0) { throw "Jujutsu capture failed: $LASTEXITCODE" }
+          $linkedOutput = Join-Path $nativeDir 'linked-worktree-jj-0.47.1-windows-x64.json'
+          python tests/oracles/compat/run.py --jj $jj --jj-only --linked-worktree-only --output $linkedOutput
+          if ($LASTEXITCODE -ne 0) { throw "Jujutsu linked-worktree capture failed: $LASTEXITCODE" }
           @'
           import json
           import os
@@ -439,8 +442,10 @@ jobs:
           from scripts.ci_native import inspect_capture
 
           path = Path(os.environ["RUNNER_TEMP"]) / "native/jj-0.47.1-windows-x64.json"
+          linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-jj-0.47.1-windows-x64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          linked = json.loads(linked_path.read_text(encoding="utf-8"))
           assert result["passed"], result
           assert len(capture["cases"]) == 2
           assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
@@ -464,6 +469,15 @@ jobs:
               or case["symlinked_gitignore"]["native_status"] == "skipped"
               for case in capture["cases"]
           )
+          assert linked["status"] == "captured"
+          assert linked["workspace"] == "Git linked worktree"
+          assert set(linked["clients"]) == {"git", "jujutsu"}
+          assert [case["id"] for case in linked["cases"]] == ["git", "jj.colocated"]
+          assert [case["ignored"] for case in linked["cases"]] == [
+              ["probe.commonignore"],
+              ["probe.worktreeignore"],
+          ]
+          assert all(case["candidate_matches"] for case in linked["cases"])
           print(result)
           '@ | python -
       - name: Check Windows Registry and INI precedence

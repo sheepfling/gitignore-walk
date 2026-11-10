@@ -613,6 +613,8 @@ retained on macOS arm64 and Debian 13 x86_64, with CI recapturing the Linux rele
 `info/exclude` from the shared Git directory, while colocated Jujutsu reads the linked worktree's
 own Git directory. The policy metadata retains both paths and each scheme selects its captured
 source. This is covered on macOS arm64 and Debian 13 Linux aarch64/x86_64.
+The Jujutsu-only linked-worktree probe is also captured on macOS arm64; the Windows job now
+recaptures it against pinned Jujutsu 0.47.1 and checks the Git/Jujutsu distinction.
 
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native

@@ -21,6 +21,7 @@ LINKED_WORKTREE_CAPTURE_FILES = (
     "linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
+LINKED_WORKTREE_JJ_CAPTURE_FILES = ("linked-worktree-jj-0.47.1-macos-arm64.json",)
 ENVIRONMENT_GLOBAL_CAPTURE_FILES = (
     CAPTURE_FILES[0],
     CAPTURE_FILES[2],
@@ -44,6 +45,10 @@ JJ_SYMLINK_VERSION_CAPTURES = {
 LINKED_WORKTREE_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in LINKED_WORKTREE_CAPTURE_FILES
+}
+LINKED_WORKTREE_JJ_CAPTURES = {
+    filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
+    for filename in LINKED_WORKTREE_JJ_CAPTURE_FILES
 }
 OBSERVATIONS = {
     profile: {case["id"]: case for case in capture["cases"]}
@@ -76,6 +81,21 @@ def test_linked_worktree_capture_reconciles_scheme_specific_exclude_sources(
     assert {name: case["ignored"] for name, case in cases.items()} == {
         "git": ["probe.commonignore"],
         "sapling.git-mode": ["probe.commonignore"],
+        "jj.colocated": ["probe.worktreeignore"],
+    }
+    assert all(case["candidate_matches"] for case in cases.values())
+
+
+@pytest.mark.parametrize("profile", LINKED_WORKTREE_JJ_CAPTURE_FILES)
+def test_linked_worktree_jujutsu_only_capture_reconciles_sources(profile: str) -> None:
+    capture = LINKED_WORKTREE_JJ_CAPTURES[profile]
+    cases = {case["id"]: case for case in capture["cases"]}
+
+    assert capture["status"] == "captured"
+    assert capture["workspace"] == "Git linked worktree"
+    assert set(capture["clients"]) == {"git", "jujutsu"}
+    assert {name: case["ignored"] for name, case in cases.items()} == {
+        "git": ["probe.commonignore"],
         "jj.colocated": ["probe.worktreeignore"],
     }
     assert all(case["candidate_matches"] for case in cases.values())

@@ -123,6 +123,8 @@ scheme-specific.
 | `linked-worktree-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`  | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
 | `linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json` | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `linked-worktree-jj-0.47.1-macos-arm64.json`                          | macOS 26 arm64             | —            | 0.47.1  |
+| `linked-worktree-jj-0.47.1-windows-x64.json`                          | Windows Server 2025 x64    | —            | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`                     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`                  | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json`                 | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
