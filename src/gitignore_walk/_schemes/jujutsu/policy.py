@@ -9,6 +9,7 @@ import os
 import subprocess
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import replace
+from itertools import tee
 from math import isfinite
 from pathlib import Path, PurePath
 from typing import Literal
@@ -19,6 +20,7 @@ from ..git.portable import (
     GitIgnorePolicy,
     _find_repository_metadata,
     _GitIgnoreMembershipWalkSession,
+    _lexical_target_path,
 )
 from .errors import JujutsuIgnoreError
 
@@ -122,13 +124,13 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         """Explain ignore rules and optionally annotate saved-tree membership."""
         decision = super().explain(target)
         membership = self._load_membership() if self.membership_aware else None
-        return self._with_membership(decision, membership)
+        return self._with_membership(decision, membership, target)
 
     def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return the inherited rule trace and optional saved-tree membership annotation."""
         trace = super().trace(target)
         membership = self._load_membership() if self.membership_aware else None
-        return replace(trace, decision=self._with_membership(trace.decision, membership))
+        return replace(trace, decision=self._with_membership(trace.decision, membership, target))
 
     def iter_explain(
         self,
@@ -140,25 +142,32 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
         membership = self._load_membership() if self.membership_aware else None
-        for decision in super().iter_explain(targets, batch_size=batch_size):
-            yield self._with_membership(decision, membership)
+        requested_targets, policy_targets = tee(targets)
+        for decision, requested in zip(
+            super().iter_explain(policy_targets, batch_size=batch_size),
+            requested_targets,
+            strict=True,
+        ):
+            yield self._with_membership(decision, membership, requested)
 
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a walk session with stable source and optional saved-tree snapshots."""
         membership = self._load_membership() if self.membership_aware else None
         return _GitIgnoreMembershipWalkSession(self, membership, self._with_membership)
 
-    @staticmethod
     def _with_membership(
+        self,
         decision: IgnoreDecision,
         versioned: set[Path] | None,
+        requested: str | os.PathLike[str],
     ) -> IgnoreDecision:
         """Annotate saved-tree files and present unlisted files with known membership."""
         if versioned is None:
             return decision
-        if decision.path in versioned:
+        requested_path = _lexical_target_path(self.root, requested)
+        if requested_path in versioned:
             membership: Literal["versioned", "unversioned"] | None = "versioned"
-        elif decision.path.is_file():
+        elif requested_path.is_file() or requested_path.is_symlink():
             membership = "unversioned"
         else:
             membership = None

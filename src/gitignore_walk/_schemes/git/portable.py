@@ -254,6 +254,17 @@ def _resolve_root(root: str | os.PathLike[str]) -> Path:
     return root_path
 
 
+# Used by Sapling and Jujutsu to retain native path identity during membership annotation.
+def _lexical_target_path(  # pyright: ignore[reportUnusedFunction]
+    root: Path, target: str | os.PathLike[str]
+) -> Path:
+    """Return a normalized absolute path without following symbolic links."""
+    target_path = Path(target).expanduser()
+    if not target_path.is_absolute():
+        target_path = root / target_path
+    return Path(os.path.abspath(target_path))
+
+
 def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
     """Find a worktree marker at ``start`` or an ancestor without invoking Git."""
 
@@ -391,15 +402,21 @@ class _GitIgnoreMembershipWalkSession(  # pyright: ignore[reportUnusedClass]
         self,
         policy: _GitIgnorePolicyBase,
         membership: _Membership | None,
-        annotate: Callable[[IgnoreDecision, _Membership | None], IgnoreDecision],
+        annotate: Callable[
+            [IgnoreDecision, _Membership | None, str | os.PathLike[str]], IgnoreDecision
+        ],
     ) -> None:
         super().__init__(policy)
         self._membership = membership
         self._annotate = annotate
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
-        decisions = super().explain_many(targets)
-        return [self._annotate(decision, self._membership) for decision in decisions]
+        requested = tuple(targets)
+        decisions = super().explain_many(requested)
+        return [
+            self._annotate(decision, self._membership, target)
+            for decision, target in zip(decisions, requested, strict=True)
+        ]
 
 
 def _ancestor_directories(*, root: Path, target: Path) -> tuple[Path, ...]:

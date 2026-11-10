@@ -9,6 +9,7 @@ import os
 import subprocess
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import replace
+from itertools import tee
 from math import isfinite
 from pathlib import Path, PurePath
 from typing import Literal
@@ -20,6 +21,7 @@ from ..git.portable import (
     _default_global_excludes_path,
     _find_repository_metadata,
     _GitIgnoreMembershipWalkSession,
+    _lexical_target_path,
 )
 from .errors import SaplingIgnoreError
 
@@ -122,13 +124,13 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         """Explain ignore rules and optionally annotate native Sapling membership."""
         decision = super().explain(target)
         membership = self._load_membership() if self.membership_aware else None
-        return self._with_membership(decision, membership)
+        return self._with_membership(decision, membership, target)
 
     def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return the inherited rule trace and optional native membership annotation."""
         trace = super().trace(target)
         membership = self._load_membership() if self.membership_aware else None
-        return replace(trace, decision=self._with_membership(trace.decision, membership))
+        return replace(trace, decision=self._with_membership(trace.decision, membership, target))
 
     def iter_explain(
         self,
@@ -140,23 +142,30 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
         membership = self._load_membership() if self.membership_aware else None
-        for decision in super().iter_explain(targets, batch_size=batch_size):
-            yield self._with_membership(decision, membership)
+        requested_targets, policy_targets = tee(targets)
+        for decision, requested in zip(
+            super().iter_explain(policy_targets, batch_size=batch_size),
+            requested_targets,
+            strict=True,
+        ):
+            yield self._with_membership(decision, membership, requested)
 
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a walk session with stable source and optional status snapshots."""
         membership = self._load_membership() if self.membership_aware else None
         return _GitIgnoreMembershipWalkSession(self, membership, self._with_membership)
 
-    @staticmethod
     def _with_membership(
+        self,
         decision: IgnoreDecision,
         membership: Mapping[Path, Literal["versioned", "unversioned"]] | None,
+        requested: str | os.PathLike[str],
     ) -> IgnoreDecision:
         """Return a decision annotated with known native membership, if available."""
         if membership is None:
             return decision
-        return replace(decision, membership=membership.get(decision.path))
+        path = _lexical_target_path(self.root, requested)
+        return replace(decision, membership=membership.get(path))
 
     def _load_membership(self) -> dict[Path, Literal["versioned", "unversioned"]]:
         """Capture Sapling status classes for one decision batch or walk."""

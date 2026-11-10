@@ -57,6 +57,14 @@ def test_sapling_membership_walker_matches_native_status(
         (root / name).write_text(f"{name}\n", encoding="utf-8")
     sl("add", ".gitignore", "tracked.tmp", "clean.txt", "missing.tmp", "removed.tmp")
     sl("commit", "-m", "membership fixture", "-u", "gitignore-walk test")
+    broken_link = root / "broken-link"
+    try:
+        broken_link.symlink_to("missing-target.txt")
+    except OSError:
+        broken_link_created = False
+    else:
+        broken_link_created = True
+        sl("add", "broken-link")
     (root / "tracked.tmp").write_text("modified\n", encoding="utf-8")
     (root / "missing.tmp").unlink()
     (root / "removed.tmp").unlink()
@@ -77,6 +85,8 @@ def test_sapling_membership_walker_matches_native_status(
     assert native_records["missing.tmp"] == "!"
     assert native_records["removed.tmp"] == "R"
     assert native_records["added.tmp"] == "A"
+    if broken_link_created:
+        assert native_records["broken-link"] == "A"
     assert native_records["ignored.tmp"] == "I"
     assert native_records["unknown.txt"] == "?"
 
@@ -89,6 +99,10 @@ def test_sapling_membership_walker_matches_native_status(
         ),
     )
     policy = selection.policy
+    if broken_link_created:
+        assert policy.explain("broken-link").membership == "versioned"
+        assert policy.trace("broken-link").decision.membership == "versioned"
+        assert next(policy.iter_explain(["broken-link"])).membership == "versioned"
     decisions = policy.explain_many(
         [
             "tracked.tmp",

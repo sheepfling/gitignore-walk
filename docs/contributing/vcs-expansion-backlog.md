@@ -635,8 +635,10 @@ opt-in membership query based on `jj --ignore-working-copy file list` rather tha
 which snapshots the working copy. The saved `@` tree identifies versioned paths; present files
 missing from that tree are unversioned, while missing unlisted paths and directories remain
 unknown. A live fixture checks policy selections in both walk orders and confirms the operation ID
-does not change during membership queries. Sapling/Jujutsu broader client and configuration
-profiles remain open.
+does not change during membership queries. Both scheme adapters retain the lexical query path for
+membership lookup, so tracked dangling symlinks remain versioned even though the policy resolves
+their targets for rule evaluation. Sapling/Jujutsu broader client and configuration profiles
+remain open.
 
 The nested symlinked `.gitignore` probe now confirms a source-layout difference: Sapling `.sl` mode
 follows a symlink to an ignore file outside the workspace, while Sapling `.git` and Jujutsu skip

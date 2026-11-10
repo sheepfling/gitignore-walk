@@ -54,6 +54,13 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
     (root / "clean.txt").write_text("clean\n", encoding="utf-8")
     jj("status")
     (root / ".gitignore").write_text("*.tmp\n", encoding="utf-8")
+    broken_link = root / "broken-link"
+    try:
+        broken_link.symlink_to("missing-target.txt")
+    except OSError:
+        broken_link_created = False
+    else:
+        broken_link_created = True
     jj("status")
     (root / "tracked.tmp").unlink()
     (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
@@ -71,7 +78,10 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
     native_versioned = {
         item.decode(errors="surrogateescape") for item in native_tree.split(b"\0") if item
     }
-    assert native_versioned == {".gitignore", "tracked.tmp", "clean.txt"}
+    expected_versioned = {".gitignore", "tracked.tmp", "clean.txt"}
+    if broken_link_created:
+        expected_versioned.add("broken-link")
+    assert native_versioned == expected_versioned
     operation_before = jj(
         "op", "log", "-n", "1", "-T", 'id ++ "\\n"', ignore_working_copy=True
     ).stdout
@@ -85,6 +95,10 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
         ),
     )
     policy = selection.policy
+    if broken_link_created:
+        assert policy.explain("broken-link").membership == "versioned"
+        assert policy.trace("broken-link").decision.membership == "versioned"
+        assert next(policy.iter_explain(["broken-link"])).membership == "versioned"
     decisions = policy.explain_many(
         ["tracked.tmp", "clean.txt", "ignored.tmp", "unknown.txt", "absent.txt"]
     )
