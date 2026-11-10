@@ -83,6 +83,10 @@ def _capture_sapling(
                 "native_status": "skipped",
                 "reason": pattern_skip_reason or "Excluded by --skip-sapling-pattern-probes.",
             }
+            extended_pattern_discovery = {
+                "native_status": "skipped",
+                "reason": pattern_skip_reason or "Excluded by --skip-sapling-pattern-probes.",
+            }
         else:
             _write_pattern_probes(root, fixture)
             pattern_status = _run(
@@ -97,6 +101,21 @@ def _capture_sapling(
                 "included": sorted(pattern_query_files - pattern_ignored),
                 "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
                 "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
+            }
+            _write_extended_pattern_probes(root, fixture)
+            extended_status = _run(
+                [executable, "status", "-iu", "--print0"], cwd=root, environment=environment
+            )
+            _require_success(extended_status, "sl status extended pattern probes")
+            _, extended_status_ignored = _sapling_status_paths(extended_status.stdout)
+            extended_query_files = set(fixture["extended_pattern_query_files"])
+            extended_ignored = _expand_ignored_paths(extended_status_ignored, extended_query_files)
+            extended_pattern_discovery = {
+                "query_files": sorted(extended_query_files),
+                "ignored": sorted(extended_ignored),
+                "included": sorted(extended_query_files - extended_ignored),
+                "status_stdout": extended_status.stdout.replace(str(root), "<workspace>"),
+                "status_stderr": extended_status.stderr.replace(str(root), "<workspace>"),
             }
         (
             configured_global,
@@ -135,6 +154,7 @@ def _capture_sapling(
                 "included": sorted(source_query_files - set(source_ignored)),
             },
             "pattern_discovery": pattern_discovery,
+            "extended_pattern_discovery": extended_pattern_discovery,
             "configured_global": configured_global,
             "configured_system": configured_system,
             "conditional_global": conditional_global,
@@ -205,6 +225,16 @@ def _capture_jj(
         _require_success(pattern_listed, "jj file list pattern probes")
         pattern_files = _jujutsu_paths(pattern_listed.stdout)
         pattern_ignored = pattern_query_files - pattern_files
+        _write_extended_pattern_probes(root, fixture)
+        extended_status = _run(
+            [executable, "status", "--no-pager"], cwd=root, environment=environment
+        )
+        _require_success(extended_status, "jj status extended pattern probes")
+        extended_listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+        _require_success(extended_listed, "jj file list extended pattern probes")
+        extended_files = _jujutsu_paths(extended_listed.stdout)
+        extended_query_files = set(fixture["extended_pattern_query_files"])
+        extended_ignored = extended_query_files - extended_files
         (
             configured_global,
             configured_system,
@@ -256,6 +286,14 @@ def _capture_jj(
                 "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
                 "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
                 "file_list_stdout": pattern_listed.stdout.replace(str(root), "<workspace>"),
+            },
+            "extended_pattern_discovery": {
+                "query_files": sorted(extended_query_files),
+                "ignored": sorted(extended_ignored),
+                "included": sorted(extended_query_files - extended_ignored),
+                "status_stdout": extended_status.stdout.replace(str(root), "<workspace>"),
+                "status_stderr": extended_status.stderr.replace(str(root), "<workspace>"),
+                "file_list_stdout": extended_listed.stdout.replace(str(root), "<workspace>"),
             },
             "configured_global": configured_global,
             "configured_system": configured_system,
@@ -1534,6 +1572,13 @@ def _write_pattern_probes(root: Path, fixture: Mapping[str, Any]) -> None:
     (root / ".gitignore").write_text(fixture["pattern_rules"], encoding="utf-8")
 
 
+def _write_extended_pattern_probes(root: Path, fixture: Mapping[str, Any]) -> None:
+    """Add a focused matrix for character classes, basename rules, and directory-only rules."""
+    _write_files(root, fixture["extended_pattern_probe_files"])
+    with (root / ".gitignore").open("a", encoding="utf-8", newline="") as stream:
+        stream.write(fixture["extended_pattern_rules"])
+
+
 def _jujutsu_paths(output: str) -> set[str]:
     """Normalize Jujutsu's platform-specific path separators for fixture comparison."""
     return {line.strip().replace("\\", "/") for line in output.splitlines() if line.strip()}
@@ -1831,6 +1876,11 @@ def capture(
         if result["pattern_discovery"].get("native_status") != "skipped":
             result["pattern_discovery"]["candidate_matches"] = (
                 result["pattern_discovery"]["ignored"] == fixture["expected_pattern_ignored"]
+            )
+        if result["extended_pattern_discovery"].get("native_status") != "skipped":
+            result["extended_pattern_discovery"]["candidate_matches"] = (
+                result["extended_pattern_discovery"]["ignored"]
+                == fixture["expected_extended_pattern_ignored"]
             )
     return {
         "schema_version": 1,
@@ -2147,6 +2197,10 @@ def main() -> int:
             case["pattern_discovery"].get("native_status") == "skipped"
             or case["pattern_discovery"]["candidate_matches"]
         )
+        and (
+            case["extended_pattern_discovery"].get("native_status") == "skipped"
+            or case["extended_pattern_discovery"]["candidate_matches"]
+        )
         and case["configured_global"]["candidate_matches"]
         and case["configured_system"]["candidate_matches"]
         and case["conditional_global"]["candidate_matches"]
@@ -2168,6 +2222,10 @@ def main() -> int:
     skipped_patterns = sum(
         case["pattern_discovery"].get("native_status") == "skipped" for case in result["cases"]
     )
+    skipped_extended_patterns = sum(
+        case["extended_pattern_discovery"].get("native_status") == "skipped"
+        for case in result["cases"]
+    )
     vcs_names = "Sapling/Jujutsu" if "sapling" in result["clients"] else "Jujutsu"
     print(f"Captured {len(result['cases'])} {vcs_names} cases")
     print(f"All included probe candidates matching: {matched}/{len(result['cases'])}")
@@ -2175,6 +2233,8 @@ def main() -> int:
         print(f"Symlink probes explicitly skipped: {skipped}/{len(result['cases'])}")
     if skipped_patterns:
         print(f"Sapling path-pattern groups explicitly skipped: {skipped_patterns}")
+    if skipped_extended_patterns:
+        print(f"Extended path-pattern groups explicitly skipped: {skipped_extended_patterns}")
     print(f"Capture: {arguments.output}")
     return 0 if matched + skipped == len(result["cases"]) else 1
 

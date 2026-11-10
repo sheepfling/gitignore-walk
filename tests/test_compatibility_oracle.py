@@ -348,6 +348,35 @@ def test_git_256_captures_reconcile_the_earlier_path_pattern_subset(
     assert pattern_discovery["included"] == EARLIER_PATTERN_INCLUDED
 
 
+def test_extended_compatibility_patterns_match_the_captured_macos_clients() -> None:
+    """Retain native evidence for class ranges, basename rules, and directory-only rules."""
+    capture_path = (
+        ORACLE_ROOT
+        / "results"
+        / "sapling-0.2.20261103-jj-0.47.1-extended-patterns-macos-arm64.json"
+    )
+    capture = json.loads(capture_path.read_text(encoding="utf-8"))
+    assert capture["status"] == "captured"
+    assert capture["platform"].startswith("macOS-26")
+    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+
+    expected_query_files = sorted(PATTERN_FIXTURE["extended_pattern_query_files"])
+    expected_ignored = sorted(PATTERN_FIXTURE["expected_extended_pattern_ignored"])
+    assert {case["id"] for case in capture["cases"]} == {
+        "sapling.git-mode",
+        "sapling.sl-mode",
+        "jj.colocated",
+        "jj.noncolocated",
+    }
+    for case in capture["cases"]:
+        pattern = case["extended_pattern_discovery"]
+        assert pattern["candidate_matches"] is True
+        assert pattern["query_files"] == expected_query_files
+        assert pattern["ignored"] == expected_ignored
+        assert pattern["included"] == sorted(set(expected_query_files) - set(expected_ignored))
+
+
 def test_jujutsu_windows_capture_reconciles_the_expanded_pattern_matrix() -> None:
     """Keep hosted Windows Jujutsu output aligned with the current pattern fixture."""
     capture = WINDOWS_JJ_CAPTURE

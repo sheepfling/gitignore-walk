@@ -115,6 +115,13 @@ matches on macOS arm64 and Debian 13 Linux aarch64/x86_64; Jujutsu 0.46.0 also m
 arm64 and Debian 13 x86_64. This remains a focused compatibility subset, not broad Git-dialect
 certification.
 
+An extended path probe adds a character-class range, a basename pattern matched below a nested
+directory, and a directory-only pattern paired with a same-named file control. Sapling 0.2.20261103
+and Jujutsu 0.47.1 match all five queried paths in both storage modes on macOS arm64; the native
+capture is retained as `results/sapling-0.2.20261103-jj-0.47.1-extended-patterns-macos-arm64.json`.
+The portable policy and walker tests replay these cases. Linux and Windows native recaptures are
+checked by the compatibility CI jobs; those profiles are not yet committed as historical captures.
+
 A separate nested-source probe places `nested/.gitignore` as a symlink to an ignore file outside
 the workspace. Sapling `.sl` mode follows the symlink and ignores `nested/probe.symlink`; Sapling
 `.git` mode and both Jujutsu modes skip the symlinked ignore source and leave the candidate visible.

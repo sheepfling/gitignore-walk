@@ -243,6 +243,26 @@
     "src/temp1.txt",
     "zero.txt"
   ],
+  "extended_pattern_probe_files": {
+    "classes/letter-b.txt": "character range match\n",
+    "classes/letter-q.txt": "character range control\n",
+    "directory-only/deep/probe.txt": "directory-only match\n",
+    "nested/directory-only": "same-named file control\n",
+    "nested/deeper/basename.tmp": "basename pattern at a nested path\n"
+  },
+  "extended_pattern_rules": "classes/letter-[a-c].txt\ndirectory-only/\nbasename.tmp\n",
+  "extended_pattern_query_files": [
+    "classes/letter-b.txt",
+    "classes/letter-q.txt",
+    "directory-only/deep/probe.txt",
+    "nested/directory-only",
+    "nested/deeper/basename.tmp"
+  ],
+  "expected_extended_pattern_ignored": [
+    "classes/letter-b.txt",
+    "directory-only/deep/probe.txt",
+    "nested/deeper/basename.tmp"
+  ],
   "workspace_boundary": {
     "root_ignore": "outer.tmp\n",
     "outer_probe": "outer.tmp",

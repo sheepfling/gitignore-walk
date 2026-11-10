@@ -1048,6 +1048,58 @@ def test_compatible_schemes_match_captured_negation_and_path_patterns(
     assert walked_included == set(_PATTERN_FILES) - _PATTERN_IGNORED
 
 
+@pytest.mark.parametrize("mode", sorted(_SOURCE_EXPECTATIONS))
+def test_compatible_schemes_match_extended_gitignore_path_patterns(
+    tmp_path: Path, mode: str
+) -> None:
+    """Check character ranges, basename matching, and directory-only rules in every mode."""
+    root = tmp_path / "workspace"
+    root.mkdir()
+    environment = {"HOME": str(tmp_path / "home"), "XDG_CONFIG_HOME": str(tmp_path / "config")}
+    if mode in {"sapling-git", "jj-colocated"}:
+        _git_init(root)
+    elif mode == "sapling-sl":
+        (root / ".sl").mkdir()
+    else:
+        (root / ".jj").mkdir()
+    if mode.startswith("jj-"):
+        (root / ".jj").mkdir(exist_ok=True)
+
+    fixture = _COMPAT_FIXTURE
+    query_files = fixture["extended_pattern_query_files"]
+    expected_ignored = set(fixture["expected_extended_pattern_ignored"])
+    (root / ".gitignore").write_text(fixture["extended_pattern_rules"], encoding="utf-8")
+    for relative_path in fixture["extended_pattern_probe_files"]:
+        path = root / relative_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.touch()
+
+    if mode.startswith("sapling-"):
+        policy = SaplingIgnorePolicy(root, environment=environment)
+    else:
+        policy = JujutsuIgnorePolicy(root, environment=environment)
+
+    decisions = {
+        decision.path.relative_to(root).as_posix(): decision
+        for decision in policy.explain_many(query_files)
+    }
+    assert {path for path, decision in decisions.items() if decision.ignored} == expected_ignored
+
+    walker = IgnoreWalker(root, policy=policy)
+    walked_ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored")
+        if path.relative_to(root).as_posix() in query_files
+    }
+    walked_included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included")
+        if path.relative_to(root).as_posix() in query_files
+    }
+    assert walked_ignored == expected_ignored
+    assert walked_included == set(query_files) - expected_ignored
+
+
 @pytest.mark.parametrize(
     "profile", _CURRENT_PATTERN_CAPTURE_PROFILES, ids=lambda name: name.removesuffix(".json")
 )
