@@ -612,6 +612,15 @@ compatibility oracle now records this injected-config result in every Sapling/Ju
 and its pinned-client CI captures fail if any mode diverges from the recorded behavior. Broader
 environment-variable and client-version profiles remain open.
 
+A focused Sapling release profile now compares 0.2.20261028 with 0.2.20261103 using identical
+Debian 13 ARM64 fixtures. It probes directory-only `target/` rules below missing and empty
+`.gitignore` files, plus a nested ignore file below an empty parent source. In the older capture,
+Sapling `.sl` mode leaves all four paths visible while `.git` mode ignores them; in the newer
+capture, both modes ignore all four. This is a bounded observed version/mode difference, not a claim
+of full release-to-release dialect conformance. The official [0.2.20261103 release notes](https://github.com/meta/sapling/releases/tag/0.2.20261103-145137%2B6282ac56)
+also describe a `.gitignore` handling fix for the preceding release. Native CI downloads both
+checksum-pinned ARM64 clients and recaptures the paired profile.
+
 The nested-workspace boundary probe now confirms that Sapling stops at nested workspaces using the
 same storage marker, but traverses into a child using the other marker. Jujutsu stops at nested
 `.jj` workspaces for all colocated/non-colocated parent and child combinations. The portable
