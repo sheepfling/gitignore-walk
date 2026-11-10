@@ -254,12 +254,15 @@ def _require_success(result: subprocess.CompletedProcess[str], operation: str) -
         raise RuntimeError(f"{operation} failed: {result.stderr.strip() or result.stdout.strip()}")
 
 
-def capture(sapling: str, jj: str) -> dict[str, Any]:
+def capture(sapling: str | None, jj: str) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
-    client_versions = {"sapling": _version(sapling), "jujutsu": _version(jj)}
-    captures = [_capture_sapling(sapling, mode, fixture) for mode in ("git", "sl")] + [
-        _capture_jj(jj, mode, fixture) for mode in ("colocated", "noncolocated")
-    ]
+    client_versions = {}
+    captures = []
+    if sapling is not None:
+        client_versions["sapling"] = _version(sapling)
+        captures.extend(_capture_sapling(sapling, mode, fixture) for mode in ("git", "sl"))
+    client_versions["jujutsu"] = _version(jj)
+    captures.extend(_capture_jj(jj, mode, fixture) for mode in ("colocated", "noncolocated"))
     expected_included = sorted(fixture["expected_included"])
     expected_ignored = sorted(fixture["expected_ignored"])
     for result in captures:
@@ -286,9 +289,14 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sl", default="sl", help="Sapling executable")
     parser.add_argument("--jj", default="jj", help="Jujutsu executable")
+    parser.add_argument(
+        "--jj-only",
+        action="store_true",
+        help="capture only Jujutsu when the Sapling client cannot run on this platform",
+    )
     parser.add_argument("--output", type=Path, required=True, help="capture JSON destination")
     arguments = parser.parse_args()
-    result = capture(arguments.sl, arguments.jj)
+    result = capture(None if arguments.jj_only else arguments.sl, arguments.jj)
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
     matched = sum(
@@ -297,7 +305,8 @@ def main() -> int:
         and case["pattern_discovery"]["candidate_matches"]
         for case in result["cases"]
     )
-    print(f"Captured {len(result['cases'])} Sapling/Jujutsu cases")
+    vcs_names = "Sapling/Jujutsu" if "sapling" in result["clients"] else "Jujutsu"
+    print(f"Captured {len(result['cases'])} {vcs_names} cases")
     print(f"Ignore, source, and path-pattern candidates matching: {matched}/{len(result['cases'])}")
     print(f"Capture: {arguments.output}")
     return 0 if matched == len(result["cases"]) else 1

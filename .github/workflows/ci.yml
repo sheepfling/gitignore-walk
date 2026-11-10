@@ -248,40 +248,28 @@ jobs:
         run: >-
           python -m scripts.ci native --backends hg svn brz
           --output-dir "$env:RUNNER_TEMP/native"
-      - name: Capture Sapling and Jujutsu on Windows
+      - name: Capture Jujutsu on Windows
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: pwsh
         run: |
           $clientDir = Join-Path $env:RUNNER_TEMP 'compat-clients'
           $nativeDir = Join-Path $env:RUNNER_TEMP 'native'
           New-Item -ItemType Directory -Force -Path $clientDir, $nativeDir | Out-Null
-          $saplingArchive = Join-Path $clientDir 'sapling-windows-x64.zip'
           $jjArchive = Join-Path $clientDir 'jj-windows-x64.zip'
-          Invoke-WebRequest `
-            -Uri 'https://github.com/meta/sapling/releases/download/0.2.20261103-145137%2B6282ac56/sapling-0.2.20261103-145137+6282ac56-windows-x64.zip' `
-            -OutFile $saplingArchive
           Invoke-WebRequest `
             -Uri 'https://github.com/jj-vcs/jj/releases/download/v0.47.1/jj-v0.47.1-x86_64-pc-windows-msvc.zip' `
             -OutFile $jjArchive
-          $saplingDigest = (Get-FileHash -Algorithm SHA256 $saplingArchive).Hash.ToLowerInvariant()
           $jjDigest = (Get-FileHash -Algorithm SHA256 $jjArchive).Hash.ToLowerInvariant()
-          if ($saplingDigest -ne '3f9283258ec8edbab3fe2d9e424318a7e496151578dbb620b97b11f3e04c06d6') {
-            throw "Sapling release checksum mismatch: $saplingDigest"
-          }
           if ($jjDigest -ne '72f9f80bc99d07a7f48d5f219cf5bab91f7e906e4b53f6c827948e646cd1152f') {
             throw "Jujutsu release checksum mismatch: $jjDigest"
           }
-          $saplingDir = Join-Path $clientDir 'sapling'
           $jjDir = Join-Path $clientDir 'jj'
-          Expand-Archive -Path $saplingArchive -DestinationPath $saplingDir -Force
           Expand-Archive -Path $jjArchive -DestinationPath $jjDir -Force
-          $sl = Join-Path $saplingDir 'Sapling\sl.exe'
           $jj = Join-Path $jjDir 'jj.exe'
-          if (-not (Test-Path $sl)) { throw "Sapling executable was not found: $sl" }
           if (-not (Test-Path $jj)) { throw "Jujutsu executable was not found: $jj" }
-          $output = Join-Path $nativeDir 'sapling-0.2.20261103-jj-0.47.1-windows-x64.json'
-          python tests/oracles/compat/run.py --sl $sl --jj $jj --output $output
-          if ($LASTEXITCODE -ne 0) { throw "Sapling/Jujutsu capture failed: $LASTEXITCODE" }
+          $output = Join-Path $nativeDir 'jj-0.47.1-windows-x64.json'
+          python tests/oracles/compat/run.py --jj $jj --jj-only --output $output
+          if ($LASTEXITCODE -ne 0) { throw "Jujutsu capture failed: $LASTEXITCODE" }
           @'
           import json
           import os
@@ -289,12 +277,13 @@ jobs:
 
           from scripts.ci_native import inspect_capture
 
-          path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-windows-x64.json"
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/jj-0.47.1-windows-x64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
           assert result["passed"], result
-          assert len(capture["cases"]) == 4
-          assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
+          assert len(capture["cases"]) == 2
+          assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
+          assert set(capture["clients"]) == {"jujutsu"}
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
           print(result)
           '@ | python -
