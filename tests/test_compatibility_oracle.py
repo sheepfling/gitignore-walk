@@ -12,10 +12,16 @@ ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
 CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json",
+    "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
-ENVIRONMENT_GLOBAL_CAPTURE_FILES = (CAPTURE_FILES[0],)
+ENVIRONMENT_GLOBAL_CAPTURE_FILES = (
+    CAPTURE_FILES[0],
+    CAPTURE_FILES[2],
+    CAPTURE_FILES[3],
+    CAPTURE_FILES[4],
+)
 CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES

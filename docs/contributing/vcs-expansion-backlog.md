@@ -596,9 +596,9 @@ documents this concrete divergence. Broader client/platform profiles remain open
 **Additional configuration evidence:** an isolated Sapling/Jujutsu workspace sets
 `GIT_CONFIG_GLOBAL` before initialization. Sapling `.git` mode and both Jujutsu modes use the
 alternate config file; Sapling `.sl` mode does not. `read_git_config=True` follows Git's
-environment-selected config. The macOS arm64 capture records this behavior, and native Linux and
-Windows capture jobs assert the same per-mode results. This adds one environment-selected config
-path; it does not close the wider client/version/profile coverage gap.
+environment-selected config. The behavior is captured on macOS arm64, Debian 13 Linux aarch64 and
+x86_64 with Git 2.47.3, Debian 13 x86_64 with Git 2.56.0, and Windows Jujutsu. This adds one
+environment-selected config path; it does not close the wider client/version/profile coverage gap.
 
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native

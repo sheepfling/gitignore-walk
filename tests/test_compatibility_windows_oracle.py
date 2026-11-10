@@ -45,6 +45,19 @@ def test_windows_jujutsu_capture_reconciles_source_discovery(case_id: str) -> No
 
 
 @pytest.mark.parametrize("case_id", ["jj.colocated", "jj.noncolocated"])
+def test_windows_jujutsu_capture_reconciles_environment_selected_global_config(
+    case_id: str,
+) -> None:
+    environment_global = OBSERVATIONS[case_id]["environment_global"]
+
+    assert environment_global["config_environment_variable"] == "GIT_CONFIG_GLOBAL"
+    assert environment_global["query_files"] == ["environment.global", "environment.visible"]
+    assert environment_global["ignored"] == ["environment.global"]
+    assert environment_global["included"] == ["environment.visible"]
+    assert environment_global["candidate_matches"] is True
+
+
+@pytest.mark.parametrize("case_id", ["jj.colocated", "jj.noncolocated"])
 def test_windows_jujutsu_capture_reconciles_path_patterns(case_id: str) -> None:
     pattern_discovery = OBSERVATIONS[case_id]["pattern_discovery"]
 

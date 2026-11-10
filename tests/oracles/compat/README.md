@@ -43,7 +43,9 @@ configured Git executable to resolve the effective setting with Git's scope prec
 includes. A separate isolated workspace sets `GIT_CONFIG_GLOBAL` before initialization and confirms
 that Sapling `.git` mode and both Jujutsu modes use that alternate file, while Sapling `.sl` does
 not. `read_git_config=True` follows the environment-selected file because it delegates config
-resolution to Git. A repository-local `core.excludesFile` overrides system and user values in
+resolution to Git. These observations are captured on macOS arm64 and Debian 13 Linux aarch64 and
+x86_64, including a separate Git 2.56 profile; Windows captures the same behavior for both Jujutsu
+modes. A repository-local `core.excludesFile` overrides system and user values in
 Sapling `.git` mode and both Jujutsu modes; Sapling `.sl` ignores Git config. A `gitdir` conditional
 include selects the user file in Sapling `.git` mode and colocated Jujutsu; non-colocated Jujutsu
 follows the configured system source for that condition. Both `onbranch:main` and a matching
@@ -88,10 +90,11 @@ The capture supports the initial read-only `SaplingIgnorePolicy` and `JujutsuIgn
 The policies evaluate the captured Git-compatible rule dialect locally and do not invoke either
 client. Git-native selection remains appropriate only when an actual `.git` repository is available.
 
-| Capture file                                                 | Environment                | Sapling      | Jujutsu |
-| ------------------------------------------------------------ | -------------------------- | ------------ | ------- |
-| `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`            | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
-| `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`         | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
-| `sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json`        | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
-| `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json` | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
-| `jj-0.47.1-windows-x64.json`                                 | Windows Server 2025 x64    | —            | 0.47.1  |
+| Capture file                                                     | Environment                | Sapling      | Jujutsu |
+| ---------------------------------------------------------------- | -------------------------- | ------------ | ------- |
+| `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`                | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`             | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json`            | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json` | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
+| `jj-0.47.1-windows-x64.json`                                     | Windows Server 2025 x64    | —            | 0.47.1  |

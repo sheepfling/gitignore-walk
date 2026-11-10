@@ -70,7 +70,23 @@
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache\\keep.tmp\nlocal.priority\nnested\\root-only.tmp\npriority.global\nvisible.txt\n",
         "candidate_matches": true
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "environment_global": {
+        "config_environment_variable": "GIT_CONFIG_GLOBAL",
+        "query_files": [
+          "environment.global",
+          "environment.visible"
+        ],
+        "ignored": [
+          "environment.global"
+        ],
+        "included": [
+          "environment.visible"
+        ],
+        "candidate_matches": true,
+        "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : wtvsmoqv e12e9b5a (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "file_list_stdout": "environment.visible\n"
+      }
     },
     {
       "id": "jj.noncolocated",
@@ -135,7 +151,23 @@
         "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache\\keep.tmp\ninfo.priority\nlocal.local\nlocal.priority\nnested\\root-only.tmp\nvisible.txt\n",
         "candidate_matches": true
       },
-      "candidate_matches": true
+      "candidate_matches": true,
+      "environment_global": {
+        "config_environment_variable": "GIT_CONFIG_GLOBAL",
+        "query_files": [
+          "environment.global",
+          "environment.visible"
+        ],
+        "ignored": [
+          "environment.global"
+        ],
+        "included": [
+          "environment.visible"
+        ],
+        "candidate_matches": true,
+        "status_stdout": "Working copy changes:\nA environment.visible\nWorking copy  (@) : rqtxylmk 5959f374 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "file_list_stdout": "environment.visible\n"
+      }
     }
   ]
 }
