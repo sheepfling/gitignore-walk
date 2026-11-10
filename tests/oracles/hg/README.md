@@ -38,6 +38,11 @@ Its six captured walk fixtures all match.
 Seven regex probes cover lookahead, lookbehind, word boundaries, and backreferences. Captures on
 macOS arm64 and Debian Linux aarch64 and x86_64 agree with the byte-regex evaluator; the live-client
 differential test also exercises these cases.
+Three additional Mercurial 7.2.4/macOS probes cover the `a`, `L`, and `x` inline regex flags. The
+native observations match the evaluator: ASCII and locale byte classes reject a UTF-8 non-ASCII
+letter under `LC_ALL=C`, while verbose mode accepts whitespace and a trailing regex comment. These
+cases are also included in the live-client differential test; equivalent captured results on other
+Mercurial profiles remain open.
 An unreadable
 included file is skipped by native Mercurial with a warning; the
 policy reports `discovery_complete=False` with a source-unavailable diagnostic. Config discovery

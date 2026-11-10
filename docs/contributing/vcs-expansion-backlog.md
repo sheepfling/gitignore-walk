@@ -547,7 +547,10 @@ Mercurial references: [ignore-file syntax](https://www.mercurial-scm.org/help/to
 
 For Mercurial, Windows case-sensitive glob behavior is now captured. Regex extension probes cover
 unanchored search, start anchoring, inline flags, newline matching, lookahead/lookbehind, word
-boundaries, and backreferences. Additional regex and source-precedence profiles remain open. A
+boundaries, and backreferences. Three more probes now capture ASCII (`a`), locale (`L`), and verbose
+(`x`) inline flags against Mercurial 7.2.4 on macOS arm64; all three match the evaluator, and the
+live-client differential test exercises them on other client-enabled profiles. Captured regex and
+source-precedence results for additional profiles remain open. A
 self-referential include-source symlink loop is now
 captured on macOS arm64 and Windows x86_64: Mercurial warns and skips the source, and the policy
 reports incomplete discovery. The warning differs by platform (`Too many levels of symbolic links`

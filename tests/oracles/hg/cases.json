@@ -680,6 +680,51 @@
       "release_gate": "Retain the captured native comparison in future Mercurial profile updates."
     },
     {
+      "id": "hg.regex-ascii-inline-flag",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "(?a)^\\w+$\n"
+        }
+      },
+      "query": "é",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain native byte-regex behavior for the ASCII inline flag."
+    },
+    {
+      "id": "hg.regex-locale-inline-flag",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "(?L)^\\w+$\n"
+        }
+      },
+      "query": "é",
+      "expected_candidate": false,
+      "evidence_status": "native-observed",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain native byte-regex behavior for the locale inline flag."
+    },
+    {
+      "id": "hg.regex-verbose-inline-flag",
+      "profile": "hg",
+      "dimension": "regex-extensions",
+      "setup": {
+        "files": {
+          ".hgignore": "(?x)^ f o o $ # trailing regex comment\n"
+        }
+      },
+      "query": "foo",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "source_ids": ["HG-IGNORE"],
+      "release_gate": "Retain native behavior for verbose inline regex syntax."
+    },
+    {
       "id": "hg.regex-positive-lookahead",
       "profile": "hg",
       "dimension": "regex-extensions",
