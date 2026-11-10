@@ -407,10 +407,13 @@ user need justifies it.
 
 **Priority:** P0 · **Depends on:** VCS-00
 
-**Status:** Scheme-specific disposable-repository runners capture Mercurial matching and walking,
-Subversion status, and Fossil extras on native profiles. Thin `scripts.ci oracle-*` commands run
-locally and in dedicated hosted jobs with retained artifacts. A cross-scheme harness contract remains
-open; keep dialect setup and observation schemas scheme-specific until repeated needs are demonstrated.
+**Status:** Scheme-specific disposable-repository runners capture the individual VCS behaviors.
+`scripts.ci native` coordinates the six default native backends and the opt-in `compat` backend for
+Sapling/Jujutsu, validates closed candidate results, and writes a fresh platform/client summary with
+explicit skips. Hosted workflows retain pinned, scheme-specific profiles and artifacts. Keep fixture
+setup and observation schemas scheme-specific; the remaining harness work is to include specialized
+captures such as Subversion config and version-pinned compatibility profiles in the same selection
+and summary contract where their runtime requirements permit it.
 
 Import and adapt the research handoff's runner/case structure without treating it as library tests.
 Create disposable repository/workspace fixtures and isolated client configuration. Capture native
@@ -421,9 +424,9 @@ deterministic where live clients are unavailable.
 
 **Done when:** one harness invocation runs selected probes, records captured/failed/skipped status
 and client profile, and cannot read or mutate the developer's real VCS configuration or repository.
-Captures must preserve enough raw data to audit a normalization step. The current GitHub job only
-captures Mercurial observations; client errors and candidate differences remain review data until a
-versioned behavioral gate is defined.
+Captures must preserve enough raw data to audit a normalization step. The shared local gate now
+fails on client errors and closed candidate mismatches; platform/version-specific hosted captures
+remain separate where they need dedicated setup.
 
 ### VCS-03 — Specify source discovery and boundaries
 

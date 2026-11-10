@@ -37,6 +37,15 @@ def test_git_is_required_for_pre_push(monkeypatch: pytest.MonkeyPatch) -> None:
         ci_native.require_tools(["hg"], include_git=True)
 
 
+def test_compat_backend_requires_git_sapling_and_jujutsu(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    missing = {"sl", "jj"}
+    monkeypatch.setattr(ci_native.shutil, "which", lambda tool: None if tool in missing else tool)
+    with pytest.raises(RuntimeError, match="jj, sl"):
+        ci_native.require_tools(["compat"])
+
+
 @pytest.mark.parametrize("status", ["skipped", "failed", "unknown", None])
 def test_uncaptured_primary_oracle_is_not_a_pass(tmp_path: Path, status: object) -> None:
     path = tmp_path / "capture.json"
@@ -108,6 +117,26 @@ def test_svn_captures_rule_cases_and_status_transitions(tmp_path: Path) -> None:
         tmp_path / "svn-oracle.json",
         tmp_path / "svn-oracle.transitions.json",
     ]
+
+
+def test_compat_backend_uses_existing_scheme_specific_capture(tmp_path: Path) -> None:
+    arguments, paths = ci_native.capture_arguments("compat", tmp_path)
+    assert arguments == ["oracle-compat", "--output", str(tmp_path / "compat-oracle.json")]
+    assert paths == [tmp_path / "compat-oracle.json"]
+
+
+def test_capture_summary_preserves_multi_client_profile(tmp_path: Path) -> None:
+    path = tmp_path / "capture.json"
+    write_capture(
+        path,
+        clients={"sapling": "Sapling 1", "jujutsu": "jj 2"},
+        platform="profile-platform",
+    )
+
+    result = ci_native.inspect_capture(path)
+
+    assert result["client"] == {"sapling": "Sapling 1", "jujutsu": "jj 2"}
+    assert result["platform"] == "profile-platform"
 
 
 def test_native_continues_after_failure_and_uses_fresh_captures(
@@ -182,6 +211,18 @@ def test_pre_push_runs_core_before_native(monkeypatch: pytest.MonkeyPatch, tmp_p
     monkeypatch.setattr(ci, "run_native", lambda *_args, **_kwargs: steps.append("native") or 0)
     assert ci.main(["pre-push", "--backends", "svn", "--output-dir", str(tmp_path)]) == 0
     assert steps == ["tools", "tests", "quality", "package", "native"]
+
+
+def test_native_cli_accepts_optional_compat_backend(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    selected: list[str] = []
+    monkeypatch.setattr(ci, "setup_env", lambda: None)
+    monkeypatch.setattr(ci, "require_tools", lambda backends, **_kwargs: selected.extend(backends))
+    monkeypatch.setattr(ci, "run_native", lambda *_args, **_kwargs: 0)
+
+    assert ci.main(["native", "--backends", "compat", "--output-dir", str(tmp_path)]) == 0
+    assert selected == ["compat"]
 
 
 def test_pre_push_stops_when_core_checks_fail(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -10,6 +10,15 @@ Run from the repository root:
 python -m scripts.ci oracle-compat --output /tmp/vcs-compat.json
 ```
 
+To run the same disposable capture through the shared native summary, select `compat` explicitly:
+
+```sh
+python -m scripts.ci native --backends compat --output-dir .local/ci
+```
+
+This requires Git, Sapling (`sl`), and Jujutsu (`jj`) on `PATH`; it records both clients and the
+platform in the shared `summary.json` while retaining this oracle's scheme-specific capture format.
+
 The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64, Debian 13
 Linux aarch64 and x86_64, and Windows Server 2025 x64. Full Jujutsu 0.46.0 compatibility is retained
 on Debian 13 x86_64. Full 0.45.1 captures are retained on macOS 26 arm64 and Debian 13 x86_64 for a

@@ -15,7 +15,7 @@ from collections.abc import Sequence
 from pathlib import Path
 from typing import Final
 
-from scripts.ci_native import BACKENDS, require_tools, run_native
+from scripts.ci_native import BACKENDS, KNOWN_BACKENDS, require_tools, run_native
 
 
 class EnvVar:
@@ -245,7 +245,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         ("pre-push", "run all checks plus selected native oracles before pushing"),
     ):
         native_command = commands.add_parser(name, help=help_text)
-        native_command.add_argument("--backends", nargs="+", choices=BACKENDS, default=BACKENDS)
+        native_command.add_argument(
+            "--backends", nargs="+", choices=KNOWN_BACKENDS, default=BACKENDS
+        )
         native_command.add_argument(
             "--include-trust",
             action="store_true",

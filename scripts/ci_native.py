@@ -13,6 +13,8 @@ from pathlib import Path
 from typing import Any
 
 BACKENDS = ("hg", "svn", "fossil", "brz", "darcs", "p4")
+OPTIONAL_BACKENDS = ("compat",)
+KNOWN_BACKENDS = (*BACKENDS, *OPTIONAL_BACKENDS)
 REQUIRED_TOOLS = {
     "hg": ("hg",),
     # svnserve only enables protocol-based external fixtures; the runner records those as explicit
@@ -22,6 +24,8 @@ REQUIRED_TOOLS = {
     "brz": ("brz",),
     "darcs": ("darcs",),
     "p4": ("p4", "p4d"),
+    # Sapling's Git-storage mode uses Git to initialize disposable workspaces.
+    "compat": ("git", "sl", "jj"),
 }
 
 
@@ -29,7 +33,7 @@ def require_tools(backends: Sequence[str], *, include_git: bool = False) -> None
     """Reject missing selected clients instead of turning a skipped oracle into success."""
     if not backends:
         raise ValueError("select at least one native backend")
-    unknown = set(backends) - set(BACKENDS)
+    unknown = set(backends) - set(KNOWN_BACKENDS)
     if unknown:
         raise ValueError(f"unknown native backends: {', '.join(sorted(unknown))}")
     required = {tool for backend in backends for tool in REQUIRED_TOOLS[backend]}
@@ -105,7 +109,8 @@ def inspect_capture(path: Path, *, allow_skip: bool = False) -> dict[str, Any]:
                 case.get("id") for case in cases if case.get("native_status") == "skipped"
             ],
             "mismatches": mismatches,
-            "client": data.get("client"),
+            "client": data.get("client") or data.get("clients"),
+            "platform": data.get("platform"),
         }
     except (OSError, ValueError) as error:
         return {"file": str(path), "status": "invalid", "passed": False, "reason": str(error)}
