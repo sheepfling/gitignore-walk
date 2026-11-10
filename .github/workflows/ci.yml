@@ -131,7 +131,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json'
           python - <<'PY'
           import json
           import os
@@ -142,6 +142,8 @@ jobs:
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
+          linked = json.loads(linked_path.read_text(encoding="utf-8"))
           assert result["passed"], result
           assert len(capture["cases"]) == 4
           assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
@@ -160,6 +162,12 @@ jobs:
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
+          assert [case["ignored"] for case in linked["cases"]] == [
+              ["probe.commonignore"],
+              ["probe.commonignore"],
+              ["probe.worktreeignore"],
+          ]
+          assert all(case["candidate_matches"] for case in linked["cases"])
           print(result)
           PY
       - name: Download pinned Sapling and Jujutsu x86_64 releases
@@ -191,7 +199,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/jj && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
           python - <<'PY'
           import json
           import os
@@ -202,6 +210,8 @@ jobs:
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json"
+          linked = json.loads(linked_path.read_text(encoding="utf-8"))
           assert result["passed"], result
           assert len(capture["cases"]) == 4
           assert "x86_64" in capture["platform"]
@@ -221,6 +231,13 @@ jobs:
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
+          assert "x86_64" in linked["platform"]
+          assert [case["ignored"] for case in linked["cases"]] == [
+              ["probe.commonignore"],
+              ["probe.commonignore"],
+              ["probe.worktreeignore"],
+          ]
+          assert all(case["candidate_matches"] for case in linked["cases"])
           print(result)
           PY
       - name: Verify Jujutsu symlink behavior change across releases

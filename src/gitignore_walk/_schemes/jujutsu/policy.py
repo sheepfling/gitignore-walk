@@ -71,7 +71,7 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         self._repository_root = workspace_root
         metadata = _find_repository_metadata(workspace_root)
         self._repository_excludes = (
-            metadata.common_dir / "info" / "exclude"
+            metadata.git_dir / "info" / "exclude"
             if metadata is not None and metadata.root == workspace_root
             else None
         )

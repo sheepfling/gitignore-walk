@@ -1492,6 +1492,164 @@ def capture_jj_symlink_profile(jj: str, *, expected_follow_symlink: bool) -> dic
     }
 
 
+def capture_linked_worktree_profile(sapling: str | None, jj: str) -> dict[str, Any]:
+    """Compare Git, Sapling, and colocated Jujutsu excludes in a linked Git worktree."""
+    fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
+    with tempfile.TemporaryDirectory(prefix="gitignore-walk-linked-worktree-") as temporary:
+        base = Path(temporary)
+        home = base / "home"
+        home.mkdir()
+        common_root = base / "main"
+        common_root.mkdir()
+        worktree = base / "linked"
+        environment = _symlink_probe_environment(home, sapling=sapling is not None)
+        jj_config = home / ".config" / "jj" / "config.toml"
+        jj_config.parent.mkdir(parents=True)
+        jj_config.write_text(
+            '[user]\nname = "Oracle"\nemail = "oracle@example.invalid"\n',
+            encoding="utf-8",
+        )
+        _require_success(
+            _run(["git", "init", "-q", str(common_root)], cwd=common_root, environment=environment),
+            "git init linked-worktree probe",
+        )
+        for key, value in (("user.name", "Oracle"), ("user.email", "oracle@example.invalid")):
+            _require_success(
+                _run(
+                    ["git", "-C", str(common_root), "config", key, value],
+                    cwd=common_root,
+                    environment=environment,
+                ),
+                f"set linked-worktree Git {key}",
+            )
+        (common_root / "tracked.txt").write_text("seed\n", encoding="utf-8")
+        _require_success(
+            _run(
+                ["git", "-C", str(common_root), "add", "tracked.txt"],
+                cwd=common_root,
+                environment=environment,
+            ),
+            "stage linked-worktree seed",
+        )
+        _require_success(
+            _run(
+                ["git", "-C", str(common_root), "commit", "-qm", "seed"],
+                cwd=common_root,
+                environment=environment,
+            ),
+            "commit linked-worktree seed",
+        )
+        _require_success(
+            _run(
+                ["git", "-C", str(common_root), "worktree", "add", "-qb", "linked", str(worktree)],
+                cwd=common_root,
+                environment=environment,
+            ),
+            "create linked Git worktree",
+        )
+        git_marker = worktree / ".git"
+        marker_line = git_marker.read_text(encoding="utf-8").splitlines()[0]
+        prefix = "gitdir: "
+        if not marker_line.startswith(prefix):
+            raise RuntimeError(f"unexpected linked-worktree .git marker: {marker_line!r}")
+        worktree_git_dir = Path(marker_line[len(prefix) :])
+        if not worktree_git_dir.is_absolute():
+            worktree_git_dir = worktree / worktree_git_dir
+        worktree_git_dir = worktree_git_dir.resolve()
+        common_dir = common_root / ".git"
+        common_exclude = common_dir / "info" / "exclude"
+        worktree_exclude = worktree_git_dir / "info" / "exclude"
+        common_exclude.parent.mkdir(parents=True, exist_ok=True)
+        worktree_exclude.parent.mkdir(parents=True, exist_ok=True)
+        common_exclude.write_text(fixture["linked_worktree_common_exclude"], encoding="utf-8")
+        worktree_exclude.write_text(fixture["linked_worktree_specific_exclude"], encoding="utf-8")
+        _require_success(
+            _run([jj, "git", "init", "--colocate"], cwd=worktree, environment=environment),
+            "jj init linked Git worktree",
+        )
+        _write_files(worktree, fixture["linked_worktree_probe_files"])
+        query_files = sorted(fixture["linked_worktree_probe_files"])
+
+        git_result = _run(
+            ["git", "check-ignore", "--no-index", "-v", *query_files],
+            cwd=worktree,
+            environment=environment,
+        )
+        git_ignored = sorted(
+            line.rsplit("\t", 1)[1] for line in git_result.stdout.splitlines() if "\t" in line
+        )
+        results = [
+            {
+                "id": "git",
+                "native_status": "captured",
+                "query_files": query_files,
+                "ignored": git_ignored,
+                "expected_ignored": fixture["expected_linked_worktree_ignored"]["git"],
+                "candidate_matches": git_ignored
+                == fixture["expected_linked_worktree_ignored"]["git"],
+                "query_exit_code": git_result.returncode,
+                "query_stdout": git_result.stdout.replace(str(base), "<temporary>"),
+                "query_stderr": git_result.stderr.replace(str(base), "<temporary>"),
+            }
+        ]
+        if sapling is not None:
+            status = _run(
+                [sapling, "status", "-iu", "--print0"], cwd=worktree, environment=environment
+            )
+            _require_success(status, "sl status linked Git worktree")
+            _, ignored = _sapling_status_paths(status.stdout)
+            sapling_ignored = sorted(ignored & set(query_files))
+            expected = fixture["expected_linked_worktree_ignored"]["sapling.git-mode"]
+            results.append(
+                {
+                    "id": "sapling.git-mode",
+                    "native_status": "captured",
+                    "query_files": query_files,
+                    "ignored": sapling_ignored,
+                    "expected_ignored": expected,
+                    "candidate_matches": sapling_ignored == expected,
+                    "status_exit_code": status.returncode,
+                    "status_stdout": status.stdout.replace(str(worktree), "<worktree>"),
+                    "status_stderr": status.stderr.replace(str(worktree), "<worktree>"),
+                }
+            )
+        status = _run([jj, "status", "--no-pager"], cwd=worktree, environment=environment)
+        _require_success(status, "jj status linked Git worktree")
+        listed = _run([jj, "file", "list"], cwd=worktree, environment=environment)
+        _require_success(listed, "jj file list linked Git worktree")
+        jj_files = set(_jujutsu_paths(listed.stdout))
+        jj_ignored = sorted(set(query_files) - jj_files)
+        expected = fixture["expected_linked_worktree_ignored"]["jj.colocated"]
+        results.append(
+            {
+                "id": "jj.colocated",
+                "native_status": "captured",
+                "query_files": query_files,
+                "ignored": jj_ignored,
+                "expected_ignored": expected,
+                "candidate_matches": jj_ignored == expected,
+                "status_exit_code": status.returncode,
+                "status_stdout": status.stdout.replace(str(worktree), "<worktree>"),
+                "status_stderr": status.stderr.replace(str(worktree), "<worktree>"),
+                "file_list_stdout": listed.stdout.replace(str(worktree), "<worktree>"),
+            }
+        )
+        return {
+            "schema_version": 1,
+            "status": "captured",
+            "platform": platform.platform(),
+            "clients": {
+                "git": _version("git"),
+                **({"sapling": _version(sapling)} if sapling is not None else {}),
+                "jujutsu": _version(jj),
+            },
+            "workspace": "Git linked worktree",
+            "common_exclude_scope": "main Git directory/info/exclude",
+            "worktree_exclude_scope": "linked worktree Git directory/info/exclude",
+            "cases": results,
+        }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sl", default="sl", help="Sapling executable")
@@ -1507,6 +1665,11 @@ def main() -> int:
         help="capture only Jujutsu's nested .gitignore symlink behavior",
     )
     parser.add_argument(
+        "--linked-worktree-only",
+        action="store_true",
+        help="capture Git, Sapling, and colocated Jujutsu linked-worktree excludes",
+    )
+    parser.add_argument(
         "--expect-jj-follows-symlink",
         action="store_true",
         help="expect Jujutsu to follow the nested .gitignore symlink (pre-0.46.0 profile)",
@@ -1515,10 +1678,17 @@ def main() -> int:
     arguments = parser.parse_args()
     if arguments.expect_jj_follows_symlink and not arguments.symlink_only:
         parser.error("--expect-jj-follows-symlink requires --symlink-only")
+    if arguments.linked_worktree_only and arguments.symlink_only:
+        parser.error("--linked-worktree-only and --symlink-only cannot be combined")
     if arguments.symlink_only:
         result = capture_jj_symlink_profile(
             arguments.jj,
             expected_follow_symlink=arguments.expect_jj_follows_symlink,
+        )
+    elif arguments.linked_worktree_only:
+        result = capture_linked_worktree_profile(
+            None if arguments.jj_only else arguments.sl,
+            arguments.jj,
         )
     else:
         result = capture(None if arguments.jj_only else arguments.sl, arguments.jj)
@@ -1535,6 +1705,11 @@ def main() -> int:
             print(f"Symlink probes explicitly skipped: {skipped}/{len(result['cases'])}")
         print(f"Capture: {arguments.output}")
         return 0 if matched + skipped == len(result["cases"]) else 1
+    if arguments.linked_worktree_only:
+        matched = sum(case["candidate_matches"] for case in result["cases"])
+        print(f"Captured linked-worktree source cases matching: {matched}/{len(result['cases'])}")
+        print(f"Capture: {arguments.output}")
+        return 0 if matched == len(result["cases"]) else 1
     matched = sum(
         case["candidate_matches"]
         and case["source_discovery"]["candidate_matches"]

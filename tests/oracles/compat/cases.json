@@ -90,6 +90,18 @@
     "jj.colocated": [],
     "jj.noncolocated": []
   },
+  "linked_worktree_probe_files": {
+    "probe.commonignore": "ignored by the shared Git directory exclusion only\n",
+    "probe.worktreeignore": "ignored by the linked worktree exclusion only\n",
+    "probe.visible": "visible control\n"
+  },
+  "linked_worktree_common_exclude": "*.commonignore\n",
+  "linked_worktree_specific_exclude": "*.worktreeignore\n",
+  "expected_linked_worktree_ignored": {
+    "git": ["probe.commonignore"],
+    "sapling.git-mode": ["probe.commonignore"],
+    "jj.colocated": ["probe.worktreeignore"]
+  },
   "conditional_global_probe_files": {
     "conditional.custom": "must be ignored only by a matching gitdir include\n",
     "conditional.global": "must be ignored by XDG when no include condition matches\n",

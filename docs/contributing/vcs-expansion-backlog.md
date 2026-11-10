@@ -609,6 +609,11 @@ skip it, which 0.47.1 also does. The Jujutsu config now exposes
 `follow_symlinked_gitignore=True` for the older behavior. Focused 0.45.1 and 0.46.0 captures are
 retained on macOS arm64 and Debian 13 x86_64, with CI recapturing the Linux release boundary.
 
+**Linked Git worktree source layout:** native captures now confirm Git and Sapling `.git` mode read
+`info/exclude` from the shared Git directory, while colocated Jujutsu reads the linked worktree's
+own Git directory. The policy metadata retains both paths and each scheme selects its captured
+source. This is covered on macOS arm64 and Debian 13 Linux aarch64/x86_64.
+
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders and a cross-profile nested-repository

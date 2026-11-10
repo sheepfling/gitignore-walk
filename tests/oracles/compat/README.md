@@ -111,15 +111,25 @@ The capture supports the initial read-only `SaplingIgnorePolicy` and `JujutsuIgn
 The policies evaluate the captured Git-compatible rule dialect locally and do not invoke either
 client. Git-native selection remains appropriate only when an actual `.git` repository is available.
 
-| Capture file                                                     | Environment                | Sapling      | Jujutsu |
-| ---------------------------------------------------------------- | -------------------------- | ------------ | ------- |
-| `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`                | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
-| `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`             | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
-| `sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json`            | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
-| `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json` | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
-| `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
-| `jj-0.47.1-windows-x64.json`                                     | Windows Server 2025 x64    | —            | 0.47.1  |
-| `jj-0.45.1-macos-arm64-symlink.json`                             | macOS 26 arm64             | —            | 0.45.1  |
-| `jj-0.45.1-debian13-x86_64-symlink.json`                         | Debian 13 x86_64 in Docker | —            | 0.45.1  |
-| `jj-0.46.0-macos-arm64-symlink.json`                             | macOS 26 arm64             | —            | 0.46.0  |
-| `jj-0.46.0-debian13-x86_64-symlink.json`                         | Debian 13 x86_64 in Docker | —            | 0.46.0  |
+Linked Git worktrees expose a source-location difference. Git and Sapling `.git` mode read
+`info/exclude` from the shared Git directory; colocated Jujutsu reads it from the linked worktree's
+Git directory. The dedicated probe creates both files with distinct patterns and checks all three
+clients against the same candidate set. This is captured on macOS arm64 and Debian 13 Linux
+arm64/x86_64. The Python policy tests assert that the corresponding source directories remain
+scheme-specific.
+
+| Capture file                                                          | Environment                | Sapling      | Jujutsu |
+| --------------------------------------------------------------------- | -------------------------- | ------------ | ------- |
+| `linked-worktree-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
+| `linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`  | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
+| `linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json` | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`                     | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json`                  | Debian 13 arm64 in Docker  | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json`                 | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`      | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
+| `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`          | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
+| `jj-0.47.1-windows-x64.json`                                          | Windows Server 2025 x64    | —            | 0.47.1  |
+| `jj-0.45.1-macos-arm64-symlink.json`                                  | macOS 26 arm64             | —            | 0.45.1  |
+| `jj-0.45.1-debian13-x86_64-symlink.json`                              | Debian 13 x86_64 in Docker | —            | 0.45.1  |
+| `jj-0.46.0-macos-arm64-symlink.json`                                  | macOS 26 arm64             | —            | 0.46.0  |
+| `jj-0.46.0-debian13-x86_64-symlink.json`                              | Debian 13 x86_64 in Docker | —            | 0.46.0  |

@@ -33,6 +33,7 @@ _DEFAULT_INITIAL_EXCLUDES: Final = (".git",)
 
 class _RepositoryMetadata(NamedTuple):
     root: Path
+    git_dir: Path
     common_dir: Path
 
 
@@ -300,7 +301,7 @@ def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
                 common_dir = git_dir
         else:
             common_dir = git_dir
-        return _RepositoryMetadata(candidate_root, common_dir)
+        return _RepositoryMetadata(candidate_root, git_dir, common_dir)
     return None
 
 

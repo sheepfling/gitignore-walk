@@ -16,6 +16,11 @@ CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
+LINKED_WORKTREE_CAPTURE_FILES = (
+    "linked-worktree-sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
+    "linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
+    "linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
+)
 ENVIRONMENT_GLOBAL_CAPTURE_FILES = (
     CAPTURE_FILES[0],
     CAPTURE_FILES[2],
@@ -36,6 +41,10 @@ JJ_SYMLINK_VERSION_CAPTURES = {
         "jj-0.46.0-debian13-x86_64-symlink.json",
     )
 }
+LINKED_WORKTREE_CAPTURES = {
+    filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
+    for filename in LINKED_WORKTREE_CAPTURE_FILES
+}
 OBSERVATIONS = {
     profile: {case["id"]: case for case in capture["cases"]}
     for profile, capture in CAPTURES.items()
@@ -50,6 +59,26 @@ def test_compatibility_capture_records_exact_client_families(profile: str) -> No
     assert capture["clients"]["git"].startswith("git version ")
     assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+
+
+@pytest.mark.parametrize("profile", LINKED_WORKTREE_CAPTURE_FILES)
+def test_linked_worktree_capture_reconciles_scheme_specific_exclude_sources(
+    profile: str,
+) -> None:
+    capture = LINKED_WORKTREE_CAPTURES[profile]
+    cases = {case["id"]: case for case in capture["cases"]}
+
+    assert capture["status"] == "captured"
+    assert capture["workspace"] == "Git linked worktree"
+    assert capture["clients"]["git"].startswith("git version ")
+    assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+    assert {name: case["ignored"] for name, case in cases.items()} == {
+        "git": ["probe.commonignore"],
+        "sapling.git-mode": ["probe.commonignore"],
+        "jj.colocated": ["probe.worktreeignore"],
+    }
+    assert all(case["candidate_matches"] for case in cases.values())
 
 
 @pytest.mark.parametrize(

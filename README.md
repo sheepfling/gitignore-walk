@@ -386,6 +386,9 @@ matcher while resolving each system's workspace markers and supported sources se
 - Jujutsu discovers the nearest `.jj` workspace. Both colocated and non-colocated modes read
   workspace `.gitignore` files and XDG Git ignores. A colocated `.git/info/exclude` is read when
   present; an outer Git repository's exclude file is not inherited.
+- In a linked Git worktree, Git and Sapling `.git` mode use the shared Git directory's
+  `info/exclude`; colocated Jujutsu uses that worktree's own Git directory. Native captures cover
+  the three clients on macOS arm64 and Debian 13 Linux arm64/x86_64.
 - When all three source levels are present, workspace `.gitignore` overrides `.git/info/exclude`,
   which overrides the XDG ignore file.
 - Native captures also confirm that Sapling `.git` mode and both Jujutsu modes honor a custom

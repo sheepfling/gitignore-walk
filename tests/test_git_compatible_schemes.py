@@ -12,6 +12,7 @@ import pytest
 
 from gitignore_walk import (
     GitIgnoreError,
+    GitIgnorePolicy,
     IgnoreWalker,
     JujutsuIgnorePolicy,
     JujutsuPolicyConfig,
@@ -218,6 +219,40 @@ def test_jujutsu_workspace_does_not_inherit_outer_git_info_exclude(tmp_path: Pat
 
     assert policy.workspace_root == workspace
     assert not policy.explain("inside.local").ignored
+
+
+def test_linked_git_worktree_uses_scheme_specific_info_exclude_directory(
+    tmp_path: Path,
+) -> None:
+    workspace = tmp_path / "linked-worktree"
+    workspace.mkdir()
+    (workspace / ".jj").mkdir()
+    home = tmp_path / "home"
+    common_dir = tmp_path / "main" / ".git"
+    worktree_git_dir = common_dir / "worktrees" / "linked"
+    worktree_git_dir.mkdir(parents=True)
+    (workspace / ".git").write_text(f"gitdir: {worktree_git_dir}\n", encoding="utf-8")
+    (worktree_git_dir / "commondir").write_text("../..\n", encoding="utf-8")
+    common_excludes = common_dir / "info" / "exclude"
+    common_excludes.parent.mkdir(parents=True)
+    common_excludes.write_text("*.commonignore\n", encoding="utf-8")
+    worktree_excludes = worktree_git_dir / "info" / "exclude"
+    worktree_excludes.parent.mkdir(parents=True)
+    worktree_excludes.write_text("*.worktreeignore\n", encoding="utf-8")
+    (workspace / "probe.commonignore").touch()
+    (workspace / "probe.worktreeignore").touch()
+    environment = {"HOME": str(home), "XDG_CONFIG_HOME": str(home / ".config")}
+
+    git_policy = GitIgnorePolicy(workspace, environment=environment)
+    sapling_policy = SaplingIgnorePolicy(workspace, environment=environment)
+    jujutsu_policy = JujutsuIgnorePolicy(workspace, environment=environment)
+
+    assert git_policy.explain("probe.commonignore").ignored
+    assert not git_policy.explain("probe.worktreeignore").ignored
+    assert sapling_policy.explain("probe.commonignore").ignored
+    assert not sapling_policy.explain("probe.worktreeignore").ignored
+    assert not jujutsu_policy.explain("probe.commonignore").ignored
+    assert jujutsu_policy.explain("probe.worktreeignore").ignored
 
 
 @pytest.mark.parametrize("scheme", ["sapling", "jujutsu"])

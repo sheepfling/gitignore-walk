@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "Linux-7.0.12-linuxkit-x86_64-with-glibc2.41",
+  "clients": {
+    "git": "git version 2.47.3",
+    "sapling": "Sapling 0.2.20261103-145137+6282ac56",
+    "jujutsu": "jj 0.47.1-d16ee1fc88a72c54142241b079a34bbf3b033bc0"
+  },
+  "workspace": "Git linked worktree",
+  "common_exclude_scope": "main Git directory/info/exclude",
+  "worktree_exclude_scope": "linked worktree Git directory/info/exclude",
+  "cases": [
+    {
+      "id": "git",
+      "native_status": "captured",
+      "query_files": [
+        "probe.commonignore",
+        "probe.visible",
+        "probe.worktreeignore"
+      ],
+      "ignored": [
+        "probe.commonignore"
+      ],
+      "expected_ignored": [
+        "probe.commonignore"
+      ],
+      "candidate_matches": true,
+      "query_exit_code": 0,
+      "query_stdout": "<temporary>/main/.git/info/exclude:1:*.commonignore\tprobe.commonignore\n",
+      "query_stderr": ""
+    },
+    {
+      "id": "sapling.git-mode",
+      "native_status": "captured",
+      "query_files": [
+        "probe.commonignore",
+        "probe.visible",
+        "probe.worktreeignore"
+      ],
+      "ignored": [
+        "probe.commonignore"
+      ],
+      "expected_ignored": [
+        "probe.commonignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "? probe.visible\u0000? probe.worktreeignore\u0000I .jj/.gitignore\u0000I .jj/repo/index/op_links/00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000\u0000I .jj/repo/index/op_links/429278b6efc07ffb1bdd206ceb3b7f7771781d3387f711b599408ecfbda12a679c7d7d182fb4a66249c5763a68743ed9479120bbf645a466beb83641b424b37e\u0000I .jj/repo/index/op_links/915b78f5b2809e44f8b808f781c307e9b3c7fea77f74afd55635ffd250b0f1d56e5ff5889a13e708bb93076aa8a9251e345a6778f4caad8aa8153eac9dba57d7\u0000I .jj/repo/index/op_links/c06cd0e5892c4c343bfeddb3a89c66fbf89791b17202347386db0616dd026a8af12579af3d352593af58517f8fc697ceb8150a649833441aaa428d6d24f1ff53\u0000I .jj/repo/index/segments/cb34c00c7c1081d184343b4472843f86abb4c4c4217e5486f42c3def55ed99a40a4506b810d4d29333c74885c554b69bfb5400bee9a26a43aa20104603d40fe4\u0000I .jj/repo/index/segments/cd850d093e51dc0af41f9c5a6fc23e1ee3af099f4cc1ed139536ca4d7af9284c54125edf757ed955ff1a5c8017dd3c367ec9b21ae52adc71c75b9c07aab2fc5c\u0000I .jj/repo/index/segments/d27ad326963b75736b636adad9fb812eb3f2871e0efb4bc7db37d4b701a4282911eaaee91bed3a759e940769b667be1ed66f2d7f2f41ac3906b87ab7eec19c3a\u0000I .jj/repo/index/segments/da47c9c536260160fc0bc215414010c900ad406411d88fa7573e6a5137cacc1e4e247c0010bb33a8f04f064d967977926d6cde5cd2e7d42976e73be559ba1dbe\u0000I .jj/repo/index/type\u0000I .jj/repo/op_heads/heads/429278b6efc07ffb1bdd206ceb3b7f7771781d3387f711b599408ecfbda12a679c7d7d182fb4a66249c5763a68743ed9479120bbf645a466beb83641b424b37e\u0000I .jj/repo/op_heads/type\u0000I .jj/repo/op_store/operations/429278b6efc07ffb1bdd206ceb3b7f7771781d3387f711b599408ecfbda12a679c7d7d182fb4a66249c5763a68743ed9479120bbf645a466beb83641b424b37e\u0000I .jj/repo/op_store/operations/915b78f5b2809e44f8b808f781c307e9b3c7fea77f74afd55635ffd250b0f1d56e5ff5889a13e708bb93076aa8a9251e345a6778f4caad8aa8153eac9dba57d7\u0000I .jj/repo/op_store/operations/c06cd0e5892c4c343bfeddb3a89c66fbf89791b17202347386db0616dd026a8af12579af3d352593af58517f8fc697ceb8150a649833441aaa428d6d24f1ff53\u0000I .jj/repo/op_store/type\u0000I .jj/repo/op_store/views/040dad846c53f3568d5026fdbcf0be5c917947a59147148fe32081f01c2d1eeceaa8661a314beaf17ac180477da229d26d1481ff866a6425df62b7f692631cad\u0000I .jj/repo/op_store/views/231d36db8fc04b1f5c90ac7a19280ddcf7f0f9fc473856259be23bb3370f2c58103f50b4ad9dda3f144d0c050af4936de1ad4e920127145df2cde9a7b275f2ba\u0000I .jj/repo/op_store/views/3e3288b203cf1786257956650627db4b432838c79676c86df7343de214a626b28fb2f3614e50da7d1ada6e0c7e59ff09e71af2f24629053a4db8dcf1ebd12db4\u0000I .jj/repo/store/extra/482ae5a29fbe856c7272f2071b8b0f0359ee2d89ff392b8a900643fbd0836eccd067b8bf41909e206c90d45d6e7d8b6686b93ecaee5fe1a9060d87b672101310\u0000I .jj/repo/store/extra/66d18d6aec9b53c5423b32f4d5af5908270106353804c70ccfaa5589bbcf433238b42e2544f7306fa6f5116fe199d5a5c63c455e0328029f1559707a6937c658\u0000I .jj/repo/store/extra/6aea4376fae1be3c4c57986c829320713ed96206bf14ee24a0b47e369980bab349aec08e54334f5aedd8edede73b4b0737828851c4c36eb0c596883d3439b313\u0000I .jj/repo/store/extra/d6318a6a76aab6bad72b0d0a3d0ec0f73da05cccd603b414304b3b50698d9a8f98efb17c18d90639b7643f46c8abf06c8cf3bc25eae556b3309e2c8da40cb434\u0000I .jj/repo/store/extra/heads/66d18d6aec9b53c5423b32f4d5af5908270106353804c70ccfaa5589bbcf433238b42e2544f7306fa6f5116fe199d5a5c63c455e0328029f1559707a6937c658\u0000I .jj/repo/store/git_target\u0000I .jj/repo/store/type\u0000I .jj/repo/submodule_store/type\u0000I .jj/repo/workspace_store/index\u0000I .jj/repo/workspace_store/type\u0000I .jj/working_copy/checkout\u0000I .jj/working_copy/tree_state\u0000I .jj/working_copy/type\u0000I probe.commonignore\u0000",
+      "status_stderr": ""
+    },
+    {
+      "id": "jj.colocated",
+      "native_status": "captured",
+      "query_files": [
+        "probe.commonignore",
+        "probe.visible",
+        "probe.worktreeignore"
+      ],
+      "ignored": [
+        "probe.worktreeignore"
+      ],
+      "expected_ignored": [
+        "probe.worktreeignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA probe.commonignore\nA probe.visible\nWorking copy  (@) : zuoxyrqt 1309e34e (no description set)\nParent commit (@-): mupuyuvs 0fad1d1c linked master | seed\n",
+      "status_stderr": "",
+      "file_list_stdout": "probe.commonignore\nprobe.visible\ntracked.txt\n"
+    }
+  ]
+}
