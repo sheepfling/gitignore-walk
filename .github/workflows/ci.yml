@@ -782,6 +782,62 @@ jobs:
               for case in (capture, middle, older)
           ])
           '@ | python -
+      - name: Capture Sapling on Windows
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $clientDir = Join-Path $env:RUNNER_TEMP 'compat-clients'
+          $nativeDir = Join-Path $env:RUNNER_TEMP 'native'
+          New-Item -ItemType Directory -Force -Path $clientDir, $nativeDir | Out-Null
+          $archive = Join-Path $clientDir 'sapling-0.2.20261103-windows-x64.zip'
+          Invoke-WebRequest `
+            -Uri 'https://github.com/meta/sapling/releases/download/0.2.20261103-145137%2B6282ac56/sapling-0.2.20261103-145137+6282ac56-windows-x64.zip' `
+            -OutFile $archive
+          $digest = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
+          if ($digest -ne '3f9283258ec8edbab3fe2d9e424318a7e496151578dbb620b97b11f3e04c06d6') {
+            throw "Sapling release checksum mismatch: $digest"
+          }
+          $saplingDir = Join-Path $clientDir 'sapling-windows'
+          Expand-Archive -Path $archive -DestinationPath $saplingDir -Force
+          $sl = Join-Path $saplingDir 'Sapling\sl.exe'
+          if (-not (Test-Path $sl)) { throw "Sapling executable was not found: $sl" }
+          & $sl version
+          $output = Join-Path $nativeDir 'sapling-0.2.20261103-windows-x64.json'
+          python tests/oracles/compat/run.py --sl $sl --output $output
+          if ($LASTEXITCODE -ne 0) { throw "Sapling capture failed: $LASTEXITCODE" }
+          @'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-windows-x64.json"
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert capture["status"] == "captured", capture
+          assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103"), capture["clients"]
+          assert {case["id"] for case in capture["cases"]} == {"sapling.git-mode", "sapling.sl-mode"}
+          for case in capture["cases"]:
+              assert case["candidate_matches"], case
+              for probe in (
+                  "source_discovery",
+                  "pattern_discovery",
+                  "configured_global",
+                  "configured_system",
+                  "conditional_global",
+                  "conditional_gitdir_i",
+                  "conditional_worktree",
+                  "conditional_worktree_i",
+                  "conditional_onbranch",
+                  "conditional_remote_url",
+                  "conditional_gitdir_override",
+                  "configured_repository",
+                  "environment_global",
+                  "environment_count",
+              ):
+                  assert case[probe]["candidate_matches"], (case["id"], probe, case[probe])
+              symlink = case["symlinked_gitignore"]
+              assert symlink["candidate_matches"] or symlink["native_status"] == "skipped", symlink
+          print("Validated Sapling Windows profile:", capture["clients"]["sapling"])
+          '@ | python -
       - name: Check Windows Registry and INI precedence
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-
