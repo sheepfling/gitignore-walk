@@ -771,12 +771,20 @@ def test_membership_aware_policy_matches_native_status_classes(tmp_path: Path) -
     hg("init")
     (root / ".hgignore").write_text("syntax: glob\n*.tmp\n", encoding="utf-8")
     (root / "tracked.tmp").write_text("tracked\n", encoding="utf-8")
-    hg("add", ".hgignore", "tracked.tmp")
+    (root / "clean.txt").write_text("clean\n", encoding="utf-8")
+    (root / "modified.txt").write_text("base\n", encoding="utf-8")
+    (root / "missing.txt").write_text("base\n", encoding="utf-8")
+    (root / "removed.txt").write_text("base\n", encoding="utf-8")
+    hg("add", ".hgignore", "tracked.tmp", "clean.txt", "modified.txt", "missing.txt", "removed.txt")
     hg("commit", "-m", "add tracked files", "-u", "gitignore-walk test")
     (root / "staged.tmp").write_text("staged\n", encoding="utf-8")
     hg("add", "staged.tmp")
     (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
+    (root / "modified.txt").write_text("modified\n", encoding="utf-8")
+    (root / "missing.txt").unlink()
+    (root / "removed.txt").unlink()
+    hg("remove", "--after", "removed.txt")
 
     native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
     native_records = {
@@ -792,15 +800,43 @@ def test_membership_aware_policy_matches_native_status_classes(tmp_path: Path) -
     policy = selection.policy
 
     assert native_records["tracked.tmp"] == "C"
+    assert native_records["clean.txt"] == "C"
+    assert native_records["modified.txt"] == "M"
+    assert native_records["missing.txt"] == "!"
+    assert native_records["removed.txt"] == "R"
     assert native_records["staged.tmp"] == "A"
     assert native_records["ignored.tmp"] == "I"
     assert native_records["unknown.txt"] == "?"
-    assert policy.explain("tracked.tmp").membership == "versioned"
-    assert policy.explain("staged.tmp").membership == "versioned"
-    assert policy.explain("ignored.tmp").membership == "unversioned"
-    assert policy.explain("unknown.txt").membership == "unversioned"
-    assert policy.explain("ignored.tmp").ignored
-    assert policy.explain("tracked.tmp").ignored
+    decisions = {
+        decision.path.name: decision
+        for decision in policy.explain_many(
+            [
+                "tracked.tmp",
+                "clean.txt",
+                "modified.txt",
+                "missing.txt",
+                "removed.txt",
+                "staged.tmp",
+                "ignored.tmp",
+                "unknown.txt",
+            ]
+        )
+    }
+    assert all(
+        decisions[name].membership == "versioned"
+        for name in (
+            "tracked.tmp",
+            "clean.txt",
+            "modified.txt",
+            "missing.txt",
+            "removed.txt",
+            "staged.tmp",
+        )
+    )
+    assert decisions["ignored.tmp"].membership == "unversioned"
+    assert decisions["unknown.txt"].membership == "unversioned"
+    assert decisions["ignored.tmp"].ignored
+    assert decisions["tracked.tmp"].ignored
 
 
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
