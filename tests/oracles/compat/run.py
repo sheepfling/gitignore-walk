@@ -733,7 +733,7 @@ def _capture_configured_global_sapling(
         "candidate_matches": ignored == expected,
         "status_stdout": status.stdout.replace(str(root), "<workspace>"),
     }
-    (home / ".gitconfig").unlink(missing_ok=True)
+    (home / ".gitconfig").write_text("", encoding="utf-8")
     system_files: Mapping[str, str] = fixture["configured_system_probe_files"]
     _write_files(root, system_files)
     status = _run(
