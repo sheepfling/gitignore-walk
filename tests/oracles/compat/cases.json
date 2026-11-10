@@ -68,6 +68,17 @@
     "jj.colocated": ["repository.local"],
     "jj.noncolocated": ["repository.local"]
   },
+  "environment_global_probe_files": {
+    "environment.global": "must be excluded by GIT_CONFIG_GLOBAL when honored\n",
+    "environment.visible": "must remain visible\n"
+  },
+  "environment_global_ignore": "*.global\n",
+  "expected_environment_global_ignored": {
+    "sapling.git-mode": ["environment.global"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["environment.global"],
+    "jj.noncolocated": ["environment.global"]
+  },
   "conditional_global_probe_files": {
     "conditional.custom": "must be ignored only by a matching gitdir include\n",
     "conditional.global": "must be ignored by XDG when no include condition matches\n",

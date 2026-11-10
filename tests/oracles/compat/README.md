@@ -30,7 +30,7 @@ and `.git/info/exclude`; Sapling `.sl` mode reads neither. Jujutsu reads the XDG
 both modes and reads `.git/info/exclude` only when colocated. In modes with all three sources,
 `.gitignore` overrides `.git/info/exclude`, which overrides the XDG ignore file. These observations
 are captured against both named client versions on macOS and Debian Linux aarch64 and x86_64.
-They do not establish alternate global config files, path encoding, or broader VCS behavior.
+They do not establish path encoding or broader VCS behavior.
 
 The captures also probe system and user `core.excludesFile` settings. Each disposable home has the
 default XDG ignore file (`*.global`), a system ignore file (`*.system`), and a `~/.gitconfig` that
@@ -40,10 +40,13 @@ explicitly empty user setting disables the global source. Sapling `.sl` mode ign
 These results are captured on macOS arm64 and Debian 13 Linux aarch64 and x86_64. The policies expose
 `global_excludes_file` for an already resolved path; with `read_git_config=True`, they use the
 configured Git executable to resolve the effective setting with Git's scope precedence and
-includes. A repository-local `core.excludesFile` overrides system and user values in Sapling `.git`
-mode and both Jujutsu modes; Sapling `.sl` ignores Git config. A `gitdir` conditional include
-selects the user file in Sapling `.git` mode and colocated Jujutsu; non-colocated Jujutsu follows the
-configured system source for that condition. Both `onbranch:main` and a matching
+includes. A separate isolated workspace sets `GIT_CONFIG_GLOBAL` before initialization and confirms
+that Sapling `.git` mode and both Jujutsu modes use that alternate file, while Sapling `.sl` does
+not. `read_git_config=True` follows the environment-selected file because it delegates config
+resolution to Git. A repository-local `core.excludesFile` overrides system and user values in
+Sapling `.git` mode and both Jujutsu modes; Sapling `.sl` ignores Git config. A `gitdir` conditional
+include selects the user file in Sapling `.git` mode and colocated Jujutsu; non-colocated Jujutsu
+follows the configured system source for that condition. Both `onbranch:main` and a matching
 `hasconfig:remote.*.url` include are honored by Sapling `.git` mode and both Jujutsu modes. The
 policy supplies Jujutsu's internal Git store as context for non-colocated workspaces;
 caller-provided `GIT_DIR` still takes precedence for the Git config lookup. A separate native probe

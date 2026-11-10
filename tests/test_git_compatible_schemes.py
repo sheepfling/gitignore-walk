@@ -248,6 +248,47 @@ def test_compatible_scheme_can_discover_global_git_config(
 
 @pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
 @pytest.mark.parametrize("scheme", ["sapling", "jujutsu"])
+def test_compatible_scheme_honors_alternate_git_config_global_path(
+    tmp_path: Path, scheme: str
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    ignore_file = home / "alternate-ignore"
+    ignore_file.write_text("*.envglobal\n", encoding="utf-8")
+    alternate_config = home / "alternate.gitconfig"
+    alternate_config.write_text(
+        f"[core]\n\texcludesFile = {ignore_file.as_posix()}\n", encoding="utf-8"
+    )
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(alternate_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    if scheme == "sapling":
+        _git_init(root)
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    else:
+        (root / ".jj").mkdir()
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    (root / "from-env.envglobal").touch()
+    (root / "visible.txt").touch()
+
+    selection = select_policy(root, config)
+    decisions = {
+        decision.path.name: decision.ignored
+        for decision in selection.policy.explain_many(["from-env.envglobal", "visible.txt"])
+    }
+
+    assert decisions == {"from-env.envglobal": True, "visible.txt": False}
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize("scheme", ["sapling", "jujutsu"])
 @pytest.mark.parametrize(
     ("global_value", "expected"),
     [

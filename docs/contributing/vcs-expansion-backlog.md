@@ -593,6 +593,13 @@ natively even though `git config` resolves them; the read-Git-config policy foll
 Non-colocated Jujutsu does not match because its internal store is bare. The policy contract now
 documents this concrete divergence. Broader client/platform profiles remain open.
 
+**Additional configuration evidence:** an isolated Sapling/Jujutsu workspace sets
+`GIT_CONFIG_GLOBAL` before initialization. Sapling `.git` mode and both Jujutsu modes use the
+alternate config file; Sapling `.sl` mode does not. `read_git_config=True` follows Git's
+environment-selected config. The macOS arm64 capture records this behavior, and native Linux and
+Windows capture jobs assert the same per-mode results. This adds one environment-selected config
+path; it does not close the wider client/version/profile coverage gap.
+
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders and a cross-profile nested-repository

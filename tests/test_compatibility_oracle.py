@@ -15,6 +15,7 @@ CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
+ENVIRONMENT_GLOBAL_CAPTURE_FILES = (CAPTURE_FILES[0],)
 CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
@@ -340,6 +341,28 @@ def test_compatibility_capture_reconciles_repository_core_excludes_file(
         "repository.visible",
     ]
     assert configured_repository["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize("profile", ENVIRONMENT_GLOBAL_CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_environment_selected_global_config(
+    profile: str, case_id: str
+) -> None:
+    observation = OBSERVATIONS[profile][case_id]["environment_global"]
+    expected = {
+        "sapling.git-mode": ["environment.global"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["environment.global"],
+        "jj.noncolocated": ["environment.global"],
+    }
+
+    assert observation["config_environment_variable"] == "GIT_CONFIG_GLOBAL"
+    assert observation["query_files"] == ["environment.global", "environment.visible"]
+    assert observation["ignored"] == expected[case_id]
+    assert observation["included"] == sorted(
+        set(observation["query_files"]) - set(expected[case_id])
+    )
+    assert observation["candidate_matches"] is True
 
 
 @pytest.mark.parametrize(

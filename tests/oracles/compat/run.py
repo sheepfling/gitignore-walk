@@ -91,6 +91,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
         conditional_gitdir_override = _capture_conditional_gitdir_override(
             executable, "sapling", mode, root, home, environment, fixture
         )
+        environment_global = _capture_environment_global_sapling(executable, mode, fixture)
         return {
             "id": f"sapling.{mode}-mode",
             "vcs": "sapling",
@@ -126,6 +127,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
             "conditional_gitdir_override": conditional_gitdir_override,
+            "environment_global": environment_global,
             "configured_repository": configured_repository,
         }
 
@@ -192,6 +194,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         conditional_gitdir_override = _capture_conditional_gitdir_override(
             executable, "jujutsu", mode, root, home, environment, fixture
         )
+        environment_global = _capture_environment_global_jj(executable, mode, fixture)
         return {
             "id": f"jj.{mode}",
             "vcs": "jujutsu",
@@ -229,7 +232,122 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
             "conditional_gitdir_override": conditional_gitdir_override,
+            "environment_global": environment_global,
             "configured_repository": configured_repository,
+        }
+
+
+def _write_environment_global_probe(
+    root: Path, home: Path, fixture: Mapping[str, Any]
+) -> tuple[list[str], dict[str, str]]:
+    """Select an alternate global Git config path through the documented environment variable."""
+    (home / ".gitconfig").unlink(missing_ok=True)
+    ignore_file = home / "environment-global-ignore"
+    ignore_file.write_text(fixture["environment_global_ignore"], encoding="utf-8")
+    alternate_config = home / "alternate-gitconfig"
+    alternate_config.write_text(
+        f"[core]\n\texcludesFile = {_git_config_path(ignore_file)}\n", encoding="utf-8"
+    )
+    probe_environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "PAGER": "cat",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_CONFIG_GLOBAL": str(alternate_config),
+        "HGPLAIN": "1",
+        "SL_USER": "Oracle <oracle@example.invalid>",
+    }
+    files: Mapping[str, str] = fixture["environment_global_probe_files"]
+    _write_files(root, files)
+    return sorted(files), probe_environment
+
+
+def _capture_environment_global_sapling(
+    executable: str,
+    mode: str,
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Sapling behavior for a non-default global Git config path."""
+    with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-global-{mode}-") as temporary:
+        base = Path(temporary)
+        home = base / "home"
+        home.mkdir()
+        root = base / "workspace"
+        root.mkdir()
+        query_files, probe_environment = _write_environment_global_probe(root, home, fixture)
+        if mode == "git":
+            _require_success(
+                _run(["git", "init", "-q", str(root)], cwd=root, environment=probe_environment),
+                "git init GIT_CONFIG_GLOBAL",
+            )
+            _set_oracle_branch(root, probe_environment)
+            _set_oracle_remote(root, probe_environment)
+        else:
+            _require_success(
+                _run([executable, "init", str(root)], cwd=root, environment=probe_environment),
+                "sl init GIT_CONFIG_GLOBAL",
+            )
+        status = _run(
+            [executable, "status", "-iu", "--print0"], cwd=root, environment=probe_environment
+        )
+        _require_success(status, "sl status GIT_CONFIG_GLOBAL")
+        _, ignored_paths = _sapling_status_paths(status.stdout)
+        ignored = sorted(ignored_paths & set(query_files))
+        expected = fixture["expected_environment_global_ignored"][f"sapling.{mode}-mode"]
+        return {
+            "config_environment_variable": "GIT_CONFIG_GLOBAL",
+            "query_files": query_files,
+            "ignored": ignored,
+            "included": sorted(set(query_files) - set(ignored)),
+            "candidate_matches": ignored == expected,
+            "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        }
+
+
+def _capture_environment_global_jj(
+    executable: str,
+    mode: str,
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Jujutsu behavior for a non-default global Git config path."""
+    with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-jj-global-{mode}-") as temporary:
+        base = Path(temporary)
+        home = base / "home"
+        home.mkdir()
+        config_dir = home / ".config" / "jj"
+        config_dir.mkdir(parents=True)
+        (config_dir / "config.toml").write_text(
+            '[user]\nname = "Oracle"\nemail = "oracle@example.invalid"\n', encoding="utf-8"
+        )
+        root = base / "workspace"
+        root.mkdir()
+        query_files, probe_environment = _write_environment_global_probe(root, home, fixture)
+        command = [executable, "git", "init"]
+        if mode == "noncolocated":
+            command.append("--no-colocate")
+        command.append(str(root))
+        _require_success(
+            _run(command, cwd=root, environment=probe_environment), "jj git init GIT_CONFIG_GLOBAL"
+        )
+        _set_oracle_branch(root, probe_environment)
+        _set_oracle_remote_jj(executable, root, probe_environment)
+        status = _run([executable, "status", "--no-pager"], cwd=root, environment=probe_environment)
+        _require_success(status, "jj status GIT_CONFIG_GLOBAL")
+        listed = _run([executable, "file", "list"], cwd=root, environment=probe_environment)
+        _require_success(listed, "jj file list GIT_CONFIG_GLOBAL")
+        included_paths = _jujutsu_paths(listed.stdout)
+        ignored = sorted(set(query_files) - included_paths)
+        expected = fixture["expected_environment_global_ignored"][f"jj.{mode}"]
+        return {
+            "config_environment_variable": "GIT_CONFIG_GLOBAL",
+            "query_files": query_files,
+            "ignored": ignored,
+            "included": sorted(set(query_files) & included_paths),
+            "candidate_matches": ignored == expected,
+            "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+            "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
         }
 
 
@@ -1224,6 +1342,7 @@ def main() -> int:
         and case["conditional_onbranch"]["candidate_matches"]
         and case["conditional_remote_url"]["candidate_matches"]
         and case["configured_repository"]["candidate_matches"]
+        and case["environment_global"]["candidate_matches"]
         for case in result["cases"]
     )
     vcs_names = "Sapling/Jujutsu" if "sapling" in result["clients"] else "Jujutsu"
