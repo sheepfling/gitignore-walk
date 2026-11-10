@@ -254,17 +254,6 @@ def _resolve_root(root: str | os.PathLike[str]) -> Path:
     return root_path
 
 
-# Used by Sapling and Jujutsu to retain native path identity during membership annotation.
-def _lexical_target_path(  # pyright: ignore[reportUnusedFunction]
-    root: Path, target: str | os.PathLike[str]
-) -> Path:
-    """Return a normalized absolute path without following symbolic links."""
-    target_path = Path(target).expanduser()
-    if not target_path.is_absolute():
-        target_path = root / target_path
-    return Path(os.path.abspath(target_path))
-
-
 def _find_repository_metadata(start: Path) -> _RepositoryMetadata | None:
     """Find a worktree marker at ``start`` or an ancestor without invoking Git."""
 

@@ -15,12 +15,12 @@ from pathlib import Path, PurePath
 from typing import Literal
 
 from ..._policy import IgnoreDecision, IgnoreTrace, _IgnoreWalkSession
+from ..._util import lexical_target_path
 from ..git._configuration import resolve_core_excludes_file
 from ..git.portable import (
     GitIgnorePolicy,
     _find_repository_metadata,
     _GitIgnoreMembershipWalkSession,
-    _lexical_target_path,
 )
 from .errors import JujutsuIgnoreError
 
@@ -164,7 +164,7 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         """Annotate saved-tree files and present unlisted files with known membership."""
         if versioned is None:
             return decision
-        requested_path = _lexical_target_path(self.root, requested)
+        requested_path = lexical_target_path(self.root, requested)
         if requested_path in versioned:
             membership: Literal["versioned", "unversioned"] | None = "versioned"
         elif requested_path.is_file() or requested_path.is_symlink():

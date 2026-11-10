@@ -15,13 +15,13 @@ from pathlib import Path, PurePath
 from typing import Literal
 
 from ..._policy import IgnoreDecision, IgnoreTrace, _IgnoreWalkSession
+from ..._util import lexical_target_path
 from ..git._configuration import resolve_core_excludes_file
 from ..git.portable import (
     GitIgnorePolicy,
     _default_global_excludes_path,
     _find_repository_metadata,
     _GitIgnoreMembershipWalkSession,
-    _lexical_target_path,
 )
 from .errors import SaplingIgnoreError
 
@@ -164,7 +164,7 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         """Return a decision annotated with known native membership, if available."""
         if membership is None:
             return decision
-        path = _lexical_target_path(self.root, requested)
+        path = lexical_target_path(self.root, requested)
         return replace(decision, membership=membership.get(path))
 
     def _load_membership(self) -> dict[Path, Literal["versioned", "unversioned"]]:

@@ -504,7 +504,10 @@ unversioned (`?`, `I`). A live disposable-repository comparison covers clean, mo
 staged, scheduled-removal, ignored, and unknown files. It now checks included, ignored, and all-file
 walk selections in both orders; a tracked file matching `.hgignore` stays included, while the
 ignored unversioned file appears only in ignored/all selection. Paths omitted by native status remain
-unknown; broader sparse, symlink, and cross-profile membership behavior remains open.
+unknown. Membership lookup retains the lexical query path for tracked symlinks, so a dangling
+tracked link remains versioned even when the policy resolves it for rule evaluation; this is
+covered with native Mercurial status and `explain`, `trace`, and `iter_explain`. Broader sparse,
+symlink, and cross-profile membership behavior remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special

@@ -807,7 +807,16 @@ def test_membership_aware_policy_matches_native_status_classes(
     (root / "modified.txt").write_text("base\n", encoding="utf-8")
     (root / "missing.txt").write_text("base\n", encoding="utf-8")
     (root / "removed.txt").write_text("base\n", encoding="utf-8")
+    dangling_link = root / "dangling-link"
+    try:
+        dangling_link.symlink_to("missing-target.txt")
+    except OSError:
+        dangling_link_created = False
+    else:
+        dangling_link_created = True
     hg("add", ".hgignore", "tracked.tmp", "clean.txt", "modified.txt", "missing.txt", "removed.txt")
+    if dangling_link_created:
+        hg("add", "dangling-link")
     hg("commit", "-m", "add tracked files", "-u", "gitignore-walk test")
     (root / "staged.tmp").write_text("staged\n", encoding="utf-8")
     hg("add", "staged.tmp")
@@ -836,6 +845,8 @@ def test_membership_aware_policy_matches_native_status_classes(
     assert native_records["modified.txt"] == "M"
     assert native_records["missing.txt"] == "!"
     assert native_records["removed.txt"] == "R"
+    if dangling_link_created:
+        assert native_records["dangling-link"] == "C"
     assert native_records["staged.tmp"] == "A"
     assert native_records["ignored.tmp"] == "I"
     assert native_records["unknown.txt"] == "?"
@@ -869,6 +880,10 @@ def test_membership_aware_policy_matches_native_status_classes(
     assert decisions["unknown.txt"].membership == "unversioned"
     assert decisions["ignored.tmp"].ignored
     assert decisions["tracked.tmp"].ignored
+    if dangling_link_created:
+        assert policy.explain("dangling-link").membership == "versioned"
+        assert policy.trace("dangling-link").decision.membership == "versioned"
+        assert next(policy.iter_explain(["dangling-link"])).membership == "versioned"
 
     walker = IgnoreWalker(root, policy=policy)
 

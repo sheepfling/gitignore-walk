@@ -19,6 +19,7 @@ from ..._policy import (
     IgnoreTraceMatch,
     _IgnoreWalkSession,
 )
+from ..._util import lexical_target_path
 from ._ignore_loader import HgIgnoreSources, load_ignore_sources
 from ._patterns import HgRule
 from .errors import MercurialIgnoreError
@@ -157,7 +158,13 @@ class MercurialIgnorePolicy(IgnorePolicy):
         sources = self._load_sources()
         matches = self._matching_rules(path, sources)
         membership = self._load_membership() if self.membership_aware else None
-        decision = self._decision(path, matches[0] if matches else None, sources, membership)
+        decision = self._decision(
+            path,
+            matches[0] if matches else None,
+            sources,
+            membership,
+            membership_path=lexical_target_path(self.root, target),
+        )
         if decision.reason == "baseline-exclusion":
             trace = (
                 IgnoreTraceMatch(
@@ -227,7 +234,13 @@ class MercurialIgnorePolicy(IgnorePolicy):
         """Explain one target against an already loaded source snapshot."""
         path = self.resolve_target(target)
         matches = self._matching_rules(path, sources)
-        return self._decision(path, matches[0] if matches else None, sources, membership)
+        return self._decision(
+            path,
+            matches[0] if matches else None,
+            sources,
+            membership,
+            membership_path=lexical_target_path(self.root, target),
+        )
 
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a stable source snapshot for one directory walk."""
@@ -253,11 +266,16 @@ class MercurialIgnorePolicy(IgnorePolicy):
         rule: HgRule | None,
         sources: HgIgnoreSources,
         membership: Mapping[Path, Literal["versioned", "unversioned"]] | None = None,
+        *,
+        membership_path: Path | None = None,
     ) -> IgnoreDecision:
         relative = path.relative_to(self.root).as_posix()
         baseline = next(
             (pattern for pattern in self._initial_excludes if _matches_prefix(relative, pattern)),
             None,
+        )
+        membership_value = (
+            membership.get(membership_path or path) if membership is not None else None
         )
         if baseline is not None:
             source = "Mercurial walker baseline"
@@ -271,7 +289,7 @@ class MercurialIgnorePolicy(IgnorePolicy):
                 reason="baseline-exclusion",
                 discovery_complete=sources.complete,
                 diagnostics=sources.diagnostics,
-                membership=membership.get(path) if membership is not None else None,
+                membership=membership_value,
             )
         return IgnoreDecision(
             path=path,
@@ -284,7 +302,7 @@ class MercurialIgnorePolicy(IgnorePolicy):
             reason="matched-rule" if rule is not None else "no-matching-rule",
             discovery_complete=sources.complete,
             diagnostics=sources.diagnostics,
-            membership=membership.get(path) if membership is not None else None,
+            membership=membership_value,
         )
 
     def _load_membership(self) -> dict[Path, Literal["versioned", "unversioned"]]:
