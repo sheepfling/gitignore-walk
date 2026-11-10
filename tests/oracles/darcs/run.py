@@ -91,6 +91,25 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             with global_boring.open("w", encoding="utf-8", newline="") as stream:
                 stream.write(setup["global_boring"])
 
+        for relative in setup.get("nested_repositories", []):
+            nested_root = (repository / relative).resolve()
+            try:
+                nested_root.relative_to(repository.resolve())
+            except ValueError as error:
+                raise ValueError(f"nested repository escapes fixture root: {relative}") from error
+            if nested_root == repository.resolve():
+                raise ValueError("nested repository must be below the fixture root")
+            nested_root.mkdir(parents=True, exist_ok=True)
+            nested_init = _run(
+                executable,
+                ["init", "--repodir", str(nested_root)],
+                cwd=nested_root,
+                environment=environment,
+            )
+            if nested_init.returncode != 0:
+                detail = nested_init.stderr.strip() or nested_init.stdout.strip()
+                raise RuntimeError(f"nested darcs init failed: {detail}")
+
         _write_files(repository, setup.get("files", {}))
         boringfile = setup.get("boringfile")
         if boringfile is not None:

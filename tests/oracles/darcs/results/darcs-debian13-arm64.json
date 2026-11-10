@@ -118,6 +118,38 @@
       "home": "<temp>/home"
     },
     {
+      "id": "darcs.nested-repository-file-remains-an-outer-add-candidate",
+      "dimension": "walking",
+      "query": "nested/inner.txt",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "nested/",
+        "nested/_darcs/",
+        "nested/_darcs/format",
+        "nested/_darcs/hashed_inventory",
+        "nested/_darcs/inventories/",
+        "nested/_darcs/patches/",
+        "nested/_darcs/prefs/",
+        "nested/_darcs/prefs/binaries",
+        "nested/_darcs/prefs/boring",
+        "nested/_darcs/prefs/motd",
+        "nested/_darcs/pristine.hashed/",
+        "nested/_darcs/pristine.hashed/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "nested/inner.txt"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./nested/\na ./nested/_darcs/\na ./nested/_darcs/format\na ./nested/_darcs/hashed_inventory\na ./nested/_darcs/inventories/\na ./nested/_darcs/patches/\na ./nested/_darcs/prefs/\na ./nested/_darcs/prefs/binaries\na ./nested/_darcs/prefs/boring\na ./nested/_darcs/prefs/motd\na ./nested/_darcs/pristine.hashed/\na ./nested/_darcs/pristine.hashed/e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\na ./nested/inner.txt\n",
+      "whatsnew_stderr": "",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
       "id": "darcs.hash-leading-rule-is-comment",
       "dimension": "lexing",
       "query": "#literal",

@@ -319,3 +319,61 @@ def test_native_darcs_walker_matches_membership_aware_boring_behavior(
     )
     assert policy.explain("tracked.tmp").ignored is False
     assert policy.explain("cache/ignored.txt").ignored is True
+
+
+@pytest.mark.parametrize("topdown", [True, False])
+def test_native_darcs_walker_follows_nested_repository_add_candidates(
+    tmp_path: Path, topdown: bool
+) -> None:
+    executable = shutil.which("darcs")
+    if executable is None:
+        pytest.skip("native Darcs is not installed")
+    root = (tmp_path / "outer-repository").resolve()
+    root.mkdir()
+    nested = root / "nested"
+    nested.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "APPDATA": str(home),
+        "DARCS_PAGER": "cat",
+        "PAGER": "cat",
+        "LC_ALL": "C",
+    }
+
+    for repository in (root, nested):
+        initialized = subprocess.run(
+            [executable, "init", "--repodir", str(repository)],
+            cwd=repository,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert initialized.returncode == 0, initialized.stderr
+    (root / "outer.txt").write_text("outer candidate\n", encoding="utf-8")
+    (nested / "inner.txt").write_text("nested candidate\n", encoding="utf-8")
+
+    candidates = subprocess.run(
+        [executable, "whatsnew", "--look-for-adds", "--summary"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert candidates.returncode == 0, candidates.stderr
+    candidate_paths = {
+        line[2:].strip().replace("\\", "/").removeprefix("./")
+        for line in candidates.stdout.splitlines()
+        if line.startswith("a ")
+    }
+    assert "nested/inner.txt" in candidate_paths
+
+    policy = DarcsBoringPolicy(root, darcs_executable=executable, environment=environment)
+    assert policy.explain("nested/inner.txt").ignored is False
+    walker = IgnoreWalker(root, policy=policy)
+    included = {path.relative_to(root).as_posix() for path in walker.iter_files(topdown=topdown)}
+    assert included == {"nested/inner.txt", "outer.txt"}

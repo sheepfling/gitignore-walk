@@ -76,6 +76,21 @@
       "native_status": "captured"
     },
     {
+      "id": "darcs.nested-repository-file-remains-an-outer-add-candidate",
+      "dimension": "walking",
+      "setup": {
+        "local_boring": "",
+        "nested_repositories": ["nested"],
+        "files": {
+          "nested/inner.txt": "nested repository file\n"
+        }
+      },
+      "query": "nested/inner.txt",
+      "expected_boring": false,
+      "native_status": "captured",
+      "note": "Outer Darcs whatsnew still reports files inside a nested Darcs repository as add candidates."
+    },
+    {
       "id": "darcs.hash-leading-rule-is-comment",
       "dimension": "lexing",
       "setup": {
