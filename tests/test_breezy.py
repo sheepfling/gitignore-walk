@@ -115,6 +115,30 @@ def test_breezy_policy_opens_ignored_directory_for_declared_exception(
     assert policy.can_prune_ignored_directory(cache, directory) is False
 
 
+@pytest.mark.parametrize("topdown", [True, False])
+def test_breezy_root_anchored_nested_exception_opens_ignored_directory(
+    breezy_root: Path, topdown: bool
+) -> None:
+    cache = breezy_root / "cache"
+    cache.mkdir()
+    kept = cache / "keep.tmp"
+    dropped = cache / "drop.tmp"
+    kept.touch()
+    dropped.touch()
+    (breezy_root / ".bzrignore").write_text(
+        "cache\ncache/**\n!./cache/keep.tmp\n", encoding="utf-8"
+    )
+    policy = BreezyIgnorePolicy(breezy_root)
+    walker = IgnoreWalker(breezy_root, policy=policy)
+
+    assert policy.explain("cache/keep.tmp").ignored is False
+    assert policy.explain("cache/drop.tmp").ignored is True
+    assert kept in set(walker.iter_files(topdown=topdown))
+    assert dropped not in set(walker.iter_files(topdown=topdown))
+    assert kept not in set(walker.iter_files(topdown=topdown, selection="ignored"))
+    assert dropped in set(walker.iter_files(topdown=topdown, selection="ignored"))
+
+
 def test_breezy_exception_can_open_directory_when_target_does_not_exist(
     breezy_root: Path,
 ) -> None:

@@ -416,6 +416,7 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
     root_only = not regex and expression_text.startswith("./")
     if root_only:
         expression_text = expression_text[2:]
+        root_only = "/" not in expression_text
     diagnostic = None
     try:
         if regex:
@@ -494,7 +495,9 @@ def _exception_may_open(directory: str, rule: _BreezyRule) -> bool:
         return True
     pattern = rule.pattern[1:]
     if pattern.startswith("./"):
-        return directory == "."
+        pattern = pattern[2:]
+        if "/" not in pattern:
+            return False
     if "/" not in pattern:
         return True
     wildcard_positions = [pattern.find(character) for character in "*?[" if character in pattern]
