@@ -348,7 +348,9 @@ for decision in selection.policy.explain_many(["build/output.txt", "docs/guide.m
 Mercurial ignore matching is local and portable by default. Set `membership_aware=True` when
 constructing `MercurialPolicyConfig` to make read-only `hg status --all --unknown --ignored -0`
 queries annotate known file membership as `"versioned"` or `"unversioned"`; rule matching remains
-independent of that annotation. This option requires the `hg` executable and a real working copy.
+independent of that annotation. Membership-aware walks select versioned paths as included even when
+they match `.hgignore`, and they keep ignored-only selection for ignored unversioned paths. This
+option requires the `hg` executable and a real working copy.
 Paths omitted by native status remain unknown. Each direct query, batch, or walk uses one captured
 status snapshot.
 

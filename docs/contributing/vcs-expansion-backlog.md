@@ -501,7 +501,9 @@ open.
 An opt-in `membership_aware` mode now captures `hg status --all --unknown --ignored -0` once per
 direct batch or walk and annotates status-listed files as versioned (`C`, `M`, `A`, `R`, `!`) or
 unversioned (`?`, `I`). A live disposable-repository comparison covers clean, modified, missing,
-staged, scheduled-removal, ignored, and unknown files. Paths omitted by native status remain
+staged, scheduled-removal, ignored, and unknown files. It now checks included, ignored, and all-file
+walk selections in both orders; a tracked file matching `.hgignore` stays included, while the
+ignored unversioned file appears only in ignored/all selection. Paths omitted by native status remain
 unknown; broader sparse, symlink, and cross-profile membership behavior remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored

@@ -773,7 +773,10 @@ def test_nested_hg_workspace_is_not_traversed(tmp_path: Path) -> None:
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
-def test_membership_aware_policy_matches_native_status_classes(tmp_path: Path) -> None:
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_membership_aware_policy_matches_native_status_classes(
+    tmp_path: Path, topdown: bool
+) -> None:
     root = tmp_path / "repo"
     root.mkdir()
     home = tmp_path / "home"
@@ -866,6 +869,26 @@ def test_membership_aware_policy_matches_native_status_classes(tmp_path: Path) -
     assert decisions["unknown.txt"].membership == "unversioned"
     assert decisions["ignored.tmp"].ignored
     assert decisions["tracked.tmp"].ignored
+
+    walker = IgnoreWalker(root, policy=policy)
+
+    def walked(selection_name: Literal["included", "ignored", "all"]) -> set[str]:
+        return {
+            path.relative_to(root).as_posix()
+            for path in walker.iter_files(selection=selection_name, topdown=topdown)
+        }
+
+    included = {
+        ".hgignore",
+        "clean.txt",
+        "modified.txt",
+        "staged.tmp",
+        "tracked.tmp",
+        "unknown.txt",
+    }
+    assert walked("included") == included
+    assert walked("ignored") == {"ignored.tmp"}
+    assert walked("all") == included | {"ignored.tmp"}
 
 
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
