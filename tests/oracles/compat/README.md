@@ -19,6 +19,11 @@ with `.jj` only. In all four layouts, `.gitignore` excludes `a.tmp`, while
 policy for the tested in-tree rule subset, with a caller-selected metadata baseline such as
 `.sl` or `.jj`.
 
+Jujutsu 0.47.1 is also captured on Windows Server 2025 x64 in colocated and non-colocated modes.
+Both Windows cases match the same candidates, global-source precedence, and path-pattern matrix.
+Sapling's pinned Windows release aborts during `sl status` with `cannot set file timestamp to 0`,
+so this profile does not claim Sapling Windows conformance.
+
 The isolated source probes also capture that Sapling in `.git` mode reads the XDG Git ignore file
 and `.git/info/exclude`; Sapling `.sl` mode reads neither. Jujutsu reads the XDG Git ignore file in
 both modes and reads `.git/info/exclude` only when colocated. In modes with all three sources,
@@ -46,3 +51,4 @@ client. Git-native selection remains appropriate only when an actual `.git` repo
 | ---------------------------------------------------- | ------------------------- | ------------ | ------- |
 | `sapling-0.2.20261103-jj-0.47.1-macos-arm64.json`    | macOS 26 arm64            | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json` | Debian 13 arm64 in Docker | 0.2.20261103 | 0.47.1  |
+| `jj-0.47.1-windows-x64.json`                         | Windows Server 2025 x64   | —            | 0.47.1  |

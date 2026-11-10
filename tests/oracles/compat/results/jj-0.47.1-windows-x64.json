@@ -1,0 +1,141 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "Windows-2025Server-10.0.26100-SP0",
+  "clients": {
+    "jujutsu": "jj 0.47.1-d16ee1fc88a72c54142241b079a34bbf3b033bc0"
+  },
+  "cases": [
+    {
+      "id": "jj.colocated",
+      "vcs": "jujutsu",
+      "mode": "colocated",
+      "version": "jj 0.47.1-d16ee1fc88a72c54142241b079a34bbf3b033bc0",
+      "included": [
+        "b.log",
+        "visible.txt"
+      ],
+      "ignored": [
+        "a.tmp"
+      ],
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA local.priority\nA priority.global\nA visible.txt\nWorking copy  (@) : morrzykx 145c8232 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "metadata_markers": [
+        ".git",
+        ".jj"
+      ],
+      "isolated_temporary_workspace": true,
+      "status_snapshots_disposable_workspace": true,
+      "source_discovery": {
+        "query_files": [
+          "global.global",
+          "info.priority",
+          "local.local",
+          "local.priority",
+          "priority.global"
+        ],
+        "ignored": [
+          "global.global",
+          "info.priority",
+          "local.local"
+        ],
+        "included": [
+          "local.priority",
+          "priority.global"
+        ],
+        "candidate_matches": true
+      },
+      "pattern_discovery": {
+        "query_files": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "cache/keep.tmp",
+          "nested/deep/deep.log",
+          "nested/root-only.tmp",
+          "root-only.tmp"
+        ],
+        "ignored": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "nested/deep/deep.log",
+          "root-only.tmp"
+        ],
+        "included": [
+          "cache/keep.tmp",
+          "nested/root-only.tmp"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache\\keep.tmp\nA local.priority\nA nested\\root-only.tmp\nA priority.global\nA visible.txt\nWorking copy  (@) : morrzykx 14615045 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache\\keep.tmp\nlocal.priority\nnested\\root-only.tmp\npriority.global\nvisible.txt\n",
+        "candidate_matches": true
+      },
+      "candidate_matches": true
+    },
+    {
+      "id": "jj.noncolocated",
+      "vcs": "jujutsu",
+      "mode": "noncolocated",
+      "version": "jj 0.47.1-d16ee1fc88a72c54142241b079a34bbf3b033bc0",
+      "included": [
+        "b.log",
+        "visible.txt"
+      ],
+      "ignored": [
+        "a.tmp"
+      ],
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA b.log\nA info.priority\nA local.local\nA local.priority\nA visible.txt\nWorking copy  (@) : xynpmoyo c4bf35ec (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+      "status_stderr": "",
+      "metadata_markers": [
+        ".jj"
+      ],
+      "isolated_temporary_workspace": true,
+      "status_snapshots_disposable_workspace": true,
+      "source_discovery": {
+        "query_files": [
+          "global.global",
+          "info.priority",
+          "local.local",
+          "local.priority",
+          "priority.global"
+        ],
+        "ignored": [
+          "global.global",
+          "priority.global"
+        ],
+        "included": [
+          "info.priority",
+          "local.local",
+          "local.priority"
+        ],
+        "candidate_matches": true
+      },
+      "pattern_discovery": {
+        "query_files": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "cache/keep.tmp",
+          "nested/deep/deep.log",
+          "nested/root-only.tmp",
+          "root-only.tmp"
+        ],
+        "ignored": [
+          "blocked/keep.txt",
+          "cache/drop.tmp",
+          "nested/deep/deep.log",
+          "root-only.tmp"
+        ],
+        "included": [
+          "cache/keep.tmp",
+          "nested/root-only.tmp"
+        ],
+        "status_stdout": "Working copy changes:\nA .gitignore\nA .hgignore\nA .jjignore\nA a.tmp\nA b.log\nA cache\\keep.tmp\nA info.priority\nA local.local\nA local.priority\nA nested\\root-only.tmp\nA visible.txt\nWorking copy  (@) : xynpmoyo 0a9a82f1 (no description set)\nParent commit (@-): zzzzzzzz 00000000 (empty) (no description set)\n",
+        "status_stderr": "",
+        "file_list_stdout": ".gitignore\n.hgignore\n.jjignore\na.tmp\nb.log\ncache\\keep.tmp\ninfo.priority\nlocal.local\nlocal.priority\nnested\\root-only.tmp\nvisible.txt\n",
+        "candidate_matches": true
+      },
+      "candidate_matches": true
+    }
+  ]
+}
