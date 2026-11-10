@@ -11,6 +11,7 @@ import pytest
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
 CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
+    "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
@@ -192,6 +193,40 @@ def test_compatibility_capture_reconciles_case_insensitive_gitdir_include(
         "conditional.visible",
     ]
     assert conditional_gitdir_i["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_worktree_conditional_include(
+    profile: str, case_id: str
+) -> None:
+    conditional_worktree = OBSERVATIONS[profile][case_id]["conditional_worktree"]
+    expected_ignored = (
+        ["conditional.worktree"]
+        if case_id == "sapling.git-mode" and conditional_worktree["git_config_matches"]
+        else []
+    )
+
+    assert conditional_worktree["candidate_matches"] is True
+    assert conditional_worktree["query_files"] == [
+        "conditional.visible",
+        "conditional.worktree",
+    ]
+    assert conditional_worktree["ignored"] == expected_ignored
+    assert conditional_worktree["native_matches_git_config"] is (
+        "conditional.worktree" in expected_ignored or not conditional_worktree["git_config_matches"]
+    )
+
+
+def test_git_256_profile_records_jujutsu_worktree_include_divergence() -> None:
+    profile = "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json"
+    capture = CAPTURES[profile]
+    colocated = OBSERVATIONS[profile]["jj.colocated"]["conditional_worktree"]
+
+    assert capture["clients"]["git"].startswith("git version 2.56.0")
+    assert colocated["git_config_matches"] is True
+    assert colocated["ignored"] == []
+    assert colocated["native_matches_git_config"] is False
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)

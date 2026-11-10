@@ -150,6 +150,7 @@ jobs:
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
@@ -196,11 +197,43 @@ jobs:
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           print(result)
           PY
+      - name: Capture worktree conditional behavior with Git 2.56
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          source_dir="$RUNNER_TEMP/git-2.56-source"
+          client_dir="$RUNNER_TEMP/compat-clients"
+          mkdir -p "$client_dir/sapling" "$client_dir/jj"
+          git clone --depth 1 --branch v2.56.0 https://github.com/git/git.git "$source_dir"
+          test "$(git -C "$source_dir" rev-parse HEAD)" = a018953688f1b10bddf91bff8747068f5f4746a4
+          make -C "$source_dir" -j2 NO_RUST=YesPlease NO_OPENSSL=YesPlease \
+            NO_CURL=YesPlease NO_EXPAT=YesPlease NO_GETTEXT=YesPlease NO_TCLTK=YesPlease git
+          tar -xJf "$client_dir/sapling-linux-x64.tar.xz" -C "$client_dir/sapling"
+          tar -xzf "$client_dir/jj-linux-x64.tar.gz" -C "$client_dir/jj"
+          PATH="$source_dir:$PATH" python3 tests/oracles/compat/run.py \
+            --sl "$client_dir/sapling/sl" --jj "$client_dir/jj/jj" \
+            --output "$RUNNER_TEMP/native/sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json"
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert capture["clients"]["git"].startswith("git version 2.56.0")
+          assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
+          observations = {case["id"]: case["conditional_worktree"] for case in capture["cases"]}
+          assert observations["sapling.git-mode"]["ignored"] == ["conditional.worktree"]
+          assert observations["jj.colocated"]["ignored"] == []
+          assert observations["jj.colocated"]["native_matches_git_config"] is False
+          PY
+          PATH="$source_dir:$PATH" python3 -m pytest tests/test_git_compatible_schemes.py -q
       - name: Check selected Linux native captures
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-
@@ -336,12 +369,14 @@ jobs:
           assert result["passed"], result
           assert len(capture["cases"]) == 2
           assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
-          assert set(capture["clients"]) == {"jujutsu"}
+          assert set(capture["clients"]) == {"git", "jujutsu"}
+          assert capture["clients"]["git"].startswith("git version ")
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
           assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
           print(result)
           '@ | python -
       - name: Check Windows Registry and INI precedence

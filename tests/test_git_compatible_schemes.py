@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -45,6 +46,12 @@ _PATTERN_IGNORED = {
     "root-only.tmp",
     "nested/deep/deep.log",
 }
+
+
+def _git_supports_worktree_conditional_includes() -> bool:
+    result = subprocess.run(["git", "--version"], capture_output=True, text=True, check=False)
+    version = re.search(r"\b(\d+)\.(\d+)\.(\d+)\b", result.stdout)
+    return bool(version and tuple(map(int, version.groups())) >= (2, 56, 0))
 
 
 @pytest.mark.parametrize("mode", sorted(_SOURCE_EXPECTATIONS))
@@ -546,6 +553,67 @@ def test_compatible_scheme_discovers_case_insensitive_gitdir_include(
 
     assert decision.ignored is expected_ignored
     assert ("conditional.casefold" in ignored_by_walker) is expected_ignored
+
+
+@pytest.mark.skipif(
+    not _git_supports_worktree_conditional_includes(),
+    reason="Git worktree conditional includes require Git 2.56 or newer",
+)
+@pytest.mark.parametrize(
+    ("mode", "expected_ignored"),
+    [
+        ("sapling-git", True),
+        ("sapling-sl", False),
+        ("jj-colocated", True),
+        ("jj-noncolocated", False),
+    ],
+)
+def test_compatible_scheme_resolves_worktree_conditional_with_git_256(
+    tmp_path: Path, mode: str, expected_ignored: bool
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    custom_ignore = home / "worktree-ignore"
+    custom_ignore.write_text("*.worktree\n", encoding="utf-8")
+    (home / "included.gitconfig").write_text(
+        f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8"
+    )
+    global_config = home / ".gitconfig"
+    global_config.write_text(
+        f'[includeIf "worktree:{root.resolve().as_posix()}"]\n\tpath = included.gitconfig\n',
+        encoding="utf-8",
+    )
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    if mode == "sapling-git":
+        _git_init(root)
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    elif mode == "sapling-sl":
+        (root / ".sl").mkdir()
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    elif mode == "jj-colocated":
+        (root / ".jj").mkdir()
+        _git_init(root)
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    else:
+        (root / ".jj").mkdir()
+        git_dir = root / ".jj" / "repo" / "store" / "git"
+        subprocess.run(["git", "init", "--bare", "-q", str(git_dir)], check=True)
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+
+    (root / "conditional.worktree").touch()
+    selection = select_policy(root, config)
+    decision = selection.policy.explain("conditional.worktree")
+
+    assert decision.ignored is expected_ignored
 
 
 def test_compatible_scheme_config_discovery_errors_if_git_is_missing(tmp_path: Path) -> None:

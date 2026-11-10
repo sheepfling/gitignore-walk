@@ -581,7 +581,12 @@ Git store as condition context for non-colocated workspaces unless the caller pr
 Case-insensitive `gitdir/i` matching is additionally captured on macOS and Debian 13 Linux: an
 uppercase path pattern matches Sapling `.git` mode and colocated Jujutsu, while Sapling `.sl` and
 non-colocated Jujutsu do not match. Windows capture validates the Jujutsu modes in native CI.
-Other conditional forms and broader client/platform profiles remain open.
+Git 2.56's `worktree:` conditional is captured on both Git 2.54 and 2.56 profiles. With Git 2.56,
+Sapling `.git` mode follows the included `core.excludesFile`, while Jujutsu 0.47.1 colocated mode
+does not honor the include natively even though `git config` resolves it; the read-Git-config
+policy follows Git's result. Non-colocated Jujutsu does not match because its internal store is
+bare. The policy contract now documents this concrete divergence. Other conditional forms and
+broader client/platform profiles remain open.
 
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native

@@ -77,6 +77,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             configured_system,
             conditional_global,
             conditional_gitdir_i,
+            conditional_worktree,
             conditional_onbranch,
             conditional_remote,
             configured_repository,
@@ -111,6 +112,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             "configured_system": configured_system,
             "conditional_global": conditional_global,
             "conditional_gitdir_i": conditional_gitdir_i,
+            "conditional_worktree": conditional_worktree,
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
             "configured_repository": configured_repository,
@@ -170,6 +172,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             configured_system,
             conditional_global,
             conditional_gitdir_i,
+            conditional_worktree,
             conditional_onbranch,
             conditional_remote,
             configured_repository,
@@ -206,6 +209,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "configured_system": configured_system,
             "conditional_global": conditional_global,
             "conditional_gitdir_i": conditional_gitdir_i,
+            "conditional_worktree": conditional_worktree,
             "conditional_onbranch": conditional_onbranch,
             "conditional_remote_url": conditional_remote,
             "configured_repository": configured_repository,
@@ -268,6 +272,7 @@ def _capture_configured_global_sapling(
     dict[str, Any],
     dict[str, Any],
     dict[str, Any],
+    dict[str, Any],
 ]:
     """Capture Sapling's global-over-system and system-over-XDG source selection."""
     query_files = _write_configured_global_probe(root, home, fixture)
@@ -310,6 +315,9 @@ def _capture_configured_global_sapling(
     conditional_gitdir_i = _capture_conditional_gitdir_i_sapling(
         executable, mode, root, home, probe_environment, fixture
     )
+    conditional_worktree = _capture_conditional_worktree_sapling(
+        executable, mode, root, home, probe_environment, fixture
+    )
     conditional_onbranch = _capture_conditional_onbranch_sapling(
         executable, mode, root, home, probe_environment, fixture
     )
@@ -324,6 +332,7 @@ def _capture_configured_global_sapling(
         configured_system,
         conditional_global,
         conditional_gitdir_i,
+        conditional_worktree,
         conditional_onbranch,
         conditional_remote,
         configured_repository,
@@ -338,6 +347,7 @@ def _capture_configured_global_jj(
     environment: Mapping[str, str],
     fixture: Mapping[str, Any],
 ) -> tuple[
+    dict[str, Any],
     dict[str, Any],
     dict[str, Any],
     dict[str, Any],
@@ -389,6 +399,9 @@ def _capture_configured_global_jj(
     conditional_gitdir_i = _capture_conditional_gitdir_i_jj(
         executable, mode, root, home, probe_environment, fixture
     )
+    conditional_worktree = _capture_conditional_worktree_jj(
+        executable, mode, root, home, probe_environment, fixture
+    )
     conditional_onbranch = _capture_conditional_onbranch_jj(
         executable, mode, root, home, probe_environment, fixture
     )
@@ -403,6 +416,7 @@ def _capture_configured_global_jj(
         configured_system,
         conditional_global,
         conditional_gitdir_i,
+        conditional_worktree,
         conditional_onbranch,
         conditional_remote,
         configured_repository,
@@ -457,6 +471,40 @@ def _write_conditional_gitdir_i_probe(
     files: Mapping[str, str] = fixture["conditional_gitdir_i_probe_files"]
     _write_files(root, files)
     return sorted(files)
+
+
+def _write_conditional_worktree_probe(
+    root: Path, home: Path, environment: Mapping[str, str], fixture: Mapping[str, Any]
+) -> tuple[list[str], bool]:
+    """Configure a worktree include and report whether the selected Git resolves it."""
+    custom_ignore = home / "worktree-conditional-ignore"
+    custom_ignore.write_text(fixture["conditional_worktree_ignore"], encoding="utf-8")
+    included_config = home / "worktree-conditional-config"
+    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    (home / ".gitconfig").write_text(
+        f'[includeIf "worktree:{root.resolve().as_posix()}"]\n'
+        "\tpath = worktree-conditional-config\n",
+        encoding="utf-8",
+    )
+    files: Mapping[str, str] = fixture["conditional_worktree_probe_files"]
+    _write_files(root, files)
+
+    config_environment = dict(environment)
+    for name in ("GIT_CONFIG_SYSTEM", "GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR"):
+        config_environment.pop(name, None)
+    config_environment["GIT_CONFIG_NOSYSTEM"] = "1"
+    config_environment["GIT_CONFIG_GLOBAL"] = str(home / ".gitconfig")
+    if git_dir := _workspace_git_dir(root):
+        config_environment["GIT_DIR"] = str(git_dir)
+    result = _run(
+        ["git", "config", "--includes", "--path", "--get", "core.excludesFile"],
+        cwd=root,
+        environment=config_environment,
+    )
+    if result.returncode not in (0, 1) or result.stderr:
+        _require_success(result, "git config worktree conditional core.excludesFile")
+    included = result.returncode == 0 and bool(result.stdout.strip())
+    return sorted(files), included
 
 
 def _write_conditional_remote_probe(
@@ -601,6 +649,38 @@ def _capture_conditional_gitdir_i_sapling(
     }
 
 
+def _capture_conditional_worktree_sapling(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Sapling's native worktree-conditional ignore behavior."""
+    query_files, git_config_matches = _write_conditional_worktree_probe(
+        root, home, environment, fixture
+    )
+    status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
+    _require_success(status, "sl status worktree conditional core.excludesFile")
+    _, ignored_paths = _sapling_status_paths(status.stdout)
+    ignored = sorted(ignored_paths & set(query_files))
+    expected = (
+        fixture["expected_conditional_worktree_ignored_when_supported"][f"sapling.{mode}-mode"]
+        if git_config_matches
+        else []
+    )
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) - set(ignored)),
+        "git_config_matches": git_config_matches,
+        "native_matches_git_config": ("conditional.worktree" in ignored) == git_config_matches,
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+    }
+
+
 def _capture_conditional_global_jj(
     executable: str,
     mode: str,
@@ -649,6 +729,41 @@ def _capture_conditional_gitdir_i_jj(
         "query_files": query_files,
         "ignored": ignored,
         "included": sorted(set(query_files) & included_paths),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+    }
+
+
+def _capture_conditional_worktree_jj(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Jujutsu's native worktree-conditional ignore behavior."""
+    query_files, git_config_matches = _write_conditional_worktree_probe(
+        root, home, environment, fixture
+    )
+    status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
+    _require_success(status, "jj status worktree conditional core.excludesFile")
+    listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+    _require_success(listed, "jj file list worktree conditional core.excludesFile")
+    included_paths = _jujutsu_paths(listed.stdout)
+    ignored = sorted(set(query_files) - included_paths)
+    expected = (
+        fixture["expected_conditional_worktree_ignored_when_supported"][f"jj.{mode}"]
+        if git_config_matches
+        else []
+    )
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) & included_paths),
+        "git_config_matches": git_config_matches,
+        "native_matches_git_config": ("conditional.worktree" in ignored) == git_config_matches,
         "candidate_matches": ignored == expected,
         "status_stdout": status.stdout.replace(str(root), "<workspace>"),
         "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
@@ -927,6 +1042,7 @@ def main() -> int:
         and case["configured_system"]["candidate_matches"]
         and case["conditional_global"]["candidate_matches"]
         and case["conditional_gitdir_i"]["candidate_matches"]
+        and case["conditional_worktree"]["candidate_matches"]
         and case["conditional_onbranch"]["candidate_matches"]
         and case["conditional_remote_url"]["candidate_matches"]
         and case["configured_repository"]["candidate_matches"]
