@@ -26,7 +26,7 @@
       ],
       "candidate_matches": true,
       "query_exit_code": 0,
-      "query_stdout": "/private<temporary>/main/.git/info/exclude:1:*.commonignore\tprobe.commonignore\n",
+      "query_stdout": "<temporary>/main/.git/info/exclude:1:*.commonignore\tprobe.commonignore\n",
       "query_stderr": ""
     },
     {
@@ -45,7 +45,7 @@
       ],
       "candidate_matches": true,
       "status_exit_code": 0,
-      "status_stdout": "Working copy changes:\nA probe.commonignore\nA probe.visible\nWorking copy  (@) : mpylmrqv 21b6ecb0 (no description set)\nParent commit (@-): vsosmpks 49d9710a linked master | seed\n",
+      "status_stdout": "Working copy changes:\nA probe.commonignore\nA probe.visible\nWorking copy  (@) : zllpmqlu bc477d75 (no description set)\nParent commit (@-): oruwkwqu 5f675477 linked master | seed\n",
       "status_stderr": "",
       "file_list_stdout": "probe.commonignore\nprobe.visible\ntracked.txt\n"
     }

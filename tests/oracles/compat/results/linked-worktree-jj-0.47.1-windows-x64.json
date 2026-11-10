@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "platform": "Windows-2025Server-10.0.26100-SP0",
+  "clients": {
+    "git": "git version 2.56.0.windows.4",
+    "jujutsu": "jj 0.47.1-d16ee1fc88a72c54142241b079a34bbf3b033bc0"
+  },
+  "workspace": "Git linked worktree",
+  "common_exclude_scope": "main Git directory/info/exclude",
+  "worktree_exclude_scope": "linked worktree Git directory/info/exclude",
+  "cases": [
+    {
+      "id": "git",
+      "native_status": "captured",
+      "query_files": [
+        "probe.commonignore",
+        "probe.visible",
+        "probe.worktreeignore"
+      ],
+      "ignored": [
+        "probe.commonignore"
+      ],
+      "expected_ignored": [
+        "probe.commonignore"
+      ],
+      "candidate_matches": true,
+      "query_exit_code": 0,
+      "query_stdout": "<temporary>/main/.git/info/exclude:1:*.commonignore\tprobe.commonignore\n",
+      "query_stderr": ""
+    },
+    {
+      "id": "jj.colocated",
+      "native_status": "captured",
+      "query_files": [
+        "probe.commonignore",
+        "probe.visible",
+        "probe.worktreeignore"
+      ],
+      "ignored": [
+        "probe.worktreeignore"
+      ],
+      "expected_ignored": [
+        "probe.worktreeignore"
+      ],
+      "candidate_matches": true,
+      "status_exit_code": 0,
+      "status_stdout": "Working copy changes:\nA probe.commonignore\nA probe.visible\nWorking copy  (@) : snstzzwr b0fc05f8 (no description set)\nParent commit (@-): vtpltulm 7ceefa45 linked master | seed\n",
+      "status_stderr": "",
+      "file_list_stdout": "probe.commonignore\nprobe.visible\ntracked.txt\n"
+    }
+  ]
+}

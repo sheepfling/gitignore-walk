@@ -1444,6 +1444,17 @@ def _require_success(result: subprocess.CompletedProcess[str], operation: str) -
         raise RuntimeError(f"{operation} failed: {result.stderr.strip() or result.stdout.strip()}")
 
 
+def _redact_path(text: str, path: Path, replacement: str) -> str:
+    """Replace lexical and resolved path spellings across platform separators."""
+    variants: set[str] = set()
+    for candidate in (path, path.resolve()):
+        value = str(candidate)
+        variants.update((value, value.replace("\\", "/"), value.replace("/", "\\")))
+    for variant in sorted(variants, key=len, reverse=True):
+        text = text.replace(variant, replacement)
+    return text
+
+
 def capture(sapling: str | None, jj: str) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
     client_versions = {"git": _version("git")}
@@ -1588,8 +1599,8 @@ def capture_linked_worktree_profile(sapling: str | None, jj: str) -> dict[str, A
                 "candidate_matches": git_ignored
                 == fixture["expected_linked_worktree_ignored"]["git"],
                 "query_exit_code": git_result.returncode,
-                "query_stdout": git_result.stdout.replace(str(base), "<temporary>"),
-                "query_stderr": git_result.stderr.replace(str(base), "<temporary>"),
+                "query_stdout": _redact_path(git_result.stdout, base, "<temporary>"),
+                "query_stderr": _redact_path(git_result.stderr, base, "<temporary>"),
             }
         ]
         if sapling is not None:
@@ -1609,8 +1620,8 @@ def capture_linked_worktree_profile(sapling: str | None, jj: str) -> dict[str, A
                     "expected_ignored": expected,
                     "candidate_matches": sapling_ignored == expected,
                     "status_exit_code": status.returncode,
-                    "status_stdout": status.stdout.replace(str(worktree), "<worktree>"),
-                    "status_stderr": status.stderr.replace(str(worktree), "<worktree>"),
+                    "status_stdout": _redact_path(status.stdout, worktree, "<worktree>"),
+                    "status_stderr": _redact_path(status.stderr, worktree, "<worktree>"),
                 }
             )
         status = _run([jj, "status", "--no-pager"], cwd=worktree, environment=environment)
@@ -1629,9 +1640,9 @@ def capture_linked_worktree_profile(sapling: str | None, jj: str) -> dict[str, A
                 "expected_ignored": expected,
                 "candidate_matches": jj_ignored == expected,
                 "status_exit_code": status.returncode,
-                "status_stdout": status.stdout.replace(str(worktree), "<worktree>"),
-                "status_stderr": status.stderr.replace(str(worktree), "<worktree>"),
-                "file_list_stdout": listed.stdout.replace(str(worktree), "<worktree>"),
+                "status_stdout": _redact_path(status.stdout, worktree, "<worktree>"),
+                "status_stderr": _redact_path(status.stderr, worktree, "<worktree>"),
+                "file_list_stdout": _redact_path(listed.stdout, worktree, "<worktree>"),
             }
         )
         return {

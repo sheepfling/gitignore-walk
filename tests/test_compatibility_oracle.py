@@ -21,7 +21,10 @@ LINKED_WORKTREE_CAPTURE_FILES = (
     "linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
 )
-LINKED_WORKTREE_JJ_CAPTURE_FILES = ("linked-worktree-jj-0.47.1-macos-arm64.json",)
+LINKED_WORKTREE_JJ_CAPTURE_FILES = (
+    "linked-worktree-jj-0.47.1-macos-arm64.json",
+    "linked-worktree-jj-0.47.1-windows-x64.json",
+)
 ENVIRONMENT_GLOBAL_CAPTURE_FILES = (
     CAPTURE_FILES[0],
     CAPTURE_FILES[2],
@@ -75,6 +78,7 @@ def test_linked_worktree_capture_reconciles_scheme_specific_exclude_sources(
 
     assert capture["status"] == "captured"
     assert capture["workspace"] == "Git linked worktree"
+    assert "gitignore-walk-linked-worktree-" not in json.dumps(capture)
     assert capture["clients"]["git"].startswith("git version ")
     assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
@@ -93,12 +97,22 @@ def test_linked_worktree_jujutsu_only_capture_reconciles_sources(profile: str) -
 
     assert capture["status"] == "captured"
     assert capture["workspace"] == "Git linked worktree"
+    assert "gitignore-walk-linked-worktree-" not in json.dumps(capture)
     assert set(capture["clients"]) == {"git", "jujutsu"}
     assert {name: case["ignored"] for name, case in cases.items()} == {
         "git": ["probe.commonignore"],
         "jj.colocated": ["probe.worktreeignore"],
     }
     assert all(case["candidate_matches"] for case in cases.values())
+
+
+def test_linked_worktree_windows_capture_records_the_pinned_clients() -> None:
+    capture = LINKED_WORKTREE_JJ_CAPTURES["linked-worktree-jj-0.47.1-windows-x64.json"]
+
+    assert capture["platform"].startswith("Windows-2025Server")
+    assert capture["clients"]["git"].startswith("git version 2.56.0.windows")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+    assert capture["cases"][0]["query_stdout"].startswith("<temporary>/main/.git/info/exclude")
 
 
 @pytest.mark.parametrize(

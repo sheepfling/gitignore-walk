@@ -471,6 +471,7 @@ jobs:
           )
           assert linked["status"] == "captured"
           assert linked["workspace"] == "Git linked worktree"
+          assert "gitignore-walk-linked-worktree-" not in json.dumps(linked)
           assert set(linked["clients"]) == {"git", "jujutsu"}
           assert [case["id"] for case in linked["cases"]] == ["git", "jj.colocated"]
           assert [case["ignored"] for case in linked["cases"]] == [
