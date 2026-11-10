@@ -612,7 +612,7 @@ def test_client_config_discovery_reports_missing_mercurial_executable(tmp_path: 
 
 
 @pytest.mark.parametrize("timeout", [0.0, -1.0, float("nan"), float("inf"), float("-inf")])
-def test_mercurial_configuration_timeout_must_be_finite_and_positive(
+def test_mercurial_client_timeout_must_be_finite_and_positive(
     tmp_path: Path, timeout: float
 ) -> None:
     with pytest.raises(ValueError, match="timeout must be finite and positive"):
@@ -741,6 +741,66 @@ def test_nested_hg_workspace_is_not_traversed(tmp_path: Path) -> None:
     assert list(IgnoreWalker(root, policy=policy).iter_files()) == []
     assert list(IgnoreWalker(root, policy=policy).iter_files("subrepo")) == []
     assert visible.is_file()
+
+
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+def test_membership_aware_policy_matches_native_status_classes(tmp_path: Path) -> None:
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    hg("init")
+    (root / ".hgignore").write_text("syntax: glob\n*.tmp\n", encoding="utf-8")
+    (root / "tracked.tmp").write_text("tracked\n", encoding="utf-8")
+    hg("add", ".hgignore", "tracked.tmp")
+    hg("commit", "-m", "add tracked files", "-u", "gitignore-walk test")
+    (root / "staged.tmp").write_text("staged\n", encoding="utf-8")
+    hg("add", "staged.tmp")
+    (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
+    (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
+
+    native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+    native_records = {
+        record[2:].decode(errors="surrogateescape"): record[:1].decode("ascii")
+        for record in native.split(b"\0")
+        if record and len(record) >= 3 and record[1:2] == b" "
+    }
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+
+    assert native_records["tracked.tmp"] == "C"
+    assert native_records["staged.tmp"] == "A"
+    assert native_records["ignored.tmp"] == "I"
+    assert native_records["unknown.txt"] == "?"
+    assert policy.explain("tracked.tmp").membership == "versioned"
+    assert policy.explain("staged.tmp").membership == "versioned"
+    assert policy.explain("ignored.tmp").membership == "unversioned"
+    assert policy.explain("unknown.txt").membership == "unversioned"
+    assert policy.explain("ignored.tmp").ignored
+    assert policy.explain("tracked.tmp").ignored
 
 
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:

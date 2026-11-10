@@ -339,13 +339,21 @@ for decision in selection.policy.explain_many(["build/output.txt", "docs/guide.m
     print(decision.path, decision.ignored, decision.source, decision.line, decision.scope)
 ```
 
+Mercurial ignore matching is local and portable by default. Set `membership_aware=True` when
+constructing `MercurialPolicyConfig` to make read-only `hg status --all --unknown --ignored -0`
+queries annotate known file membership as `"versioned"` or `"unversioned"`; rule matching remains
+independent of that annotation. This option requires the `hg` executable and a real working copy.
+Paths omitted by native status remain unknown. Each direct query, batch, or walk uses one captured
+status snapshot.
+
 The policy discovers the enclosing `.hg` workspace, reads its root `.hgignore`, and loads any
 additional files passed with `ignore_files`. Relative extra-file paths are resolved from the
 workspace root. With `read_client_config=True`, Mercurial's `hg config --debug ui` command discovers
 the effective configured files and their order; this requires the `hg` executable, while rule
 matching remains local and portable. Relative configured paths use the workspace root, and `~` paths
-use the discovery environment's home directory. The policy does not inspect tracked state or claim
-that an ignored path is absent from version control. `initial_excludes` is a walker baseline and
+use the discovery environment's home directory. Membership is not queried unless
+`membership_aware=True`; even then, an ignored match does not imply that a path is absent from
+version control. `initial_excludes` is a walker baseline and
 defaults to excluding `.hg` metadata.
 Walks also stop at nested `.hg` workspaces, matching parent-repository status enumeration.
 
@@ -471,15 +479,15 @@ ignore rule.
 
 ## Choose a matching policy
 
-| Capability              | Git portable      | Git-native     | Mercurial portable      | Subversion properties         | Perforce portable      |
-| ----------------------- | ----------------- | -------------- | ----------------------- | ----------------------------- | ---------------------- |
-| Requires VCS executable | No                | Git            | Only for config query   | `svn`                         | No                     |
-| Nested ignore sources   | `.gitignore`      | `.gitignore`   | `.hgignore` includes    | Directory properties          | `P4IGNORE` files       |
-| Runtime/global config   | Conventional file | Git config     | Explicit or `hg config` | Config directory and patterns | Explicit/environment   |
-| Inherited rules         | Git precedence    | Git precedence | No                      | `svn:global-ignores`          | Nested file precedence |
-| Batch matching          | Yes               | Yes            | Yes                     | Yes                           | Yes                    |
-| Match explanations      | Yes               | Partial        | Yes                     | Yes                           | Yes                    |
-| Filtered traversal      | Yes               | Yes            | Yes                     | Yes                           | Yes                    |
+| Capability              | Git portable      | Git-native     | Mercurial portable       | Subversion properties         | Perforce portable      |
+| ----------------------- | ----------------- | -------------- | ------------------------ | ----------------------------- | ---------------------- |
+| Requires VCS executable | No                | Git            | For config or membership | `svn`                         | No                     |
+| Nested ignore sources   | `.gitignore`      | `.gitignore`   | `.hgignore` includes     | Directory properties          | `P4IGNORE` files       |
+| Runtime/global config   | Conventional file | Git config     | Explicit or `hg config`  | Config directory and patterns | Explicit/environment   |
+| Inherited rules         | Git precedence    | Git precedence | No                       | `svn:global-ignores`          | Nested file precedence |
+| Batch matching          | Yes               | Yes            | Yes                      | Yes                           | Yes                    |
+| Match explanations      | Yes               | Partial        | Yes                      | Yes                           | Yes                    |
+| Filtered traversal      | Yes               | Yes            | Yes                      | Yes                           | Yes                    |
 
 **Choose portable** when your application needs a self-contained matcher, may run outside
 repositories, or needs predictable Python-only evaluation.
@@ -549,35 +557,35 @@ policy.explain("build/output.log")
 
 Other available interfaces include:
 
-| API                                                   | Purpose                                                                           |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `SubversionIgnorePolicy`                              | Native discovery and evaluation of Subversion ignore properties                   |
-| `SubversionPolicyConfig`                              | Explicit Subversion selection and runtime config options                          |
-| `SubversionIgnoreError`                               | Report native Subversion discovery or execution failures                          |
-| `BreezyIgnorePolicy`                                  | Local Breezy rule evaluation with native built-in-rule discovery                  |
-| `BreezyPolicyConfig`                                  | Explicit Breezy selection and client/configuration options                        |
-| `BreezyIgnoreError`                                   | Report Breezy rule-source, parse, and client failures                             |
-| `DarcsBoringPolicy`                                   | Native, membership-aware Darcs boring-candidate evaluation                        |
-| `DarcsPolicyConfig`                                   | Darcs client, environment, timeout, and walker-baseline selection                 |
-| `DarcsPolicySelection`                                | Typed result identifying the Darcs native candidate backend                       |
-| `DarcsBoringError`                                    | Report Darcs native candidate or managed-path discovery failures                  |
-| `PerforceIgnorePolicy`                                | Evaluate the supported P4IGNORE subset within a caller-selected traversal root    |
-| `PerforcePolicyConfig`                                | Explicit selection, source-list, client-root, and client-view options             |
-| `PerforcePolicySelection`                             | Typed result identifying the selected Perforce policy and backend                 |
-| `PerforceIgnoreError`                                 | Report Perforce source, pattern, configuration, and workspace errors              |
-| `MercurialIgnorePolicy`                               | Portable Mercurial `.hgignore` evaluation                                         |
-| `MercurialPolicyConfig`                               | Mercurial selection with extra paths or opt-in native config discovery            |
-| `select_policy(root, config)`                         | Select a tagged built-in scheme and backend                                       |
-| `MercurialIgnoreError`                                | Report Mercurial source, pattern, and config-discovery errors                     |
-| `is_gitignored(root, target)`                         | Portable one-shot query                                                           |
-| `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec`                              |
-| `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                                                   |
-| `IgnoreWalker.walk()`                                 | Directory traversal with optional filtering                                       |
-| `IgnoreWalker.iter_files()`                           | File-only traversal                                                               |
-| `IgnorePolicy.explain_many()`                         | Return a mutable list of detailed decisions                                       |
-| `IgnorePolicy.is_ignored_many()`                      | Return a mutable list of ignore decisions                                         |
-| `IgnorePolicy.iter_explain()`                         | Lazily yield detailed decisions                                                   |
-| `IgnorePolicy.iter_ignored()`                         | Lazily yield ignore decisions                                                     |
+| API                                                   | Purpose                                                                        |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `SubversionIgnorePolicy`                              | Native discovery and evaluation of Subversion ignore properties                |
+| `SubversionPolicyConfig`                              | Explicit Subversion selection and runtime config options                       |
+| `SubversionIgnoreError`                               | Report native Subversion discovery or execution failures                       |
+| `BreezyIgnorePolicy`                                  | Local Breezy rule evaluation with native built-in-rule discovery               |
+| `BreezyPolicyConfig`                                  | Explicit Breezy selection and client/configuration options                     |
+| `BreezyIgnoreError`                                   | Report Breezy rule-source, parse, and client failures                          |
+| `DarcsBoringPolicy`                                   | Native, membership-aware Darcs boring-candidate evaluation                     |
+| `DarcsPolicyConfig`                                   | Darcs client, environment, timeout, and walker-baseline selection              |
+| `DarcsPolicySelection`                                | Typed result identifying the Darcs native candidate backend                    |
+| `DarcsBoringError`                                    | Report Darcs native candidate or managed-path discovery failures               |
+| `PerforceIgnorePolicy`                                | Evaluate the supported P4IGNORE subset within a caller-selected traversal root |
+| `PerforcePolicyConfig`                                | Explicit selection, source-list, client-root, and client-view options          |
+| `PerforcePolicySelection`                             | Typed result identifying the selected Perforce policy and backend              |
+| `PerforceIgnoreError`                                 | Report Perforce source, pattern, configuration, and workspace errors           |
+| `MercurialIgnorePolicy`                               | Portable Mercurial `.hgignore` evaluation                                      |
+| `MercurialPolicyConfig`                               | Mercurial selection with extra paths or opt-in native config discovery         |
+| `select_policy(root, config)`                         | Select a tagged built-in scheme and backend                                    |
+| `MercurialIgnoreError`                                | Report Mercurial source, pattern, and config-discovery errors                  |
+| `is_gitignored(root, target)`                         | Portable one-shot query                                                        |
+| `parse_gitignore(lines, source=...)`                  | Parse ignore rules into an immutable `GitIgnoreSpec`                           |
+| `matches_gitignore(spec, relative, is_directory=...)` | Evaluate a parsed specification                                                |
+| `IgnoreWalker.walk()`                                 | Directory traversal with optional filtering                                    |
+| `IgnoreWalker.iter_files()`                           | File-only traversal                                                            |
+| `IgnorePolicy.explain_many()`                         | Return a mutable list of detailed decisions                                    |
+| `IgnorePolicy.is_ignored_many()`                      | Return a mutable list of ignore decisions                                      |
+| `IgnorePolicy.iter_explain()`                         | Lazily yield detailed decisions                                                |
+| `IgnorePolicy.iter_ignored()`                         | Lazily yield ignore decisions                                                  |
 
 All built-in policies implement `IgnorePolicy`. Lazy methods consume targets as they run: Git's
 portable policy caches each ignore file when first read, the Mercurial policy reads one source

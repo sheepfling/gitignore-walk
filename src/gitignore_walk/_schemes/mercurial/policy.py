@@ -9,7 +9,8 @@ import re
 import subprocess
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from math import isfinite
-from pathlib import Path
+from pathlib import Path, PurePath
+from typing import Literal
 
 from ..._policy import (
     IgnoreDecision,
@@ -32,6 +33,7 @@ class _MercurialWalkSession:
     def __init__(self, policy: MercurialIgnorePolicy) -> None:
         self._policy = policy
         self._sources = policy._load_sources()
+        self._membership = policy._load_membership() if policy.membership_aware else None
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         return self._policy.resolve_target(target)
@@ -40,7 +42,10 @@ class _MercurialWalkSession:
         return self.resolve_target(target)
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
-        return [self._policy._explain_with_sources(target, self._sources) for target in targets]
+        return [
+            self._policy._explain_with_sources(target, self._sources, self._membership)
+            for target in targets
+        ]
 
     def should_descend_directory(self, target: Path) -> bool:
         return self._policy.should_descend_directory(target)
@@ -53,7 +58,7 @@ class _MercurialWalkSession:
 
 
 class MercurialIgnorePolicy(IgnorePolicy):
-    """Evaluate Mercurial ignore rules without invoking the Mercurial executable.
+    """Evaluate Mercurial ignore rules locally, with optional native config/status queries.
 
     The policy discovers the nearest Mercurial workspace above ``root``, loads its root
     ``.hgignore``, and accepts additional ignore files explicitly through ``ignore_files``.
@@ -61,7 +66,9 @@ class MercurialIgnorePolicy(IgnorePolicy):
     inspect Mercurial configuration files by default; supply any configured ``ui.ignore`` files
     explicitly or set ``read_client_config=True`` to ask the Mercurial executable to discover
     configured files. Client-config discovery requires the executable and reports its failures.
-    Matching is additive, as in Mercurial, and does not implement Git-style negation.
+    Matching is additive, as in Mercurial, and does not implement Git-style negation. Set
+    ``membership_aware=True`` to annotate status-listed paths with version-control membership using
+    a read-only native status query.
 
     Attributes:
         root: Traversal root that bounds policy targets.
@@ -85,6 +92,7 @@ class MercurialIgnorePolicy(IgnorePolicy):
         environment: Mapping[str, str] | None = None,
         timeout: float = 30.0,
         initial_excludes: Sequence[str] = _DEFAULT_INITIAL_EXCLUDES,
+        membership_aware: bool = False,
     ) -> None:
         """Create a Mercurial policy with explicit or client-discovered extra sources.
 
@@ -92,10 +100,12 @@ class MercurialIgnorePolicy(IgnorePolicy):
             root: Caller-selected traversal root.
             ignore_files: Extra rule files in addition to workspace `.hgignore`.
             read_client_config: Discover configured ``ui.ignore`` files with ``hg config``.
-            hg_executable: Mercurial executable used for optional configuration discovery.
-            environment: Complete process environment for discovery, or the current environment.
-            timeout: Maximum time in seconds for configuration discovery.
+            hg_executable: Mercurial executable used for optional config and membership queries.
+            environment: Complete process environment for client queries, or the current one.
+            timeout: Maximum duration in seconds for each Mercurial client query.
             initial_excludes: Baseline paths excluded by the walker.
+            membership_aware: Query Mercurial status to distinguish versioned and unversioned
+                paths in decisions.
         """
         try:
             self.root = Path(root).expanduser().resolve()
@@ -109,9 +119,11 @@ class MercurialIgnorePolicy(IgnorePolicy):
         )
         self._configured_sources = tuple(Path(path).expanduser() for path in ignore_files)
         if not isfinite(timeout) or timeout <= 0:
-            raise ValueError(
-                "Mercurial configuration discovery timeout must be finite and positive"
-            )
+            raise ValueError("Mercurial client timeout must be finite and positive")
+        self.membership_aware = membership_aware
+        self.hg_executable = hg_executable
+        self.environment = environment
+        self.timeout = timeout
         if read_client_config:
             self._configured_sources += _discover_ui_ignore_files(
                 self.workspace_root,
@@ -136,14 +148,16 @@ class MercurialIgnorePolicy(IgnorePolicy):
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether a target matches a Mercurial ignore source."""
-        return self._explain_with_sources(target, self._load_sources())
+        membership = self._load_membership() if self.membership_aware else None
+        return self._explain_with_sources(target, self._load_sources(), membership)
 
     def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return all matching rules in source order, with the first match effective."""
         path = self.resolve_target(target)
         sources = self._load_sources()
         matches = self._matching_rules(path, sources)
-        decision = self._decision(path, matches[0] if matches else None, sources)
+        membership = self._load_membership() if self.membership_aware else None
+        decision = self._decision(path, matches[0] if matches else None, sources, membership)
         if decision.reason == "baseline-exclusion":
             trace = (
                 IgnoreTraceMatch(
@@ -184,8 +198,9 @@ class MercurialIgnorePolicy(IgnorePolicy):
             raise ValueError("batch_size must be positive")
         del batch_size
         sources = self._load_sources()
+        membership = self._load_membership() if self.membership_aware else None
         for target in targets:
-            yield self._explain_with_sources(target, sources)
+            yield self._explain_with_sources(target, sources, membership)
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         """Prune ignored subtrees because Mercurial ignore rules have no negation."""
@@ -204,12 +219,15 @@ class MercurialIgnorePolicy(IgnorePolicy):
         return load_ignore_sources(self.workspace_root, self._configured_sources)
 
     def _explain_with_sources(
-        self, target: str | os.PathLike[str], sources: HgIgnoreSources
+        self,
+        target: str | os.PathLike[str],
+        sources: HgIgnoreSources,
+        membership: Mapping[Path, Literal["versioned", "unversioned"]] | None = None,
     ) -> IgnoreDecision:
         """Explain one target against an already loaded source snapshot."""
         path = self.resolve_target(target)
         matches = self._matching_rules(path, sources)
-        return self._decision(path, matches[0] if matches else None, sources)
+        return self._decision(path, matches[0] if matches else None, sources, membership)
 
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a stable source snapshot for one directory walk."""
@@ -230,7 +248,11 @@ class MercurialIgnorePolicy(IgnorePolicy):
         return tuple(matches)
 
     def _decision(
-        self, path: Path, rule: HgRule | None, sources: HgIgnoreSources
+        self,
+        path: Path,
+        rule: HgRule | None,
+        sources: HgIgnoreSources,
+        membership: Mapping[Path, Literal["versioned", "unversioned"]] | None = None,
     ) -> IgnoreDecision:
         relative = path.relative_to(self.root).as_posix()
         baseline = next(
@@ -249,6 +271,7 @@ class MercurialIgnorePolicy(IgnorePolicy):
                 reason="baseline-exclusion",
                 discovery_complete=sources.complete,
                 diagnostics=sources.diagnostics,
+                membership=membership.get(path) if membership is not None else None,
             )
         return IgnoreDecision(
             path=path,
@@ -261,7 +284,59 @@ class MercurialIgnorePolicy(IgnorePolicy):
             reason="matched-rule" if rule is not None else "no-matching-rule",
             discovery_complete=sources.complete,
             diagnostics=sources.diagnostics,
+            membership=membership.get(path) if membership is not None else None,
         )
+
+    def _load_membership(self) -> dict[Path, Literal["versioned", "unversioned"]]:
+        """Capture Mercurial's current status classes for one decision batch or walk."""
+        environment = dict(os.environ if self.environment is None else self.environment)
+        environment["HGPLAIN"] = "1"
+        environment["LC_ALL"] = "C"
+        try:
+            result = subprocess.run(
+                [self.hg_executable, "status", "--all", "--unknown", "--ignored", "-0"],
+                cwd=self.workspace_root,
+                env=environment,
+                capture_output=True,
+                timeout=self.timeout,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise MercurialIgnoreError(
+                f"Unable to discover Mercurial working-copy membership: {error}",
+                operation="membership",
+            ) from error
+        if result.returncode != 0:
+            detail = result.stderr.decode(errors="replace").strip() or "unknown Mercurial error"
+            raise MercurialIgnoreError(
+                f"Mercurial working-copy membership query failed: {detail}",
+                operation="membership",
+            )
+        membership: dict[Path, Literal["versioned", "unversioned"]] = {}
+        for record in result.stdout.split(b"\0"):
+            if not record:
+                continue
+            if len(record) < 3 or record[1:2] != b" ":
+                raise MercurialIgnoreError(
+                    "Mercurial returned an invalid NUL-delimited status record.",
+                    operation="membership",
+                )
+            code = record[:1]
+            relative = os.fsdecode(record[2:])
+            if os.name == "nt":
+                relative = relative.replace("\\", "/")
+            relative_path = PurePath(relative)
+            if relative_path.is_absolute() or relative_path.drive or ".." in relative_path.parts:
+                raise MercurialIgnoreError(
+                    "Mercurial returned a status path outside its workspace.",
+                    operation="membership",
+                )
+            path = self.workspace_root / relative_path
+            if code in (b"C", b"M", b"A", b"R", b"!"):
+                membership[path] = "versioned"
+            elif code in (b"?", b"I"):
+                membership[path] = "unversioned"
+        return membership
 
 
 def _find_workspace_root(root: Path) -> Path:

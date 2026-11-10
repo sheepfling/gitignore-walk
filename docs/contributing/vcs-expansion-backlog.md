@@ -479,6 +479,12 @@ an undecodable filename with native NUL-delimited ignored status on aarch64 and 
 comparisons keep tracked membership separate; broader path and client-profile comparisons remain
 open.
 
+An opt-in `membership_aware` mode now captures `hg status --all --unknown --ignored -0` once per
+direct batch or walk and annotates status-listed files as versioned (`C`, `M`, `A`, `R`, `!`) or
+unversioned (`?`, `I`). A live disposable-repository comparison covers committed and staged files,
+ignored files, and unknown files. Paths omitted by native status remain unknown; broader sparse,
+symlink, and cross-profile membership behavior remains open.
+
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special
 files, tracked/versioned paths, and nested workspace boundaries. Override pruning only when native
@@ -493,8 +499,8 @@ satisfy this item.
 **Priority:** P1 · **Depends on:** VCS-04, VCS-05
 
 **Status:** Mercurial's tagged config, selection, public exports, docs, and downstream typing fixture
-are implemented, including opt-in discovery through the installed Mercurial client. Broader config
-trust, include, and platform behavior remain open.
+are implemented, including opt-in discovery through the installed Mercurial client and opt-in
+membership queries. Broader config trust, include, and platform behavior remain open.
 
 Add a scheme-specific config/selection variant to the explicit union and exhaustive switch. Keep
 fallback within the selected scheme; never fall from one VCS grammar to another. Export and document

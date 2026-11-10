@@ -87,10 +87,11 @@ class MercurialPolicyConfig:
         ignore_files: Additional ignore files, such as files configured with Mercurial's
             ``ui.ignore`` setting. Relative paths are resolved from the Mercurial workspace root.
         read_client_config: Ask ``hg config`` to discover the effective ``ui.ignore`` files.
-        hg_executable: Mercurial executable used only when ``read_client_config`` is enabled.
-        environment: Complete environment for configuration discovery, or the current environment.
-        timeout: Maximum configuration-discovery time in seconds.
+        hg_executable: Mercurial executable used for config discovery and membership queries.
+        environment: Complete environment for Mercurial queries, or the current environment.
+        timeout: Maximum duration in seconds for each Mercurial client query.
         initial_excludes: Walker baseline exclusions, defaulting to Mercurial's ``.hg`` metadata.
+        membership_aware: Query native status to report known versioned or unversioned paths.
     """
 
     mode: Literal["mercurial"] = field(default="mercurial", init=False)
@@ -100,6 +101,7 @@ class MercurialPolicyConfig:
     environment: Mapping[str, str] | None = None
     timeout: float = 30.0
     initial_excludes: Sequence[str] = (".hg",)
+    membership_aware: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -651,6 +653,7 @@ def select_policy(
                 environment=selected.environment,
                 timeout=selected.timeout,
                 initial_excludes=selected.initial_excludes,
+                membership_aware=selected.membership_aware,
             )
         )
 
