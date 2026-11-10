@@ -131,7 +131,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         _require_success(status, "jj status")
         listed = _run([executable, "file", "list"], cwd=root, environment=environment)
         _require_success(listed, "jj file list")
-        files = {line.strip() for line in listed.stdout.splitlines() if line.strip()}
+        files = _jujutsu_paths(listed.stdout)
         query_files = set(fixture["query_files"])
         source_query_files = set(fixture["source_query_files"])
         source_ignored = sorted(source_query_files - files)
@@ -143,9 +143,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         _require_success(pattern_status, "jj status pattern probes")
         pattern_listed = _run([executable, "file", "list"], cwd=root, environment=environment)
         _require_success(pattern_listed, "jj file list pattern probes")
-        pattern_files = {
-            line.strip() for line in pattern_listed.stdout.splitlines() if line.strip()
-        }
+        pattern_files = _jujutsu_paths(pattern_listed.stdout)
         pattern_ignored = pattern_query_files - pattern_files
         return {
             "id": f"jj.{mode}",
@@ -197,6 +195,11 @@ def _write_pattern_probes(root: Path, fixture: Mapping[str, Any]) -> None:
     """Add a path matrix for negation, directory barriers, anchoring, and ``**``."""
     _write_files(root, fixture["pattern_probe_files"])
     (root / ".gitignore").write_text(fixture["pattern_rules"], encoding="utf-8")
+
+
+def _jujutsu_paths(output: str) -> set[str]:
+    """Normalize Jujutsu's platform-specific path separators for fixture comparison."""
+    return {line.strip().replace("\\", "/") for line in output.splitlines() if line.strip()}
 
 
 def _expand_ignored_paths(ignored: set[str], query_files: set[str]) -> set[str]:
