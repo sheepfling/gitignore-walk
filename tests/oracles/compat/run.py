@@ -57,44 +57,48 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             )
         _write_files(root, fixture["probe_files"])
         _write_source_probes(root, home, fixture)
-        status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
-        _require_success(status, "sl status")
-        included, ignored = _sapling_status_paths(status.stdout)
+        query_files = set(fixture["query_files"])
+        included, ignored, query_output = _sapling_status_queries(
+            executable, root, environment, query_files
+        )
         source_query_files = set(fixture["source_query_files"])
-        source_ignored = sorted(ignored & source_query_files)
+        _, source_ignored, source_output = _sapling_status_queries(
+            executable, root, environment, source_query_files
+        )
         pattern_query_files = set(fixture["pattern_query_files"])
         _write_pattern_probes(root, fixture)
-        pattern_status = _run(
-            [executable, "status", "-iu", "--print0"], cwd=root, environment=environment
+        _, pattern_ignored, pattern_output = _sapling_status_queries(
+            executable, root, environment, pattern_query_files
         )
-        _require_success(pattern_status, "sl status pattern probes")
-        _, pattern_status_ignored = _sapling_status_paths(pattern_status.stdout)
-        pattern_ignored = _expand_ignored_paths(pattern_status_ignored, pattern_query_files)
         return {
             "id": f"sapling.{mode}-mode",
             "vcs": "sapling",
             "mode": mode,
             "version": _version(executable),
-            "included": sorted(included & set(fixture["query_files"])),
-            "ignored": sorted(ignored & set(fixture["query_files"])),
-            "status_exit_code": status.returncode,
-            "status_stdout": status.stdout.replace(str(root), "<workspace>"),
-            "status_stderr": status.stderr.replace(str(root), "<workspace>"),
+            "included": sorted(included),
+            "ignored": sorted(ignored),
+            "query_method": "status-paths",
+            "query_output": query_output,
+            "status_exit_code": 0,
+            "status_stdout": "".join(query_output[path] for path in sorted(query_output)),
+            "status_stderr": "",
             "metadata_markers": sorted(
                 marker for marker in (".git", ".sl") if (root / marker).exists()
             ),
             "isolated_temporary_workspace": True,
             "source_discovery": {
                 "query_files": sorted(source_query_files),
-                "ignored": source_ignored,
+                "ignored": sorted(source_ignored),
                 "included": sorted(source_query_files - set(source_ignored)),
+                "query_output": source_output,
             },
             "pattern_discovery": {
                 "query_files": sorted(pattern_query_files),
                 "ignored": sorted(pattern_ignored),
                 "included": sorted(pattern_query_files - pattern_ignored),
-                "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
-                "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
+                "status_stdout": "".join(pattern_output[path] for path in sorted(pattern_output)),
+                "status_stderr": "",
+                "query_output": pattern_output,
             },
         }
 
@@ -199,16 +203,6 @@ def _write_pattern_probes(root: Path, fixture: Mapping[str, Any]) -> None:
     (root / ".gitignore").write_text(fixture["pattern_rules"], encoding="utf-8")
 
 
-def _expand_ignored_paths(ignored: set[str], query_files: set[str]) -> set[str]:
-    """Expand native ignored-directory summaries to the fixture's queried files."""
-    normalized = {path.rstrip("/") for path in ignored}
-    return {
-        path
-        for path in query_files
-        if path in normalized or any(path.startswith(prefix + "/") for prefix in normalized)
-    }
-
-
 def _sapling_status_paths(output: str) -> tuple[set[str], set[str]]:
     included: set[str] = set()
     ignored: set[str] = set()
@@ -221,6 +215,34 @@ def _sapling_status_paths(output: str) -> tuple[set[str], set[str]]:
         elif line[0] in ("?", "A", "M", "R"):
             included.add(path)
     return included, ignored
+
+
+def _sapling_status_queries(
+    executable: str,
+    cwd: Path,
+    environment: Mapping[str, str],
+    paths: set[str],
+) -> tuple[set[str], set[str], dict[str, str]]:
+    """Query native Sapling status for each supplied workspace-relative path."""
+    included: set[str] = set()
+    ignored: set[str] = set()
+    output: dict[str, str] = {}
+    for path in sorted(paths):
+        result = _run(
+            [executable, "status", "-iu", "--print0", "--", path],
+            cwd=cwd,
+            environment=environment,
+        )
+        _require_success(result, f"sl status {path}")
+        output[path] = result.stdout
+        included_paths, ignored_paths = _sapling_status_paths(result.stdout)
+        if path in included_paths:
+            included.add(path)
+        elif path in ignored_paths:
+            ignored.add(path)
+        else:
+            raise RuntimeError(f"sl status {path} returned no matching path: {result.stdout!r}")
+    return included, ignored, output
 
 
 def _write_files(root: Path, files: Mapping[str, str]) -> None:

@@ -26,6 +26,11 @@ both modes and reads `.git/info/exclude` only when colocated. In modes with all 
 are captured against both named client versions on macOS and Debian Linux arm64. They do not
 establish alternate global config files, path encoding, or broader VCS behavior.
 
+The Sapling runner queries each candidate with `sl status -- <path>` and records the individual
+outputs as well as their combined NUL-delimited status stream. This keeps native source discovery
+and directory-barrier behavior while avoiding a full working-copy status scan, which fails in the
+pinned Sapling Windows release before it can report candidates.
+
 A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
 ignored parent directory; a child negation can re-include a file when only the parent's contents
 are ignored; `/root-only.tmp` is anchored to the workspace root; and `**/deep.log` matches a nested
