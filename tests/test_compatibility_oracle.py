@@ -356,11 +356,12 @@ def test_git_256_captures_reconcile_the_earlier_path_pattern_subset(
     assert pattern_discovery["included"] == EARLIER_PATTERN_INCLUDED
 
 
-def test_extended_compatibility_patterns_match_the_captured_macos_clients() -> None:
-    """Retain native evidence for class ranges, basename rules, and directory-only rules."""
-    capture = CAPTURES[CAPTURE_FILES[0]]
+@pytest.mark.parametrize("profile", PATTERN_CAPTURE_FILES)
+def test_extended_compatibility_patterns_match_current_native_profiles(profile: str) -> None:
+    """Retain macOS and Debian evidence for class, basename, and directory-only patterns."""
+    capture = CAPTURES[profile]
     assert capture["status"] == "captured"
-    assert capture["platform"].startswith("macOS-26")
+    assert capture["platform"].startswith(("macOS-26", "Linux-"))
     assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
 
@@ -436,6 +437,10 @@ def test_jujutsu_045_capture_reconciles_config_profiles_and_legacy_symlink_behav
         assert case["candidate_matches"] is True
         assert case["source_discovery"]["candidate_matches"] is True
         assert case["pattern_discovery"]["candidate_matches"] is True
+        extended = case["extended_pattern_discovery"]
+        assert extended["candidate_matches"] is True
+        assert extended["query_files"] == sorted(PATTERN_FIXTURE["extended_pattern_query_files"])
+        assert extended["ignored"] == sorted(PATTERN_FIXTURE["expected_extended_pattern_ignored"])
         assert case["symlinked_gitignore"]["candidate_matches"] is True
         assert case["symlinked_gitignore"]["ignored"] == ["nested/probe.symlink"]
         for name in (

@@ -1144,6 +1144,12 @@ def test_jujutsu_046_captures_cover_the_supported_policy_subset(profile: str) ->
         assert case["source_discovery"]["ignored"] == source_expectation
         assert case["pattern_discovery"]["candidate_matches"]
         assert set(case["pattern_discovery"]["ignored"]) == _PATTERN_IGNORED
+        if "debian13" in profile:
+            extended = case["extended_pattern_discovery"]
+            assert extended["candidate_matches"]
+            assert set(extended["ignored"]) == set(
+                _COMPAT_FIXTURE["expected_extended_pattern_ignored"]
+            )
         assert case["symlinked_gitignore"]["candidate_matches"]
         assert all(
             case[key]["candidate_matches"]
