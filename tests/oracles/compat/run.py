@@ -51,6 +51,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
                 _run(["git", "init", "-q", str(root)], cwd=root, environment=environment),
                 "git init",
             )
+            _set_oracle_branch(root, environment)
         else:
             _require_success(
                 _run([executable, "init", str(root)], cwd=root, environment=environment), "sl init"
@@ -70,7 +71,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
         _require_success(pattern_status, "sl status pattern probes")
         _, pattern_status_ignored = _sapling_status_paths(pattern_status.stdout)
         pattern_ignored = _expand_ignored_paths(pattern_status_ignored, pattern_query_files)
-        configured_global, configured_system, conditional_global = (
+        configured_global, configured_system, conditional_global, conditional_onbranch = (
             _capture_configured_global_sapling(executable, mode, root, home, environment, fixture)
         )
         return {
@@ -102,6 +103,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
             "configured_global": configured_global,
             "configured_system": configured_system,
             "conditional_global": conditional_global,
+            "conditional_onbranch": conditional_onbranch,
         }
 
 
@@ -131,6 +133,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             command.append("--no-colocate")
         command.append(str(root))
         _require_success(_run(command, cwd=root, environment=environment), "jj git init")
+        _set_oracle_branch(root, environment)
         _write_files(root, fixture["probe_files"])
         _write_source_probes(root, home, fixture)
         status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
@@ -151,8 +154,8 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         _require_success(pattern_listed, "jj file list pattern probes")
         pattern_files = _jujutsu_paths(pattern_listed.stdout)
         pattern_ignored = pattern_query_files - pattern_files
-        configured_global, configured_system, conditional_global = _capture_configured_global_jj(
-            executable, mode, root, home, environment, fixture
+        configured_global, configured_system, conditional_global, conditional_onbranch = (
+            _capture_configured_global_jj(executable, mode, root, home, environment, fixture)
         )
         return {
             "id": f"jj.{mode}",
@@ -185,6 +188,7 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
             "configured_global": configured_global,
             "configured_system": configured_system,
             "conditional_global": conditional_global,
+            "conditional_onbranch": conditional_onbranch,
         }
 
 
@@ -236,7 +240,7 @@ def _capture_configured_global_sapling(
     home: Path,
     environment: Mapping[str, str],
     fixture: Mapping[str, Any],
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Capture Sapling's global-over-system and system-over-XDG source selection."""
     query_files = _write_configured_global_probe(root, home, fixture)
     probe_environment = _system_config_environment(environment, home)
@@ -275,7 +279,10 @@ def _capture_configured_global_sapling(
     conditional_global = _capture_conditional_global_sapling(
         executable, mode, root, home, probe_environment, fixture
     )
-    return configured_global, configured_system, conditional_global
+    conditional_onbranch = _capture_conditional_onbranch_sapling(
+        executable, mode, root, home, probe_environment, fixture
+    )
+    return configured_global, configured_system, conditional_global, conditional_onbranch
 
 
 def _capture_configured_global_jj(
@@ -285,7 +292,7 @@ def _capture_configured_global_jj(
     home: Path,
     environment: Mapping[str, str],
     fixture: Mapping[str, Any],
-) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Capture Jujutsu's global-over-system and system-over-XDG source selection."""
     query_files = _write_configured_global_probe(root, home, fixture)
     probe_environment = _system_config_environment(environment, home)
@@ -326,7 +333,10 @@ def _capture_configured_global_jj(
     conditional_global = _capture_conditional_global_jj(
         executable, mode, root, home, probe_environment, fixture
     )
-    return configured_global, configured_system, conditional_global
+    conditional_onbranch = _capture_conditional_onbranch_jj(
+        executable, mode, root, home, probe_environment, fixture
+    )
+    return configured_global, configured_system, conditional_global, conditional_onbranch
 
 
 def _write_conditional_global_probe(
@@ -344,6 +354,37 @@ def _write_conditional_global_probe(
     files: Mapping[str, str] = fixture["conditional_global_probe_files"]
     _write_files(root, files)
     return sorted(files)
+
+
+def _write_conditional_onbranch_probe(
+    root: Path, home: Path, fixture: Mapping[str, Any]
+) -> list[str]:
+    """Configure an on-branch include and create its ignore-decision probes."""
+    custom_ignore = home / "onbranch-git-ignore"
+    custom_ignore.write_text(fixture["conditional_branch_ignore"], encoding="utf-8")
+    included_config = home / "onbranch-git-config"
+    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    (home / ".gitconfig").write_text(
+        '[includeIf "onbranch:main"]\n\tpath = onbranch-git-config\n', encoding="utf-8"
+    )
+    files: Mapping[str, str] = fixture["conditional_branch_probe_files"]
+    _write_files(root, files)
+    return sorted(files)
+
+
+def _set_oracle_branch(root: Path, environment: Mapping[str, str]) -> None:
+    """Give each Git-backed disposable workspace the same current branch name."""
+    candidates = (root / ".git", root / ".jj" / "repo" / "store" / "git")
+    git_dir = next((path for path in candidates if path.is_dir()), None)
+    if git_dir is not None:
+        _require_success(
+            _run(
+                ["git", f"--git-dir={git_dir}", "symbolic-ref", "HEAD", "refs/heads/main"],
+                cwd=root,
+                environment=environment,
+            ),
+            "set disposable Git branch",
+        )
 
 
 def _capture_conditional_global_sapling(
@@ -387,6 +428,57 @@ def _capture_conditional_global_jj(
     included_paths = _jujutsu_paths(listed.stdout)
     ignored = sorted(set(query_files) - included_paths)
     expected = fixture["expected_conditional_global_ignored"][f"jj.{mode}"]
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) & included_paths),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+    }
+
+
+def _capture_conditional_onbranch_sapling(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Sapling's on-branch conditional global ignore behavior."""
+    query_files = _write_conditional_onbranch_probe(root, home, fixture)
+    status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
+    _require_success(status, "sl status conditional onbranch core.excludesFile")
+    _, ignored_paths = _sapling_status_paths(status.stdout)
+    ignored = sorted(ignored_paths & set(query_files))
+    expected = fixture["expected_conditional_branch_ignored"][f"sapling.{mode}-mode"]
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) - set(ignored)),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+    }
+
+
+def _capture_conditional_onbranch_jj(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Jujutsu's on-branch conditional global ignore behavior."""
+    query_files = _write_conditional_onbranch_probe(root, home, fixture)
+    status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
+    _require_success(status, "jj status conditional onbranch core.excludesFile")
+    listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+    _require_success(listed, "jj file list conditional onbranch core.excludesFile")
+    included_paths = _jujutsu_paths(listed.stdout)
+    ignored = sorted(set(query_files) - included_paths)
+    expected = fixture["expected_conditional_branch_ignored"][f"jj.{mode}"]
     return {
         "query_files": query_files,
         "ignored": ignored,
@@ -465,7 +557,7 @@ def _require_success(result: subprocess.CompletedProcess[str], operation: str) -
 
 def capture(sapling: str | None, jj: str) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
-    client_versions = {}
+    client_versions = {"git": _version("git")}
     captures = []
     if sapling is not None:
         client_versions["sapling"] = _version(sapling)
@@ -515,6 +607,7 @@ def main() -> int:
         and case["configured_global"]["candidate_matches"]
         and case["configured_system"]["candidate_matches"]
         and case["conditional_global"]["candidate_matches"]
+        and case["conditional_onbranch"]["candidate_matches"]
         for case in result["cases"]
     )
     vcs_names = "Sapling/Jujutsu" if "sapling" in result["clients"] else "Jujutsu"

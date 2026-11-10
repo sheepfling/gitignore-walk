@@ -66,6 +66,18 @@
     "jj.colocated": ["conditional.custom"],
     "jj.noncolocated": []
   },
+  "conditional_branch_probe_files": {
+    "conditional.branch": "must be ignored only by a matching onbranch include\n",
+    "conditional.global": "must be ignored by XDG when no include condition matches\n",
+    "conditional.visible": "must remain visible\n"
+  },
+  "conditional_branch_ignore": "*.branch\n",
+  "expected_conditional_branch_ignored": {
+    "sapling.git-mode": ["conditional.branch"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["conditional.branch"],
+    "jj.noncolocated": ["conditional.branch"]
+  },
   "expected_source_ignored": {
     "sapling.git-mode": ["global.global", "info.priority", "local.local"],
     "sapling.sl-mode": [],

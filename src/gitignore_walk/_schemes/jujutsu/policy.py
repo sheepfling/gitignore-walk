@@ -22,8 +22,8 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
     read-only evaluator avoids invoking `jj` commands that snapshot the working copy.
 
     This policy covers the captured source layout and Git-compatible ignore dialect. It does not
-    report Jujutsu membership or discover ``core.excludesFile`` from Git configuration; callers
-    can pass that resolved path explicitly with ``global_excludes_file``.
+    report Jujutsu membership. Callers can pass ``core.excludesFile`` explicitly or opt in to Git
+    configuration discovery with ``read_git_config``.
 
     Attributes:
         root: Caller-selected target and traversal boundary.
@@ -52,7 +52,9 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         ``global_excludes_file`` overrides the conventional XDG ignore path. Pass the path
         configured by Git's ``core.excludesFile`` when the Jujutsu environment selects a custom
         file. Set ``read_git_config`` to ask ``git config`` to resolve that setting (including
-        global config includes); this requires ``git_executable`` to be available.
+        global config includes); this requires ``git_executable`` to be available. For a
+        non-colocated workspace, the internal Git store supplies conditional-include context unless
+        ``environment`` already sets ``GIT_DIR``.
         """
         caller_root = Path(root).expanduser().resolve()
         if not caller_root.is_dir():
@@ -70,12 +72,18 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         if global_excludes_file is not None:
             self._global_excludes = Path(global_excludes_file).expanduser()
         elif read_git_config:
+            git_dir = None
+            if metadata is None or metadata.root != workspace_root:
+                internal_git_dir = workspace_root / ".jj" / "repo" / "store" / "git"
+                if internal_git_dir.is_dir():
+                    git_dir = internal_git_dir
             self._global_excludes = resolve_core_excludes_file(
                 workspace_root,
                 environment=environment,
                 git_executable=git_executable,
                 timeout=git_config_timeout,
                 default_path=self._global_excludes,
+                git_dir=git_dir,
             )
 
 

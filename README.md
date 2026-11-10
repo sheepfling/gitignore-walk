@@ -393,9 +393,11 @@ matcher while resolving each system's workspace markers and supported sources se
   `global_excludes_file` to the corresponding policy config, or set `read_git_config=True` to ask
   the configured Git executable to resolve system/user settings and their included files. The
   user setting overrides the system setting; when neither exists, discovery uses the XDG default.
-  An explicitly empty setting disables the global source. Git documents config scope and include
-  behavior in [git-config](https://git-scm.com/docs/git-config), and ignore precedence in the
-  [Git ignore documentation](https://git-scm.com/docs/gitignore).
+  An explicitly empty setting disables the global source. Native captures also cover `gitdir` and
+  `onbranch:main` conditional includes. For non-colocated Jujutsu, the policy uses the workspace's
+  internal Git store as condition context unless the caller supplies `GIT_DIR`. Git documents
+  config scope and include behavior in [git-config](https://git-scm.com/docs/git-config), and
+  ignore precedence in the [Git ignore documentation](https://git-scm.com/docs/gitignore).
 
 The captured pattern matrix also covers directory-level negation barriers, child re-inclusion,
 workspace-root anchoring, and recursive `**`; both policy decisions and walker selections match the

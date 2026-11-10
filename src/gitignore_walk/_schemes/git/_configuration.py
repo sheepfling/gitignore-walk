@@ -18,6 +18,7 @@ def resolve_core_excludes_file(
     git_executable: str,
     timeout: float,
     default_path: Path | None,
+    git_dir: Path | None = None,
 ) -> Path | None:
     """Resolve configured ``core.excludesFile`` with Git, preserving scope and empty cases.
 
@@ -28,17 +29,18 @@ def resolve_core_excludes_file(
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError("Git config timeout must be finite and positive")
 
+    config_environment = _environment_with_git_dir(environment, git_dir)
     system_found, system_path = _read_scoped_core_excludes_file(
         root,
         scope="--system",
-        environment=environment,
+        environment=config_environment,
         git_executable=git_executable,
         timeout=timeout,
     )
     global_found, global_path = _read_scoped_core_excludes_file(
         root,
         scope="--global",
-        environment=environment,
+        environment=config_environment,
         git_executable=git_executable,
         timeout=timeout,
     )
@@ -47,6 +49,17 @@ def resolve_core_excludes_file(
     if system_found:
         return system_path
     return default_path
+
+
+def _environment_with_git_dir(
+    environment: Mapping[str, str] | None, git_dir: Path | None
+) -> Mapping[str, str] | None:
+    """Set optional Git repository context without overriding a caller-provided ``GIT_DIR``."""
+    if git_dir is None:
+        return environment
+    result = dict(os.environ if environment is None else environment)
+    result.setdefault("GIT_DIR", os.fspath(git_dir))
+    return result
 
 
 def _read_scoped_core_excludes_file(

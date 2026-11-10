@@ -352,6 +352,73 @@ def test_compatible_scheme_discovers_gitdir_conditional_include(tmp_path: Path, 
     assert decisions == expected
 
 
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize("mode", ["sapling-git", "jj-colocated", "jj-noncolocated"])
+def test_compatible_scheme_discovers_onbranch_include_with_workspace_context(
+    tmp_path: Path, mode: str
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    xdg_ignore = home / ".config" / "git" / "ignore"
+    xdg_ignore.parent.mkdir(parents=True)
+    xdg_ignore.write_text("*.global\n", encoding="utf-8")
+    branch_ignore = home / "branch-ignore"
+    branch_ignore.write_text("*.branch\n", encoding="utf-8")
+    included_config = home / "included.gitconfig"
+    included_config.write_text(f"[core]\n\texcludesFile = {branch_ignore}\n", encoding="utf-8")
+    global_config = home / ".gitconfig"
+    global_config.write_text(
+        '[includeIf "onbranch:main"]\n\tpath = included.gitconfig\n', encoding="utf-8"
+    )
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    if mode == "sapling-git":
+        _git_init(root)
+        _set_git_branch(root / ".git", "main")
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    elif mode == "jj-colocated":
+        (root / ".jj").mkdir()
+        _git_init(root)
+        _set_git_branch(root / ".git", "main")
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    else:
+        (root / ".jj").mkdir()
+        git_dir = root / ".jj" / "repo" / "store" / "git"
+        subprocess.run(["git", "init", "--bare", "-q", str(git_dir)], check=True)
+        _set_git_branch(git_dir, "main")
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    (root / "conditional.branch").touch()
+    (root / "conditional.global").touch()
+
+    selection = select_policy(root, config)
+    decisions = {
+        decision.path.name: decision.ignored
+        for decision in selection.policy.explain_many(["conditional.branch", "conditional.global"])
+    }
+
+    assert decisions == {"conditional.branch": True, "conditional.global": False}
+
+    alternate_git_dir = tmp_path / "alternate.git"
+    subprocess.run(["git", "init", "--bare", "-q", str(alternate_git_dir)], check=True)
+    _set_git_branch(alternate_git_dir, "other")
+    caller_context = {**environment, "GIT_DIR": str(alternate_git_dir)}
+    alternate_selection = select_policy(
+        root,
+        SaplingPolicyConfig(environment=caller_context, read_git_config=True)
+        if mode == "sapling-git"
+        else JujutsuPolicyConfig(environment=caller_context, read_git_config=True),
+    )
+    alternate_decision = alternate_selection.policy.explain("conditional.branch")
+    assert alternate_decision.ignored is False
+
+
 def test_compatible_scheme_config_discovery_errors_if_git_is_missing(tmp_path: Path) -> None:
     root = tmp_path / "workspace"
     root.mkdir()
@@ -434,6 +501,17 @@ def test_compatible_scheme_selection_is_typed_and_explicit(tmp_path: Path) -> No
 def _git_init(root: Path) -> None:
     result = subprocess.run(
         ["git", "init", "-q", str(root)], capture_output=True, text=True, check=False
+    )
+    if result.returncode:
+        raise AssertionError(result.stderr)
+
+
+def _set_git_branch(git_dir: Path, branch: str) -> None:
+    result = subprocess.run(
+        ["git", f"--git-dir={git_dir}", "symbolic-ref", "HEAD", f"refs/heads/{branch}"],
+        capture_output=True,
+        text=True,
+        check=False,
     )
     if result.returncode:
         raise AssertionError(result.stderr)

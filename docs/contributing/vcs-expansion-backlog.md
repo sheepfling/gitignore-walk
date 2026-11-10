@@ -573,8 +573,10 @@ system/user `core.excludesFile` settings and ordinary config includes; the user 
 system value, unset values use the XDG default, and an explicitly empty user value disables the
 global source. Missing Git and config lookup failures are reported instead of falling back. Native
 captures cover both scopes on Sapling `.git` mode and both Jujutsu modes; Sapling `.sl` mode does
-not read Git global sources. Conditional include context and broader client/platform profiles
-remain open.
+not read Git global sources. Native `gitdir` and `onbranch:main` conditional includes are also
+captured on macOS and Debian 13 Linux aarch64/x86_64. The Jujutsu policy supplies its internal Git
+store as condition context for non-colocated workspaces unless the caller provides `GIT_DIR`.
+Other conditional forms and broader client/platform profiles remain open.
 
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native

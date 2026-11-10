@@ -29,6 +29,7 @@ def test_compatibility_capture_records_exact_client_families(profile: str) -> No
     capture = CAPTURES[profile]
 
     assert capture["status"] == "captured"
+    assert capture["clients"]["git"].startswith("git version ")
     assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
 
@@ -169,6 +170,28 @@ def test_compatibility_capture_reconciles_conditional_global_ignore(
         "conditional.visible",
     ]
     assert conditional_global["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_onbranch_conditional_global_ignore(
+    profile: str, case_id: str
+) -> None:
+    conditional_onbranch = OBSERVATIONS[profile][case_id]["conditional_onbranch"]
+    expected_ignored = {
+        "sapling.git-mode": ["conditional.branch"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["conditional.branch"],
+        "jj.noncolocated": ["conditional.branch"],
+    }
+
+    assert conditional_onbranch["candidate_matches"] is True
+    assert conditional_onbranch["query_files"] == [
+        "conditional.branch",
+        "conditional.global",
+        "conditional.visible",
+    ]
+    assert conditional_onbranch["ignored"] == expected_ignored[case_id]
 
 
 @pytest.mark.parametrize(
