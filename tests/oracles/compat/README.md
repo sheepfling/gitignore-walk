@@ -20,7 +20,8 @@ policy for the tested in-tree rule subset, with a caller-selected metadata basel
 `.sl` or `.jj`.
 
 Jujutsu 0.47.1 is also captured on Windows Server 2025 x64 in colocated and non-colocated modes.
-Both Windows cases match the same candidates, global-source precedence, and path-pattern matrix.
+Both Windows cases match the same candidates, global-source precedence, path-pattern matrix, and
+the `gitdir/i`, `worktree`, `worktree/i`, `onbranch`, and `hasconfig:remote.*.url` include probes.
 Sapling's pinned Windows release aborts during `sl status` with `cannot set file timestamp to 0`,
 so this profile does not claim Sapling Windows conformance.
 
