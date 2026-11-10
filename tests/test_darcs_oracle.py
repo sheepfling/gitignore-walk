@@ -47,10 +47,16 @@ def test_darcs_captured_boring_decisions_match_closed_candidates(
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))
-def test_darcs_boringfile_and_local_rules_are_both_observed(profile: str) -> None:
+def test_darcs_local_global_and_configured_sources_are_additive(profile: str) -> None:
     observations = OBSERVATIONS[profile]
     assert observations["darcs.boringfile-selects-versioned-source"]["observed_boring"] is True
     assert observations["darcs.boringfile-replaces-local"]["observed_boring"] is True
+    assert observations["darcs.global-additive"]["observed_boring"] is True
+    assert observations["darcs.global-remains-active-with-local-rules"]["observed_boring"] is True
+    assert (
+        observations["darcs.global-remains-active-with-configured-boringfile"]["observed_boring"]
+        is True
+    )
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES, ids=lambda name: name.removesuffix(".json"))

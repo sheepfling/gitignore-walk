@@ -63,6 +63,34 @@
       "native_status": "captured"
     },
     {
+      "id": "darcs.global-remains-active-with-local-rules",
+      "dimension": "discovery",
+      "setup": {
+        "local_boring": "\\.local$\n",
+        "global_boring": "\\.global$\n"
+      },
+      "query": "a.global",
+      "expected_boring": true,
+      "native_status": "captured",
+      "note": "The global boring source remains active alongside a non-matching repository-local rule."
+    },
+    {
+      "id": "darcs.global-remains-active-with-configured-boringfile",
+      "dimension": "discovery",
+      "setup": {
+        "local_boring": "\\.local$\n",
+        "global_boring": "\\.global$\n",
+        "boringfile": "policy",
+        "files": {
+          "policy": "\\.configured$\n"
+        }
+      },
+      "query": "a.global",
+      "expected_boring": true,
+      "native_status": "captured",
+      "note": "The global boring source remains active when a configured repository boringfile is also selected."
+    },
+    {
       "id": "darcs.tracked-boring-file-remains-managed",
       "dimension": "membership",
       "setup": {

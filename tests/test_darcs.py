@@ -321,6 +321,64 @@ def test_native_darcs_walker_matches_membership_aware_boring_behavior(
     assert policy.explain("cache/ignored.txt").ignored is True
 
 
+def test_native_darcs_policy_combines_local_global_and_configured_sources(
+    tmp_path: Path,
+) -> None:
+    executable = shutil.which("darcs")
+    if executable is None:
+        pytest.skip("native Darcs is not installed")
+    root = tmp_path / "repository"
+    home = tmp_path / "home"
+    root.mkdir()
+    home.mkdir()
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "APPDATA": str(home),
+        "DARCS_PAGER": "cat",
+        "PAGER": "cat",
+        "LC_ALL": "C",
+    }
+    initialized = subprocess.run(
+        [executable, "init", "--repodir", str(root)],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert initialized.returncode == 0, initialized.stderr
+
+    (root / "_darcs" / "prefs" / "boring").write_text("\\.local$\n", encoding="utf-8")
+    global_boring = home / ".darcs" / "boring"
+    global_boring.parent.mkdir()
+    global_boring.write_text("\\.global$\n", encoding="utf-8")
+    (root / "policy").write_text("\\.configured$\n", encoding="utf-8")
+    added = subprocess.run(
+        [executable, "add", "--boring", "policy"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert added.returncode == 0, added.stderr
+    configured = subprocess.run(
+        [executable, "setpref", "boringfile", "policy"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert configured.returncode == 0, configured.stderr
+
+    policy = DarcsBoringPolicy(root, darcs_executable=executable, environment=environment)
+    assert policy.explain("a.local").ignored is True
+    assert policy.explain("a.global").ignored is True
+    assert policy.explain("a.configured").ignored is True
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_native_darcs_walker_follows_nested_repository_add_candidates(
     tmp_path: Path, topdown: bool

@@ -12,10 +12,11 @@ Run from the repository root:
 python -m scripts.ci oracle-darcs --output /tmp/darcs-oracle.json
 ```
 
-The current corpus has seventeen probes across macOS arm64 Darcs 2.18.5, Debian 13 x86_64, and Debian
-13 arm64 with Darcs 2.18.4 on both Linux profiles. Sixteen closed candidates cover ERE alternation,
+The current corpus has nineteen probes across macOS arm64 Darcs 2.18.5, Debian 13 x86_64, and Debian
+13 arm64 with Darcs 2.18.4 on both Linux profiles. Eighteen closed candidates cover ERE alternation,
 a POSIX character class, global boring rules, a configured boringfile, managed-file behavior, and
-lexical rules, plus a nested-repository walking case. All three profiles agree on all sixteen.
+lexical rules, a nested-repository walking case, and overlap between local, global, and configured
+boring sources. All three profiles agree on all eighteen.
 Native probes confirm a `#` comment only at
 the start of a rule, leading/trailing spaces
 and tabs remain part of the regex, and `#` inside a rule is data. UTF-8 literal regexes match NFC
@@ -29,6 +30,8 @@ The [Darcs configuration guide](https://darcs.net/Using/Configuration) says `bor
 a file matching the configured boringfile is also boring. The observation was repeated after
 recording the preference on Darcs 2.18.5. The client behavior therefore differs from its own docs;
 the policy delegates this behavior to native Darcs and does not need a Python-side precedence rule.
+New overlapping-source probes also show that the global `~/.darcs/boring` remains active alongside
+non-matching local rules and a configured `boringfile`, on all three profiles.
 The captured invalid pattern emits a warning and is ignored. Other regex error messages, locales,
 and native pattern/path encodings remain untested.
 
@@ -47,9 +50,9 @@ profiles and both traversal orders.
 
 | Capture file                      | Environment                   | Darcs version | Closed candidates |
 | --------------------------------- | ----------------------------- | ------------- | ----------------- |
-| `darcs-2.18.5-macos-arm64.json`   | macOS 26.6.2 arm64            | 2.18.5        | 16/16             |
-| `darcs-debian13-x86_64.json`      | Debian 13 x86_64 in Docker    | 2.18.4        | 16/16             |
-| `darcs-debian13-arm64.json`       | Debian 13 arm64 in Docker     | 2.18.4        | 16/16             |
+| `darcs-2.18.5-macos-arm64.json`   | macOS 26.6.2 arm64            | 2.18.5        | 18/18             |
+| `darcs-debian13-x86_64.json`      | Debian 13 x86_64 in Docker    | 2.18.4        | 18/18             |
+| `darcs-debian13-arm64.json`       | Debian 13 arm64 in Docker     | 2.18.4        | 18/18             |
 
 The local capture does not establish behavior on Windows, older Darcs releases, or all POSIX
 regular-expression implementations.
