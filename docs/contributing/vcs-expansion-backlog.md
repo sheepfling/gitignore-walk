@@ -676,7 +676,8 @@ remain open.
 The nested symlinked `.gitignore` probe now confirms a source-layout difference: Sapling `.sl` mode
 follows a symlink to an ignore file outside the workspace, while Sapling `.git` and Jujutsu skip
 that source. The portable Sapling policy follows this only in `.sl` mode. Committed macOS and Debian
-13 Linux aarch64/x86_64 captures retain all four native outcomes; unsupported symlink creation is
+13 Linux aarch64/x86_64 captures retain all four native outcomes; a Windows Server 2025 capture
+confirms the two Sapling results and both Jujutsu 0.47.1 modes. Unsupported symlink creation is
 reported as a skip. Jujutsu 0.45.1 follows the same nested symlink in both modes; 0.46.0 changed to
 skip it, which 0.47.1 also does. The Jujutsu config now exposes
 `follow_symlinked_gitignore=True` for the older behavior. Focused 0.45.1 and 0.46.0 captures are
@@ -692,12 +693,12 @@ source. This is covered on macOS arm64 and Debian 13 Linux aarch64/x86_64.
 The Jujutsu-only linked-worktree probe is also captured on macOS arm64 and Windows Server 2025 x64;
 the Windows job recaptures it against pinned Jujutsu 0.47.1 and checks the Git/Jujutsu distinction.
 
-**Next unfinished slice:** broaden Sapling client/platform profiles and Jujutsu configuration
-profiles beyond the current captured versions and platforms; keep TFVC deferred until its
-workspace/server fixture is reproducible. Darcs walking has native
-membership-aware selection checks in both traversal orders and a cross-profile nested-repository
-case. Its local/global/configured source overlap matches on macOS arm64 and Debian Linux
-aarch64/x86_64. Darcs Windows remains unverified: the official download page lists a 2.16.3 binary,
+**Next unfinished slice:** broaden Sapling and Jujutsu version/platform and configuration profiles
+beyond the current Windows baseline (Sapling 0.2.20261103 and Jujutsu 0.47.1) and the captured
+macOS/Linux clients. TFVC remains deferred until its workspace/server fixture is reproducible. Darcs
+walking has native membership-aware selection checks in both traversal orders and a cross-profile
+nested-repository case. Its local/global/configured source overlap matches on macOS arm64 and Debian
+Linux aarch64/x86_64. Darcs Windows remains unverified: the official download page lists a 2.16.3 binary,
 while 2.18.5 is current stable and the Windows packager role is unfilled. TFVC's seven research
 cases are source-derived/open; Microsoft's TFVC add and workspace docs require a configured workspace
 for `.tfignore` behavior ([TFVC-DOC]). This repository has neither a TFVC server/workspace fixture nor

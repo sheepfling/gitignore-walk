@@ -200,7 +200,9 @@ Sapling `.git` and `.sl` modes and Jujutsu colocated and non-colocated modes sha
 Git-ignore dialect. Read-only ignore evaluation reuses that matcher with mode-specific source
 discovery. Sapling can optionally query NUL-delimited native status for membership; Jujutsu can
 read its saved working-copy tree using `jj file list --ignore-working-copy`, avoiding the
-snapshotting `jj status` command. XDG Git ignores,
-`.git/info/exclude`, and their precedence are captured on macOS 26 arm64 and Debian 13 Linux
-arm64; Windows, other global config sources, and broader patterns remain unverified. See the
+snapshotting `jj status` command. XDG Git ignores, `.git/info/exclude`, and Git config precedence
+are captured on macOS 26 arm64, Debian 13 Linux aarch64/x86_64, and Windows Server 2025 x64. The
+Windows profile covers Sapling 0.2.20261103 in both storage modes and Jujutsu 0.47.1 in both
+workspace modes, including the shared rule-pattern and configuration probes. Other client versions
+and broader platform boundaries remain open. See the
 [compatibility probe notes](../../tests/oracles/compat/README.md).
