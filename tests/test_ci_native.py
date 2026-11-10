@@ -46,6 +46,12 @@ def test_compat_backend_requires_git_sapling_and_jujutsu(
         ci_native.require_tools(["compat"])
 
 
+def test_svn_config_backend_requires_docker(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(ci_native.shutil, "which", lambda _tool: None)
+    with pytest.raises(RuntimeError, match="docker"):
+        ci_native.require_tools(["svn-config"])
+
+
 @pytest.mark.parametrize("status", ["skipped", "failed", "unknown", None])
 def test_uncaptured_primary_oracle_is_not_a_pass(tmp_path: Path, status: object) -> None:
     path = tmp_path / "capture.json"
@@ -125,6 +131,16 @@ def test_compat_backend_uses_existing_scheme_specific_capture(tmp_path: Path) ->
     assert paths == [tmp_path / "compat-oracle.json"]
 
 
+def test_svn_config_backend_uses_docker_capture(tmp_path: Path) -> None:
+    arguments, paths = ci_native.capture_arguments("svn-config", tmp_path)
+    assert arguments == [
+        "oracle-svn-config",
+        "--output",
+        str(tmp_path / "svn-config-oracle.json"),
+    ]
+    assert paths == [tmp_path / "svn-config-oracle.json"]
+
+
 def test_capture_summary_preserves_multi_client_profile(tmp_path: Path) -> None:
     path = tmp_path / "capture.json"
     write_capture(
@@ -137,6 +153,41 @@ def test_capture_summary_preserves_multi_client_profile(tmp_path: Path) -> None:
 
     assert result["client"] == {"sapling": "Sapling 1", "jujutsu": "jj 2"}
     assert result["platform"] == "profile-platform"
+
+
+def test_inspect_single_observation_capture_and_derive_nested_platform(tmp_path: Path) -> None:
+    path = tmp_path / "svn-config.json"
+    path.write_text(
+        json.dumps(
+            {
+                "status": "captured",
+                "candidate_matches": True,
+                "expected_ignored_paths": ["hidden.tmp"],
+                "client": {"svn_version": "1.14.5", "platform": "linux-profile"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = ci_native.inspect_capture(path)
+
+    assert result["passed"]
+    assert result["case_count"] == 1
+    assert result["mismatches"] == []
+    assert result["client"] == {"svn_version": "1.14.5", "platform": "linux-profile"}
+    assert result["platform"] == "linux-profile"
+
+
+def test_inspect_single_observation_mismatch_fails(tmp_path: Path) -> None:
+    path = tmp_path / "svn-config.json"
+    path.write_text(
+        json.dumps({"status": "captured", "candidate_matches": False}), encoding="utf-8"
+    )
+
+    result = ci_native.inspect_capture(path)
+
+    assert not result["passed"]
+    assert result["mismatches"] == ["svn-config"]
 
 
 def test_native_continues_after_failure_and_uses_fresh_captures(
@@ -213,16 +264,17 @@ def test_pre_push_runs_core_before_native(monkeypatch: pytest.MonkeyPatch, tmp_p
     assert steps == ["tools", "tests", "quality", "package", "native"]
 
 
-def test_native_cli_accepts_optional_compat_backend(
-    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+@pytest.mark.parametrize("backend", ci_native.OPTIONAL_BACKENDS)
+def test_native_cli_accepts_optional_backend(
+    backend: str, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     selected: list[str] = []
     monkeypatch.setattr(ci, "setup_env", lambda: None)
     monkeypatch.setattr(ci, "require_tools", lambda backends, **_kwargs: selected.extend(backends))
     monkeypatch.setattr(ci, "run_native", lambda *_args, **_kwargs: 0)
 
-    assert ci.main(["native", "--backends", "compat", "--output-dir", str(tmp_path)]) == 0
-    assert selected == ["compat"]
+    assert ci.main(["native", "--backends", backend, "--output-dir", str(tmp_path)]) == 0
+    assert selected == [backend]
 
 
 def test_pre_push_stops_when_core_checks_fail(monkeypatch: pytest.MonkeyPatch) -> None:

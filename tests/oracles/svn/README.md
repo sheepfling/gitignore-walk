@@ -176,7 +176,9 @@ The ambient configuration precedence probe runs in a disposable Debian 13 x86_64
 It gives `/etc/subversion/config` a system-only pattern and the isolated user's
 `~/.subversion/config` a different pattern. Native status and the policy both select only the user
 pattern, confirming that the user value replaces the system value for this captured Subversion
-1.14.5 profile. Run `python -m scripts.ci oracle-svn-config`; its normalized capture is
+1.14.5 profile. Run `python -m scripts.ci oracle-svn-config` for the standalone capture or
+`python -m scripts.ci native --backends svn-config` to include it in the shared CI summary; both
+require Docker. Its normalized capture is
 `results/svn-config-precedence-debian-13-x86_64.json`. The temporary `/etc` file lives only inside
 the container, so the host's Subversion files are not modified.
 

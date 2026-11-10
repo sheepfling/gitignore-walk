@@ -67,23 +67,24 @@ In PowerShell, use `.\.venv\Scripts\rumdl.exe check --fix .`, then
 `python -m scripts.ci pre-push` is the full host/backend gate; `python -m scripts.ci native`
 runs only the native captures. Both accept `--backends` and `--output-dir`, as explained below.
 
-| Command                                         | Checks                                                                                                       |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `python -m scripts.ci test`                     | Test the active interpreter                                                                                  |
-| `python -m scripts.ci all`                      | Core checks on the active interpreter: pytest, Ruff, strict Pyright, Markdown checks, and package validation |
-| `python -m scripts.ci matrix`                   | Test locally installed Python 3.10–3.15 interpreters                                                         |
-| `python -m scripts.ci local`                    | Windows Python matrix and Linux Docker matrix                                                                |
-| `python -m scripts.test_python_matrix`          | Windows Python matrix only; accepts `--windows-versions MAJOR.MINOR ...`                                     |
-| `python -m scripts.ci quality`                  | Ruff lint/format, strict Pyright, rumdl, and mdrepo (Python 3.11+)                                           |
-| `python -m scripts.ci package`                  | Build wheel/sdist, run Twine, import the installed wheel                                                     |
-| `python -m scripts.ci oracle-hg`                | Capture Mercurial behavior in fresh disposable repositories; requires `hg`                                   |
-| `python -m scripts.ci oracle-svn`               | Capture Subversion ignore status in a disposable local repository; requires `svn` and `svnadmin`             |
-| `python -m scripts.ci oracle-svn-config`        | Compare Subversion system/user config precedence in a disposable Debian Docker container; requires Docker    |
-| `python -m scripts.ci oracle-fossil`            | Capture Fossil ignore-glob and extras behavior in a disposable checkout; requires `fossil`                   |
-| `python -m scripts.ci oracle-brz`               | Capture Breezy ignore and status behavior in isolated disposable working trees; requires `brz`               |
-| `python -m scripts.ci oracle-darcs`             | Capture Darcs boring-file behavior; requires `darcs`                                                         |
-| `python -m scripts.ci oracle-p4`                | Capture `P4IGNORE` behavior using a disposable local server and workspace; requires `p4` and `p4d`           |
-| `python -m scripts.ci native --backends compat` | Capture Sapling/Jujutsu compatibility; requires `git`, `sl`, and `jj` in disposable workspaces               |
+| Command                                             | Checks                                                                                                       |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `python -m scripts.ci test`                         | Test the active interpreter                                                                                  |
+| `python -m scripts.ci all`                          | Core checks on the active interpreter: pytest, Ruff, strict Pyright, Markdown checks, and package validation |
+| `python -m scripts.ci matrix`                       | Test locally installed Python 3.10–3.15 interpreters                                                         |
+| `python -m scripts.ci local`                        | Windows Python matrix and Linux Docker matrix                                                                |
+| `python -m scripts.test_python_matrix`              | Windows Python matrix only; accepts `--windows-versions MAJOR.MINOR ...`                                     |
+| `python -m scripts.ci quality`                      | Ruff lint/format, strict Pyright, rumdl, and mdrepo (Python 3.11+)                                           |
+| `python -m scripts.ci package`                      | Build wheel/sdist, run Twine, import the installed wheel                                                     |
+| `python -m scripts.ci oracle-hg`                    | Capture Mercurial behavior in fresh disposable repositories; requires `hg`                                   |
+| `python -m scripts.ci oracle-svn`                   | Capture Subversion ignore status in a disposable local repository; requires `svn` and `svnadmin`             |
+| `python -m scripts.ci oracle-svn-config`            | Compare Subversion system/user config precedence in a disposable Debian Docker container; requires Docker    |
+| `python -m scripts.ci oracle-fossil`                | Capture Fossil ignore-glob and extras behavior in a disposable checkout; requires `fossil`                   |
+| `python -m scripts.ci oracle-brz`                   | Capture Breezy ignore and status behavior in isolated disposable working trees; requires `brz`               |
+| `python -m scripts.ci oracle-darcs`                 | Capture Darcs boring-file behavior; requires `darcs`                                                         |
+| `python -m scripts.ci oracle-p4`                    | Capture `P4IGNORE` behavior using a disposable local server and workspace; requires `p4` and `p4d`           |
+| `python -m scripts.ci native --backends compat`     | Capture Sapling/Jujutsu compatibility; requires `git`, `sl`, and `jj` in disposable workspaces               |
+| `python -m scripts.ci native --backends svn-config` | Capture system/user Subversion precedence in an isolated Debian container; requires Docker                   |
 
 ## Full local pre-push gate
 

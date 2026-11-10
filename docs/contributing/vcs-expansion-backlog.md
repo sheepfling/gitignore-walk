@@ -408,12 +408,12 @@ user need justifies it.
 **Priority:** P0 · **Depends on:** VCS-00
 
 **Status:** Scheme-specific disposable-repository runners capture the individual VCS behaviors.
-`scripts.ci native` coordinates the six default native backends and the opt-in `compat` backend for
-Sapling/Jujutsu, validates closed candidate results, and writes a fresh platform/client summary with
-explicit skips. Hosted workflows retain pinned, scheme-specific profiles and artifacts. Keep fixture
-setup and observation schemas scheme-specific; the remaining harness work is to include specialized
-captures such as Subversion config and version-pinned compatibility profiles in the same selection
-and summary contract where their runtime requirements permit it.
+`scripts.ci native` coordinates the six default native backends and opt-in `compat` and `svn-config`
+backends for Sapling/Jujutsu and Docker-isolated Subversion system/user precedence. It validates
+closed candidate results and writes a fresh platform/client summary with explicit skips, including
+single-observation capture formats. Hosted workflows retain pinned, scheme-specific profiles and
+artifacts. Keep fixture setup and observation schemas scheme-specific; version-pinned compatibility
+profiles remain separate because they need release-specific client setup and checks.
 
 Import and adapt the research handoff's runner/case structure without treating it as library tests.
 Create disposable repository/workspace fixtures and isolated client configuration. Capture native

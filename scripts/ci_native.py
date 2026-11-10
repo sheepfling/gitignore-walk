@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any
 
 BACKENDS = ("hg", "svn", "fossil", "brz", "darcs", "p4")
-OPTIONAL_BACKENDS = ("compat",)
+OPTIONAL_BACKENDS = ("compat", "svn-config")
 KNOWN_BACKENDS = (*BACKENDS, *OPTIONAL_BACKENDS)
 REQUIRED_TOOLS = {
     "hg": ("hg",),
@@ -26,6 +26,7 @@ REQUIRED_TOOLS = {
     "p4": ("p4", "p4d"),
     # Sapling's Git-storage mode uses Git to initialize disposable workspaces.
     "compat": ("git", "sl", "jj"),
+    "svn-config": ("docker",),
 }
 
 
@@ -91,7 +92,17 @@ def inspect_capture(path: Path, *, allow_skip: bool = False) -> dict[str, Any]:
         data = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(data, dict):
             raise ValueError("capture must be an object")
-        cases = data.get("cases", [])
+        cases = data.get("cases")
+        if cases is None and "candidate_matches" in data:
+            cases = [
+                {
+                    "id": data.get("id", path.stem),
+                    "candidate_matches": data["candidate_matches"],
+                    "expected_ignored_paths": data.get("expected_ignored_paths"),
+                }
+            ]
+        if cases is None:
+            cases = []
         if not isinstance(cases, list) or any(not isinstance(case, dict) for case in cases):
             raise ValueError("capture cases must be objects")
         if not allow_skip and not cases:
@@ -99,6 +110,8 @@ def inspect_capture(path: Path, *, allow_skip: bool = False) -> dict[str, Any]:
         mismatches = [case.get("id") for case in cases if _case_failed(case)]
         status = data.get("status")
         passed = (status == "captured" or (allow_skip and status == "skipped")) and not mismatches
+        client = data.get("client") or data.get("clients")
+        client_platform = client.get("platform") if isinstance(client, dict) else None
         return {
             "file": str(path),
             "status": status,
@@ -109,8 +122,8 @@ def inspect_capture(path: Path, *, allow_skip: bool = False) -> dict[str, Any]:
                 case.get("id") for case in cases if case.get("native_status") == "skipped"
             ],
             "mismatches": mismatches,
-            "client": data.get("client") or data.get("clients"),
-            "platform": data.get("platform"),
+            "client": client,
+            "platform": data.get("platform") or client_platform,
         }
     except (OSError, ValueError) as error:
         return {"file": str(path), "status": "invalid", "passed": False, "reason": str(error)}
