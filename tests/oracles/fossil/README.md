@@ -38,4 +38,8 @@ covers this tokenizer contract.
 The `fossil.directory-inheritance` case includes ignored descendants and visible siblings. The
 policy walk's included and ignored selections are checked against all three `fossil extras`
 capture for that untracked fixture. The Fossil checkout marker is excluded from the walker baseline.
-This does not establish tracked-file membership or general traversal conformance.
+Opt-in membership discovery uses `fossil json dir --checkin current` for the target's parent and
+`fossil json status` for staged or missing files. A live native test checks tracked, newly added,
+untracked, and directory targets while asserting that membership does not change ignore decisions.
+Directory membership remains unknown. This does not establish broader status or traversal
+conformance.

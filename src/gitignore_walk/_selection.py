@@ -163,6 +163,8 @@ class FossilPolicyConfig:
         fossil_executable: Executable name or path used to query Fossil settings.
         environment: Optional complete environment passed to Fossil subprocesses.
         timeout: Maximum duration in seconds for each Fossil subprocess.
+        membership_aware: Query Fossil's structured directory and status commands to report known
+            file membership independently from ignore decisions.
         initial_excludes: Additional walker baseline exclusions.
     """
 
@@ -170,6 +172,7 @@ class FossilPolicyConfig:
     fossil_executable: str = "fossil"
     environment: Mapping[str, str] | None = None
     timeout: float = 30.0
+    membership_aware: bool = False
     initial_excludes: Sequence[str] = ()
 
 
@@ -680,6 +683,7 @@ def select_policy(
                 fossil_executable=selected.fossil_executable,
                 environment=selected.environment,
                 timeout=selected.timeout,
+                membership_aware=selected.membership_aware,
                 initial_excludes=selected.initial_excludes,
             )
         )

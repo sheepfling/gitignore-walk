@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -147,3 +148,93 @@ def test_fossil_policy_uses_effective_setting_and_prunes_ignored_directories(
     selection = select_policy(checkout, FossilPolicyConfig(environment=environment))
     assert selection.backend == "fossil-effective-setting"
     assert selection.policy.scheme == "fossil"
+
+
+def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
+    tmp_path: Path,
+) -> None:
+    fossil = shutil.which("fossil")
+    if fossil is None:
+        pytest.skip("Fossil is not installed")
+    checkout = tmp_path / "checkout"
+    repository = tmp_path / "repository.fossil"
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = {
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "USER": "pytest",
+        "PATH": str(Path(fossil).parent),
+        "LC_ALL": "C",
+    }
+
+    def run(*arguments: str, cwd: Path = tmp_path) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [fossil, *arguments],
+            cwd=cwd,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    run("init", "--admin-user", "pytest", str(repository))
+    run("open", "--nosync", "--workdir", str(checkout), str(repository))
+    run("settings", "ignore-glob", "*.tmp", cwd=checkout)
+    (checkout / "nested").mkdir()
+    (checkout / "tracked.tmp").write_text("tracked despite ignore\n", encoding="utf-8")
+    (checkout / "nested" / "versioned.txt").write_text("nested\n", encoding="utf-8")
+    run("add", "--force", "tracked.tmp", "nested/versioned.txt", cwd=checkout)
+    run("commit", "--no-warnings", "-m", "membership fixture", cwd=checkout)
+    (checkout / "added.tmp").write_text("scheduled despite ignore\n", encoding="utf-8")
+    run("add", "--force", "added.tmp", cwd=checkout)
+    (checkout / "loose.tmp").write_text("unversioned and ignored\n", encoding="utf-8")
+    (checkout / "visible.txt").write_text("unversioned and visible\n", encoding="utf-8")
+    (checkout / "unversioned-dir").mkdir()
+    (checkout / "unversioned-dir" / "nested.tmp").write_text(
+        "nested unversioned and ignored\n", encoding="utf-8"
+    )
+
+    root_entries = json.loads(
+        run("json", "dir", "--checkin", "current", "--name", "/", cwd=checkout).stdout
+    )["payload"]["entries"]
+    nested_entries = json.loads(
+        run("json", "dir", "--checkin", "current", "--name", "nested", cwd=checkout).stdout
+    )["payload"]["entries"]
+    status_files = json.loads(run("json", "status", cwd=checkout).stdout)["payload"]["files"]
+    assert {entry["name"] for entry in root_entries} == {"nested", "tracked.tmp"}
+    assert {entry["name"] for entry in nested_entries} == {"versioned.txt"}
+    assert {entry["name"] for entry in status_files} == {"added.tmp"}
+
+    policy = FossilIgnorePolicy(
+        checkout,
+        fossil_executable=fossil,
+        environment=environment,
+        membership_aware=True,
+    )
+    decisions = policy.explain_many(
+        (
+            "tracked.tmp",
+            "added.tmp",
+            "loose.tmp",
+            "unversioned-dir/nested.tmp",
+            "visible.txt",
+            "nested/versioned.txt",
+            "nested",
+        )
+    )
+
+    assert [(decision.ignored, decision.membership) for decision in decisions] == [
+        (True, "versioned"),
+        (True, "versioned"),
+        (True, "unversioned"),
+        (True, "unversioned"),
+        (False, "unversioned"),
+        (False, "versioned"),
+        (False, None),
+    ]
+    selection = select_policy(
+        checkout, FossilPolicyConfig(environment=environment, membership_aware=True)
+    )
+    assert selection.policy.explain("tracked.tmp").membership == "versioned"

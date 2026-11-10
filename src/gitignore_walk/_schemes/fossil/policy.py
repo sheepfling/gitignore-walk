@@ -4,12 +4,14 @@ from __future__ import annotations
 
 # Private walk-session hooks are shared by the built-in policies.
 # pyright: reportPrivateUsage=false
+import json
 import math
 import os
 import sqlite3
 import subprocess
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from pathlib import Path
+from typing import Any, cast
 
 from ..._policy import (
     IgnoreDecision,
@@ -22,14 +24,18 @@ from .errors import FossilIgnoreError
 
 _WORKSPACE_MARKERS = (".fslckout", "_FOSSIL_")
 _DEFAULT_INITIAL_EXCLUDES = _WORKSPACE_MARKERS
+_EMPTY_PATHS: frozenset[Path] = frozenset()
 
 
 class _FossilWalkSession:
-    """Use one stable effective-setting snapshot for a directory walk."""
+    """Use stable Fossil setting and status snapshots for a directory walk."""
 
     def __init__(self, policy: FossilIgnorePolicy) -> None:
         self._policy = policy
         self._patterns = policy._load_patterns()
+        self._status_paths = (
+            policy._load_status_membership() if policy.membership_aware else _EMPTY_PATHS
+        )
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         return self._policy.resolve_target(target)
@@ -38,7 +44,16 @@ class _FossilWalkSession:
         return self.resolve_target(target)
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
-        return [self._policy._explain_with_patterns(target, self._patterns) for target in targets]
+        paths = tuple(targets)
+        versioned_paths = (
+            self._policy._load_membership(paths, self._status_paths)
+            if self._policy.membership_aware
+            else None
+        )
+        return [
+            self._policy._explain_with_patterns(target, self._patterns, versioned_paths)
+            for target in paths
+        ]
 
     def should_descend_directory(self, target: Path) -> bool:
         return self._policy.should_descend_directory(target)
@@ -57,10 +72,15 @@ class FossilIgnorePolicy(IgnorePolicy):
     Ignore matches describe exclusion rules, not whether a path is already tracked. The walker
     baseline omits the Fossil checkout marker files by default.
 
+    Set ``membership_aware=True`` to query Fossil's structured checkout JSON and report known file
+    membership independently from ignore decisions. Directory membership remains unknown because
+    Fossil versions files, not directories.
+
     Attributes:
         root: Caller traversal root, bounded to this policy's targets.
         workspace_root: Discovered Fossil checkout root.
         scheme: Stable ``"fossil"`` identifier.
+        membership_aware: Whether file membership is queried independently from ignore matches.
     """
 
     @property
@@ -76,11 +96,15 @@ class FossilIgnorePolicy(IgnorePolicy):
         environment: Mapping[str, str] | None = None,
         timeout: float = 30.0,
         initial_excludes: Sequence[str] | None = None,
+        membership_aware: bool = False,
     ) -> None:
         """Bind a caller root to a Fossil checkout and load its effective ignore setting.
 
         ``initial_excludes`` defaults to the Fossil workspace markers so they are not yielded as
         ordinary included files. Pass an empty sequence to disable this walker baseline.
+
+        ``membership_aware`` enables read-only membership queries through Fossil's JSON interface;
+        directories and paths absent from native inventory and the local filesystem stay unknown.
         """
         try:
             self.root = Path(root).expanduser().resolve()
@@ -93,6 +117,7 @@ class FossilIgnorePolicy(IgnorePolicy):
         self.fossil_executable = fossil_executable
         self.timeout = timeout
         self._environment = dict(os.environ if environment is None else environment)
+        self.membership_aware = membership_aware
         excludes = _DEFAULT_INITIAL_EXCLUDES if initial_excludes is None else initial_excludes
         self._initial_excludes = tuple(item.replace("\\", "/").strip("/") for item in excludes)
         self.workspace_root = _find_workspace_root(self.root)
@@ -113,12 +138,18 @@ class FossilIgnorePolicy(IgnorePolicy):
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether Fossil's effective ignore setting matches one path."""
-        return self._explain_with_patterns(target, self._load_patterns())
+        versioned_paths = self._load_membership((target,)) if self.membership_aware else None
+        return self._explain_with_patterns(target, self._load_patterns(), versioned_paths)
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
         """Explain an ordered set of paths using one effective-setting snapshot."""
+        paths = tuple(targets)
         patterns = self._load_patterns()
-        return [self._explain_with_patterns(target, patterns) for target in targets]
+        status_paths = self._load_status_membership() if self.membership_aware else _EMPTY_PATHS
+        versioned_paths = (
+            self._load_membership(paths, status_paths) if self.membership_aware else None
+        )
+        return [self._explain_with_patterns(target, patterns, versioned_paths) for target in paths]
 
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
@@ -127,15 +158,23 @@ class FossilIgnorePolicy(IgnorePolicy):
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
         patterns = self._load_patterns()
+        status_paths = self._load_status_membership() if self.membership_aware else _EMPTY_PATHS
         for target in targets:
-            yield self._explain_with_patterns(target, patterns)
+            versioned_paths = (
+                self._load_membership((target,), status_paths) if self.membership_aware else None
+            )
+            yield self._explain_with_patterns(target, patterns, versioned_paths)
 
     def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return all Fossil glob matches in setting order."""
         path = self.resolve_target(target)
         patterns = self._load_patterns()
+        status_paths = self._load_status_membership() if self.membership_aware else _EMPTY_PATHS
+        versioned_paths = (
+            self._load_membership((path,), status_paths) if self.membership_aware else None
+        )
         matches = self._matching_patterns(path, patterns)
-        decision = self._decision(path, matches[0] if matches else None)
+        decision = self._decision(path, matches[0] if matches else None, versioned_paths)
         trace = tuple(
             IgnoreTraceMatch(
                 source="effective Fossil ignore-glob setting",
@@ -193,12 +232,148 @@ class FossilIgnorePolicy(IgnorePolicy):
             )
         return _parse_glob_list(result.stdout.decode("utf-8", errors="replace"))
 
+    def _load_membership(
+        self,
+        targets: Iterable[str | os.PathLike[str]],
+        status_paths: frozenset[Path] | None = None,
+    ) -> frozenset[Path]:
+        """Read requested file membership from Fossil's structured checkout JSON commands."""
+        versioned: set[Path] = set(status_paths or ())
+        directories: set[str] = set()
+        for target in targets:
+            path = self.resolve_target(target)
+            if path.is_dir():
+                continue
+            parent = path.parent
+            if parent.is_dir():
+                directories.add(parent.relative_to(self.workspace_root).as_posix())
+        for directory in sorted(directories):
+            payload = self._run_json(
+                ["dir", "--checkin", "current", "--name", "/" if directory == "." else directory],
+                operation="membership-directory",
+            )
+            entries_value = payload.get("entries")
+            if entries_value is None:
+                continue
+            if not isinstance(entries_value, list):
+                raise FossilIgnoreError(
+                    "Fossil directory JSON did not contain an entries list.",
+                    operation="membership-directory",
+                    path=directory or ".",
+                )
+            entries = cast(list[dict[str, object]], entries_value)
+            for entry in entries:
+                name = entry.get("name")
+                if not isinstance(name, str):
+                    raise FossilIgnoreError(
+                        "Fossil directory JSON contained an invalid entry.",
+                        operation="membership-directory",
+                        path=directory or ".",
+                    )
+                relative = f"{directory}/{name}" if directory else name
+                entry_path = self._membership_path(relative, operation="membership-directory")
+                if entry.get("isDir") is True:
+                    continue
+                versioned.add(entry_path)
+
+        if status_paths is None:
+            versioned.update(self._load_status_membership())
+        return frozenset(versioned)
+
+    def _load_status_membership(self) -> frozenset[Path]:
+        """Read staged, missing, and otherwise changed paths from Fossil checkout status."""
+        versioned: set[Path] = set()
+        status = self._run_json(["status"], operation="membership-status")
+        files_value = status.get("files", [])
+        if not isinstance(files_value, list):
+            raise FossilIgnoreError(
+                "Fossil status JSON did not contain a files list.", operation="membership-status"
+            )
+        files = cast(list[dict[str, object]], files_value)
+        for item in files:
+            relative = item.get("name")
+            if not isinstance(relative, str):
+                raise FossilIgnoreError(
+                    "Fossil status JSON contained an invalid file entry.",
+                    operation="membership-status",
+                )
+            versioned.add(self._membership_path(relative, operation="membership-status"))
+        return frozenset(versioned)
+
+    def _membership_path(self, relative: str, *, operation: str) -> Path:
+        """Resolve a client-reported relative path and reject checkout escapes."""
+        relative_path = Path(relative)
+        candidate = self.workspace_root / relative_path
+        if (
+            relative_path.is_absolute()
+            or ".." in relative_path.parts
+            or not candidate.is_relative_to(self.workspace_root)
+        ):
+            raise FossilIgnoreError(
+                "Fossil returned a membership path outside the checkout.",
+                operation=operation,
+                path=relative,
+            )
+        return candidate
+
+    def _run_json(self, arguments: Sequence[str], *, operation: str) -> dict[str, Any]:
+        """Run a read-only Fossil JSON command and validate its response envelope."""
+        try:
+            result = subprocess.run(
+                [self.fossil_executable, "json", *arguments],
+                cwd=self.workspace_root,
+                env=self._environment,
+                capture_output=True,
+                timeout=self.timeout,
+                check=False,
+            )
+        except OSError as error:
+            raise FossilIgnoreError(
+                f"Unable to run Fossil {operation} query: {error}",
+                operation=operation,
+                path=str(self.workspace_root),
+            ) from error
+        except subprocess.TimeoutExpired as error:
+            raise FossilIgnoreError(
+                f"Fossil {operation} query timed out after {self.timeout:g} seconds.",
+                operation=operation,
+                path=str(self.workspace_root),
+            ) from error
+        if result.returncode != 0:
+            detail = result.stderr.decode("utf-8", errors="replace").strip()
+            raise FossilIgnoreError(
+                f"Fossil {operation} query failed with exit code {result.returncode}: {detail}",
+                operation=operation,
+                path=str(self.workspace_root),
+            )
+        try:
+            document: Any = json.loads(result.stdout)
+        except (UnicodeDecodeError, json.JSONDecodeError) as error:
+            raise FossilIgnoreError(
+                f"Fossil {operation} query returned invalid JSON: {error}",
+                operation=operation,
+                path=str(self.workspace_root),
+            ) from error
+        payload: Any = (
+            cast(dict[str, Any], document).get("payload") if isinstance(document, dict) else None
+        )
+        if not isinstance(payload, dict):
+            raise FossilIgnoreError(
+                f"Fossil {operation} JSON did not contain a payload object.",
+                operation=operation,
+                path=str(self.workspace_root),
+            )
+        return cast(dict[str, Any], payload)
+
     def _explain_with_patterns(
-        self, target: str | os.PathLike[str], patterns: tuple[str, ...]
+        self,
+        target: str | os.PathLike[str],
+        patterns: tuple[str, ...],
+        versioned_paths: frozenset[Path] | None,
     ) -> IgnoreDecision:
         path = self.resolve_target(target)
         matches = self._matching_patterns(path, patterns)
-        return self._decision(path, matches[0] if matches else None)
+        return self._decision(path, matches[0] if matches else None, versioned_paths)
 
     def _matching_patterns(self, target: Path, patterns: tuple[str, ...]) -> tuple[str, ...]:
         relative = target.relative_to(self.workspace_root).as_posix()
@@ -210,7 +385,9 @@ class FossilIgnorePolicy(IgnorePolicy):
         prefixes = _path_prefixes(relative)
         return _matching_patterns(prefixes, patterns)
 
-    def _decision(self, path: Path, pattern: str | None) -> IgnoreDecision:
+    def _decision(
+        self, path: Path, pattern: str | None, versioned_paths: frozenset[Path] | None = None
+    ) -> IgnoreDecision:
         relative = path.relative_to(self.root).as_posix()
         baseline = next(
             (item for item in self._initial_excludes if _matches_glob(relative, item)), None
@@ -226,6 +403,12 @@ class FossilIgnorePolicy(IgnorePolicy):
                 reason="baseline-exclusion",
                 discovery_complete=True,
             )
+        membership = None
+        if self.membership_aware and versioned_paths is not None and not path.is_dir():
+            if path in versioned_paths:
+                membership = "versioned"
+            elif path.exists():
+                membership = "unversioned"
         return IgnoreDecision(
             path=path,
             ignored=pattern is not None,
@@ -236,6 +419,7 @@ class FossilIgnorePolicy(IgnorePolicy):
             scope="." if pattern else None,
             reason="matched-rule" if pattern else "no-matching-rule",
             discovery_complete=True,
+            membership=membership,
         )
 
 

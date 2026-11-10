@@ -121,7 +121,10 @@ candidates agree, including range classes, Unicode `?`, case sensitivity, class-
 unmatched brackets, Unicode whitespace preservation, global fallback, local-over-global precedence,
 versioned-over-local precedence, and the previously captured quote, separator, and traversal cases.
 Eight malformed or escaped-token probes and fifteen ASCII-whitespace tokenizer probes match all
-four profiles and the evaluator; other tokenizer boundaries remain open.
+four profiles and the evaluator. Opt-in membership discovery now combines structured Fossil JSON
+directory and checkout-status results, keeping tracked membership separate from ignore decisions;
+directories remain membership-unknown. Other tokenizer boundaries and broader status/traversal
+coverage remain open.
 Breezy's corpus is now
 captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64 with
 isolated user configuration: all thirty-three boolean cases agree, including global-versus-branch
