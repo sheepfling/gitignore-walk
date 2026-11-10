@@ -273,7 +273,8 @@ handoff; revisit it if native feasibility or project priorities change.
 SVN now has a live status-transition test for normal, modified, added, deleted, missing, replaced,
 obstructed, and conflicted entries, alongside ignored-unversioned files. The conflict uses two
 working copies and overlapping edits. It checks native status membership, membership-aware walk
-selection, and traversal through an obstructed directory. A separate check
+selection exactly in both traversal orders, including unversioned conflict sidecars, and traversal
+through an obstructed directory. A separate check
 confirms that an excluded-depth child omitted from verbose native status stays membership-unknown
 and that the walker does not descend there. A directory-external check confirms outer `external`
 status and membership scope from the external working copy. The transition test passes locally
@@ -654,7 +655,9 @@ The SVN baseline is retained below for reference: its initial property policy, i
 and opt-in membership are implemented. The 21-case oracle includes all 13 status-profile probes from
 the handoff; the two import-reference probes remain outside the status-walking contract. Live
 membership comparisons cover normal, modified, added, deleted, missing, replaced, obstructed, and
-conflicted entries, plus ignored unversioned entries. A scheduled directory deletion retains native
+conflicted entries, plus ignored unversioned entries. The transition fixture checks exact included
+and ignored file selections in both traversal orders, including Subversion's unversioned conflict
+sidecars. A scheduled directory deletion retains native
 membership for its deleted directory and tracked descendant while leaving a new child unversioned.
 Versioned directories and file/directory
 externals have separate native evidence. A new membership-aware walker check matches native

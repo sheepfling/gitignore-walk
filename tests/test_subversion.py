@@ -641,7 +641,10 @@ def test_subversion_file_external_keeps_rule_matching_separate_from_membership(
     assert root / "external-file.txt" in set(membership_walker.iter_files(selection="included"))
 
 
-def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: Path) -> None:
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_subversion_membership_tracks_working_copy_status_transitions(
+    tmp_path: Path, topdown: bool
+) -> None:
     case = {
         "setup": {
             "properties": {".": {"svn:ignore": "*.tmp\n"}},
@@ -721,6 +724,9 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         "replaced.tmp": "replaced",
         "obstructed.tmp": "obstructed",
         "conflicted.tmp": "conflicted",
+        "conflicted.tmp.mine": "unversioned",
+        "conflicted.tmp.r2": "unversioned",
+        "conflicted.tmp.r3": "unversioned",
         "loose.tmp": "ignored",
     }
     assert {path: native_items.get(path) for path in expected_items} == expected_items
@@ -733,10 +739,19 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
         membership_aware=True,
     )
     decisions = {path: policy.explain(path) for path in expected_items}
-    assert all(decision.ignored for decision in decisions.values())
-    for path in expected_items.keys() - {"loose.tmp"}:
+    conflict_sidecars = {
+        "conflicted.tmp.mine",
+        "conflicted.tmp.r2",
+        "conflicted.tmp.r3",
+    }
+    assert all(
+        decision.ignored for path, decision in decisions.items() if path not in conflict_sidecars
+    )
+    assert all(not decisions[path].ignored for path in conflict_sidecars)
+    for path in expected_items.keys() - {"loose.tmp"} - conflict_sidecars:
         assert decisions[path].membership == "versioned"
     assert decisions["loose.tmp"].membership == "unversioned"
+    assert all(decisions[path].membership == "unversioned" for path in conflict_sidecars)
     assert "absent.tmp" not in native_items
     absent = policy.explain("absent.tmp")
     assert absent.ignored
@@ -751,24 +766,27 @@ def test_subversion_membership_tracks_working_copy_status_transitions(tmp_path: 
     walker = IgnoreWalker(root, policy=policy)
     ignored_paths = {
         path.relative_to(root).as_posix()
-        for path in walker.iter_files(selection="ignored")
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
         if path.relative_to(root).parts[0] != ".svn"
     }
     included_paths = {
         path.relative_to(root).as_posix()
-        for path in walker.iter_files(selection="included")
+        for path in walker.iter_files(selection="included", topdown=topdown)
         if path.relative_to(root).parts[0] != ".svn"
     }
     assert ignored_paths == {"loose.tmp"}
-    assert {
+    assert included_paths == {
         "normal.tmp",
         "modified.tmp",
         "added.tmp",
         "deleted.tmp",
         "replaced.tmp",
         "conflicted.tmp",
+        "conflicted.tmp.mine",
+        "conflicted.tmp.r2",
+        "conflicted.tmp.r3",
         "obstructed.tmp/child.txt",
-    } <= included_paths
+    }
 
 
 def test_subversion_deleted_directory_keeps_descendant_membership(tmp_path: Path) -> None:
