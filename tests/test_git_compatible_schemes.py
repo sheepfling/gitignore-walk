@@ -1123,6 +1123,120 @@ def test_compatible_scheme_selection_is_typed_and_explicit(tmp_path: Path) -> No
     assert jujutsu.policy.membership_aware
 
 
+@pytest.mark.parametrize(
+    ("mode", "native_ignored"),
+    [
+        ("sapling-git", True),
+        ("sapling-sl", False),
+        ("jj-colocated", True),
+        ("jj-noncolocated", True),
+    ],
+)
+def test_native_schemes_honor_git_config_count_environment(
+    tmp_path: Path,
+    mode: str,
+    native_ignored: bool,
+) -> None:
+    sapling_mode = mode.startswith("sapling-")
+    executable = shutil.which("sl" if sapling_mode else "jj")
+    if executable is None:
+        pytest.skip(f"{'Sapling' if sapling_mode else 'Jujutsu'} is not installed")
+    git_executable = shutil.which("git") or "git"
+
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    ignore_file = tmp_path / "environment-count-ignore"
+    ignore_file.write_text("from-count.tmp\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "core.excludesFile",
+            "GIT_CONFIG_VALUE_0": str(ignore_file),
+        }
+    )
+
+    if mode == "sapling-git":
+        _git_init(root)
+    elif mode == "sapling-sl":
+        result = subprocess.run(
+            [executable, "init", str(root)],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+    else:
+        init = [executable, "git", "init"]
+        if mode == "jj-noncolocated":
+            init.append("--no-colocate")
+        result = subprocess.run(
+            init,
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+
+    probe = root / "from-count.tmp"
+    probe.write_text("config environment probe\n", encoding="utf-8")
+    if sapling_mode:
+        native = subprocess.run(
+            [executable, "status", "-iu", "--print0"],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert native.returncode == 0, native.stderr.decode(errors="replace")
+        expected_status = b"I from-count.tmp\0" if native_ignored else b"? from-count.tmp\0"
+        assert expected_status in native.stdout
+        policy = select_policy(
+            root,
+            SaplingPolicyConfig(
+                environment=environment,
+                read_git_config=True,
+                git_executable=git_executable,
+            ),
+        ).policy
+    else:
+        status = subprocess.run(
+            [executable, "status", "--no-pager"],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert status.returncode == 0, status.stderr.decode(errors="replace")
+        listing = subprocess.run(
+            [executable, "file", "list"],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert listing.returncode == 0, listing.stderr.decode(errors="replace")
+        assert (b"from-count.tmp" in listing.stdout) is (not native_ignored)
+        policy = select_policy(
+            root,
+            JujutsuPolicyConfig(
+                environment=environment,
+                read_git_config=True,
+                git_executable=git_executable,
+            ),
+        ).policy
+
+    assert policy.explain(probe).ignored is native_ignored
+
+
 def _git_init(root: Path) -> None:
     result = subprocess.run(
         ["git", "init", "-q", str(root)], capture_output=True, text=True, check=False

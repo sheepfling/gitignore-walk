@@ -605,6 +605,10 @@ alternate config file; Sapling `.sl` mode does not. `read_git_config=True` follo
 environment-selected config. The behavior is captured on macOS arm64, Debian 13 Linux aarch64 and
 x86_64 with Git 2.47.3, Debian 13 x86_64 with Git 2.56.0, and Windows Jujutsu. This adds one
 environment-selected config path; it does not close the wider client/version/profile coverage gap.
+Native live checks now also cover `GIT_CONFIG_COUNT` entries for `core.excludesFile`: Sapling `.git`
+mode and both Jujutsu modes honor the injected value, while Sapling `.sl` mode ignores it. The
+`read_git_config=True` policies follow Git's resolution of the same environment entries. Broader
+environment-variable and client-version profiles remain open.
 
 The nested-workspace boundary probe now confirms that Sapling stops at nested workspaces using the
 same storage marker, but traverses into a child using the other marker. Jujutsu stops at nested

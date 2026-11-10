@@ -47,7 +47,9 @@ that Sapling `.git` mode and both Jujutsu modes use that alternate file, while S
 not. `read_git_config=True` follows the environment-selected file because it delegates config
 resolution to Git. These observations are captured on macOS arm64 and Debian 13 Linux aarch64 and
 x86_64, including a separate Git 2.56 profile; Windows captures the same behavior for both Jujutsu
-modes. A repository-local `core.excludesFile` overrides system and user values in
+modes. Native live tests also cover `GIT_CONFIG_COUNT`/`KEY_n`/`VALUE_n` injection for Sapling `.git`
+and both Jujutsu modes; Sapling `.sl` remains isolated from Git config. A repository-local
+`core.excludesFile` overrides system and user values in
 Sapling `.git` mode and both Jujutsu modes; Sapling `.sl` ignores Git config. A `gitdir` conditional
 include selects the user file in Sapling `.git` mode and colocated Jujutsu; non-colocated Jujutsu
 follows the configured system source for that condition. Both `onbranch:main` and a matching

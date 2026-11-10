@@ -421,6 +421,11 @@ optionally query native data for version-control membership:
   [git-config](https://git-scm.com/docs/git-config), and ignore precedence in the
   [Git ignore documentation](https://git-scm.com/docs/gitignore).
 
+Native live checks also cover Git's environment-injected `GIT_CONFIG_COUNT` entries. Sapling `.git`
+mode and both Jujutsu modes honor an injected `core.excludesFile`, while Sapling `.sl` mode ignores
+Git config. With `read_git_config=True`, the policy uses Git's config resolver and follows the same
+environment-provided value.
+
 Conditional include support follows the configured Git executable's version. Git 2.56 added
 `worktree:` includes and supports their case-insensitive `worktree/i:` form. The captured Sapling
 `.git` mode honors both; Jujutsu 0.47.1 does not honor either natively in colocated mode. With
