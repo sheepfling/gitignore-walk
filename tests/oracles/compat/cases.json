@@ -102,6 +102,17 @@
     "jj.colocated": [],
     "jj.noncolocated": []
   },
+  "conditional_worktree_i_probe_files": {
+    "conditional.worktreei": "must be ignored by a matching case-insensitive worktree include\n",
+    "conditional.visible": "must remain visible when the worktree include does not match\n"
+  },
+  "conditional_worktree_i_ignore": "*.worktreei\n",
+  "expected_conditional_worktree_i_ignored_when_supported": {
+    "sapling.git-mode": ["conditional.worktreei"],
+    "sapling.sl-mode": [],
+    "jj.colocated": [],
+    "jj.noncolocated": []
+  },
   "conditional_branch_probe_files": {
     "conditional.branch": "must be ignored only by a matching onbranch include\n",
     "conditional.global": "must be ignored by XDG when no include condition matches\n",

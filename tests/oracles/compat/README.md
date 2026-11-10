@@ -55,13 +55,14 @@ Jujutsu. Linux and Windows captures are checked by native CI; committed Linux ca
 alongside this probe when recaptured. Git documents `gitdir/i` as `gitdir` matching without case
 sensitivity ([Git config documentation](https://git-scm.com/docs/git-config#_conditional_includes)).
 
-Git 2.56 added `worktree:` conditional includes. The Git 2.56.0/macOS arm64 capture shows Git
-resolving the conditional global ignore and Sapling `.git` mode honoring it. Jujutsu 0.47.1
-colocated mode leaves the probe visible even though Git 2.56 resolves `core.excludesFile` to the
-included file; non-colocated mode does not match because its internal Git store is bare. Therefore
-`read_git_config=True` can differ from Jujutsu's own interpretation for this newer include type:
-it follows the configured Git executable, as the option specifies. Git's release notes record the
-feature addition in [v2.56.0](https://github.com/git/git/blob/v2.56.0/Documentation/RelNotes/2.56.0.adoc).
+Git 2.56 added `worktree:` conditional includes and supports the case-insensitive `worktree/i:`
+form. The Git 2.56.0/macOS arm64 capture shows Git resolving both conditional global ignores and
+Sapling `.git` mode honoring them. Jujutsu 0.47.1 colocated mode leaves both probes visible even
+though Git 2.56 resolves `core.excludesFile` to the included files; non-colocated mode does not
+match because its internal Git store is bare. Therefore `read_git_config=True` can differ from
+Jujutsu's own interpretation for these newer include types: it follows the configured Git
+executable, as the option specifies. Git's release notes record the feature addition in
+[v2.56.0](https://github.com/git/git/blob/v2.56.0/Documentation/RelNotes/2.56.0.adoc).
 
 A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
 ignored parent directory; a child negation can re-include a file when only the parent's contents

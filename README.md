@@ -402,11 +402,12 @@ matcher while resolving each system's workspace markers and supported sources se
   [Git ignore documentation](https://git-scm.com/docs/gitignore).
 
 Conditional include support follows the configured Git executable's version. Git 2.56 added
-`worktree:` includes: the captured Sapling `.git` mode honors one, while Jujutsu 0.47.1 does not
-honor it natively in colocated mode. With `read_git_config=True` and Git 2.56 or newer, the
-Jujutsu policy follows Git's resolved `core.excludesFile`, so that case can differ from native
-Jujutsu. See the [compatibility oracle notes](tests/oracles/compat/README.md) for the versioned
-capture and exact results.
+`worktree:` includes and supports their case-insensitive `worktree/i:` form. The captured Sapling
+`.git` mode honors both; Jujutsu 0.47.1 does not honor either natively in colocated mode. With
+`read_git_config=True` and Git 2.56 or newer, the Jujutsu policy follows Git's resolved
+`core.excludesFile`, so those cases can differ from native Jujutsu. See the
+[compatibility oracle notes](tests/oracles/compat/README.md) for versioned captures and exact
+results.
 
 The captured pattern matrix also covers directory-level negation barriers, child re-inclusion,
 workspace-root anchoring, and recursive `**`; both policy decisions and walker selections match the

@@ -560,29 +560,35 @@ def test_compatible_scheme_discovers_case_insensitive_gitdir_include(
     reason="Git worktree conditional includes require Git 2.56 or newer",
 )
 @pytest.mark.parametrize(
-    ("mode", "expected_ignored"),
+    ("mode", "expected_ignored", "condition", "suffix"),
     [
-        ("sapling-git", True),
-        ("sapling-sl", False),
-        ("jj-colocated", True),
-        ("jj-noncolocated", False),
+        ("sapling-git", True, "worktree", ""),
+        ("sapling-sl", False, "worktree", ""),
+        ("jj-colocated", True, "worktree", ""),
+        ("jj-noncolocated", False, "worktree", ""),
+        ("sapling-git", True, "worktree/i", "i"),
+        ("sapling-sl", False, "worktree/i", "i"),
+        ("jj-colocated", True, "worktree/i", "i"),
+        ("jj-noncolocated", False, "worktree/i", "i"),
     ],
 )
-def test_compatible_scheme_resolves_worktree_conditional_with_git_256(
-    tmp_path: Path, mode: str, expected_ignored: bool
+def test_compatible_scheme_resolves_worktree_conditionals_with_git_256(
+    tmp_path: Path, mode: str, expected_ignored: bool, condition: str, suffix: str
 ) -> None:
     root = tmp_path / "workspace"
     root.mkdir()
     home = tmp_path / "home"
     home.mkdir()
-    custom_ignore = home / "worktree-ignore"
-    custom_ignore.write_text("*.worktree\n", encoding="utf-8")
-    (home / "included.gitconfig").write_text(
-        f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8"
-    )
+    custom_ignore = home / f"worktree{suffix}-ignore"
+    custom_ignore.write_text(f"*.worktree{suffix}\n", encoding="utf-8")
+    included_config = home / f"worktree{suffix}.gitconfig"
+    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
     global_config = home / ".gitconfig"
+    path_pattern = root.resolve().as_posix()
+    if condition.endswith("/i"):
+        path_pattern = path_pattern.upper()
     global_config.write_text(
-        f'[includeIf "worktree:{root.resolve().as_posix()}"]\n\tpath = included.gitconfig\n',
+        f'[includeIf "{condition}:{path_pattern}"]\n\tpath = {included_config.name}\n',
         encoding="utf-8",
     )
     environment = {
@@ -609,9 +615,10 @@ def test_compatible_scheme_resolves_worktree_conditional_with_git_256(
         subprocess.run(["git", "init", "--bare", "-q", str(git_dir)], check=True)
         config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
 
-    (root / "conditional.worktree").touch()
+    target = root / f"conditional.worktree{suffix}"
+    target.touch()
     selection = select_policy(root, config)
-    decision = selection.policy.explain("conditional.worktree")
+    decision = selection.policy.explain(target.name)
 
     assert decision.ignored is expected_ignored
 

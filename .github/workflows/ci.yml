@@ -151,6 +151,7 @@ jobs:
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_worktree_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
@@ -198,6 +199,7 @@ jobs:
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_worktree_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_onbranch"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_remote_url"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
@@ -228,10 +230,12 @@ jobs:
           capture = json.loads(path.read_text(encoding="utf-8"))
           assert capture["clients"]["git"].startswith("git version 2.56.0")
           assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
-          observations = {case["id"]: case["conditional_worktree"] for case in capture["cases"]}
-          assert observations["sapling.git-mode"]["ignored"] == ["conditional.worktree"]
-          assert observations["jj.colocated"]["ignored"] == []
-          assert observations["jj.colocated"]["native_matches_git_config"] is False
+          assert all(case["conditional_worktree_i"]["candidate_matches"] for case in capture["cases"])
+          observations = {case["id"]: case for case in capture["cases"]}
+          for key, expected in (("conditional_worktree", "conditional.worktree"), ("conditional_worktree_i", "conditional.worktreei")):
+            assert observations["sapling.git-mode"][key]["ignored"] == [expected]
+            assert observations["jj.colocated"][key]["ignored"] == []
+            assert observations["jj.colocated"][key]["native_matches_git_config"] is False
           PY
           PATH="$source_dir:$PATH" python3 -m pytest tests/test_git_compatible_schemes.py -q
       - name: Check selected Linux native captures
@@ -377,6 +381,7 @@ jobs:
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_worktree_i"]["candidate_matches"] for case in capture["cases"])
           print(result)
           '@ | python -
       - name: Check Windows Registry and INI precedence
