@@ -204,5 +204,8 @@ snapshotting `jj status` command. XDG Git ignores, `.git/info/exclude`, and Git 
 are captured on macOS 26 arm64, Debian 13 Linux aarch64/x86_64, and Windows Server 2025 x64. The
 Windows profile covers Sapling 0.2.20261103 in both storage modes and Jujutsu 0.47.1 in both
 workspace modes, including the shared rule-pattern and configuration probes. Other client versions
-and broader platform boundaries remain open. See the
+and broader platform boundaries remain open. An older Sapling 0.2.20261028/Jujutsu 0.47.1 Windows
+profile also matches the checked source and configuration probes; `.sl` path-pattern probes are
+explicitly excluded, so the Windows profile makes no claim about that version's `.sl` pattern
+behavior. See the
 [compatibility probe notes](../../tests/oracles/compat/README.md).
