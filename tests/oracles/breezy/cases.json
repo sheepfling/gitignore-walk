@@ -520,6 +520,26 @@
       "release_gate": "Verify the native status walk enters an ignored parent for a child exception."
     },
     {
+      "id": "brz.walk-root-anchored-nested-exception",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": ["cache", "cache/**", "!./cache/keep.tmp"],
+        "files": {
+          "cache/keep.tmp": "exception target\n",
+          "cache/drop.tmp": "ignored sibling\n",
+          "cache/sibling.tmp": "ignored sibling\n"
+        }
+      },
+      "query": "cache/sibling.tmp",
+      "expected_candidate": true,
+      "capture_profiles": ["brz-3.3.24-macos-arm64.json"],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "release_gate": "Confirm Breezy's ./-anchored nested exception matches its exact workspace path and prevents pruning an ignored parent."
+    },
+    {
       "id": "brz.regex-exception-opens-ignored-parent",
       "profile": "breezy",
       "dimension": "traversal",

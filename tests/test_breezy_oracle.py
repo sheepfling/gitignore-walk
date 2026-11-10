@@ -267,3 +267,47 @@ def test_breezy_walker_matches_captured_exception_parent_status(
         assert "cache/sibling.tmp" in ignored
     can_prune = policy.can_prune_ignored_directory(root / "cache", policy.explain("cache"))
     assert can_prune is (case_id == "brz.ignored-parent-without-exception")
+
+
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_breezy_walker_matches_root_anchored_nested_exception_capture(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, topdown: bool
+) -> None:
+    profile = "brz-3.3.24-macos-arm64.json"
+    case_id = "brz.walk-root-anchored-nested-exception"
+    case = next(case for case in CASES if case["id"] == case_id)
+    observation = next(item for item in CAPTURES[profile]["cases"] if item["id"] == case_id)
+    default_patterns = tuple(CAPTURES[profile]["default_rules"]["patterns"])
+    monkeypatch.setattr(BreezyIgnorePolicy, "_load_default_patterns", lambda self: default_patterns)
+    root = tmp_path / "checkout"
+    root.mkdir()
+    (root / ".bzr").mkdir()
+    for relative, contents in case["setup"]["files"].items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
+    (root / ".bzrignore").write_text("\n".join(case["setup"]["patterns"]) + "\n", encoding="utf-8")
+    query = root / case["query"]
+    anchor = query.parent / ".oracle-walk-anchor"
+    anchor.write_text("native walker anchor\n", encoding="utf-8")
+    policy = BreezyIgnorePolicy(
+        root,
+        global_ignore_file=tmp_path / "config" / "breezy" / "ignore",
+    )
+    walker = IgnoreWalker(root, policy=policy)
+    tracked = {anchor.relative_to(root).as_posix()}
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+
+    assert observation["observed_ignored"] is True
+    assert observation["observed_unknown"] is False
+    assert included - tracked == set(observation["unknown_paths"])
+    assert ignored - tracked == set(observation["ignored_paths"])
+    assert "cache/keep.tmp" in included
+    assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False

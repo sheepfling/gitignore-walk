@@ -32,6 +32,7 @@
     "stderr": "",
     "isolated_configuration": true
   },
+  "excluded_cases": [],
   "cases": [
     {
       "id": "brz.exception-priority",
@@ -1478,6 +1479,57 @@
       "global_ignore_exists_after": true
     },
     {
+      "id": "brz.walk-root-anchored-nested-exception",
+      "dimension": "traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "cache/sibling.tmp",
+      "observed_ignored": true,
+      "observed_pattern": "cache/**",
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "cache/drop.tmp",
+        "cache/sibling.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore",
+        "cache/keep.tmp"
+      ],
+      "stdout": "cache/drop.tmp                                     cache/**\ncache/sibling.tmp                                  cache/**\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  cache\n+N  cache/.oracle-walk-anchor\n?   cache/keep.tmp\n",
+      "status_stderr": "",
+      "stdout_sha256": "9bea0fe20b627410ad3ad679155b85cd7158f2b8bac375f95707bb20575a8fe2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
       "id": "brz.regex-exception-opens-ignored-parent",
       "dimension": "traversal",
       "evidence_status": "native-observed",
@@ -2109,6 +2161,5 @@
       "global_ignore_existed_before": false,
       "global_ignore_exists_after": true
     }
-  ],
-  "excluded_cases": []
+  ]
 }
