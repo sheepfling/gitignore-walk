@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "svn_version": "1.15.0",
+    "platform": "macOS-26.6.2-arm64-arm-64bit"
+  },
+  "user_config": "<isolated-home>/.subversion/config",
+  "user_config_sha256": "8a4b2223cbce0784b1dd90d327c6b53fa16e28603570057ad8c26df966f074aa",
+  "pattern": "*.user-config-hide",
+  "native_status_command": [
+    "svn",
+    "status",
+    "--xml",
+    "--no-ignore",
+    "."
+  ],
+  "native_status_exit_code": 0,
+  "native_status_xml": "<status>\n<target path=\".\">\n<entry path=\"candidate.user-config-hide\">\n<wc-status item=\"ignored\" props=\"none\">\n</wc-status>\n</entry>\n<entry path=\"visible.user-config-show\">\n<wc-status item=\"unversioned\" props=\"none\">\n</wc-status>\n</entry>\n</target>\n</status>",
+  "native_status_stdout_sha256": "64ea0ee290e57116013078e1ef4c6513990a172e8a2ccc2de84cec836332d5e4",
+  "expected_ignored_paths": [
+    "candidate.user-config-hide"
+  ],
+  "native_ignored_paths": [
+    "candidate.user-config-hide"
+  ],
+  "policy_ignored_paths": [
+    "candidate.user-config-hide"
+  ],
+  "policy_source": "Subversion runtime configuration: <isolated-home>/.subversion/config",
+  "candidate_matches": true
+}

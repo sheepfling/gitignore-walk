@@ -25,6 +25,11 @@ CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
     for name in CAPTURE_FILES
 }
+USER_CONFIG_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / "svn-user-config-1.15.0-macos-arm64.json").read_text(
+        encoding="utf-8"
+    )
+)
 
 
 @pytest.mark.parametrize(
@@ -41,6 +46,24 @@ CAPTURES: dict[str, dict[str, Any]] = {
 def test_subversion_apr_build_parser(output: bytes, expected: str | None) -> None:
     """Retain the linked APR line when the native client reports it."""
     assert _apr_build_line(output) == expected
+
+
+def test_subversion_macos_capture_uses_ambient_user_config() -> None:
+    capture = USER_CONFIG_CAPTURE
+    assert capture["status"] == "captured"
+    assert capture["client"]["svn_version"] == "1.15.0"
+    assert capture["expected_ignored_paths"] == ["candidate.user-config-hide"]
+    assert capture["native_ignored_paths"] == capture["expected_ignored_paths"]
+    assert capture["policy_ignored_paths"] == capture["expected_ignored_paths"]
+    assert (
+        capture["policy_source"]
+        == "Subversion runtime configuration: <isolated-home>/.subversion/config"
+    )
+    assert (
+        hashlib.sha256(capture["native_status_xml"].encode("utf-8")).hexdigest()
+        == capture["native_status_stdout_sha256"]
+    )
+    assert capture["candidate_matches"]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)

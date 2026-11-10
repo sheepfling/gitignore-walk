@@ -146,3 +146,9 @@ pattern, confirming that the user value replaces the system value for this captu
 1.14.5 profile. Run `python -m scripts.ci oracle-svn-config`; its normalized capture is
 `results/svn-config-precedence-debian-13-x86_64.json`. The temporary `/etc` file lives only inside
 the container, so the host's Subversion files are not modified.
+
+`user_config.py` separately captures ambient `HOME/.subversion/config` discovery without passing
+`--config-dir`. On Subversion 1.15.0/macOS arm64, native status and `SubversionIgnorePolicy` both
+select the isolated user pattern, and the decision identifies that user config as its source. The
+capture is `results/svn-user-config-1.15.0-macos-arm64.json` and is replayed by
+`tests/test_svn_oracle.py`.

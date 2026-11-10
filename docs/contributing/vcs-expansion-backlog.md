@@ -112,8 +112,9 @@ an ancestor-component false positive in the policy. Native status and membership
 macOS 1.15.0, Ubuntu 1.14.3, and Windows SlikSvn 1.14.5.
 Explicit and standard file-based runtime-config discovery plus built-in defaults
 are implemented. Native precedence captures cover system-to-user INI files on Debian 13 x86_64 and
-machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5; broader platform combinations,
-versioned directory membership, and traversal/path behavior remain open. Fossil's 43-case
+machine/user Registry-to-INI precedence on Windows SlikSvn 1.14.5. A macOS 1.15.0 capture confirms
+ambient user `HOME/.subversion/config` discovery. Broader precedence profiles, versioned directory
+membership, and traversal/path behavior remain open. Fossil's 43-case
 ignore-glob corpus is captured on 2.28/macOS arm64, 2.26/Linux aarch64 and x86_64, and 2.23/Ubuntu
 24.04 x86_64: all 41 boolean
 candidates agree, including range classes, Unicode `?`, case sensitivity, class-negation markers,
