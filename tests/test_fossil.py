@@ -185,10 +185,25 @@ def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
     (checkout / "nested").mkdir()
     (checkout / "tracked.tmp").write_text("tracked despite ignore\n", encoding="utf-8")
     (checkout / "nested" / "versioned.txt").write_text("nested\n", encoding="utf-8")
-    run("add", "--force", "tracked.tmp", "nested/versioned.txt", cwd=checkout)
+    (checkout / "deleted.tmp").write_text("will be removed\n", encoding="utf-8")
+    (checkout / "modified.tmp").write_text("before edit\n", encoding="utf-8")
+    (checkout / "moved.tmp").write_text("will be renamed\n", encoding="utf-8")
+    run(
+        "add",
+        "--force",
+        "tracked.tmp",
+        "nested/versioned.txt",
+        "deleted.tmp",
+        "modified.tmp",
+        "moved.tmp",
+        cwd=checkout,
+    )
     run("commit", "--no-warnings", "-m", "membership fixture", cwd=checkout)
     (checkout / "added.tmp").write_text("scheduled despite ignore\n", encoding="utf-8")
     run("add", "--force", "added.tmp", cwd=checkout)
+    (checkout / "deleted.tmp").unlink()
+    (checkout / "modified.tmp").write_text("after edit\n", encoding="utf-8")
+    run("mv", "moved.tmp", "renamed.tmp", cwd=checkout)
     (checkout / "loose.tmp").write_text("unversioned and ignored\n", encoding="utf-8")
     (checkout / "visible.txt").write_text("unversioned and visible\n", encoding="utf-8")
     (checkout / "unversioned-dir").mkdir()
@@ -203,9 +218,25 @@ def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
         run("json", "dir", "--checkin", "current", "--name", "nested", cwd=checkout).stdout
     )["payload"]["entries"]
     status_files = json.loads(run("json", "status", cwd=checkout).stdout)["payload"]["files"]
-    assert {entry["name"] for entry in root_entries} == {"nested", "tracked.tmp"}
+    assert {entry["name"] for entry in root_entries} == {
+        "nested",
+        "tracked.tmp",
+        "deleted.tmp",
+        "modified.tmp",
+        "moved.tmp",
+    }
     assert {entry["name"] for entry in nested_entries} == {"versioned.txt"}
-    assert {entry["name"] for entry in status_files} == {"added.tmp"}
+    assert {entry["name"] for entry in status_files} == {
+        "added.tmp",
+        "deleted.tmp",
+        "modified.tmp",
+        "renamed.tmp",
+    }
+    statuses = {item["name"]: item["status"] for item in status_files}
+    assert statuses["added.tmp"] == "new"
+    assert statuses["deleted.tmp"] == "missing"
+    assert statuses["modified.tmp"] == "edited"
+    assert statuses["renamed.tmp"] == ["missing", "renamed"]
 
     policy = FossilIgnorePolicy(
         checkout,
@@ -222,6 +253,10 @@ def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
             "visible.txt",
             "nested/versioned.txt",
             "nested",
+            "deleted.tmp",
+            "modified.tmp",
+            "renamed.tmp",
+            "missing.tmp",
         )
     )
 
@@ -233,6 +268,10 @@ def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
         (False, "unversioned"),
         (False, "versioned"),
         (False, None),
+        (True, "versioned"),
+        (True, "versioned"),
+        (True, "versioned"),
+        (True, None),
     ]
     selection = select_policy(
         checkout, FossilPolicyConfig(environment=environment, membership_aware=True)

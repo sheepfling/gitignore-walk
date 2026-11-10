@@ -42,5 +42,8 @@ capture for that untracked fixture. The Fossil checkout marker is excluded from 
 Opt-in membership discovery uses `fossil json dir --checkin current` for the target's parent and
 `fossil json status` for staged or missing files. A live native test checks tracked, newly added,
 untracked, and directory targets while asserting that membership does not change ignore decisions.
-Directory membership remains unknown. This does not establish broader status or traversal
-conformance.
+The test also checks native status entries for scheduled additions (`new`), missing files, edits
+(`edited`), and renames (`["missing", "renamed"]`), and confirms those paths remain versioned while
+an absent, unreported path stays unknown. Directory membership remains unknown. This status-shape
+capture is currently exercised by the live Fossil 2.28/macOS test; broader cross-profile status and
+traversal conformance remain open.

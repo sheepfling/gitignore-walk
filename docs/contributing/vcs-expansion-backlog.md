@@ -135,8 +135,10 @@ Nine malformed or escaped-token probes and fifteen ASCII-whitespace tokenizer pr
 four profiles and the evaluator. The adjacent `"a"b` case confirms a suffix after a closing quote
 starts another token. Opt-in membership discovery now combines structured Fossil JSON
 directory and checkout-status results, keeping tracked membership separate from ignore decisions;
-directories remain membership-unknown. Other tokenizer boundaries and broader status/traversal
-coverage remain open.
+directories remain membership-unknown. A live Fossil 2.28/macOS fixture verifies native membership
+for scheduled additions, missing files, edits, and renames, plus unknown for an absent unreported
+path; ignore decisions remain unchanged. Cross-profile status and broader traversal coverage remain
+open.
 Breezy's corpus is now
 captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64 with
 isolated user configuration: all thirty-three boolean cases agree, including global-versus-branch
