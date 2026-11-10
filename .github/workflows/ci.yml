@@ -44,6 +44,58 @@ jobs:
       - if: matrix.checks == 'test'
         run: python -m pip install 'pytest>=8.3'
       - run: python -m scripts.ci ${{ matrix.checks }}
+      - name: Capture Jujutsu 0.45.1 compatibility profile
+        if: matrix.os == 'macos-latest'
+        run: |
+          set -euo pipefail
+          client_dir="$RUNNER_TEMP/compat-clients/jj-0.45.1"
+          output_dir="$RUNNER_TEMP/native"
+          mkdir -p "$client_dir" "$output_dir"
+          case "$(uname -m)" in
+            arm64)
+              asset='jj-v0.45.1-aarch64-apple-darwin.tar.gz'
+              digest='51ba42e3d0682616f6eb015045bfe45289b396f03511f9897f645ce8e9272743'
+              capture="$output_dir/jj-0.45.1-macos-arm64.json"
+              ;;
+            x86_64)
+              asset='jj-v0.45.1-x86_64-apple-darwin.tar.gz'
+              digest='6171582d0b5a98a1005cd9643faebff7936812ec264d7968a39d9cef3654a99b'
+              capture="$output_dir/jj-0.45.1-macos-x86_64.json"
+              ;;
+            *)
+              echo "Unsupported macOS runner architecture: $(uname -m)" >&2
+              exit 1
+              ;;
+          esac
+          curl --fail --location --silent --show-error \
+            "https://github.com/jj-vcs/jj/releases/download/v0.45.1/$asset" \
+            --output "$client_dir/$asset"
+          echo "$digest  $client_dir/$asset" | shasum -a 256 --check
+          tar -xzf "$client_dir/$asset" -C "$client_dir"
+          python tests/oracles/compat/run.py --jj "$client_dir/jj" --jj-only \
+            --expect-jj-follows-symlink --output "$capture"
+          python - "$capture" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          from scripts.ci_native import inspect_capture
+
+          path = Path(sys.argv[1])
+          result = inspect_capture(path)
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert result["passed"], result
+          assert capture["clients"]["jujutsu"].startswith("jj 0.45.1")
+          assert len(capture["cases"]) == 2
+          assert all(case["candidate_matches"] for case in capture["cases"])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.os == 'macos-latest'
+        with:
+          name: native-macos-oracles
+          path: ${{ runner.temp }}/native
+          if-no-files-found: warn
+          retention-days: 7
   native-linux:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -179,7 +231,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-probes --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
           python - <<'PY'
           import json
           import os
@@ -221,6 +273,24 @@ jobs:
               for case in profile["cases"]:
                   assert case["candidate_matches"]
                   assert set(case["ignored"]) == expected_by_mode[case["mode"]]
+          old_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json"
+          old_capture = json.loads(old_path.read_text(encoding="utf-8"))
+          assert old_capture["excluded_probes"] == ["sapling.pattern_discovery"]
+          assert old_capture["clients"]["sapling"].startswith("Sapling 0.2.20261028")
+          assert old_capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          for case in old_capture["cases"]:
+              assert case["candidate_matches"]
+              if case["vcs"] == "sapling":
+                  assert case["pattern_discovery"]["native_status"] == "skipped"
+                  assert case["source_discovery"]["candidate_matches"]
+                  assert all(case[key]["candidate_matches"] for key in (
+                      "configured_global", "configured_system", "conditional_global",
+                      "conditional_gitdir_i", "conditional_worktree", "conditional_worktree_i",
+                      "conditional_onbranch", "conditional_remote_url", "conditional_gitdir_override",
+                      "environment_global", "environment_count", "configured_repository",
+                  ))
+              else:
+                  assert case["pattern_discovery"]["candidate_matches"]
           assert result["passed"], result
           assert len(capture["cases"]) == 4
           assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]

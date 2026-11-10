@@ -35,7 +35,13 @@ def _git_config_path(path: Path) -> str:
     return path.as_posix()
 
 
-def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[str, Any]:
+def _capture_sapling(
+    executable: str,
+    mode: str,
+    fixture: Mapping[str, Any],
+    *,
+    skip_pattern_probes: bool = False,
+) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix=f"gitignore-walk-sapling-{mode}-") as temporary:
         base = Path(temporary)
         home = base / "home"
@@ -71,13 +77,26 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
         source_query_files = set(fixture["source_query_files"])
         source_ignored = sorted(ignored & source_query_files)
         pattern_query_files = set(fixture["pattern_query_files"])
-        _write_pattern_probes(root, fixture)
-        pattern_status = _run(
-            [executable, "status", "-iu", "--print0"], cwd=root, environment=environment
-        )
-        _require_success(pattern_status, "sl status pattern probes")
-        _, pattern_status_ignored = _sapling_status_paths(pattern_status.stdout)
-        pattern_ignored = _expand_ignored_paths(pattern_status_ignored, pattern_query_files)
+        if skip_pattern_probes:
+            pattern_discovery = {
+                "native_status": "skipped",
+                "reason": "Excluded by --skip-sapling-pattern-probes.",
+            }
+        else:
+            _write_pattern_probes(root, fixture)
+            pattern_status = _run(
+                [executable, "status", "-iu", "--print0"], cwd=root, environment=environment
+            )
+            _require_success(pattern_status, "sl status pattern probes")
+            _, pattern_status_ignored = _sapling_status_paths(pattern_status.stdout)
+            pattern_ignored = _expand_ignored_paths(pattern_status_ignored, pattern_query_files)
+            pattern_discovery = {
+                "query_files": sorted(pattern_query_files),
+                "ignored": sorted(pattern_ignored),
+                "included": sorted(pattern_query_files - pattern_ignored),
+                "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
+                "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
+            }
         (
             configured_global,
             configured_system,
@@ -114,13 +133,7 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
                 "ignored": source_ignored,
                 "included": sorted(source_query_files - set(source_ignored)),
             },
-            "pattern_discovery": {
-                "query_files": sorted(pattern_query_files),
-                "ignored": sorted(pattern_ignored),
-                "included": sorted(pattern_query_files - pattern_ignored),
-                "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
-                "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
-            },
+            "pattern_discovery": pattern_discovery,
             "configured_global": configured_global,
             "configured_system": configured_system,
             "conditional_global": conditional_global,
@@ -1749,13 +1762,22 @@ def capture(
     jj: str,
     *,
     expected_jj_follows_symlink: bool = False,
+    skip_sapling_pattern_probes: bool = False,
 ) -> dict[str, Any]:
     fixture = json.loads(Path(__file__).with_name("cases.json").read_text(encoding="utf-8"))
     client_versions = {"git": _version("git")}
     captures = []
     if sapling is not None:
         client_versions["sapling"] = _version(sapling)
-        captures.extend(_capture_sapling(sapling, mode, fixture) for mode in ("git", "sl"))
+        captures.extend(
+            _capture_sapling(
+                sapling,
+                mode,
+                fixture,
+                skip_pattern_probes=skip_sapling_pattern_probes,
+            )
+            for mode in ("git", "sl")
+        )
     client_versions["jujutsu"] = _version(jj)
     captures.extend(
         _capture_jj(
@@ -1776,14 +1798,20 @@ def capture(
             result["source_discovery"]["ignored"]
             == fixture["expected_source_ignored"][result["id"]]
         )
-        result["pattern_discovery"]["candidate_matches"] = (
-            result["pattern_discovery"]["ignored"] == fixture["expected_pattern_ignored"]
-        )
+        if result["pattern_discovery"].get("native_status") != "skipped":
+            result["pattern_discovery"]["candidate_matches"] = (
+                result["pattern_discovery"]["ignored"] == fixture["expected_pattern_ignored"]
+            )
     return {
         "schema_version": 1,
         "status": "captured",
         "platform": platform.platform(),
         "clients": client_versions,
+        "excluded_probes": (
+            ["sapling.pattern_discovery"]
+            if sapling is not None and skip_sapling_pattern_probes
+            else []
+        ),
         "cases": captures,
     }
 
@@ -1994,6 +2022,11 @@ def main() -> int:
         action="store_true",
         help="expect Jujutsu to follow the nested .gitignore symlink (pre-0.46.0 profile)",
     )
+    parser.add_argument(
+        "--skip-sapling-pattern-probes",
+        action="store_true",
+        help="omit Sapling path-pattern probes for a version-scoped capture",
+    )
     parser.add_argument("--output", type=Path, required=True, help="capture JSON destination")
     arguments = parser.parse_args()
     if arguments.linked_worktree_only and arguments.symlink_only:
@@ -2009,6 +2042,13 @@ def main() -> int:
         arguments.linked_worktree_only or arguments.workspace_boundary_only
     ):
         parser.error("--expect-jj-follows-symlink applies only to a full or symlink-only capture")
+    if arguments.skip_sapling_pattern_probes and (
+        arguments.jj_only
+        or arguments.symlink_only
+        or arguments.linked_worktree_only
+        or arguments.workspace_boundary_only
+    ):
+        parser.error("--skip-sapling-pattern-probes applies only to a full Sapling capture")
     if arguments.symlink_only:
         result = capture_jj_symlink_profile(
             arguments.jj,
@@ -2029,6 +2069,7 @@ def main() -> int:
             None if arguments.jj_only else arguments.sl,
             arguments.jj,
             expected_jj_follows_symlink=arguments.expect_jj_follows_symlink,
+            skip_sapling_pattern_probes=arguments.skip_sapling_pattern_probes,
         )
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
@@ -2058,7 +2099,10 @@ def main() -> int:
     matched = sum(
         case["candidate_matches"]
         and case["source_discovery"]["candidate_matches"]
-        and case["pattern_discovery"]["candidate_matches"]
+        and (
+            case["pattern_discovery"].get("native_status") == "skipped"
+            or case["pattern_discovery"]["candidate_matches"]
+        )
         and case["configured_global"]["candidate_matches"]
         and case["configured_system"]["candidate_matches"]
         and case["conditional_global"]["candidate_matches"]
@@ -2077,11 +2121,16 @@ def main() -> int:
     skipped = sum(
         case["symlinked_gitignore"]["native_status"] == "skipped" for case in result["cases"]
     )
+    skipped_patterns = sum(
+        case["pattern_discovery"].get("native_status") == "skipped" for case in result["cases"]
+    )
     vcs_names = "Sapling/Jujutsu" if "sapling" in result["clients"] else "Jujutsu"
     print(f"Captured {len(result['cases'])} {vcs_names} cases")
-    print(f"All probe candidates matching: {matched}/{len(result['cases'])}")
+    print(f"All included probe candidates matching: {matched}/{len(result['cases'])}")
     if skipped:
         print(f"Symlink probes explicitly skipped: {skipped}/{len(result['cases'])}")
+    if skipped_patterns:
+        print(f"Sapling path-pattern groups explicitly skipped: {skipped_patterns}")
     print(f"Capture: {arguments.output}")
     return 0 if matched + skipped == len(result["cases"]) else 1
 

@@ -60,8 +60,18 @@ CAPTURES: dict[str, dict[str, Any]] = {
 WINDOWS_JJ_CAPTURE = json.loads(
     (ORACLE_ROOT / "results" / "jj-0.47.1-windows-x64.json").read_text(encoding="utf-8")
 )
-JJ_045_FULL_CAPTURE = json.loads(
-    (ORACLE_ROOT / "results" / "jj-0.45.1-debian13-x86_64.json").read_text(encoding="utf-8")
+JJ_045_FULL_CAPTURE_FILES = (
+    "jj-0.45.1-macos-arm64.json",
+    "jj-0.45.1-debian13-x86_64.json",
+)
+JJ_045_FULL_CAPTURES = {
+    filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
+    for filename in JJ_045_FULL_CAPTURE_FILES
+}
+OLDER_SAPLING_PROFILE = json.loads(
+    (ORACLE_ROOT / "results" / "sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json").read_text(
+        encoding="utf-8"
+    )
 )
 JJ_SYMLINK_VERSION_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
@@ -236,12 +246,19 @@ def test_jujutsu_windows_capture_reconciles_the_expanded_pattern_matrix() -> Non
         assert pattern["included"] == PATTERN_INCLUDED
 
 
-def test_jujutsu_045_capture_reconciles_config_profiles_and_legacy_symlink_behavior() -> None:
+@pytest.mark.parametrize("filename", JJ_045_FULL_CAPTURE_FILES)
+def test_jujutsu_045_capture_reconciles_config_profiles_and_legacy_symlink_behavior(
+    filename: str,
+) -> None:
     """Keep the full 0.45.1 profile, including its pre-0.46 symlink behavior, reviewable."""
-    capture = JJ_045_FULL_CAPTURE
+    capture = JJ_045_FULL_CAPTURES[filename]
     assert capture["status"] == "captured"
-    assert capture["platform"].startswith("Linux-")
-    assert "x86_64" in capture["platform"]
+    if "macos" in filename:
+        assert capture["platform"].startswith("macOS-26")
+        assert "arm64" in capture["platform"]
+    else:
+        assert capture["platform"].startswith("Linux-")
+        assert "x86_64" in capture["platform"]
     assert capture["clients"]["jujutsu"].startswith("jj 0.45.1")
     cases = {case["id"]: case for case in capture["cases"]}
     assert set(cases) == {"jj.colocated", "jj.noncolocated"}
@@ -267,6 +284,49 @@ def test_jujutsu_045_capture_reconciles_config_profiles_and_legacy_symlink_behav
             "configured_repository",
         ):
             assert case[name]["candidate_matches"] is True, (case["id"], name)
+
+
+def test_older_sapling_capture_keeps_pattern_probe_exclusion_explicit() -> None:
+    """Validate old Sapling configuration while preserving its known pattern-probe limitation."""
+    capture = OLDER_SAPLING_PROFILE
+    assert capture["status"] == "captured"
+    assert capture["platform"].startswith("Linux-")
+    assert "aarch64" in capture["platform"]
+    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261028")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+    assert capture["excluded_probes"] == ["sapling.pattern_discovery"]
+    cases = {case["id"]: case for case in capture["cases"]}
+    assert set(cases) == {
+        "sapling.git-mode",
+        "sapling.sl-mode",
+        "jj.colocated",
+        "jj.noncolocated",
+    }
+    for case_id in ("sapling.git-mode", "sapling.sl-mode"):
+        case = cases[case_id]
+        assert case["candidate_matches"] is True
+        assert case["pattern_discovery"] == {
+            "native_status": "skipped",
+            "reason": "Excluded by --skip-sapling-pattern-probes.",
+        }
+        assert case["source_discovery"]["candidate_matches"] is True
+        for name in (
+            "configured_global",
+            "configured_system",
+            "conditional_global",
+            "conditional_gitdir_i",
+            "conditional_worktree",
+            "conditional_worktree_i",
+            "conditional_onbranch",
+            "conditional_remote_url",
+            "conditional_gitdir_override",
+            "environment_global",
+            "environment_count",
+            "configured_repository",
+        ):
+            assert case[name]["candidate_matches"] is True, (case_id, name)
+    for case_id in ("jj.colocated", "jj.noncolocated"):
+        assert cases[case_id]["pattern_discovery"]["candidate_matches"] is True
 
 
 @pytest.mark.parametrize("profile", SYMLINK_CAPTURE_FILES)

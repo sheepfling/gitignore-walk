@@ -600,12 +600,12 @@ Git 2.56's `worktree:` and case-insensitive `worktree/i:` conditionals are captu
 `core.excludesFile` values, while Jujutsu 0.47.1 colocated mode does not honor either include
 natively even though `git config` resolves them; the read-Git-config policy follows Git's result.
 Non-colocated Jujutsu does not match because its internal store is bare. The policy contract now
-documents this concrete divergence. Broader client/platform profiles remain open. A full Jujutsu
-0.45.1 capture extends the configuration matrix to the pre-0.46 client on Debian 13 x86_64; its
-captured global, conditional, environment, repository-local, and pattern probes match the candidate
-behavior, while the expected legacy symlink-following result is recorded explicitly. Native CI
-recaptures this full profile with the pinned release asset and verifies it alongside the focused
-0.45.1/0.46.0 symlink boundary.
+documents this concrete divergence. Broader client/platform profiles remain open. Full Jujutsu
+0.45.1 captures extend the configuration matrix to the pre-0.46 client on macOS arm64 and Debian 13
+x86_64; their captured global, conditional, environment, repository-local, and pattern probes match
+the candidate behavior, while the expected legacy symlink-following result is recorded explicitly.
+Native CI recaptures this full profile with the pinned release asset and verifies it alongside the
+focused 0.45.1/0.46.0 symlink boundary.
 
 **Additional configuration evidence:** an isolated Sapling/Jujutsu workspace sets
 `GIT_CONFIG_GLOBAL` before initialization. Sapling `.git` mode and both Jujutsu modes use the
@@ -628,6 +628,14 @@ capture, both modes ignore all four. This is a bounded observed version/mode dif
 of full release-to-release dialect conformance. The official [0.2.20261103 release notes](https://github.com/meta/sapling/releases/tag/0.2.20261103-145137%2B6282ac56)
 also describe a `.gitignore` handling fix for the preceding release. Native CI downloads both
 checksum-pinned ARM64 clients and recaptures the paired profile.
+
+The 0.2.20261028 Sapling client also has a Debian 13 ARM64 source/configuration capture alongside
+Jujutsu 0.47.1. Its expanded Sapling path-pattern group is explicitly excluded because the native
+client panics with `StripPrefixError` while evaluating that shared fixture; the capture records the
+excluded group and still checks source discovery, global and conditional configuration,
+environment-selected configuration, and repository-local precedence. Jujutsu's pattern group runs
+normally. Native CI recaptures this profile from the same checksum-pinned client already used for
+the release-specific behavior probe.
 
 The nested-workspace boundary probe now confirms that Sapling stops at nested workspaces using the
 same storage marker, but traverses into a child using the other marker. Jujutsu stops at nested
@@ -679,7 +687,7 @@ The Jujutsu-only linked-worktree probe is also captured on macOS arm64 and Windo
 the Windows job recaptures it against pinned Jujutsu 0.47.1 and checks the Git/Jujutsu distinction.
 
 **Next unfinished slice:** broaden Sapling client/platform profiles and Jujutsu configuration
-profiles beyond the current Linux x86_64 older-client capture; keep TFVC deferred until its
+profiles beyond the current captured versions and platforms; keep TFVC deferred until its
 workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders and a cross-profile nested-repository
 case. Its local/global/configured source overlap matches on macOS arm64 and Debian Linux
