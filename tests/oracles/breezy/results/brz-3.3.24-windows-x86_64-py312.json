@@ -1698,6 +1698,13 @@
       "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
     },
     {
+      "id": "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "current_profile": "brz-3.3.24-windows-x86_64-py312.json"
+    },
+    {
       "id": "brz.regex-backreference-invalid-pattern",
       "required_profiles": [
         "brz-3.3.24-macos-arm64.json"

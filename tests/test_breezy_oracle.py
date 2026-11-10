@@ -270,11 +270,17 @@ def test_breezy_walker_matches_captured_exception_parent_status(
 
 
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
-def test_breezy_walker_matches_root_anchored_nested_exception_capture(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, topdown: bool
+@pytest.mark.parametrize(
+    "case_id",
+    [
+        "brz.walk-root-anchored-nested-exception",
+        "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
+    ],
+)
+def test_breezy_walker_matches_root_anchored_pruning_captures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, topdown: bool, case_id: str
 ) -> None:
     profile = "brz-3.3.24-macos-arm64.json"
-    case_id = "brz.walk-root-anchored-nested-exception"
     case = next(case for case in CASES if case["id"] == case_id)
     observation = next(item for item in CAPTURES[profile]["cases"] if item["id"] == case_id)
     default_patterns = tuple(CAPTURES[profile]["default_rules"]["patterns"])
@@ -305,9 +311,17 @@ def test_breezy_walker_matches_root_anchored_nested_exception_capture(
         for path in walker.iter_files(selection="ignored", topdown=topdown)
     }
 
-    assert observation["observed_ignored"] is True
-    assert observation["observed_unknown"] is False
     assert included - tracked == set(observation["unknown_paths"])
-    assert ignored - tracked == set(observation["ignored_paths"])
-    assert "cache/keep.tmp" in included
-    assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False
+    assert observation["observed_ignored"] is case["expected_candidate"]
+    assert observation["observed_unknown"] is (not case["expected_candidate"])
+    if case_id == "brz.walk-root-anchored-nested-exception":
+        assert ignored - tracked == set(observation["ignored_paths"])
+        assert "cache/keep.tmp" in included
+        assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False
+    else:
+        # Native status collapses an entirely ignored unversioned subtree to its directory entry.
+        assert set(observation["ignored_paths"]) == {"cache"}
+        assert ignored - tracked == {"cache/drop.tmp"}
+        assert "cache/drop.tmp" not in included
+        assert "other/keep.tmp" in included
+        assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is True

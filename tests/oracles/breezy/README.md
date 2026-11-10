@@ -49,9 +49,12 @@ the ignored subtree hidden. The local policy is checked against all 36 boolean c
 macOS arm64 and Linux aarch64; the other two committed profiles retain 33 checked cases. Additional
 regex probes cover Unicode `\\w` and `\\d`, fixed-width lookbehind, and Breezy's native parse error
 for a numeric backreference to its open regex wrapper. These four probes are currently captured on
-macOS arm64 only. A native fixture also captures a nested `!./cache/keep.tmp` exception on Breezy
-3.3.24/macOS arm64: the target is unknown, sibling paths remain ignored, and top-down and bottom-up
-policy walks reproduce the native path sets without pruning the parent. Broader pruning safety,
+macOS arm64 only. Native fixtures now cover both sides of root-anchored exception pruning on Breezy
+3.3.24/macOS arm64. `!./cache/keep.tmp` keeps the ignored parent traversable and exposes the target;
+an unrelated `!./other/keep.tmp` leaves `cache` prunable. Top-down and bottom-up policy walks match
+native unknown paths. In the negative control, native status reports the whole ignored `cache`
+directory while the file walker reports its ignored leaf, so the assertion compares subtree meaning
+and separately checks that no cache file is selected as included. Broader pruning safety,
 source-location, and configuration-precedence coverage remain open. Breezy's documented pattern
 rule says that a
 slash or regular expression is compared with the workspace-relative path, while a pattern without

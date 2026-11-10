@@ -540,6 +540,25 @@
       "release_gate": "Confirm Breezy's ./-anchored nested exception matches its exact workspace path and prevents pruning an ignored parent."
     },
     {
+      "id": "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": ["cache", "cache/**", "!./other/keep.tmp"],
+        "files": {
+          "cache/drop.tmp": "ignored subtree\n",
+          "other/keep.tmp": "unignored exception target\n"
+        }
+      },
+      "query": "other/keep.tmp",
+      "expected_candidate": false,
+      "capture_profiles": ["brz-3.3.24-macos-arm64.json"],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "release_gate": "Confirm an unrelated root-anchored exception does not keep an ignored directory traversable."
+    },
+    {
       "id": "brz.regex-exception-opens-ignored-parent",
       "profile": "breezy",
       "dimension": "traversal",
