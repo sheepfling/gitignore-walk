@@ -567,6 +567,15 @@ checks are green.
 
 **Priority:** P2 · **Depends on:** VCS-08
 
+**Completed slice:** Sapling/Jujutsu configs accept either an explicit `global_excludes_file` or
+opt-in `read_git_config=True`. The latter uses a caller-selectable Git executable to resolve
+system/user `core.excludesFile` settings and ordinary config includes; the user value overrides the
+system value, unset values use the XDG default, and an explicitly empty user value disables the
+global source. Missing Git and config lookup failures are reported instead of falling back. Native
+captures cover both scopes on Sapling `.git` mode and both Jujutsu modes; Sapling `.sl` mode does
+not read Git global sources. Conditional include context and broader client/platform profiles
+remain open.
+
 **Next unfinished slice:** broaden Sapling/Jujutsu client and global-configuration profiles; keep TFVC
 deferred until its workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders and a cross-profile nested-repository
@@ -610,9 +619,9 @@ patterns separate from ignore policy); Perforce default versus explicit
 copies; TFVC nested
 `.tfignore`; Fossil's separate ignore/clean/keep behavior; Breezy exception and regex forms;
 remaining Darcs regex locale and platform cases; and
-Sapling/Jujutsu behavior beyond the captured `.gitignore`, XDG ignore, `.git/info/exclude`, and
-source precedence subset remains a research question until exercised against additional pinned native
-clients and platform profiles. Primary
+Sapling/Jujutsu behavior beyond the captured `.gitignore`, XDG ignore, `.git/info/exclude`,
+`core.excludesFile`, and source-precedence subset remains a research question until exercised against
+additional pinned native clients and platform profiles. Primary
 Mercurial references: [ignore-file syntax](https://www.mercurial-scm.org/help/topics/hgignore) and
 [file patterns](https://mercurial-scm.org/help/topics/patterns).
 

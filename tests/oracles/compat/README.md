@@ -31,6 +31,19 @@ both modes and reads `.git/info/exclude` only when colocated. In modes with all 
 are captured against both named client versions on macOS and Debian Linux aarch64 and x86_64.
 They do not establish alternate global config files, path encoding, or broader VCS behavior.
 
+The captures also probe system and user `core.excludesFile` settings. Each disposable home has the
+default XDG ignore file (`*.global`), a system ignore file (`*.system`), and a `~/.gitconfig` that
+includes another config file selecting a user ignore file (`*.custom`). Sapling `.git` mode and both
+Jujutsu modes prefer the user file when set, then use the system file, then the XDG default. An
+explicitly empty user setting disables the global source. Sapling `.sl` mode ignores all three.
+These results are captured on macOS arm64 and Debian 13 Linux aarch64 and x86_64. The policies expose
+`global_excludes_file` for an already resolved path; with `read_git_config=True`, they use the
+configured Git executable to resolve system/user settings and includes. A `gitdir` conditional
+include probe confirms that Sapling `.git` mode and colocated Jujutsu select the conditional user
+file. Non-colocated Jujutsu has no `.git` directory to match that condition, so it follows the
+configured system source. Sapling `.sl` mode still ignores Git global sources. Broader conditional
+forms and other client/platform profiles remain open.
+
 A second native pattern matrix checks four cases on each mode: a file negation cannot reopen an
 ignored parent directory; a child negation can re-include a file when only the parent's contents
 are ignored; `/root-only.tmp` is anchored to the workspace root; and `**/deep.log` matches a nested

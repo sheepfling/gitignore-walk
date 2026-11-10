@@ -146,6 +146,9 @@ jobs:
           assert len(capture["cases"]) == 4
           assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           print(result)
           PY
       - name: Download pinned Sapling and Jujutsu x86_64 releases
@@ -185,6 +188,9 @@ jobs:
           assert "x86_64" in capture["platform"]
           assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           print(result)
           PY
       - name: Check selected Linux native captures
@@ -324,6 +330,9 @@ jobs:
           assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
           assert set(capture["clients"]) == {"jujutsu"}
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
+          assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           print(result)
           '@ | python -
       - name: Check Windows Registry and INI precedence

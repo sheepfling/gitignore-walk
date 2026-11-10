@@ -106,6 +106,71 @@ def test_compatibility_capture_reconciles_path_pattern_discovery(
     assert pattern_discovery["included"] == ["cache/keep.tmp", "nested/root-only.tmp"]
 
 
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_configured_global_ignore(
+    profile: str, case_id: str
+) -> None:
+    configured_global = OBSERVATIONS[profile][case_id]["configured_global"]
+    expected_ignored = {
+        "sapling.git-mode": ["configured.custom"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["configured.custom"],
+        "jj.noncolocated": ["configured.custom"],
+    }
+
+    assert configured_global["candidate_matches"] is True
+    assert configured_global["query_files"] == [
+        "configured.custom",
+        "configured.global",
+        "configured.system",
+        "configured.visible",
+    ]
+    assert configured_global["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_system_global_ignore(profile: str, case_id: str) -> None:
+    configured_system = OBSERVATIONS[profile][case_id]["configured_system"]
+    expected_ignored = {
+        "sapling.git-mode": ["system.system"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["system.system"],
+        "jj.noncolocated": ["system.system"],
+    }
+
+    assert configured_system["candidate_matches"] is True
+    assert configured_system["query_files"] == [
+        "system.custom",
+        "system.system",
+        "system.visible",
+    ]
+    assert configured_system["ignored"] == expected_ignored[case_id]
+
+
+@pytest.mark.parametrize("profile", CAPTURE_FILES)
+@pytest.mark.parametrize("case_id", sorted(OBSERVATIONS[CAPTURE_FILES[0]]))
+def test_compatibility_capture_reconciles_conditional_global_ignore(
+    profile: str, case_id: str
+) -> None:
+    conditional_global = OBSERVATIONS[profile][case_id]["conditional_global"]
+    expected_ignored = {
+        "sapling.git-mode": ["conditional.custom"],
+        "sapling.sl-mode": [],
+        "jj.colocated": ["conditional.custom"],
+        "jj.noncolocated": [],
+    }
+
+    assert conditional_global["candidate_matches"] is True
+    assert conditional_global["query_files"] == [
+        "conditional.custom",
+        "conditional.global",
+        "conditional.visible",
+    ]
+    assert conditional_global["ignored"] == expected_ignored[case_id]
+
+
 @pytest.mark.parametrize(
     ("case_id", "expected_markers"),
     [

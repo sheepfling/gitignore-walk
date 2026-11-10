@@ -70,6 +70,9 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
         _require_success(pattern_status, "sl status pattern probes")
         _, pattern_status_ignored = _sapling_status_paths(pattern_status.stdout)
         pattern_ignored = _expand_ignored_paths(pattern_status_ignored, pattern_query_files)
+        configured_global, configured_system, conditional_global = (
+            _capture_configured_global_sapling(executable, mode, root, home, environment, fixture)
+        )
         return {
             "id": f"sapling.{mode}-mode",
             "vcs": "sapling",
@@ -96,6 +99,9 @@ def _capture_sapling(executable: str, mode: str, fixture: Mapping[str, Any]) -> 
                 "status_stdout": pattern_status.stdout.replace(str(root), "<workspace>"),
                 "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
             },
+            "configured_global": configured_global,
+            "configured_system": configured_system,
+            "conditional_global": conditional_global,
         }
 
 
@@ -145,6 +151,9 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
         _require_success(pattern_listed, "jj file list pattern probes")
         pattern_files = _jujutsu_paths(pattern_listed.stdout)
         pattern_ignored = pattern_query_files - pattern_files
+        configured_global, configured_system, conditional_global = _capture_configured_global_jj(
+            executable, mode, root, home, environment, fixture
+        )
         return {
             "id": f"jj.{mode}",
             "vcs": "jujutsu",
@@ -173,6 +182,9 @@ def _capture_jj(executable: str, mode: str, fixture: Mapping[str, Any]) -> dict[
                 "status_stderr": pattern_status.stderr.replace(str(root), "<workspace>"),
                 "file_list_stdout": pattern_listed.stdout.replace(str(root), "<workspace>"),
             },
+            "configured_global": configured_global,
+            "configured_system": configured_system,
+            "conditional_global": conditional_global,
         }
 
 
@@ -189,6 +201,200 @@ def _write_source_probes(root: Path, home: Path, fixture: Mapping[str, Any]) -> 
         (info_dir / "exclude").write_text(
             fixture["source_rules"]["git_info_exclude"], encoding="utf-8"
         )
+
+
+def _write_configured_global_probe(root: Path, home: Path, fixture: Mapping[str, Any]) -> list[str]:
+    """Configure system/global ``core.excludesFile`` and return its probe paths."""
+    custom_ignore = home / "custom-git-ignore"
+    custom_ignore.write_text(fixture["source_rules"]["core_excludes_file"], encoding="utf-8")
+    system_ignore = home / "system-git-ignore"
+    system_ignore.write_text(fixture["source_rules"]["system_core_excludes_file"], encoding="utf-8")
+    (home / "system-git-config").write_text(
+        f"[core]\n\texcludesFile = {system_ignore}\n", encoding="utf-8"
+    )
+    (home / "included-git-config").write_text(
+        f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8"
+    )
+    (home / ".gitconfig").write_text("[include]\n\tpath = included-git-config\n", encoding="utf-8")
+    files: Mapping[str, str] = fixture["configured_global_probe_files"]
+    _write_files(root, files)
+    return sorted(files)
+
+
+def _system_config_environment(environment: Mapping[str, str], home: Path) -> dict[str, str]:
+    """Enable an isolated system Git config while retaining the disposable home settings."""
+    result = dict(environment)
+    result.pop("GIT_CONFIG_NOSYSTEM", None)
+    result["GIT_CONFIG_SYSTEM"] = str(home / "system-git-config")
+    return result
+
+
+def _capture_configured_global_sapling(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Capture Sapling's global-over-system and system-over-XDG source selection."""
+    query_files = _write_configured_global_probe(root, home, fixture)
+    probe_environment = _system_config_environment(environment, home)
+    status = _run(
+        [executable, "status", "-iu", "--print0"], cwd=root, environment=probe_environment
+    )
+    _require_success(status, "sl status configured core.excludesFile")
+    _, ignored_paths = _sapling_status_paths(status.stdout)
+    ignored = sorted(ignored_paths & set(query_files))
+    expected = fixture["expected_configured_global_ignored"][f"sapling.{mode}-mode"]
+    configured_global = {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) - set(ignored)),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+    }
+    (home / ".gitconfig").unlink(missing_ok=True)
+    system_files: Mapping[str, str] = fixture["configured_system_probe_files"]
+    _write_files(root, system_files)
+    status = _run(
+        [executable, "status", "-iu", "--print0"], cwd=root, environment=probe_environment
+    )
+    _require_success(status, "sl status system core.excludesFile")
+    _, ignored_paths = _sapling_status_paths(status.stdout)
+    system_query_files = sorted(system_files)
+    system_ignored = sorted(ignored_paths & set(system_query_files))
+    expected = fixture["expected_configured_system_ignored"][f"sapling.{mode}-mode"]
+    configured_system = {
+        "query_files": system_query_files,
+        "ignored": system_ignored,
+        "included": sorted(set(system_query_files) - set(system_ignored)),
+        "candidate_matches": system_ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+    }
+    conditional_global = _capture_conditional_global_sapling(
+        executable, mode, root, home, probe_environment, fixture
+    )
+    return configured_global, configured_system, conditional_global
+
+
+def _capture_configured_global_jj(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Capture Jujutsu's global-over-system and system-over-XDG source selection."""
+    query_files = _write_configured_global_probe(root, home, fixture)
+    probe_environment = _system_config_environment(environment, home)
+    status = _run([executable, "status", "--no-pager"], cwd=root, environment=probe_environment)
+    _require_success(status, "jj status configured core.excludesFile")
+    listed = _run([executable, "file", "list"], cwd=root, environment=probe_environment)
+    _require_success(listed, "jj file list configured core.excludesFile")
+    included_paths = _jujutsu_paths(listed.stdout)
+    ignored = sorted(set(query_files) - included_paths)
+    expected = fixture["expected_configured_global_ignored"][f"jj.{mode}"]
+    configured_global = {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) & included_paths),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+    }
+    (home / ".gitconfig").unlink(missing_ok=True)
+    system_files: Mapping[str, str] = fixture["configured_system_probe_files"]
+    _write_files(root, system_files)
+    status = _run([executable, "status", "--no-pager"], cwd=root, environment=probe_environment)
+    _require_success(status, "jj status system core.excludesFile")
+    listed = _run([executable, "file", "list"], cwd=root, environment=probe_environment)
+    _require_success(listed, "jj file list system core.excludesFile")
+    included_paths = _jujutsu_paths(listed.stdout)
+    system_query_files = sorted(system_files)
+    system_ignored = sorted(set(system_query_files) - included_paths)
+    expected = fixture["expected_configured_system_ignored"][f"jj.{mode}"]
+    configured_system = {
+        "query_files": system_query_files,
+        "ignored": system_ignored,
+        "included": sorted(set(system_query_files) & included_paths),
+        "candidate_matches": system_ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+    }
+    conditional_global = _capture_conditional_global_jj(
+        executable, mode, root, home, probe_environment, fixture
+    )
+    return configured_global, configured_system, conditional_global
+
+
+def _write_conditional_global_probe(
+    root: Path, home: Path, fixture: Mapping[str, Any]
+) -> list[str]:
+    """Configure a Git-dir conditional include and create its decision probes."""
+    custom_ignore = home / "conditional-git-ignore"
+    custom_ignore.write_text(fixture["source_rules"]["core_excludes_file"], encoding="utf-8")
+    included_config = home / "conditional-git-config"
+    included_config.write_text(f"[core]\n\texcludesFile = {custom_ignore}\n", encoding="utf-8")
+    (home / ".gitconfig").write_text(
+        '[includeIf "gitdir:**/workspace/.git"]\n\tpath = conditional-git-config\n',
+        encoding="utf-8",
+    )
+    files: Mapping[str, str] = fixture["conditional_global_probe_files"]
+    _write_files(root, files)
+    return sorted(files)
+
+
+def _capture_conditional_global_sapling(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Sapling's Git-dir conditional global ignore behavior."""
+    query_files = _write_conditional_global_probe(root, home, fixture)
+    status = _run([executable, "status", "-iu", "--print0"], cwd=root, environment=environment)
+    _require_success(status, "sl status conditional core.excludesFile")
+    _, ignored_paths = _sapling_status_paths(status.stdout)
+    ignored = sorted(ignored_paths & set(query_files))
+    expected = fixture["expected_conditional_global_ignored"][f"sapling.{mode}-mode"]
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) - set(ignored)),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+    }
+
+
+def _capture_conditional_global_jj(
+    executable: str,
+    mode: str,
+    root: Path,
+    home: Path,
+    environment: Mapping[str, str],
+    fixture: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Capture Jujutsu's Git-dir conditional global ignore behavior."""
+    query_files = _write_conditional_global_probe(root, home, fixture)
+    status = _run([executable, "status", "--no-pager"], cwd=root, environment=environment)
+    _require_success(status, "jj status conditional core.excludesFile")
+    listed = _run([executable, "file", "list"], cwd=root, environment=environment)
+    _require_success(listed, "jj file list conditional core.excludesFile")
+    included_paths = _jujutsu_paths(listed.stdout)
+    ignored = sorted(set(query_files) - included_paths)
+    expected = fixture["expected_conditional_global_ignored"][f"jj.{mode}"]
+    return {
+        "query_files": query_files,
+        "ignored": ignored,
+        "included": sorted(set(query_files) & included_paths),
+        "candidate_matches": ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+    }
 
 
 def _write_pattern_probes(root: Path, fixture: Mapping[str, Any]) -> None:
@@ -306,6 +512,9 @@ def main() -> int:
         case["candidate_matches"]
         and case["source_discovery"]["candidate_matches"]
         and case["pattern_discovery"]["candidate_matches"]
+        and case["configured_global"]["candidate_matches"]
+        and case["configured_system"]["candidate_matches"]
+        and case["conditional_global"]["candidate_matches"]
         for case in result["cases"]
     )
     vcs_names = "Sapling/Jujutsu" if "sapling" in result["clients"] else "Jujutsu"

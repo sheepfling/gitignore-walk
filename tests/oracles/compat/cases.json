@@ -28,7 +28,43 @@
   ],
   "source_rules": {
     "xdg_git_ignore": "*.global\n",
-    "git_info_exclude": "*.local\n!priority.global\ninfo.priority\nlocal.priority\n"
+    "git_info_exclude": "*.local\n!priority.global\ninfo.priority\nlocal.priority\n",
+    "core_excludes_file": "*.custom\n",
+    "system_core_excludes_file": "*.system\n"
+  },
+  "configured_global_probe_files": {
+    "configured.global": "must be excluded by XDG default only\n",
+    "configured.custom": "must be excluded by core.excludesFile\n",
+    "configured.system": "must be excluded by system core.excludesFile only\n",
+    "configured.visible": "must remain visible\n"
+  },
+  "expected_configured_global_ignored": {
+    "sapling.git-mode": ["configured.custom"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["configured.custom"],
+    "jj.noncolocated": ["configured.custom"]
+  },
+  "configured_system_probe_files": {
+    "system.custom": "must be visible without global core.excludesFile\n",
+    "system.system": "must be excluded by system core.excludesFile\n",
+    "system.visible": "must remain visible\n"
+  },
+  "expected_configured_system_ignored": {
+    "sapling.git-mode": ["system.system"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["system.system"],
+    "jj.noncolocated": ["system.system"]
+  },
+  "conditional_global_probe_files": {
+    "conditional.custom": "must be ignored only by a matching gitdir include\n",
+    "conditional.global": "must be ignored by XDG when no include condition matches\n",
+    "conditional.visible": "must remain visible\n"
+  },
+  "expected_conditional_global_ignored": {
+    "sapling.git-mode": ["conditional.custom"],
+    "sapling.sl-mode": [],
+    "jj.colocated": ["conditional.custom"],
+    "jj.noncolocated": []
   },
   "expected_source_ignored": {
     "sapling.git-mode": ["global.global", "info.priority", "local.local"],

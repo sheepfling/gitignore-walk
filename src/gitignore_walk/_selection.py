@@ -230,7 +230,15 @@ class SaplingPolicyConfig:
 
     Attributes:
         environment: Optional complete environment used to locate the conventional XDG Git ignore
-            file in Sapling `.git` storage mode. Sapling `.sl` mode does not read that source.
+            file in Sapling `.git` storage mode. When ``read_git_config`` is enabled, it is also
+            passed to Git; include PATH and any Git config environment variables it needs.
+        global_excludes_file: Optional explicit path for a configured ``core.excludesFile``. This
+            overrides both discovered config and the conventional XDG path in `.git` storage mode.
+        read_git_config: Ask Git to resolve system/global ``core.excludesFile``, including
+            included files.
+            Requires the configured Git executable; when unset, evaluation stays client-independent.
+        git_executable: Executable name or path used for optional global config discovery.
+        git_config_timeout: Maximum duration in seconds for Git config discovery.
         initial_excludes: Optional hard baseline replacing the storage-mode default (`.sl` or
             `.git`).
     """
@@ -238,6 +246,10 @@ class SaplingPolicyConfig:
     mode: Literal["sapling"] = field(default="sapling", init=False)
     environment: Mapping[str, str] | None = None
     initial_excludes: Sequence[str] | None = None
+    global_excludes_file: str | os.PathLike[str] | None = None
+    read_git_config: bool = False
+    git_executable: str = "git"
+    git_config_timeout: float = 30.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -246,13 +258,25 @@ class JujutsuPolicyConfig:
 
     Attributes:
         environment: Optional complete environment used to locate the conventional XDG Git ignore
-            file.
+            file. When ``read_git_config`` is enabled, it is also passed to Git; include PATH and
+            any Git config environment variables it needs.
+        global_excludes_file: Optional explicit path for a configured ``core.excludesFile``. This
+            overrides both discovered config and the conventional XDG path.
+        read_git_config: Ask Git to resolve system/global ``core.excludesFile``, including
+            included files.
+            Requires the configured Git executable; when unset, evaluation stays client-independent.
+        git_executable: Executable name or path used for optional global config discovery.
+        git_config_timeout: Maximum duration in seconds for Git config discovery.
         initial_excludes: Hard baseline exclusions, defaulting to Jujutsu's `.jj` metadata.
     """
 
     mode: Literal["jujutsu"] = field(default="jujutsu", init=False)
     environment: Mapping[str, str] | None = None
     initial_excludes: Sequence[str] = (".jj",)
+    global_excludes_file: str | os.PathLike[str] | None = None
+    read_git_config: bool = False
+    git_executable: str = "git"
+    git_config_timeout: float = 30.0
 
 
 #: Discriminated configuration union accepted by :func:`select_policy`.
@@ -726,6 +750,10 @@ def select_policy(
             policy=SaplingIgnorePolicy(
                 root,
                 environment=selected.environment,
+                global_excludes_file=selected.global_excludes_file,
+                read_git_config=selected.read_git_config,
+                git_executable=selected.git_executable,
+                git_config_timeout=selected.git_config_timeout,
                 initial_excludes=selected.initial_excludes,
             )
         )
@@ -735,6 +763,10 @@ def select_policy(
             policy=JujutsuIgnorePolicy(
                 root,
                 environment=selected.environment,
+                global_excludes_file=selected.global_excludes_file,
+                read_git_config=selected.read_git_config,
+                git_executable=selected.git_executable,
+                git_config_timeout=selected.git_config_timeout,
                 initial_excludes=selected.initial_excludes,
             )
         )

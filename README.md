@@ -388,16 +388,40 @@ matcher while resolving each system's workspace markers and supported sources se
   present; an outer Git repository's exclude file is not inherited.
 - When all three source levels are present, workspace `.gitignore` overrides `.git/info/exclude`,
   which overrides the XDG ignore file.
+- Native captures also confirm that Sapling `.git` mode and both Jujutsu modes honor a custom
+  `core.excludesFile`; Sapling `.sl` mode does not. Pass the resolved ignore-file path as
+  `global_excludes_file` to the corresponding policy config, or set `read_git_config=True` to ask
+  the configured Git executable to resolve system/user settings and their included files. The
+  user setting overrides the system setting; when neither exists, discovery uses the XDG default.
+  An explicitly empty setting disables the global source. Git documents config scope and include
+  behavior in [git-config](https://git-scm.com/docs/git-config), and ignore precedence in the
+  [Git ignore documentation](https://git-scm.com/docs/gitignore).
 
 The captured pattern matrix also covers directory-level negation barriers, child re-inclusion,
 workspace-root anchoring, and recursive `**`; both policy decisions and walker selections match the
 captured native results for those cases.
 
+Enable Git system/user config discovery when you need the configured `core.excludesFile`:
+
+```python
+from gitignore_walk import JujutsuPolicyConfig, select_policy
+
+selection = select_policy(
+    "/path/to/jujutsu/checkout",
+    JujutsuPolicyConfig(read_git_config=True, git_executable="git"),
+)
+```
+
+This runs `git config` during selection; lookup failures raise `GitIgnoreError`. Set
+`global_excludes_file` instead when the caller already knows the effective path, avoiding the Git
+executable requirement.
+
 The caller's root remains the query and traversal bound, while `workspace_root` reports the
 discovered VCS root. The default walker baseline excludes `.sl` or `.git` for Sapling, depending on
-storage mode, and `.jj` for Jujutsu. These initial policies do not query versioned membership,
-support alternate global configuration sources, or claim behavior beyond Sapling 0.2.20261103 and
-Jujutsu 0.47.1 on macOS arm64. The full native capture and limitations are in the
+storage mode, and `.jj` for Jujutsu. These initial policies do not query versioned membership or
+read Git config unless `read_git_config=True`; that opt-in requires Git. The captured behavior
+covers Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS arm64 and Debian 13 Linux arm64/x86_64.
+The full native capture and limitations are in the
 [compatibility oracle notes](tests/oracles/compat/README.md).
 
 ## Understand why a path is ignored

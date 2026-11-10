@@ -9,6 +9,7 @@ import os
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 
+from ..git._configuration import resolve_core_excludes_file
 from ..git.portable import (
     GitIgnorePolicy,
     _default_global_excludes_path,
@@ -25,7 +26,8 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
     caller's ``root`` as the query and traversal bound.
 
     This policy covers only the captured ignore dialect/source behavior. It does not query
-    Sapling membership or implement Sapling's other configuration sources.
+    Sapling membership or discover ``core.excludesFile`` from Git configuration; callers can pass
+    that resolved path explicitly with ``global_excludes_file``.
 
     Attributes:
         root: Caller-selected target and traversal boundary.
@@ -43,9 +45,20 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
         root: str | os.PathLike[str],
         *,
         environment: Mapping[str, str] | None = None,
+        global_excludes_file: str | os.PathLike[str] | None = None,
+        read_git_config: bool = False,
+        git_executable: str = "git",
+        git_config_timeout: float = 30.0,
         initial_excludes: Sequence[str] | None = None,
     ) -> None:
-        """Bind a caller root to a discovered Sapling `.sl` or `.git` workspace."""
+        """Bind a caller root to a discovered Sapling `.sl` or `.git` workspace.
+
+        ``global_excludes_file`` overrides the conventional XDG ignore path in `.git` storage
+        mode. Pass the path configured by Git's ``core.excludesFile`` when Sapling's environment
+        selects a custom file. Set ``read_git_config`` to ask ``git config`` to resolve that
+        setting (including global config includes); this requires ``git_executable`` to be
+        available. `.sl` storage mode does not read a Git global ignore source.
+        """
         caller_root = Path(root).expanduser().resolve()
         if not caller_root.is_dir():
             raise ValueError(f"Sapling policy root must be a directory: {caller_root}")
@@ -64,9 +77,22 @@ class SaplingIgnorePolicy(GitIgnorePolicy):
             if storage == "git" and metadata is not None and metadata.root == workspace_root
             else None
         )
-        self._global_excludes = (
-            _default_global_excludes_path(environment) if storage == "git" else None
-        )
+        if storage == "git":
+            default_path = _default_global_excludes_path(environment)
+            if global_excludes_file is not None:
+                self._global_excludes = Path(global_excludes_file).expanduser()
+            elif read_git_config:
+                self._global_excludes = resolve_core_excludes_file(
+                    workspace_root,
+                    environment=environment,
+                    git_executable=git_executable,
+                    timeout=git_config_timeout,
+                    default_path=default_path,
+                )
+            else:
+                self._global_excludes = default_path
+        else:
+            self._global_excludes = None
 
 
 def _find_workspace(root: Path) -> tuple[Path, str]:

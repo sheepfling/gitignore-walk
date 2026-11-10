@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 
 from gitignore_walk import (
+    GitIgnoreError,
     IgnoreWalker,
     JujutsuIgnorePolicy,
     JujutsuPolicyConfig,
@@ -135,6 +138,230 @@ def test_jujutsu_workspace_does_not_inherit_outer_git_info_exclude(tmp_path: Pat
 
     assert policy.workspace_root == workspace
     assert not policy.explain("inside.local").ignored
+
+
+@pytest.mark.parametrize("scheme", ["sapling", "jujutsu"])
+def test_compatible_scheme_can_use_resolved_core_excludes_file(tmp_path: Path, scheme: str) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    xdg_ignore = home / ".config" / "git" / "ignore"
+    xdg_ignore.parent.mkdir(parents=True)
+    xdg_ignore.write_text("*.xdg\n", encoding="utf-8")
+    configured_ignore = tmp_path / "custom-global-ignore"
+    configured_ignore.write_text("*.configured\n", encoding="utf-8")
+    environment = {"HOME": str(home), "XDG_CONFIG_HOME": str(home / ".config")}
+
+    if scheme == "sapling":
+        _git_init(root)
+        config = SaplingPolicyConfig(
+            environment=environment,
+            global_excludes_file=configured_ignore,
+        )
+    else:
+        (root / ".jj").mkdir()
+        config = JujutsuPolicyConfig(
+            environment=environment,
+            global_excludes_file=configured_ignore,
+        )
+    (root / "from-xdg.xdg").touch()
+    (root / "from-config.configured").touch()
+    selection = select_policy(root, config)
+
+    decisions = {
+        decision.path.name: decision.ignored
+        for decision in selection.policy.explain_many(["from-xdg.xdg", "from-config.configured"])
+    }
+
+    assert decisions == {"from-xdg.xdg": False, "from-config.configured": True}
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize("scheme", ["sapling", "jujutsu"])
+@pytest.mark.parametrize("configured_value", ["~/custom-global-ignore", "", None])
+def test_compatible_scheme_can_discover_global_git_config(
+    tmp_path: Path, scheme: str, configured_value: str | None
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    xdg_ignore = home / ".config" / "git" / "ignore"
+    xdg_ignore.parent.mkdir(parents=True)
+    xdg_ignore.write_text("*.xdg\n", encoding="utf-8")
+    custom_ignore = home / "custom-global-ignore"
+    custom_ignore.write_text("*.configured\n", encoding="utf-8")
+    included_config = home / "included.gitconfig"
+    include_value = "" if configured_value is None else f"\texcludesFile = {configured_value}\n"
+    included_config.write_text(f"[core]\n{include_value}", encoding="utf-8")
+    global_config = home / ".gitconfig"
+    global_config.write_text("[include]\n\tpath = included.gitconfig\n", encoding="utf-8")
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    if scheme == "sapling":
+        _git_init(root)
+        config = SaplingPolicyConfig(
+            environment=environment,
+            read_git_config=True,
+            git_executable=shutil.which("git") or "git",
+        )
+    else:
+        (root / ".jj").mkdir()
+        config = JujutsuPolicyConfig(
+            environment=environment,
+            read_git_config=True,
+            git_executable=shutil.which("git") or "git",
+        )
+    (root / "from-xdg.xdg").touch()
+    (root / "from-config.configured").touch()
+
+    selection = select_policy(root, config)
+    decisions = {
+        decision.path.name: decision.ignored
+        for decision in selection.policy.explain_many(["from-xdg.xdg", "from-config.configured"])
+    }
+
+    expected = {
+        "~/custom-global-ignore": {"from-xdg.xdg": False, "from-config.configured": True},
+        "": {"from-xdg.xdg": False, "from-config.configured": False},
+        None: {"from-xdg.xdg": True, "from-config.configured": False},
+    }
+    assert decisions == expected[configured_value]
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize("scheme", ["sapling", "jujutsu"])
+@pytest.mark.parametrize(
+    ("global_value", "expected"),
+    [
+        (None, {"from-xdg.xdg": False, "from-system.system": True, "from-global.global": False}),
+        (
+            "~/global-ignore",
+            {"from-xdg.xdg": False, "from-system.system": False, "from-global.global": True},
+        ),
+        ("", {"from-xdg.xdg": False, "from-system.system": False, "from-global.global": False}),
+    ],
+)
+def test_compatible_scheme_discovers_system_and_global_precedence(
+    tmp_path: Path,
+    scheme: str,
+    global_value: str | None,
+    expected: dict[str, bool],
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    xdg_ignore = home / ".config" / "git" / "ignore"
+    xdg_ignore.parent.mkdir(parents=True)
+    xdg_ignore.write_text("*.xdg\n", encoding="utf-8")
+    system_ignore = home / "system-ignore"
+    system_ignore.write_text("*.system\n", encoding="utf-8")
+    global_ignore = home / "global-ignore"
+    global_ignore.write_text("*.global\n", encoding="utf-8")
+    system_config = tmp_path / "system.gitconfig"
+    system_config.write_text(f"[core]\n\texcludesFile = {system_ignore}\n", encoding="utf-8")
+    global_config = tmp_path / "global.gitconfig"
+    if global_value is None:
+        global_lines = ""
+    elif global_value == "":
+        global_lines = "[core]\n\texcludesFile =\n"
+    else:
+        global_lines = f"[core]\n\texcludesFile = {global_value}\n"
+    global_config.write_text(global_lines, encoding="utf-8")
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_SYSTEM": str(system_config),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+    }
+    environment.pop("GIT_CONFIG_NOSYSTEM", None)
+    if scheme == "sapling":
+        _git_init(root)
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+    else:
+        (root / ".jj").mkdir()
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    for name in ("from-xdg.xdg", "from-system.system", "from-global.global"):
+        (root / name).touch()
+
+    selection = select_policy(root, config)
+    decisions = {
+        decision.path.name: decision.ignored
+        for decision in selection.policy.explain_many(
+            ["from-xdg.xdg", "from-system.system", "from-global.global"]
+        )
+    }
+
+    assert decisions == expected
+
+
+@pytest.mark.skipif(shutil.which("git") is None, reason="Git config discovery needs git")
+@pytest.mark.parametrize("mode", ["sapling-git", "jj-colocated", "jj-noncolocated"])
+def test_compatible_scheme_discovers_gitdir_conditional_include(tmp_path: Path, mode: str) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    xdg_ignore = home / ".config" / "git" / "ignore"
+    xdg_ignore.parent.mkdir(parents=True)
+    xdg_ignore.write_text("*.global\n", encoding="utf-8")
+    custom_ignore = home / "custom-ignore"
+    custom_ignore.write_text("*.custom\n", encoding="utf-8")
+    included_config = home / "included.gitconfig"
+    included_config.write_text("[core]\n\texcludesFile = ~/custom-ignore\n", encoding="utf-8")
+    global_config = home / ".gitconfig"
+    global_config.write_text(
+        '[includeIf "gitdir:**/workspace/.git"]\n\tpath = included.gitconfig\n',
+        encoding="utf-8",
+    )
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_GLOBAL": str(global_config),
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }
+    if mode == "sapling-git":
+        _git_init(root)
+        config = SaplingPolicyConfig(environment=environment, read_git_config=True)
+        expected = {"conditional.custom": True, "conditional.global": False}
+    else:
+        (root / ".jj").mkdir()
+        if mode == "jj-colocated":
+            _git_init(root)
+            expected = {"conditional.custom": True, "conditional.global": False}
+        else:
+            expected = {"conditional.custom": False, "conditional.global": True}
+        config = JujutsuPolicyConfig(environment=environment, read_git_config=True)
+    (root / "conditional.custom").touch()
+    (root / "conditional.global").touch()
+
+    selection = select_policy(root, config)
+    decisions = {
+        decision.path.name: decision.ignored
+        for decision in selection.policy.explain_many(["conditional.custom", "conditional.global"])
+    }
+
+    assert decisions == expected
+
+
+def test_compatible_scheme_config_discovery_errors_if_git_is_missing(tmp_path: Path) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    (root / ".jj").mkdir()
+
+    with pytest.raises(GitIgnoreError, match=r"unable to read Git system core.excludesFile"):
+        select_policy(
+            root,
+            JujutsuPolicyConfig(read_git_config=True, git_executable="missing-git-config-client"),
+        )
 
 
 @pytest.mark.parametrize("mode", sorted(_SOURCE_EXPECTATIONS))
