@@ -57,6 +57,9 @@ CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
 }
+WINDOWS_JJ_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / "jj-0.47.1-windows-x64.json").read_text(encoding="utf-8")
+)
 JJ_SYMLINK_VERSION_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in (
@@ -211,6 +214,23 @@ def test_git_256_captures_reconcile_the_earlier_path_pattern_subset(
     assert pattern_discovery["query_files"] == EARLIER_PATTERN_QUERY_FILES
     assert pattern_discovery["ignored"] == EARLIER_PATTERN_IGNORED
     assert pattern_discovery["included"] == EARLIER_PATTERN_INCLUDED
+
+
+def test_jujutsu_windows_capture_reconciles_the_expanded_pattern_matrix() -> None:
+    """Keep hosted Windows Jujutsu output aligned with the current pattern fixture."""
+    capture = WINDOWS_JJ_CAPTURE
+    assert capture["status"] == "captured"
+    assert capture["platform"].startswith("Windows-2025Server")
+    assert capture["clients"]["git"].startswith("git version 2.56.0.windows")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+    cases = {case["id"]: case for case in capture["cases"]}
+    assert set(cases) == {"jj.colocated", "jj.noncolocated"}
+    for case in cases.values():
+        pattern = case["pattern_discovery"]
+        assert pattern["candidate_matches"]
+        assert pattern["query_files"] == PATTERN_QUERY_FILES
+        assert pattern["ignored"] == PATTERN_IGNORED
+        assert pattern["included"] == PATTERN_INCLUDED
 
 
 @pytest.mark.parametrize("profile", SYMLINK_CAPTURE_FILES)
