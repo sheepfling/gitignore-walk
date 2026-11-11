@@ -98,6 +98,14 @@ def _config_text(config: Mapping[str, str]) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _case_config(setup: Mapping[str, Any], *, native_os: str | None = None) -> dict[str, str]:
+    """Combine common and platform-specific Mercurial config values for one fixture."""
+    config = dict(setup.get("config", {}))
+    selected_os = os.name if native_os is None else native_os
+    config.update(setup.get("config_by_os", {}).get(selected_os, {}))
+    return config
+
+
 def _ignored(stdout: str) -> bool | None:
     matches = re.findall(r"(?:^|\n)[^\n]+ is (not )?ignored(?:\b|$)", stdout)
     if len(matches) != 1:
@@ -221,8 +229,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
         root.mkdir()
         hg_config = temp / "hgrc"
         config = {
-            key: value.replace("<home>", str(home))
-            for key, value in setup.get("config", {}).items()
+            key: value.replace("<home>", str(home)) for key, value in _case_config(setup).items()
         }
         hg_config.write_text(_config_text(config), encoding="utf-8")
         env = os.environ.copy()
@@ -236,6 +243,11 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 "PYTHONIOENCODING": "utf-8",
             }
         )
+        fixture_environment = {
+            key: value.replace("<home>", str(home))
+            for key, value in setup.get("environment", {}).items()
+        }
+        env.update(fixture_environment)
         init = subprocess.run(
             [executable, "init", str(root)],
             cwd=temp,
@@ -354,6 +366,10 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
                 "HGRCPATH": "<temp>/hgrc",
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
+                **{
+                    key: value.replace(str(home), "<home>")
+                    for key, value in fixture_environment.items()
+                },
             },
             "init_exit_code": init.returncode,
             "init_stdout": init.stdout.replace(str(root), "<repo>"),

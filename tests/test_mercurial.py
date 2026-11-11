@@ -26,6 +26,7 @@ from gitignore_walk._schemes import mercurial as mercurial_scheme
 from gitignore_walk._schemes.mercurial import _ignore_loader as mercurial_loader_module
 from gitignore_walk._schemes.mercurial import policy as mercurial_policy_module
 from tests.oracles.hg.run import (
+    _case_config,
     _has_init_failures,
     _ignored,
     _query_skip_reason,
@@ -128,7 +129,7 @@ def _make_case(
             )
         except OSError as error:
             pytest.skip(f"filesystem cannot create Mercurial source symlink: {error}")
-    config = case["setup"].get("config", {})
+    config = _case_config(case["setup"])
     if case.get("policy_mode") == "client-config":
         if profile is None or monkeypatch is None:
             raise ValueError(
@@ -149,6 +150,12 @@ def _make_case(
                 "HGRCPATH": str(hgrc),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
+            }
+        )
+        environment.update(
+            {
+                key: value.replace("<home>", str(home))
+                for key, value in case["setup"].get("environment", {}).items()
             }
         )
         configuration = MATCHING_OBSERVATIONS[profile][case["id"]]["configuration"]
@@ -583,8 +590,31 @@ def test_client_config_discovery_preserves_effective_source_order_and_paths(
         assert Path(trace.decision.source or "").name == "workspace.ignore"
     elif case_id == "hg.config-discovery-home-relative-path":
         assert Path(trace.decision.source or "") == policy.root / "home" / ".project-ignore"
-    else:
+    elif case_id == "hg.config-discovery-included-hgrc":
         assert Path(trace.decision.source or "").name == "included.ignore"
+
+
+@pytest.mark.parametrize(
+    "profile",
+    tuple(
+        profile
+        for profile in MATCHING_CAPTURE_FILES
+        if "hg.config-discovery-environment-variable-path" in MATCHING_OBSERVATIONS[profile]
+    ),
+    ids=lambda name: name.removesuffix(".json"),
+)
+def test_captured_client_config_expands_environment_variable_ignore_path(
+    tmp_path: Path, profile: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    case = next(
+        case for case in CASES if case["id"] == "hg.config-discovery-environment-variable-path"
+    )
+    policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
+
+    trace = policy.trace(query)
+
+    assert trace.decision.ignored
+    assert Path(trace.decision.source or "") == policy.root / "home" / "environment.ignore"
 
 
 def test_selection_is_discriminated_and_has_no_cross_scheme_fallback(tmp_path: Path) -> None:
@@ -1035,10 +1065,12 @@ def test_membership_aware_policy_matches_native_status_classes(
     (root / "staged.tmp").write_text("staged\n", encoding="utf-8")
     hg("add", "staged.tmp")
     (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
-    tab_ignored = "tab\tname.tmp"
+    # Windows rejects control characters in filenames; retain the same pattern/membership roles
+    # there with representable names while POSIX exercises NUL-delimited tab/newline records.
+    tab_ignored = "tab\tname.tmp" if os.name != "nt" else "tab-name.tmp"
     (root / tab_ignored).write_text("ignored with tab in its name\n", encoding="utf-8")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
-    newline_unknown = "line\nbreak.txt"
+    newline_unknown = "line\nbreak.txt" if os.name != "nt" else "line-break.txt"
     (root / newline_unknown).write_text("unknown with newline in its name\n", encoding="utf-8")
     nested_unknown = root / "unknown" / "deep" / "nested-unknown.txt"
     nested_unknown.parent.mkdir(parents=True)

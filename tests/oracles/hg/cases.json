@@ -566,6 +566,36 @@
       "policy_mode": "client-config"
     },
     {
+      "id": "hg.config-discovery-environment-variable-path",
+      "profile": "hg",
+      "dimension": "configuration",
+      "setup": {
+        "files": {
+          "<home>/environment.ignore": "syntax: glob\nenvironment.tmp\n"
+        },
+        "config_by_os": {
+          "posix": {
+            "ui.ignore.environment": "$HG_ORACLE_IGNORE_FILE"
+          },
+          "nt": {
+            "ui.ignore.environment": "%HG_ORACLE_IGNORE_FILE%"
+          }
+        },
+        "environment": {
+          "HG_ORACLE_IGNORE_FILE": "<home>/environment.ignore"
+        }
+      },
+      "query": "environment.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain native environment-path expansion in future Mercurial profile updates.",
+      "policy_mode": "client-config"
+    },
+    {
       "id": "hg.config-discovery-included-hgrc",
       "profile": "hg",
       "dimension": "configuration",

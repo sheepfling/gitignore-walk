@@ -473,6 +473,8 @@ Another live comparison confirms relative global `ui.ignore` paths resolve from 
 not from the home directory containing `HGRCPATH`.
 Configured paths also expand environment variables from the policy's supplied environment using
 Mercurial's POSIX `$VAR`/`${VAR}` and Windows `%VAR%`/`$VAR` forms.
+The native oracle captures POSIX configured-path expansion on Mercurial 7.2.4/macOS arm64; the live
+client test continues to exercise platform-specific syntax on enabled CI clients.
 7.2.4 also confirms the workspace `.hgignore` is reported before a configured `ui.ignore` file when
 both supply the same matching rule; the policy trace retains both sources and the effective source.
 This precedence probe is currently captured on macOS arm64 and Debian 13 Linux x86_64. Native
@@ -555,9 +557,11 @@ covered with native Mercurial status and `explain`, `trace`, and `iter_explain`.
 7.1.2 on Windows reports this tracked dangling link as modified (`M`) rather than clean (`C`) as on
 POSIX; both status classes indicate versioned membership and are included in the live cross-platform
 test. Broader sparse, symlink, and cross-profile membership behavior remains open.
-The live membership fixture also checks NUL-delimited status records for filenames containing a tab
-or newline: the tab-bearing `*.tmp` path is ignored, while the newline-bearing `.txt` path remains
-unignored and unversioned. Both names survive status parsing and both traversal orders intact.
+On POSIX, the live membership fixture also checks NUL-delimited status records for filenames
+containing a tab or newline: the tab-bearing `*.tmp` path is ignored, while the newline-bearing
+`.txt` path remains unignored and unversioned. Both names survive status parsing and both traversal
+orders intact. Windows rejects control characters in filenames, so its native run uses equivalent
+representable names for the ignored and unignored membership cases.
 
 A live sparse-checkout regression now covers a committed file removed by
 `hg debugsparse --exclude`. Mercurial omits the absent file from
