@@ -118,11 +118,23 @@ def test_case_skips_remain_visible(tmp_path: Path) -> None:
     assert result["skipped_cases"] == ["platform-only"]
 
 
-def test_hg_captures_matching_walking_and_trust(tmp_path: Path) -> None:
+def test_hg_captures_matching_walking_trust_and_sparse_refresh(tmp_path: Path) -> None:
     arguments, paths = ci_native.capture_arguments("hg", tmp_path)
-    assert len(paths) == 3
+    assert len(paths) == 4
     assert "--walk-output" in arguments
     assert "--trust-output" in arguments
+    assert "--sparse-refresh-output" in arguments
+    assert paths[-1] == tmp_path / "hg-sparse-refresh-oracle.json"
+
+
+def test_sparse_refresh_capture_uses_the_single_candidate_contract(tmp_path: Path) -> None:
+    path = tmp_path / "sparse-refresh.json"
+    path.write_text(json.dumps({"status": "captured", "candidate_matches": True}), encoding="utf-8")
+    assert ci_native.inspect_capture(path)["passed"]
+    path.write_text(
+        json.dumps({"status": "captured", "candidate_matches": False}), encoding="utf-8"
+    )
+    assert not ci_native.inspect_capture(path)["passed"]
 
 
 def test_svn_captures_rule_cases_and_status_transitions(tmp_path: Path) -> None:
@@ -436,9 +448,17 @@ def test_skipping_trust_records_skip_without_launching_probe(
 
     monkeypatch.setattr(ci, "_run", run)
     trust = tmp_path / "trust.json"
+    sparse_refresh = tmp_path / "sparse-refresh.json"
     assert (
-        ci._oracle_hg("hg", tmp_path / "match.json", tmp_path / "walk.json", trust, skip_trust=True)
+        ci._oracle_hg(
+            "hg",
+            tmp_path / "match.json",
+            tmp_path / "walk.json",
+            trust,
+            sparse_refresh,
+            skip_trust=True,
+        )
         == 0
     )
-    assert runners == ["run.py", "walk.py"]
+    assert runners == ["run.py", "walk.py", "sparse_refresh.py"]
     assert json.loads(trust.read_text())["status"] == "skipped"

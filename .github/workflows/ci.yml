@@ -844,6 +844,9 @@ jobs:
           $walkOutput = Join-Path $nativeDir 'hg-walk-7.2.4-windows-x86_64.json'
           python tests/oracles/hg/walk.py --hg $hg --output $walkOutput
           if ($LASTEXITCODE -ne 0) { throw "Mercurial 7.2.4 walk capture failed: $LASTEXITCODE" }
+          $sparseOutput = Join-Path $nativeDir 'hg-sparse-refresh-7.2.4-windows-x86_64.json'
+          python tests/oracles/hg/sparse_refresh.py --hg $hg --output $sparseOutput
+          if ($LASTEXITCODE -ne 0) { throw "Mercurial 7.2.4 sparse-refresh capture failed: $LASTEXITCODE" }
           @'
           import json
           import os
@@ -872,6 +875,18 @@ jobs:
                   assert len(capture["cases"]) == 6, len(capture["cases"])
                   assert all(case["candidate_matches"] is True for case in capture["cases"])
               print(name, len(capture["cases"]), "cases; all closed cases matched")
+          sparse = json.loads(
+              (directory / "hg-sparse-refresh-7.2.4-windows-x86_64.json").read_text(
+                  encoding="utf-8"
+              )
+          )
+          assert sparse["status"] == "captured", sparse
+          assert sparse["client"]["version"].startswith(
+              "Mercurial Distributed SCM (version 7.2.4)"
+          ), sparse["client"]
+          assert sparse["candidate_matches"], sparse
+          assert sparse["after_refresh"]["policy_matches_native_status"], sparse
+          print("sparse refresh", sparse["refresh"]["exit_code"], sparse["after_refresh"])
           '@ | python -
       - name: Run Mercurial membership transitions against pinned 7.2.4
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

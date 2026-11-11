@@ -151,6 +151,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=project_root() / "tests" / "oracles" / "hg" / "capture.trust.local.json",
         help="path for the native repository-config trust capture",
     )
+    oracle_command.add_argument(
+        "--sparse-refresh-output",
+        type=Path,
+        default=project_root() / "tests" / "oracles" / "hg" / "capture.sparse-refresh.local.json",
+        help="path for the native sparse-refresh membership capture",
+    )
 
     svn_oracle_command = commands.add_parser(
         "oracle-svn", help="capture Subversion ignore behavior in an isolated local repository"
@@ -305,6 +311,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 arguments.output,
                 arguments.walk_output,
                 arguments.trust_output,
+                arguments.sparse_refresh_output,
                 skip_trust=arguments.skip_trust,
             )
         if arguments.command == "oracle-svn":
@@ -540,15 +547,21 @@ def _oracle_hg(
     output: Path,
     walk_output: Path,
     trust_output: Path,
+    sparse_refresh_output: Path,
     *,
     skip_trust: bool = False,
 ) -> int:
-    """Delegate Mercurial matching, walking, and trust captures to oracle runners."""
+    """Delegate Mercurial matching, walking, trust, and sparse-refresh captures."""
     oracle_root = project_root() / "tests" / "oracles" / "hg"
     for runner, capture_path, label in (
         (oracle_root / "run.py", output, "Capture native Mercurial ignore observations"),
         (oracle_root / "walk.py", walk_output, "Capture native Mercurial ignored-file walks"),
         (oracle_root / "trust.py", trust_output, "Capture native Mercurial config trust behavior"),
+        (
+            oracle_root / "sparse_refresh.py",
+            sparse_refresh_output,
+            "Capture native Mercurial sparse-refresh membership",
+        ),
     ):
         if skip_trust and runner.name == "trust.py":
             capture_path.parent.mkdir(parents=True, exist_ok=True)

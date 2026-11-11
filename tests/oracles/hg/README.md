@@ -15,15 +15,16 @@ To use the shared local/CI command and choose a capture path:
 ```sh
 python -m scripts.ci oracle-hg \
   --output /tmp/hg-oracle.json \
-  --walk-output /tmp/hg-walk-oracle.json
+  --walk-output /tmp/hg-walk-oracle.json \
+  --sparse-refresh-output /tmp/hg-sparse-refresh.json
 ```
 
-GitHub Actions runs this command in Ubuntu and Windows jobs with Mercurial installed and uploads
-separate workflow artifacts. It records single-path `debugignore` observations and
-`status --ignored` plus `status --unknown` file walks. The committed captures cover macOS arm64
-Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows Server 2025
-x86_64 Mercurial 7.1.2. A hosted Ubuntu x86_64 capture records Mercurial 6.7.2 from the native
-Linux CI job. The current Mercurial 7.2.4 Windows profile is installed from a checksum-pinned
+GitHub Actions runs the same Mercurial oracle runners in platform-specific jobs and uploads
+workflow artifacts. The main path runner records single-path `debugignore` observations; the walk
+runner records `status --ignored` plus `status --unknown` file walks. The committed captures cover
+macOS arm64 Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows
+Server 2025 x86_64 Mercurial 7.1.2. A hosted Ubuntu x86_64 capture records Mercurial 6.7.2 from
+the native Linux CI job. The current Mercurial 7.2.4 Windows profile is installed from a checksum-pinned
 CPython 3.12 wheel; the Windows job also runs the focused membership-transition test against that
 executable to compare its status behavior with the system-installed Mercurial. The original 48
 path cases include case-sensitive glob
@@ -101,14 +102,14 @@ probe writes an explicit skipped capture and does not count as passing trust evi
 repository config trust rules. Native CI also captures the same trusted/untrusted states with
 Mercurial 7.0.1 in Debian 13 x86_64, extending the trust check to the pinned Debian client profile.
 
-The isolated `sparse_refresh.py` probe removes an exclusion from `.hg/sparse`, runs
-`hg debugsparse --refresh`, and records the command result, file presence, native status, and
-membership-aware policy result. Run it locally with
+The `oracle-hg` command also runs the isolated `sparse_refresh.py` probe. It removes an exclusion
+from `.hg/sparse`, runs `hg debugsparse --refresh`, and records the command result, file presence,
+native status, and membership-aware policy result. Run it directly with
 `PYTHONPATH=src python tests/oracles/hg/sparse_refresh.py --hg hg --output /tmp/hg-sparse-refresh.json`.
-Native CI captures Mercurial 7.0.1 on Debian 13 x86_64 and ARM64. The known `ProgrammingError`
-failure is recorded as an observation; if a future client fixes it, CI accepts a successful refresh
-that restores versioned membership. In either case the policy must agree with native status. This
-probe only uses a fresh temporary repository.
+The local native gate validates either the known `ProgrammingError` profile or a successful refresh
+that restores versioned membership, and requires the policy to agree with native status. Native CI
+captures Mercurial 7.0.1 on Debian 13 x86_64 and ARM64, plus the pinned Mercurial 7.2.4 client on
+Windows. This probe only uses a fresh temporary repository.
 
 The six walk fixtures cover
 ignored-parent descendants, included rule sources,

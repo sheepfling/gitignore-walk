@@ -127,6 +127,22 @@ def capture(hg: str, output: Path) -> int:
         status_code = records.get("two/b.txt")
         policy_membership = decision.membership
         status_membership = _membership_from_status(status_code)
+        refresh_stderr = refresh.stderr.decode(errors="replace").replace(str(root), "<repo>")
+        file_exists = tracked_path.exists()
+        known_failure = (
+            refresh.returncode == 1
+            and "ProgrammingError" in refresh_stderr
+            and file_exists
+            and status_code == "?"
+            and policy_membership == "unversioned"
+        )
+        fixed_behavior = (
+            refresh.returncode == 0
+            and file_exists
+            and status_membership == "versioned"
+            and policy_membership == "versioned"
+        )
+        candidate_matches = known_failure or fixed_behavior
         version = subprocess.run(
             [executable, "--version"],
             capture_output=True,
@@ -134,10 +150,11 @@ def capture(hg: str, output: Path) -> int:
             timeout=30,
         )
         version_lines = version.stdout.decode(errors="replace").splitlines()
-        refresh_stderr = refresh.stderr.decode(errors="replace").replace(str(root), "<repo>")
         result: dict[str, Any] = {
+            "id": "hg.sparse-refresh-membership",
             "schema_version": 1,
             "status": "captured",
+            "candidate_matches": candidate_matches,
             "client": {
                 "executable": executable,
                 "version": version_lines[0] if version_lines else "unknown",
@@ -157,7 +174,7 @@ def capture(hg: str, output: Path) -> int:
                 "policy_membership": before_decision.membership,
             },
             "after_refresh": {
-                "file_exists": tracked_path.exists(),
+                "file_exists": file_exists,
                 "status_code": status_code,
                 "policy_membership": policy_membership,
                 "status_membership": status_membership,
@@ -170,9 +187,10 @@ def capture(hg: str, output: Path) -> int:
     print(
         f"Mercurial sparse refresh: exit={result['refresh']['exit_code']}, "
         f"status={status_code!r}, "
-        f"policy_match={result['after_refresh']['policy_matches_native_status']}"
+        f"policy_match={result['after_refresh']['policy_matches_native_status']}, "
+        f"known_or_fixed_profile={candidate_matches}"
     )
-    return 0 if result["after_refresh"]["policy_matches_native_status"] else 1
+    return 0 if candidate_matches else 1
 
 
 def main(argv: Sequence[str] | None = None) -> int:

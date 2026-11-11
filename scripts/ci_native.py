@@ -68,8 +68,18 @@ def capture_arguments(
     if backend == "hg":
         walk = directory / "hg-walk-oracle.json"
         trust = directory / "hg-trust-oracle.json"
-        arguments.extend(["--walk-output", str(walk), "--trust-output", str(trust)])
-        outputs.extend([walk, trust])
+        sparse_refresh = directory / "hg-sparse-refresh-oracle.json"
+        arguments.extend(
+            [
+                "--walk-output",
+                str(walk),
+                "--trust-output",
+                str(trust),
+                "--sparse-refresh-output",
+                str(sparse_refresh),
+            ]
+        )
+        outputs.extend([walk, trust, sparse_refresh])
         if not include_trust:
             arguments.append("--skip-trust")
     elif backend == "svn":
