@@ -393,6 +393,7 @@ def test_membership_aware_policy_matches_native_versioned_listing(
         (root / name).write_text(f"{name}\n", encoding="utf-8")
     tracked_in_ignored_directory = root / "cache" / "tracked.txt"
     tracked_in_ignored_directory.parent.mkdir()
+    add("cache")
     tracked_in_ignored_directory.write_text("tracked below ignored directory\n", encoding="utf-8")
     add("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp", "cache/tracked.txt")
     run("commit", "--no-plugins", "-m", "add initial files")
