@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "profile_version": "0.2.20261102",
+  "client": "Sapling 0.2.20261102-153821+a53273dc",
+  "platform": "Linux-7.0.12-linuxkit-aarch64-with-glibc2.41",
+  "machine": "aarch64",
+  "isolated_temporary_workspace": true,
+  "cases": [
+    {
+      "mode": "sl",
+      "query_files": [
+        "empty/target/under-empty-ignore.tmp",
+        "missing/target/under-missing-ignore.tmp",
+        "nested/child/local.childignore",
+        "nested/target/under-nested-ignore.tmp"
+      ],
+      "probe_purpose": {
+        "empty/target/under-empty-ignore.tmp": "target/ rule below an empty .gitignore",
+        "missing/target/under-missing-ignore.tmp": "target/ rule below a missing .gitignore",
+        "nested/target/under-nested-ignore.tmp": "target/ rule below a nested empty .gitignore",
+        "nested/child/local.childignore": "nested .gitignore below an empty parent ignore"
+      },
+      "ignored": [
+        "empty/target/under-empty-ignore.tmp",
+        "missing/target/under-missing-ignore.tmp",
+        "nested/child/local.childignore",
+        "nested/target/under-nested-ignore.tmp"
+      ],
+      "expected_ignored": [
+        "empty/target/under-empty-ignore.tmp",
+        "missing/target/under-missing-ignore.tmp",
+        "nested/child/local.childignore",
+        "nested/target/under-nested-ignore.tmp"
+      ],
+      "candidate_matches": true,
+      "status_stdout": "? .gitignore\\0? empty/.gitignore\\0? nested/.gitignore\\0? nested/child/.gitignore\\0I empty/target/under-empty-ignore.tmp\\0I missing/target/under-missing-ignore.tmp\\0I nested/child/local.childignore\\0I nested/target/under-nested-ignore.tmp\\0",
+      "status_stderr": ""
+    },
+    {
+      "mode": "git",
+      "query_files": [
+        "empty/target/under-empty-ignore.tmp",
+        "missing/target/under-missing-ignore.tmp",
+        "nested/child/local.childignore",
+        "nested/target/under-nested-ignore.tmp"
+      ],
+      "probe_purpose": {
+        "empty/target/under-empty-ignore.tmp": "target/ rule below an empty .gitignore",
+        "missing/target/under-missing-ignore.tmp": "target/ rule below a missing .gitignore",
+        "nested/target/under-nested-ignore.tmp": "target/ rule below a nested empty .gitignore",
+        "nested/child/local.childignore": "nested .gitignore below an empty parent ignore"
+      },
+      "ignored": [
+        "empty/target/under-empty-ignore.tmp",
+        "missing/target/under-missing-ignore.tmp",
+        "nested/child/local.childignore",
+        "nested/target/under-nested-ignore.tmp"
+      ],
+      "expected_ignored": [
+        "empty/target/under-empty-ignore.tmp",
+        "missing/target/under-missing-ignore.tmp",
+        "nested/child/local.childignore",
+        "nested/target/under-nested-ignore.tmp"
+      ],
+      "candidate_matches": true,
+      "status_stdout": "? .gitignore\\0? empty/.gitignore\\0? nested/.gitignore\\0? nested/child/.gitignore\\0I empty/target/under-empty-ignore.tmp\\0I missing/target/under-missing-ignore.tmp\\0I nested/child/local.childignore\\0I nested/target/under-nested-ignore.tmp\\0",
+      "status_stderr": ""
+    }
+  ]
+}

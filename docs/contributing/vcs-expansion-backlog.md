@@ -670,14 +670,14 @@ with an explicit `GIT_CONFIG_SYSTEM` path confirms the system ignore is suppress
 Sapling/Jujutsu modes on macOS 26 arm64; native Linux and Windows capture jobs now verify the same
 profile behavior.
 
-A focused Sapling release profile now compares 0.2.20261028 with 0.2.20261103 using identical
-Debian 13 ARM64 fixtures. It probes directory-only `target/` rules below missing and empty
+A focused Sapling release profile now compares 0.2.20261028, 0.2.20261102, and 0.2.20261103 using
+identical Debian 13 ARM64 fixtures. It probes directory-only `target/` rules below missing and empty
 `.gitignore` files, plus a nested ignore file below an empty parent source. In the older capture,
-Sapling `.sl` mode leaves all four paths visible while `.git` mode ignores them; in the newer
-capture, both modes ignore all four. This is a bounded observed version/mode difference, not a claim
-of full release-to-release dialect conformance. The official [0.2.20261103 release notes](https://github.com/meta/sapling/releases/tag/0.2.20261103-145137%2B6282ac56)
-also describe a `.gitignore` handling fix for the preceding release. Native CI downloads both
-checksum-pinned ARM64 clients and recaptures the paired profile.
+Sapling `.sl` mode leaves all four paths visible while `.git` mode ignores them; in the later
+captures, both modes ignore all four. This is a bounded observed release/mode difference, not a claim
+of full release-to-release dialect conformance. The official [0.2.20261102 release notes](https://github.com/meta/sapling/releases/tag/0.2.20261102-153821%2Ba53273dc)
+identify the missing/empty `.gitignore` behavior as a fix. The 0.2.20261102 profile matches all four
+probes in both modes on Debian 13 ARM64; native CI also recaptures the fix release on Windows x64.
 
 The 0.2.20261028 Sapling client also has Debian 13 ARM64 and x86_64 source/configuration captures
 alongside Jujutsu 0.47.1. Dedicated isolated probes now confirm that both tested path-pattern groups

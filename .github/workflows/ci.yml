@@ -272,10 +272,14 @@ jobs:
             'https://github.com/meta/sapling/releases/download/0.2.20261028-123539%2B7415fb2f/sapling-0.2.20261028-123539+7415fb2f-linux-arm64.tar.xz' \
             --output "$RUNNER_TEMP/compat-clients/sapling-0.2.20261028-linux-arm64.tar.xz"
           curl --fail --location --silent --show-error \
+            'https://github.com/meta/sapling/releases/download/0.2.20261102-153821%2Ba53273dc/sapling-0.2.20261102-153821+a53273dc-linux-arm64.tar.xz' \
+            --output "$RUNNER_TEMP/compat-clients/sapling-0.2.20261102-linux-arm64.tar.xz"
+          curl --fail --location --silent --show-error \
             'https://github.com/jj-vcs/jj/releases/download/v0.47.1/jj-v0.47.1-aarch64-unknown-linux-musl.tar.gz' \
             --output "$RUNNER_TEMP/compat-clients/jj-linux-arm64.tar.gz"
           echo 'a8bb6388703c30630219933e482955faa33744cfb06bcd201910785cbe3c5749  '"$RUNNER_TEMP/compat-clients/sapling-linux-arm64.tar.xz" | sha256sum --check
           echo '6257b24ca41a3b430f46bdcedecd42d3f2e6f2e1807645f9b2b5a0c204e03dd5  '"$RUNNER_TEMP/compat-clients/sapling-0.2.20261028-linux-arm64.tar.xz" | sha256sum --check
+          echo 'ac36e1e68668a241f91d414e945e1efc7a1e42b9607930534180dd601c514a4d  '"$RUNNER_TEMP/compat-clients/sapling-0.2.20261102-linux-arm64.tar.xz" | sha256sum --check
           echo '0f300e1576de8dabe0a9dedf0b87ae44f8accea5cf54d9a342a51061c1fb1bcd  '"$RUNNER_TEMP/compat-clients/jj-linux-arm64.tar.gz" | sha256sum --check
       - name: Capture Sapling and Jujutsu on Debian 13 ARM64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
@@ -286,7 +290,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_pattern_profile.py --sl /tmp/sapling-old/sl --output /output/sapling-0.2.20261028-sl-patterns-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/sapling-fix /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xJf /clients/sapling-0.2.20261102-linux-arm64.tar.xz -C /tmp/sapling-fix && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_pattern_profile.py --sl /tmp/sapling-old/sl --output /output/sapling-0.2.20261028-sl-patterns-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-fix/sl --profile-version 0.2.20261102 --output /output/sapling-0.2.20261102-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
           python - <<'PY'
           import json
           import os
@@ -307,6 +311,17 @@ jobs:
           linked = json.loads(linked_path.read_text(encoding="utf-8"))
           release_profiles = {
               "0.2.20261028": {"sl": set(), "git": {
+                  "empty/target/under-empty-ignore.tmp",
+                  "missing/target/under-missing-ignore.tmp",
+                  "nested/target/under-nested-ignore.tmp",
+                  "nested/child/local.childignore",
+              }},
+              "0.2.20261102": {"sl": {
+                  "empty/target/under-empty-ignore.tmp",
+                  "missing/target/under-missing-ignore.tmp",
+                  "nested/target/under-nested-ignore.tmp",
+                  "nested/child/local.childignore",
+              }, "git": {
                   "empty/target/under-empty-ignore.tmp",
                   "missing/target/under-missing-ignore.tmp",
                   "nested/target/under-nested-ignore.tmp",
@@ -1051,6 +1066,42 @@ jobs:
                   assert isinstance(probe["candidate_matches"], bool), probe
               print(probe["id"], "native_status=", probe["native_status"], "candidate_matches=", probe["candidate_matches"])
           print("Conformance classification:", capture["conformance"])
+          '@ | python -
+      - name: Capture Sapling 0.2.20261102 ignore fix on Windows
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $clientDir = Join-Path $env:RUNNER_TEMP 'compat-clients'
+          $nativeDir = Join-Path $env:RUNNER_TEMP 'native'
+          New-Item -ItemType Directory -Force -Path $clientDir, $nativeDir | Out-Null
+          $archive = Join-Path $clientDir 'sapling-0.2.20261102-windows-x64.zip'
+          Invoke-WebRequest `
+            -Uri 'https://github.com/meta/sapling/releases/download/0.2.20261102-153821%2Ba53273dc/sapling-0.2.20261102-153821+a53273dc-windows-x64.zip' `
+            -OutFile $archive
+          $digest = (Get-FileHash -Algorithm SHA256 $archive).Hash.ToLowerInvariant()
+          if ($digest -ne '08a877cfb2183a201aa89a23d26a66a71a65e392eac987bd8bdb42ba15155719') {
+            throw "Sapling 0.2.20261102 release checksum mismatch: $digest"
+          }
+          $saplingDir = Join-Path $clientDir 'sapling-0.2.20261102-windows'
+          Expand-Archive -Path $archive -DestinationPath $saplingDir -Force
+          $sl = Join-Path $saplingDir 'Sapling\sl.exe'
+          if (-not (Test-Path $sl)) { throw "Sapling executable was not found: $sl" }
+          $output = Join-Path $nativeDir 'sapling-0.2.20261102-behavior-windows-x64.json'
+          python tests/oracles/compat/sapling_release_profiles.py `
+            --sl $sl --profile-version 0.2.20261102 --output $output
+          if ($LASTEXITCODE -ne 0) { throw "Sapling fix-release capture failed: $LASTEXITCODE" }
+          @'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261102-behavior-windows-x64.json"
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert capture["client"].startswith("Sapling 0.2.20261102"), capture["client"]
+          assert capture["machine"].lower() in {"amd64", "x86_64"}, capture["machine"]
+          assert len(capture["cases"]) == 2, capture["cases"]
+          assert all(case["candidate_matches"] for case in capture["cases"]), capture["cases"]
+          assert all(case["ignored"] == case["expected_ignored"] for case in capture["cases"])
           '@ | python -
       - name: Check Windows Registry and INI precedence
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

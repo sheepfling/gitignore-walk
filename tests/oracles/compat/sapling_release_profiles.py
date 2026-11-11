@@ -19,6 +19,7 @@ _PROBES = {
 }
 _EXPECTED = {
     "0.2.20261028": {"sl": [], "git": sorted(_PROBES)},
+    "0.2.20261102": {"sl": sorted(_PROBES), "git": sorted(_PROBES)},
     "0.2.20261103": {"sl": sorted(_PROBES), "git": sorted(_PROBES)},
 }
 

@@ -15,12 +15,17 @@ _PROBES = {
 
 
 def test_sapling_release_profiles_capture_storage_mode_behavior() -> None:
-    """Keep observed `.sl` and `.git` behavior explicit for both Sapling releases."""
+    """Keep the `.gitignore` fix boundary explicit across three Sapling releases."""
     profiles = (
         (
             "sapling-0.2.20261028-behavior-debian13-arm64.json",
             "Sapling 0.2.20261028",
             {"sl": set(), "git": _PROBES},
+        ),
+        (
+            "sapling-0.2.20261102-behavior-debian13-arm64.json",
+            "Sapling 0.2.20261102",
+            {"sl": _PROBES, "git": _PROBES},
         ),
         (
             "sapling-0.2.20261103-behavior-debian13-arm64.json",
