@@ -45,19 +45,25 @@ def test_perforce_membership_matches_native_have_and_opened(
     address = f"127.0.0.1:{port}"
     client_name = "membership-test"
     password = "temporary-membership-password"
-    environment = {
-        "HOME": str(home),
-        "USERPROFILE": str(home),
-        "PATH": os.environ.get("PATH", ""),
-        "P4PORT": address,
-        "P4USER": "super",
-        "P4CLIENT": client_name,
-        "P4CONFIG": "",
-        "P4TICKETS": str(temporary / "tickets"),
-        "P4TRUST": str(temporary / "trust"),
-        "LC_ALL": "C",
-        "TZ": "UTC",
-    }
+    environment = os.environ.copy()
+    for name in tuple(environment):
+        if name.upper().startswith("P4"):
+            del environment[name]
+    environment.pop("PWD", None)
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "P4PORT": address,
+            "P4USER": "super",
+            "P4CLIENT": client_name,
+            "P4CONFIG": "",
+            "P4TICKETS": str(temporary / "tickets"),
+            "P4TRUST": str(temporary / "trust"),
+            "LC_ALL": "C",
+            "TZ": "UTC",
+        }
+    )
 
     def run(
         *arguments: str,
