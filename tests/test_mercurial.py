@@ -921,7 +921,7 @@ def test_membership_aware_policy_matches_native_status_classes(
 def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     tmp_path: Path, topdown: bool
 ) -> None:
-    """Do not infer membership for versioned files omitted by Mercurial sparse status."""
+    """Keep sparse-omitted paths unknown and out of membership-aware walks."""
     root = tmp_path / "repo"
     root.mkdir()
     home = tmp_path / "home"
@@ -956,8 +956,11 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     (root / ".hgignore").write_text("syntax: glob\nsparse/tracked.tmp\n", encoding="utf-8")
     hg("add", ".hgignore")
     hg("commit", "-m", "ignore the sparse file", "-u", "gitignore-walk test")
+    sparse_untracked = root / "sparse" / "untracked.txt"
+    sparse_untracked.write_text("untracked and outside the sparse profile\n", encoding="utf-8")
     hg("debugsparse", "--exclude", "glob:sparse/**")
     assert not sparse_file.exists()
+    assert sparse_untracked.exists()
 
     native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
     native_paths = {
@@ -979,6 +982,9 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     policy = selection.policy
     assert policy.explain("sparse/tracked.tmp").ignored
     assert policy.explain("sparse/tracked.tmp").membership is None
+    untracked_sparse_decision = policy.explain("sparse/untracked.txt")
+    assert not untracked_sparse_decision.ignored
+    assert untracked_sparse_decision.membership is None
     assert policy.explain("visible.txt").membership == "versioned"
 
     walker = IgnoreWalker(root, policy=policy)
@@ -990,8 +996,13 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
         path.relative_to(root).as_posix()
         for path in walker.iter_files(selection="ignored", topdown=topdown)
     }
+    all_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
     assert included == native_paths
     assert ignored == set()
+    assert all_files == native_paths
 
     # A sparse-rule update restores the committed path. Reuse the same policy and walker to
     # confirm membership is recaptured and the ignored tracked file is selected as included.
@@ -1003,10 +1014,16 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
         for record in restored_native.split(b"\0")
         if record and len(record) >= 3 and record[1:2] == b" "
     }
-    assert restored_paths == {".hgignore", "sparse/tracked.tmp", "visible.txt"}
+    assert restored_paths == {
+        ".hgignore",
+        "sparse/tracked.tmp",
+        "sparse/untracked.txt",
+        "visible.txt",
+    }
     restored_decision = policy.explain("sparse/tracked.tmp")
     assert restored_decision.ignored
     assert restored_decision.membership == "versioned"
+    assert policy.explain("sparse/untracked.txt").membership == "unversioned"
 
     restored_included = {
         path.relative_to(root).as_posix()

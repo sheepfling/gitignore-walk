@@ -52,7 +52,10 @@ class _MercurialWalkSession:
         return self._policy.should_descend_directory(target)
 
     def should_select_file(self, target: Path) -> bool:
-        return self._policy.should_select_file(target)
+        """Exclude filesystem entries omitted from the native membership snapshot."""
+        if not self._policy.should_select_file(target):
+            return False
+        return self._membership is None or target in self._membership
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
         return self._policy.can_prune_ignored_directory(target, decision)
@@ -68,8 +71,8 @@ class MercurialIgnorePolicy(IgnorePolicy):
     explicitly or set ``read_client_config=True`` to ask the Mercurial executable to discover
     configured files. Client-config discovery requires the executable and reports its failures.
     Matching is additive, as in Mercurial, and does not implement Git-style negation. Set
-    ``membership_aware=True`` to annotate status-listed paths with version-control membership using
-    a read-only native status query.
+    ``membership_aware=True`` to annotate status-listed paths with version-control membership and
+    restrict walks to files in a read-only native status snapshot.
 
     Attributes:
         root: Traversal root that bounds policy targets.
@@ -106,7 +109,7 @@ class MercurialIgnorePolicy(IgnorePolicy):
             timeout: Maximum duration in seconds for each Mercurial client query.
             initial_excludes: Baseline paths excluded by the walker.
             membership_aware: Query Mercurial status to distinguish versioned and unversioned
-                paths in decisions.
+                paths in decisions and limit walk results to status-listed files.
         """
         try:
             self.root = Path(root).expanduser().resolve()
