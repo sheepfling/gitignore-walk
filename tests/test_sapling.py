@@ -52,10 +52,21 @@ def test_sapling_membership_walker_matches_native_status(
         return result
 
     sl("init", str(root))
-    (root / ".gitignore").write_text("*.tmp\n", encoding="utf-8")
+    (root / ".gitignore").write_text("*.tmp\ncache/\n", encoding="utf-8")
     for name in ("tracked.tmp", "clean.txt", "missing.tmp", "removed.tmp"):
         (root / name).write_text(f"{name}\n", encoding="utf-8")
-    sl("add", ".gitignore", "tracked.tmp", "clean.txt", "missing.tmp", "removed.tmp")
+    tracked_in_ignored_directory = root / "cache" / "tracked.txt"
+    tracked_in_ignored_directory.parent.mkdir()
+    tracked_in_ignored_directory.write_text("tracked below ignored directory\n", encoding="utf-8")
+    sl(
+        "add",
+        ".gitignore",
+        "tracked.tmp",
+        "clean.txt",
+        "missing.tmp",
+        "removed.tmp",
+        "cache/tracked.txt",
+    )
     sl("commit", "-m", "membership fixture", "-u", "gitignore-walk test")
     broken_link = root / "broken-link"
     try:
@@ -85,6 +96,7 @@ def test_sapling_membership_walker_matches_native_status(
     assert native_records["missing.tmp"] == "!"
     assert native_records["removed.tmp"] == "R"
     assert native_records["added.tmp"] == "A"
+    assert native_records["cache/tracked.txt"] == "C"
     if broken_link_created:
         assert native_records["broken-link"] == "A"
     assert native_records["ignored.tmp"] == "I"
@@ -110,17 +122,21 @@ def test_sapling_membership_walker_matches_native_status(
             "missing.tmp",
             "removed.tmp",
             "added.tmp",
+            "cache/tracked.txt",
             "ignored.tmp",
             "unknown.txt",
         ]
     )
-    memberships = {decision.path.name: decision.membership for decision in decisions}
+    memberships = {
+        decision.path.relative_to(root).as_posix(): decision.membership for decision in decisions
+    }
     assert memberships == {
         "tracked.tmp": "versioned",
         "clean.txt": "versioned",
         "missing.tmp": "versioned",
         "removed.tmp": "versioned",
         "added.tmp": "versioned",
+        "cache/tracked.txt": "versioned",
         "ignored.tmp": "unversioned",
         "unknown.txt": "unversioned",
     }
@@ -134,7 +150,14 @@ def test_sapling_membership_walker_matches_native_status(
             for path in walker.iter_files(selection=selection_name, topdown=topdown)
         }
 
-    included = {".gitignore", "clean.txt", "tracked.tmp", "added.tmp", "unknown.txt"}
+    included = {
+        ".gitignore",
+        "cache/tracked.txt",
+        "clean.txt",
+        "tracked.tmp",
+        "added.tmp",
+        "unknown.txt",
+    }
     assert walked("included") == included
     assert walked("ignored") == {"ignored.tmp"}
     assert walked("all") == included | {"ignored.tmp"}

@@ -155,6 +155,12 @@ class JujutsuIgnorePolicy(GitIgnorePolicy):
         membership = self._load_membership() if self.membership_aware else None
         return _GitIgnoreMembershipWalkSession(self, membership, self._with_membership)
 
+    def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
+        """Keep ignored directories traversable when saved-tree membership selects descendants."""
+        if self.membership_aware:
+            return False
+        return super().can_prune_ignored_directory(target, decision)
+
     def _with_membership(
         self,
         decision: IgnoreDecision,

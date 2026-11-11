@@ -52,8 +52,11 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
     (root / ".gitignore").write_text("# membership fixture\n", encoding="utf-8")
     (root / "tracked.tmp").write_text("tracked\n", encoding="utf-8")
     (root / "clean.txt").write_text("clean\n", encoding="utf-8")
+    tracked_in_ignored_directory = root / "cache" / "tracked.txt"
+    tracked_in_ignored_directory.parent.mkdir()
+    tracked_in_ignored_directory.write_text("tracked below ignored directory\n", encoding="utf-8")
     jj("status")
-    (root / ".gitignore").write_text("*.tmp\n", encoding="utf-8")
+    (root / ".gitignore").write_text("*.tmp\ncache/\n", encoding="utf-8")
     broken_link = root / "broken-link"
     try:
         broken_link.symlink_to("missing-target.txt")
@@ -79,7 +82,7 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
     native_versioned = {
         item.decode(errors="surrogateescape") for item in native_tree.split(b"\0") if item
     }
-    expected_versioned = {".gitignore", "tracked.tmp", "clean.txt"}
+    expected_versioned = {".gitignore", "cache/tracked.txt", "tracked.tmp", "clean.txt"}
     if broken_link_created:
         expected_versioned.add("broken-link")
     assert native_versioned == expected_versioned
@@ -101,12 +104,22 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
         assert policy.trace("broken-link").decision.membership == "versioned"
         assert next(policy.iter_explain(["broken-link"])).membership == "versioned"
     decisions = policy.explain_many(
-        ["tracked.tmp", "clean.txt", "ignored.tmp", "unknown.txt", "absent.txt"]
+        [
+            "tracked.tmp",
+            "clean.txt",
+            "cache/tracked.txt",
+            "ignored.tmp",
+            "unknown.txt",
+            "absent.txt",
+        ]
     )
-    memberships = {decision.path.name: decision.membership for decision in decisions}
+    memberships = {
+        decision.path.relative_to(root).as_posix(): decision.membership for decision in decisions
+    }
     assert memberships == {
         "tracked.tmp": "versioned",
         "clean.txt": "versioned",
+        "cache/tracked.txt": "versioned",
         "ignored.tmp": "unversioned",
         "unknown.txt": "unversioned",
         "absent.txt": None,
@@ -121,10 +134,16 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
             for path in walker.iter_files(selection=selection_name, topdown=topdown)
         }
 
-    assert walked("included") == {".gitignore", "tracked.tmp", "unknown.txt"}
+    assert walked("included") == {
+        ".gitignore",
+        "cache/tracked.txt",
+        "tracked.tmp",
+        "unknown.txt",
+    }
     assert walked("ignored") == {"ignored.tmp"}
     assert walked("all") == {
         ".gitignore",
+        "cache/tracked.txt",
         "ignored.tmp",
         "tracked.tmp",
         "unknown.txt",

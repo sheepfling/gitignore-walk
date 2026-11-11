@@ -205,6 +205,10 @@ opt-in membership query uses NUL-delimited `sl status --all`; Jujutsu's opt-in q
 `jj file list` with `--ignore-working-copy` and does not snapshot the workspace. Git-native
 selection remains appropriate only when an actual `.git` repository is available.
 
+Live membership-aware walk tests also track a file beneath an ignore-matched `cache/` directory.
+Both native clients report the child as versioned, so the policies keep ignored directories
+traversable when membership is enabled and check the descendant in both traversal orders.
+
 Linked Git worktrees expose a source-location difference. Git and Sapling `.git` mode read
 `info/exclude` from the shared Git directory; colocated Jujutsu reads it from the linked worktree's
 Git directory. The dedicated probe creates both files with distinct patterns and checks all three
