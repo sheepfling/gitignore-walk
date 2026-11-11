@@ -893,7 +893,7 @@ def test_membership_aware_policy_matches_native_status_classes(
 
     native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
     native_records = {
-        record[2:].decode(errors="surrogateescape"): record[:1].decode("ascii")
+        record[2:].decode(errors="surrogateescape").replace("\\", "/"): record[:1].decode("ascii")
         for record in native.split(b"\0")
         if record and len(record) >= 3 and record[1:2] == b" "
     }
