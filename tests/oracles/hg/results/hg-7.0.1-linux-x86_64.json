@@ -1153,6 +1153,55 @@
       "fallback_observation": null
     },
     {
+      "id": "hg.config-discovery-environment-variable-path",
+      "profile": "hg",
+      "dimension": "configuration",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "environment.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C",
+        "HG_ORACLE_IGNORE_FILE": "<home>/environment.ignore"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "environment.tmp is ignored\n(ignore rule in <home>/environment.ignore, line 2: 'environment.tmp')\n",
+      "stderr": "",
+      "configuration": {
+        "command": [
+          "/usr/bin/hg",
+          "config",
+          "--debug",
+          "ui"
+        ],
+        "exit_code": 0,
+        "stdout": "read config from: <hgrc>\n<hgrc>:2: ui.ignore.environment=$HG_ORACLE_IGNORE_FILE\n--verbose: ui.verbose=False\n--debug: ui.debug=True\n--quiet: ui.quiet=False\n",
+        "stderr": "",
+        "normalized_stdout_sha256": "ce8b11ddaad56e9c4d41efcef380bf9dd8f505793d2698b5bbea1ef9fdbd21ae"
+      },
+      "normalized_stdout_sha256": "9eb8c8053b15956f08a98f7aaf9729d9016e22f2fe3407a8d99bd3c71eb7644e",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "environment.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-6rght3p2/home/environment.ignore, line 2: 'environment.tmp')\n",
+      "raw_stderr": ""
+    },
+    {
       "id": "hg.config-discovery-included-hgrc",
       "profile": "hg",
       "dimension": "configuration",

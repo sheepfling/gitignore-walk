@@ -207,7 +207,7 @@ jobs:
               assert capture["status"] == "captured"
               assert capture["client"]["version"] == "Mercurial Distributed SCM (version 7.0.1)"
               assert architecture in capture["client"]["platform"]
-              assert len(capture["cases"]) == 71
+              assert len(capture["cases"]) == 72
               assert not any(case["candidate_matches"] is False for case in capture["cases"])
               observations = {case["id"]: case for case in capture["cases"]}
               for case_id, expected in expected_flags.items():
@@ -215,6 +215,10 @@ jobs:
                   assert case["native_status"] == "captured"
                   assert case["candidate_matches"] is True
                   assert case["observed_ignored"] is expected
+              environment_path = observations["hg.config-discovery-environment-variable-path"]
+              assert environment_path["native_status"] == "captured"
+              assert environment_path["candidate_matches"] is True
+              assert environment_path["observed_ignored"] is True
           PY
       - name: Capture Darcs oracle on Debian 13 ARM64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

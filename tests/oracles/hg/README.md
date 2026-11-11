@@ -60,8 +60,10 @@ matching rule. On Mercurial 7.2.4/macOS arm64, 7.0.1/Debian 13 Linux x86_64, and
 x86_64, native `debugignore` attributes the decision to the workspace `.hgignore`; the policy trace
 retains both sources and marks `.hgignore` effective. The captures are in the matching profile
 results, and the regression test checks all four profiles.
-Configured-path environment expansion is captured on Mercurial 7.2.4/macOS arm64. A live native
-test also checks POSIX and Windows variable syntax on client-enabled CI platforms.
+Configured-path environment expansion is captured with Mercurial 7.2.4 on macOS arm64 and Windows
+x86_64, and Mercurial 7.0.1 on Debian 13 Linux aarch64 and x86_64. The POSIX captures cover
+`$VAR`/`${VAR}` paths; the Windows capture covers `%VAR%` expansion. Live native tests also exercise
+the platform's supported variable syntax.
 The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
 The reviewed historical Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: 60 closed
