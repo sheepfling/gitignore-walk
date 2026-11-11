@@ -286,7 +286,8 @@ its ignored parent. See `tests/oracles/breezy/cases.json` and the two matching r
 
 Breezy now also supports opt-in file-membership queries through its NUL-delimited versioned listing.
 Present listed files are versioned, present unlisted files are unversioned, and missing files or
-directories remain unknown. A live native fixture covers tracked ignored files and both walk orders.
+directories remain unknown. A live native fixture covers tracked ignored files, lexical membership
+for file and directory symlinks, and both walk orders.
 
 SVN now has a live status-transition test for normal, modified, added, deleted, missing, replaced,
 obstructed, and conflicted entries, alongside ignored-unversioned files. The conflict uses two

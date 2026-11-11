@@ -376,6 +376,31 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     run("add", "--no-plugins", ".bzrignore")
     run("commit", "--no-plugins", "-m", "add ignore rule")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
+    (root / "real-dir").mkdir()
+    (root / "real-dir" / "child.txt").write_text("directory target\n", encoding="utf-8")
+    try:
+        (root / "linked.txt").symlink_to("unknown.txt")
+    except OSError:
+        symlink_created = False
+    else:
+        symlink_created = True
+    try:
+        (root / "linked-dir").symlink_to("real-dir", target_is_directory=True)
+    except OSError:
+        directory_symlink_created = False
+    else:
+        directory_symlink_created = True
+    linked_entries = [
+        name
+        for name, created in (
+            ("linked.txt", symlink_created),
+            ("linked-dir", directory_symlink_created),
+        )
+        if created
+    ]
+    if linked_entries:
+        run("add", "--no-plugins", *linked_entries)
+        run("commit", "--no-plugins", "-m", "track symlinks")
     (root / "ignored-unversioned.tmp").write_text("ignored and unknown\n", encoding="utf-8")
     (root / "missing.txt").unlink()
 
@@ -383,6 +408,10 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     native_paths = {os.fsdecode(record) for record in native.split(b"\0") if record}
     assert "tracked.txt" in native_paths
     assert "ignored.tmp" in native_paths
+    if symlink_created:
+        assert "linked.txt" in native_paths
+    if directory_symlink_created:
+        assert "linked-dir" in native_paths
     assert "missing.txt" not in native_paths
 
     selection = select_policy(
@@ -396,16 +425,25 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     )
     assert isinstance(selection.policy, BreezyIgnorePolicy)
     policy = selection.policy
-    decisions = {
-        decision.path.name: decision
-        for decision in policy.explain_many(
-            ["tracked.txt", "ignored.tmp", "unknown.txt", "ignored-unversioned.tmp", "missing.txt"]
-        )
-    }
+    query_targets = [
+        "tracked.txt",
+        "ignored.tmp",
+        "unknown.txt",
+        "linked.txt",
+        "linked-dir",
+        "ignored-unversioned.tmp",
+        "missing.txt",
+    ]
+    decisions = dict(zip(query_targets, policy.explain_many(query_targets), strict=True))
     assert decisions["tracked.txt"].membership == "versioned"
     assert decisions["ignored.tmp"].membership == "versioned"
     assert decisions["ignored.tmp"].ignored
     assert decisions["unknown.txt"].membership == "unversioned"
+    if symlink_created:
+        assert decisions["linked.txt"].membership == "versioned"
+        assert policy.trace("linked.txt").decision.membership == "versioned"
+    if directory_symlink_created:
+        assert decisions["linked-dir"].membership == "versioned"
     assert decisions["ignored-unversioned.tmp"].membership == "unversioned"
     assert decisions["ignored-unversioned.tmp"].ignored
     assert decisions["missing.txt"].membership is None

@@ -245,8 +245,10 @@ not inspect versioned membership. Set `membership_aware=True` to query Breezy's 
 `brz ls --from-root --recursive --versioned` listing. Present listed files are reported as
 versioned; present unlisted files are unversioned. Directories and missing or deleted files remain
 membership-unknown because Breezy omits missing files from this listing. Membership stays separate
-from ignore matching, so an ignored versioned file is still selected by an included walk. The 52
-boolean candidates on Breezy 3.3.24/macOS arm64 and 36 on Linux aarch64
+from ignore matching, so an ignored versioned file is still selected by an included walk. Symlink
+membership uses the queried lexical repository path even though rule evaluation resolves the target;
+this includes tracked symlinks to directories.
+The 52 boolean candidates on Breezy 3.3.24/macOS arm64 and 36 on Linux aarch64
 include exact-path versus `/**` strong exclusions, `BRZ_HOME` global-ignore discovery, negative
 lookahead, scoped inline regex flags, and variable wildcard/regex exception scopes. Linux x86_64 and
 Windows Server 2025 x86_64 captures contain 33 checked cases; Breezy 3.3.11/Debian 13 x86_64 matches

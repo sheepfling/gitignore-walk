@@ -169,8 +169,9 @@ Parent Breezy walks also stop at nested working trees, matching `brz status --sh
 3.3.24/macOS arm64 in both traversal orders.
 Opt-in membership discovery uses Breezy's NUL-delimited versioned-file listing: present listed files
 are versioned, present unlisted files are unversioned, and directories or missing files remain
-unknown. A live fixture compares these decisions with native output, including a tracked ignored file,
-in both traversal orders.
+unknown. A live fixture compares these decisions with native output, including a tracked ignored file
+and symlinks to an unversioned file and directory; membership follows the lexical symlink names.
+Both traversal orders are covered.
 See the [Breezy oracle notes](../../tests/oracles/breezy/README.md), [Breezy pattern
 reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and [Breezy ignore
 reference](https://www.breezy-vcs.org/doc/en/user-reference/ignore-help.html).

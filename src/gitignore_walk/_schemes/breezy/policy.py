@@ -8,6 +8,7 @@ import fnmatch
 import math
 import os
 import re
+import stat
 import subprocess
 import tempfile
 from collections.abc import Iterable, Iterator, Mapping, Sequence
@@ -214,8 +215,13 @@ class BreezyIgnorePolicy(IgnorePolicy):
         snapshot = self._load_snapshot()
         membership = self._load_membership() if self.membership_aware else None
         relative = path.relative_to(self.workspace_root).as_posix()
+        membership_relative = (
+            self._lexical_membership_path(target) if membership is not None else None
+        )
         matches = self._matching_rules(relative, snapshot, is_directory=path.is_dir())
-        decision = self._decision(path, relative, snapshot, matches, membership)
+        decision = self._decision(
+            path, relative, snapshot, matches, membership, membership_relative
+        )
         effective = decision.source, decision.pattern, decision.line
         trace = tuple(
             IgnoreTraceMatch(
@@ -316,6 +322,19 @@ class BreezyIgnorePolicy(IgnorePolicy):
             paths.add(posix_path.as_posix())
         return frozenset(paths)
 
+    def _lexical_membership_path(self, target: str | os.PathLike[str]) -> str | None:
+        """Return the workspace-relative query path without resolving symbolic links."""
+        lexical_path = Path(target).expanduser()
+        if not lexical_path.is_absolute():
+            lexical_path = self.root / lexical_path
+        lexical_path = Path(os.path.abspath(lexical_path))
+        try:
+            return lexical_path.relative_to(self.workspace_root).as_posix()
+        except ValueError:
+            # A symlink alias outside the workspace can resolve into it, but it has no native
+            # Breezy listing path and therefore cannot be classified from the listing.
+            return None
+
     def _global_ignore_path(self) -> Path:
         """Resolve the standard XDG user ignore file unless the caller chose an explicit path."""
         if self._global_ignore_file is not None:
@@ -369,7 +388,10 @@ class BreezyIgnorePolicy(IgnorePolicy):
         path = self.resolve_target(target)
         relative = path.relative_to(self.workspace_root).as_posix()
         matches = self._matching_rules(relative, snapshot, is_directory=path.is_dir())
-        return self._decision(path, relative, snapshot, matches, membership)
+        membership_relative = (
+            self._lexical_membership_path(target) if membership is not None else None
+        )
+        return self._decision(path, relative, snapshot, matches, membership, membership_relative)
 
     def _matching_rules(
         self,
@@ -396,13 +418,26 @@ class BreezyIgnorePolicy(IgnorePolicy):
         snapshot: _BreezySnapshot,
         matches: tuple[_BreezyRule, ...],
         membership: frozenset[str] | None,
+        membership_relative: str | None,
     ) -> IgnoreDecision:
         membership_value: Literal["versioned", "unversioned"] | None = None
-        if membership is not None and not path.is_dir():
-            if relative in membership:
+        if membership is not None and membership_relative is not None:
+            if membership_relative in membership:
                 membership_value = "versioned"
-            elif path.is_file():
-                membership_value = "unversioned"
+            else:
+                lexical_path = self.workspace_root / PurePosixPath(membership_relative)
+                try:
+                    lexical_mode = lexical_path.lstat().st_mode
+                except OSError:
+                    pass
+                else:
+                    if stat.S_ISDIR(lexical_mode):
+                        pass
+                    elif stat.S_ISLNK(lexical_mode) and not lexical_path.exists():
+                        # Breezy omits missing tracked symlinks from its versioned listing.
+                        pass
+                    else:
+                        membership_value = "unversioned"
         relative_to_root = path.relative_to(self.root).as_posix()
         baseline = next(
             (
