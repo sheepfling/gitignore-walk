@@ -203,7 +203,11 @@ both traversal orders, including an exception beneath an ignored directory. Serv
 record mapped, explicitly excluded, and unmapped local paths across three native profiles. Opt-in
 client-view-aware walks filter files by those mappings while keeping directories traversable because
 an unmapped directory can contain mapped descendants. P4IGNORE decisions and versioned membership
-remain independent; broader syntax and native workspace discovery edge cases remain open.
+remain independent. The opt-in `membership_aware=True` query now combines the native `p4 have` list
+with `p4 opened` records mapped by `p4 where`; present listed files are versioned (including files
+opened for add, edit, or delete), present unlisted files are unversioned, and directories or missing
+unlisted paths are unknown. Focused tests cover the query records and confirm membership does not
+change ignore decisions. Broader syntax and native workspace discovery edge cases remain open.
 
 The initial [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 [Breezy oracle notes](../../tests/oracles/breezy/README.md) describe the observed corpora and their

@@ -6,12 +6,14 @@ from __future__ import annotations
 # pyright: reportPrivateUsage=false
 import os
 import re
+import stat
 import subprocess
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from itertools import islice
 from math import isfinite
 from pathlib import Path
+from typing import Literal
 
 from ..._policy import (
     IgnoreDecision,
@@ -23,6 +25,30 @@ from ..._policy import (
 from .errors import PerforceIgnoreError
 
 _DEFAULT_IGNORE_FILES = (".p4ignore", "p4ignore.txt")
+
+
+def _tagged_records(output: str) -> tuple[dict[str, str], ...]:
+    """Parse Perforce tagged output into records separated by ``depotFile`` fields."""
+    records: list[dict[str, str]] = []
+    record: dict[str, str] = {}
+    for line in output.splitlines():
+        if not line.startswith("... "):
+            continue
+        name, separator, value = line[4:].partition(" ")
+        if not separator:
+            continue
+        if name == "depotFile" and record:
+            records.append(record)
+            record = {}
+        record[name] = value
+    if record:
+        records.append(record)
+    return tuple(records)
+
+
+def _membership_key(path: Path) -> str:
+    """Normalize a local P4 path without following symbolic links."""
+    return os.path.normcase(os.path.abspath(path))
 
 
 @dataclass(frozen=True, slots=True)
@@ -69,6 +95,7 @@ class _PerforceWalkSession:
         self._checked_directories: set[tuple[Path, tuple[str, ...], Path]] = set()
         self._configurations: dict[Path, tuple[tuple[str, ...], Path, str | None]] = {}
         self._view_membership: dict[Path, bool] = {}
+        self._membership = policy._load_membership() if policy.membership_aware else None
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         return self._policy.resolve_target(target)
@@ -77,7 +104,13 @@ class _PerforceWalkSession:
         return self.resolve_target(target)
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
-        paths = [self.resolve_target(target) for target in targets]
+        requested = list(targets)
+        paths = [self.resolve_target(target) for target in requested]
+        membership_paths = (
+            [self._policy._lexical_target(target) for target in requested]
+            if self._membership is not None
+            else [None] * len(paths)
+        )
         p4config_by_path: dict[Path, str | None] = {}
         for path in paths:
             p4config_by_path[path] = self._policy._discover_ancestors(
@@ -88,7 +121,14 @@ class _PerforceWalkSession:
             )
         rules = self._ordered_rules()
         return [
-            self._policy._explain_with_rules(path, rules, p4config_by_path[path]) for path in paths
+            self._policy._explain_with_rules(
+                path,
+                rules,
+                p4config_by_path[path],
+                self._membership,
+                membership_path,
+            )
+            for path, membership_path in zip(paths, membership_paths, strict=True)
         ]
 
     def _ordered_rules(self) -> tuple[_PerforceRule, ...]:
@@ -126,11 +166,17 @@ class PerforceIgnorePolicy(IgnorePolicy):
     requires ``discover_client_workspace=True`` and does not change ignore decisions or versioned
     membership. Directories remain traversable because an unmapped directory can contain mapped
     descendants.
+    Set ``membership_aware=True`` to query ``p4 have`` and ``p4 opened`` once per batch or walk.
+    Submitted and opened files are versioned, present files absent from both lists are unversioned,
+    and directories, missing unlisted paths, and dangling symlinks remain unknown. Membership
+    queries require a configured connected P4 client and stay independent from ignore rules.
 
     Attributes:
         root: Caller-selected traversal boundary and target bound.
         scheme: Stable ``"perforce"`` identifier.
         workspace_root: Native client root when discovery is enabled, otherwise the caller root.
+        membership_aware: Whether native have-list and opened-file membership is queried.
+        p4_executable: P4 client used for optional configuration and membership queries.
     """
 
     @property
@@ -178,6 +224,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
         read_client_config: bool = False,
         discover_client_workspace: bool = False,
         client_view_aware: bool = False,
+        membership_aware: bool = False,
         p4_executable: str = "p4",
         timeout: float = 30.0,
         initial_excludes: Sequence[str] = (),
@@ -191,9 +238,10 @@ class PerforceIgnorePolicy(IgnorePolicy):
             raise ValueError(f"Perforce policy root must be a directory: {self.root}")
         self._environment = dict(os.environ if environment is None else environment)
         if not isfinite(timeout) or timeout <= 0:
-            raise ValueError("Perforce configuration discovery timeout must be finite and positive")
+            raise ValueError("Perforce query timeout must be finite and positive")
         self._p4_executable = p4_executable
         self._timeout = timeout
+        self._discover_client_workspace = discover_client_workspace
         self.workspace_root = (
             self._discover_workspace_root() if discover_client_workspace else self.root
         )
@@ -206,6 +254,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
         if client_view_aware and not discover_client_workspace:
             raise ValueError("client_view_aware requires discover_client_workspace=True")
         self._client_view_aware = client_view_aware
+        self.membership_aware = membership_aware
         selected = p4ignore if p4ignore is not None else self._environment.get("P4IGNORE")
         self._ignore_files = (
             _DEFAULT_IGNORE_FILES
@@ -283,12 +332,21 @@ class PerforceIgnorePolicy(IgnorePolicy):
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether one target matches the selected P4IGNORE sources."""
         path = self.resolve_target(target)
+        membership = self._load_membership() if self.membership_aware else None
+        membership_path = self._lexical_target(target) if membership is not None else None
         rules, p4config_name = self._load_rules(path, {}, set())
-        return self._explain_with_rules(path, rules, p4config_name)
+        return self._explain_with_rules(path, rules, p4config_name, membership, membership_path)
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
         """Explain an ordered target batch using one source snapshot."""
-        paths = [self.resolve_target(target) for target in targets]
+        requested = list(targets)
+        paths = [self.resolve_target(target) for target in requested]
+        membership = self._load_membership() if self.membership_aware else None
+        membership_paths = (
+            [self._lexical_target(target) for target in requested]
+            if membership is not None
+            else [None] * len(paths)
+        )
         rules_by_source: dict[Path, tuple[_PerforceRule, ...]] = {}
         checked: set[tuple[Path, tuple[str, ...], Path]] = set()
         configurations: dict[Path, tuple[tuple[str, ...], Path, str | None]] = {}
@@ -298,7 +356,16 @@ class PerforceIgnorePolicy(IgnorePolicy):
                 path, checked, rules_by_source, configurations
             )
         rules = self._ordered_rules(rules_by_source)
-        return [self._explain_with_rules(path, rules, p4config_by_path[path]) for path in paths]
+        return [
+            self._explain_with_rules(
+                path,
+                rules,
+                p4config_by_path[path],
+                membership,
+                membership_path,
+            )
+            for path, membership_path in zip(paths, membership_paths, strict=True)
+        ]
 
     def iter_explain(
         self,
@@ -316,11 +383,15 @@ class PerforceIgnorePolicy(IgnorePolicy):
     def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return every matching rule in source order and identify the last as effective."""
         path = self.resolve_target(target)
+        membership = self._load_membership() if self.membership_aware else None
+        membership_path = self._lexical_target(target) if membership is not None else None
         rules, p4config_name = self._load_rules(path, {}, set())
         baseline = self._baseline_match(path, p4config_name=p4config_name)
         matching = tuple(rule for rule in rules if rule.matches(path))
         effective_rule = self._effective_rule(path, rules)
-        decision = self._decision(path, effective_rule, baseline, p4config_name)
+        decision = self._decision(
+            path, effective_rule, baseline, p4config_name, membership, membership_path
+        )
         trace = tuple(
             IgnoreTraceMatch(
                 source=rule.source,
@@ -410,6 +481,64 @@ class PerforceIgnorePolicy(IgnorePolicy):
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a walk session that caches ignore files as their directories are visited."""
         return _PerforceWalkSession(self)
+
+    def _lexical_target(self, target: str | os.PathLike[str]) -> Path:
+        """Return an absolute target path without resolving symbolic links."""
+        path = Path(target).expanduser()
+        if not path.is_absolute():
+            path = self.root / path
+        return Path(os.path.abspath(path))
+
+    def _load_membership(self) -> frozenset[str]:
+        """Capture submitted and opened local paths from the selected Perforce client."""
+        cwd = self.workspace_root if self._discover_client_workspace else self.root
+        have = self._run_membership_query(("-ztag", "have"), cwd=cwd)
+        opened = self._run_membership_query(("-ztag", "opened"), cwd=cwd)
+        local_paths: set[str] = set()
+        for record in _tagged_records(have.stdout):
+            if local_path := record.get("path"):
+                local_paths.add(_membership_key(Path(local_path)))
+
+        client_files = [
+            record["clientFile"]
+            for record in _tagged_records(opened.stdout)
+            if record.get("clientFile")
+        ]
+        if client_files:
+            where = self._run_membership_query(("-ztag", "where", *client_files), cwd=cwd)
+            for record in _tagged_records(where.stdout):
+                if local_path := record.get("path"):
+                    local_paths.add(_membership_key(Path(local_path)))
+        return frozenset(local_paths)
+
+    def _run_membership_query(
+        self, arguments: Sequence[str], *, cwd: Path
+    ) -> subprocess.CompletedProcess[str]:
+        operation = arguments[1] if len(arguments) > 1 else "membership"
+        try:
+            result = subprocess.run(
+                [self._p4_executable, *arguments],
+                cwd=cwd,
+                env=self._environment,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=self._timeout,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise PerforceIgnoreError(
+                f"Unable to discover Perforce membership with {operation}: {error}",
+                operation="membership",
+            ) from error
+        if result.returncode != 0:
+            detail = result.stderr.strip() or result.stdout.strip() or "unknown P4 error"
+            raise PerforceIgnoreError(
+                f"Perforce membership query failed for {operation}: {detail}",
+                operation="membership",
+            )
+        return result
 
     def _load_rules(
         self,
@@ -628,6 +757,8 @@ class PerforceIgnorePolicy(IgnorePolicy):
         path: Path,
         rules: tuple[_PerforceRule, ...],
         p4config_name: str | None = None,
+        membership_paths: frozenset[str] | None = None,
+        membership_path: Path | None = None,
     ) -> IgnoreDecision:
         effective = self._effective_rule(path, rules)
         return self._decision(
@@ -635,6 +766,8 @@ class PerforceIgnorePolicy(IgnorePolicy):
             effective,
             self._baseline_match(path, p4config_name=p4config_name),
             p4config_name,
+            membership_paths,
+            membership_path,
         )
 
     @staticmethod
@@ -658,7 +791,23 @@ class PerforceIgnorePolicy(IgnorePolicy):
         rule: _PerforceRule | None,
         baseline: str | None,
         p4config_name: str | None,
+        membership_paths: frozenset[str] | None = None,
+        membership_path: Path | None = None,
     ) -> IgnoreDecision:
+        membership: Literal["versioned", "unversioned"] | None = None
+        if membership_paths is not None and membership_path is not None:
+            if _membership_key(membership_path) in membership_paths:
+                membership = "versioned"
+            else:
+                try:
+                    mode = membership_path.lstat().st_mode
+                except OSError:
+                    pass
+                else:
+                    if stat.S_ISDIR(mode) or (stat.S_ISLNK(mode) and not membership_path.exists()):
+                        pass
+                    else:
+                        membership = "unversioned"
         if baseline is not None:
             built_in = baseline in {".p4root", p4config_name}
             return IgnoreDecision(
@@ -670,6 +819,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
                 scope=".",
                 reason="built-in-exclusion" if built_in else "baseline-exclusion",
                 discovery_complete=True,
+                membership=membership,
             )
         ignored = rule is not None and not rule.negated
         return IgnoreDecision(
@@ -684,6 +834,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
             if rule
             else "no-matching-rule",
             discovery_complete=True,
+            membership=membership,
         )
 
 

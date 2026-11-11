@@ -110,6 +110,76 @@ def test_perforce_selection_is_discriminated_and_scheme_local(tmp_path: Path) ->
     assert selection.policy.scheme == "perforce"
 
 
+def test_perforce_membership_uses_have_and_opened_without_changing_ignore_decisions(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "workspace"
+    root.mkdir()
+    submitted = root / "submitted.tmp"
+    opened = root / "opened.txt"
+    ignored_unversioned = root / "ignored.tmp"
+    directory = root / "directory"
+    submitted.touch()
+    opened.touch()
+    ignored_unversioned.touch()
+    directory.mkdir()
+    (root / ".p4ignore").write_text("*.tmp\n", encoding="utf-8")
+
+    def captured_p4(command: list[str], **kwargs: Any) -> subprocess.CompletedProcess[str]:
+        del kwargs
+        if command[1:] == ["-ztag", "have"]:
+            output = (
+                "... depotFile //depot/submitted.tmp\n"
+                "... clientFile //client/submitted.tmp\n"
+                "... haveRev 1\n"
+                f"... path {submitted}\n\n"
+            )
+        elif command[1:] == ["-ztag", "opened"]:
+            output = (
+                "... depotFile //depot/opened.txt\n"
+                "... clientFile //client/opened.txt\n"
+                "... haveRev none\n"
+                "... action add\n\n"
+            )
+        elif command[1:3] == ["-ztag", "where"]:
+            assert command[3:] == ["//client/opened.txt"]
+            output = (
+                "... depotFile //depot/opened.txt\n"
+                "... clientFile //client/opened.txt\n"
+                f"... path {opened}\n\n"
+            )
+        else:
+            raise AssertionError(f"Unexpected P4 query: {command!r}")
+        return subprocess.CompletedProcess(command, 0, output, "")
+
+    monkeypatch.setattr(perforce_policy_module.subprocess, "run", captured_p4)
+    policy = PerforceIgnorePolicy(root, environment={}, membership_aware=True)
+
+    decisions = policy.explain_many(
+        ["submitted.tmp", "opened.txt", "ignored.tmp", "directory", "missing.txt"]
+    )
+
+    assert [decision.membership for decision in decisions] == [
+        "versioned",
+        "versioned",
+        "unversioned",
+        None,
+        None,
+    ]
+    assert [decision.ignored for decision in decisions] == [True, False, True, False, False]
+    assert policy.trace("submitted.tmp").decision.membership == "versioned"
+
+
+def test_perforce_membership_is_forwarded_by_discriminated_config(tmp_path: Path) -> None:
+    selection = select_policy(
+        tmp_path,
+        PerforcePolicyConfig(environment={}, membership_aware=True),
+    )
+
+    assert isinstance(selection.policy, PerforceIgnorePolicy)
+    assert selection.policy.membership_aware is True
+
+
 def test_perforce_can_discover_workspace_without_widening_caller_bound(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

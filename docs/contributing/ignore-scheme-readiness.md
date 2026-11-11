@@ -185,8 +185,12 @@ nested-source precedence, root-anchored matching relative to nested ignore files
 `P4CONFIG` resolution. Three additional path-boundary cases separate `p4 add` rejection from rule
 matching reported by `p4 ignores -i -v`. Lexical cases verify ASCII-space trimming and preservation
 of tabs and interior spaces. Opt-in client-root discovery uses tagged `p4 -ztag info` data while
-keeping the caller's traversal bound. Server views, broader path grammar, and other platform
-profiles remain open. See the
+keeping the caller's traversal bound. Opt-in `membership_aware=True` snapshots `p4 have` plus
+`p4 opened`, mapping opened client files through tagged `p4 where` output; missing submitted files
+remain versioned, while present unlisted files are unversioned and directories or missing unlisted
+paths remain unknown. This query requires a configured connected client and does not change ignore
+matching or view filtering. Server views, broader path grammar, and other platform profiles remain
+open. See the
 [Perforce oracle notes](../../tests/oracles/perforce/README.md).
 
 Darcs now has an initial native candidate policy. It combines `darcs whatsnew --look-for-adds` with

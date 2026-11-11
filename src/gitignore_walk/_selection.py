@@ -120,9 +120,11 @@ class PerforcePolicyConfig:
             walking. Requires ``discover_client_workspace=True``; this does not change P4IGNORE
             decisions or versioned membership. Directories remain traversable because unmapped
             directories can contain mapped descendants.
-        p4_executable: P4 client used for optional ``p4 set`` and ``p4 -ztag info`` queries.
-        timeout: Maximum duration in seconds for each P4 configuration, workspace, or client-view
-            query.
+        membership_aware: Query native have-list and opened-file state to report known membership.
+        p4_executable: P4 client used for optional configuration, workspace, and membership
+            queries.
+        timeout: Maximum duration in seconds for each P4 configuration, workspace, client-view, or
+            membership query.
         initial_excludes: Hard walker baseline exclusions, defaulting to none.
     """
 
@@ -132,6 +134,7 @@ class PerforcePolicyConfig:
     read_client_config: bool = False
     discover_client_workspace: bool = False
     client_view_aware: bool = False
+    membership_aware: bool = False
     p4_executable: str = "p4"
     timeout: float = 30.0
     initial_excludes: Sequence[str] = ()
@@ -707,6 +710,7 @@ def select_policy(
                 read_client_config=selected.read_client_config,
                 discover_client_workspace=selected.discover_client_workspace,
                 client_view_aware=selected.client_view_aware,
+                membership_aware=selected.membership_aware,
                 p4_executable=selected.p4_executable,
                 timeout=selected.timeout,
                 initial_excludes=selected.initial_excludes,
