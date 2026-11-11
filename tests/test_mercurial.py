@@ -1061,14 +1061,16 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
         }
 
     hg("init")
-    for relative in ("one/a.tmp", "two/b.tmp"):
+    for relative in ("one/a.tmp", "two/b.tmp", "two/excluded.tmp"):
         path = root / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"{relative}\n", encoding="utf-8")
-    (root / ".hgignore").write_text("syntax: glob\none/a.tmp\ntwo/b.tmp\n", encoding="utf-8")
+    (root / ".hgignore").write_text(
+        "syntax: glob\none/a.tmp\ntwo/b.tmp\ntwo/excluded.tmp\n", encoding="utf-8"
+    )
     sparse_profile = root / ".hgsparse"
-    sparse_profile.write_text("[include]\none/**\n", encoding="utf-8")
-    hg("add", ".hgignore", ".hgsparse", "one/a.tmp", "two/b.tmp")
+    sparse_profile.write_text("[include]\none/**\ntwo/**\n[exclude]\ntwo/**\n", encoding="utf-8")
+    hg("add", ".hgignore", ".hgsparse", "one/a.tmp", "two/b.tmp", "two/excluded.tmp")
     hg("commit", "-m", "add sparse profile fixture", "-u", "gitignore-walk test")
     hg("debugsparse", "--enable-profile", ".hgsparse")
 
@@ -1076,6 +1078,7 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     assert initial_paths == {".hgignore", ".hgsparse", "one/a.tmp"}
     assert (root / "one/a.tmp").exists()
     assert not (root / "two/b.tmp").exists()
+    assert not (root / "two/excluded.tmp").exists()
 
     selection = select_policy(
         root,
@@ -1093,16 +1096,20 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     }
     assert initial_walk == initial_paths
 
-    sparse_profile.write_text("[include]\ntwo/**\n", encoding="utf-8")
+    sparse_profile.write_text("[include]\ntwo/**\n[exclude]\ntwo/excluded.tmp\n", encoding="utf-8")
     hg("commit", "-m", "switch sparse profile", "-u", "gitignore-walk test")
 
     updated_paths = native_paths()
     assert updated_paths == {".hgignore", ".hgsparse", "two/b.tmp"}
     assert not (root / "one/a.tmp").exists()
     assert (root / "two/b.tmp").exists()
+    assert not (root / "two/excluded.tmp").exists()
     restored_decision = policy.explain("two/b.tmp")
     assert restored_decision.ignored
     assert restored_decision.membership == "versioned"
+    excluded_decision = policy.explain("two/excluded.tmp")
+    assert excluded_decision.ignored
+    assert excluded_decision.membership is None
     updated_walk = {
         path.relative_to(root).as_posix()
         for path in walker.iter_files(selection="included", topdown=topdown)

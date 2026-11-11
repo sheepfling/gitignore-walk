@@ -558,6 +558,8 @@ restores the file and reports it as versioned, and reuses the policy and walker 
 membership-aware walk includes the ignored tracked file. This covers one sparse update transition;
 an enabled, committed `.hgsparse` profile is also tested switching inclusion from one subtree to
 another across commits, with native status and membership-aware walking checked before and after.
+Its overlapping `[include]` and `[exclude]` patterns confirm that the native exclusion takes
+precedence, including after the profile update.
 A POSIX FIFO matching `.hgignore` is also omitted by native status and all walker selections, while
 direct policy evaluation still reports the ignore match and unknown membership. This confirms that
 ignore decisions do not turn a special filesystem node into a regular-file walk result. Broader
