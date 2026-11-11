@@ -626,7 +626,9 @@ satisfy this item.
 
 **Status:** Mercurial's tagged config, selection, public exports, docs, and downstream typing fixture
 are implemented, including opt-in discovery through the installed Mercurial client and opt-in
-membership queries. Broader config trust, include, and platform behavior remain open.
+membership queries. The isolated trusted/root-owned repository-config probe now also runs against
+Mercurial 7.0.1 in Debian 13 x86_64, checking both native `debugignore` and policy discovery; broader
+included-config and platform behavior remain open.
 
 Add a scheme-specific config/selection variant to the explicit union and exhaustive switch. Keep
 fallback within the selected scheme; never fall from one VCS grammar to another. Export and document

@@ -194,7 +194,15 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 util-linux && su -s /bin/sh nobody -c "python3 tests/oracles/hg/run.py --output /tmp/hg-7.0.1-linux-x86_64.json" && cp /tmp/hg-7.0.1-linux-x86_64.json /output/hg-7.0.1-linux-x86_64.json'
+            bash -lc '
+              set -e
+              apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 util-linux
+              su -s /bin/sh nobody -c "python3 tests/oracles/hg/run.py --output /tmp/hg-7.0.1-linux-x86_64.json"
+              cp /tmp/hg-7.0.1-linux-x86_64.json /output/hg-7.0.1-linux-x86_64.json
+              PYTHONPATH=/workspace/src python3 tests/oracles/hg/trust.py --hg /usr/bin/hg \
+                --output /output/hg-trust-7.0.1-linux-x86_64.json
+            '
           docker run --rm --platform linux/arm64 \
             --volume "$GITHUB_WORKSPACE:/workspace" \
             --volume "$RUNNER_TEMP/native:/output" \
@@ -232,6 +240,13 @@ jobs:
               assert environment_path["native_status"] == "captured"
               assert environment_path["candidate_matches"] is True
               assert environment_path["observed_ignored"] is True
+          trust_path = directory / "hg-trust-7.0.1-linux-x86_64.json"
+          trust = json.loads(trust_path.read_text(encoding="utf-8"))
+          assert trust["status"] == "captured", trust
+          assert trust["client"]["version"] == "Mercurial Distributed SCM (version 7.0.1)"
+          assert [state["label"] for state in trust["states"]] == ["trusted", "untrusted"]
+          assert all(state["matches"] for state in trust["states"]), trust["states"]
+          assert [state["policy"]["ignored"] for state in trust["states"]] == [True, False]
           PY
       - name: Capture Darcs oracle on Debian 13 ARM64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

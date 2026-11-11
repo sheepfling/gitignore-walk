@@ -98,7 +98,8 @@ because Mercurial's ownership trust rule is POSIX-specific. A local non-root run
 passwordless `sudo` solely to make the repository config root-owned. Without that capability the
 probe writes an explicit skipped capture and does not count as passing trust evidence. See the
 [Mercurial configuration documentation](https://mercurial-scm.org/help/topics/config) for its
-repository config trust rules.
+repository config trust rules. Native CI also captures the same trusted/untrusted states with
+Mercurial 7.0.1 in Debian 13 x86_64, extending the trust check to the pinned Debian client profile.
 
 The six walk fixtures cover
 ignored-parent descendants, included rule sources,
