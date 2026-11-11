@@ -370,10 +370,19 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     run("init", "--no-plugins", str(root))
     for name in ("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp"):
         (root / name).write_text(f"{name}\n", encoding="utf-8")
-    run("add", "--no-plugins", "tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp")
+    # Breezy's Windows launcher resolves relative add paths against the drive root even when
+    # subprocess receives ``cwd``. Absolute paths keep this native membership fixture portable.
+    run(
+        "add",
+        "--no-plugins",
+        *(
+            str(root / name)
+            for name in ("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp")
+        ),
+    )
     run("commit", "--no-plugins", "-m", "add initial files")
     (root / ".bzrignore").write_text("*.tmp\n", encoding="utf-8")
-    run("add", "--no-plugins", ".bzrignore")
+    run("add", "--no-plugins", str(root / ".bzrignore"))
     run("commit", "--no-plugins", "-m", "add ignore rule")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
     (root / "real-dir").mkdir()
@@ -399,7 +408,7 @@ def test_membership_aware_policy_matches_native_versioned_listing(
         if created
     ]
     if linked_entries:
-        run("add", "--no-plugins", *linked_entries)
+        run("add", "--no-plugins", *(str(root / name) for name in linked_entries))
         run("commit", "--no-plugins", "-m", "track symlinks")
     (root / "ignored-unversioned.tmp").write_text("ignored and unknown\n", encoding="utf-8")
     (root / "missing.txt").unlink()
