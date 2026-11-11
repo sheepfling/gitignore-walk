@@ -167,8 +167,10 @@ command for each discovered working-copy snapshot. Status values such as normal,
 deleted, missing, replaced, obstructed, and conflicted are treated as versioned; native unversioned
 and ignored entries are treated as unversioned. The live status-transition test covers these states.
 A file below an obstructed directory can still be reached by filesystem traversal even though native
-status omits it; its membership stays unknown. The walker keeps ignored directories traversable,
-excludes `.svn` metadata by default, and stops at nested `.svn` working copies. It follows externals
+status omits it; its membership stays unknown. In sparse working copies, a tracked file omitted at
+`depth=empty` stays unknown, while a local unversioned file listed by `svn status` remains walkable.
+The walker keeps ignored directories traversable, excludes `.svn` metadata by default, and stops at
+nested `.svn` working copies. It follows externals
 that native `svn status` identifies and loads versioned ignore
 properties within each listed external working copy, including nested externals; properties from an
 outer working copy do not leak across a nested external boundary. This initial policy is compared

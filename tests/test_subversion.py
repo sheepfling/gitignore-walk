@@ -1072,10 +1072,18 @@ def test_subversion_builtin_global_ignores_match_native_status(tmp_path: Path) -
     )
 
 
-def test_sparse_empty_directory_keeps_its_native_ignore_property(tmp_path: Path) -> None:
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_sparse_empty_directory_keeps_its_native_ignore_property(
+    tmp_path: Path, topdown: bool
+) -> None:
     case = next(case for case in CASES if case["id"] == "svn.sparse-empty-directory-property")
     root, environment, config_dir = _create_working_copy(tmp_path, case)
-    policy = SubversionIgnorePolicy(root, config_dir=config_dir, environment=environment)
+    policy = SubversionIgnorePolicy(
+        root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
     walker = IgnoreWalker(root, policy=policy)
     svn = shutil.which("svn")
     assert svn is not None
@@ -1092,15 +1100,48 @@ def test_sparse_empty_directory_keeps_its_native_ignore_property(tmp_path: Path)
         if (status := entry.find("wc-status")) is not None
         and status.attrib.get("item") == "ignored"
     }
+    native_membership = _run_svn(
+        [
+            svn,
+            "--config-dir",
+            str(config_dir),
+            "status",
+            "--xml",
+            "--verbose",
+            "--no-ignore",
+            "--depth",
+            "infinity",
+            ".",
+        ],
+        cwd=root,
+        environment=environment,
+    )
+    membership_document = ET.fromstring(native_membership.stdout)
+    native_walk_files = set()
+    for entry in membership_document.findall("./target/entry"):
+        relative = entry.attrib["path"].replace("\\", "/")
+        candidate = Path(relative)
+        path = candidate if candidate.is_absolute() else root / candidate
+        if path.is_file() and ".svn" not in path.relative_to(root).parts:
+            native_walk_files.add(path.relative_to(root).as_posix())
     policy_ignored = {
         path.relative_to(root).as_posix()
-        for path in walker.iter_files(selection="ignored")
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
         if path.is_file() and path.relative_to(root).parts[0] != ".svn"
+    }
+    membership_walk_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+        if ".svn" not in path.relative_to(root).parts
     }
 
     assert not (root / "pkg" / "tracked.tmp").exists()
     assert policy.is_ignored("pkg/tracked.tmp")
+    assert policy.explain("pkg/tracked.tmp").membership is None
+    assert policy.explain("pkg/visible.txt").membership == "unversioned"
     assert native_ignored == {"pkg/loose.tmp"}
+    assert native_walk_files == {"pkg/loose.tmp", "pkg/visible.txt"}
+    assert membership_walk_files == native_walk_files
     assert policy_ignored == native_ignored
 
 
