@@ -605,7 +605,11 @@ unknown (`?`), while omitting a physically present symlink outside the active pr
 matching uses the symlink's lexical path even when its target is outside the workspace; membership
 comes from native status, and the regular-file walker does not follow or yield symlinks. The fixture
 runs in both traversal orders and skips only when the host cannot create the required symlinks.
-Broader sparse-profile and special-file coverage remains open.
+An active sparse-profile fixture also places an ignored FIFO and Unix-domain socket inside the
+included subtree: native status omits both special nodes, direct policy decisions retain their
+ignore matches with unknown membership, and included, ignored, and all-file walks match the native
+regular-file set in both traversal orders. These POSIX-only checks run where the filesystem supports
+the required nodes. Broader sparse-profile and special-file coverage remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special

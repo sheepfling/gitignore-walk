@@ -1955,6 +1955,93 @@ def test_ignored_unix_socket_matches_policy_but_is_not_a_native_walk_file(topdow
             assert walked == native_paths
 
 
+@pytest.mark.skipif(os.name == "nt", reason="Mercurial sparse profiles need POSIX special files")
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFO creation is unavailable")
+@pytest.mark.skipif(not hasattr(socket, "AF_UNIX"), reason="Unix-domain sockets are unavailable")
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_sparse_special_files_match_but_stay_out_of_native_file_walks(topdown: bool) -> None:
+    """Keep sparse-profile FIFO/socket matches out of native regular-file walks."""
+    with tempfile.TemporaryDirectory(prefix="hgs-", dir="/tmp") as temporary_directory:
+        base = Path(temporary_directory).resolve()
+        root = base / "repo"
+        root.mkdir()
+        home = base / "home"
+        home.mkdir()
+        hgrc = base / "hgrc"
+        hgrc.write_text("[extensions]\nsparse =\n", encoding="utf-8")
+        environment = os.environ.copy()
+        environment.update(
+            {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+        )
+
+        def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+            result = subprocess.run(
+                [shutil.which("hg") or "hg", *arguments],
+                cwd=root,
+                env=environment,
+                capture_output=True,
+                check=False,
+                timeout=30,
+            )
+            assert result.returncode == 0, result.stderr.decode(errors="replace")
+            return result
+
+        hg("init")
+        (root / ".hgignore").write_text("syntax: glob\n*.tmp\n*.sock\n", encoding="utf-8")
+        (root / ".hgsparse").write_text("[include]\nactive/**\n", encoding="utf-8")
+        active = root / "active"
+        active.mkdir()
+        (active / "visible.txt").write_text("versioned regular file\n", encoding="utf-8")
+        (active / "tracked.tmp").write_text("ignored but versioned\n", encoding="utf-8")
+        hg("add", ".hgignore", ".hgsparse", "active/visible.txt", "active/tracked.tmp")
+        hg("commit", "-m", "add sparse special-file fixture", "-u", "gitignore-walk test")
+        hg("debugsparse", "--enable-profile", ".hgsparse")
+
+        try:
+            os.mkfifo(active / "pipe.tmp")
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+                listener.bind(str(active / "service.sock"))
+                native_status = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+                native_paths = {
+                    record[2:].decode(errors="surrogateescape").replace("\\", "/")
+                    for record in native_status.split(b"\0")
+                    if record and len(record) >= 3 and record[1:2] == b" "
+                }
+                assert native_paths == {
+                    ".hgignore",
+                    ".hgsparse",
+                    "active/tracked.tmp",
+                    "active/visible.txt",
+                }
+                assert hg("status", "--ignored", "-0").stdout == b""
+
+                selection = select_policy(
+                    root,
+                    MercurialPolicyConfig(membership_aware=True, environment=environment),
+                )
+                assert isinstance(selection, MercurialPolicySelection)
+                policy = selection.policy
+                for relative in ("active/pipe.tmp", "active/service.sock"):
+                    decision = policy.explain(relative)
+                    assert decision.ignored
+                    assert decision.membership is None
+                assert policy.explain("active/tracked.tmp").membership == "versioned"
+
+                walker = IgnoreWalker(root, policy=policy)
+                for walk_selection in ("included", "ignored", "all"):
+                    walked = {
+                        path.relative_to(root).as_posix()
+                        for path in walker.iter_files(selection=walk_selection, topdown=topdown)
+                    }
+                    if walk_selection == "ignored":
+                        assert walked == set()
+                    else:
+                        assert walked == native_paths
+        except OSError as error:
+            pytest.skip(f"filesystem cannot create sparse Mercurial special files: {error}")
+
+
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     (root / ".hg").mkdir(parents=True)
