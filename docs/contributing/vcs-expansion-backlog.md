@@ -577,7 +577,9 @@ after the switch, and after disabling the profile.
 The sparse status-transition fixture also covers `hg add -s` outside the active profile: native
 status reports the new path as added and restores an existing tracked sibling in that directory.
 The membership-aware walker follows both statuses immediately, then matches native `C` statuses
-after commit in both traversal orders.
+after commit in both traversal orders. Updating back to the earlier revision removes the sparse-added
+file from native status and makes its membership unknown again; updating forward restores both the
+file and its versioned membership, with the reused walker matching native status in each state.
 A POSIX FIFO and Unix-domain socket matching `.hgignore` are omitted by native status and all-file
 walks, while direct policy evaluation still reports the ignore match and unknown membership. This
 confirms that ignore decisions do not turn special filesystem nodes into regular-file walk results.

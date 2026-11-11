@@ -1164,6 +1164,7 @@ def test_sparse_add_expands_membership_for_an_out_of_profile_path(
     (root / ".hgsparse").write_text("[include]\nincluded/**\n", encoding="utf-8")
     hg("add", ".hgsparse", "included/visible.txt", "deferred/old.txt")
     hg("commit", "-m", "add sparse fixture", "-u", "gitignore-walk test")
+    initial_revision = hg("log", "-r", ".", "-T", "{node}").stdout.decode()
     hg("debugsparse", "--enable-profile", ".hgsparse")
 
     before_records = native_records()
@@ -1210,6 +1211,7 @@ def test_sparse_add_expands_membership_for_an_out_of_profile_path(
     assert all_walk == set(added_records)
 
     hg("commit", "-m", "add file outside sparse profile", "-u", "gitignore-walk test")
+    added_revision = hg("log", "-r", ".", "-T", "{node}").stdout.decode()
     committed_records = native_records()
     assert committed_records == {
         ".hgsparse": "C",
@@ -1223,6 +1225,32 @@ def test_sparse_add_expands_membership_for_an_out_of_profile_path(
         for path in walker.iter_files(selection="all", topdown=topdown)
     }
     assert committed_walk == set(committed_records)
+
+    hg("update", "--clean", "-r", initial_revision)
+    rewound_records = native_records()
+    assert rewound_records == {
+        ".hgsparse": "C",
+        "deferred/old.txt": "C",
+        "included/visible.txt": "C",
+    }
+    assert not new_file.exists()
+    assert policy.explain("deferred/new.txt").membership is None
+    rewound_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert rewound_walk == set(rewound_records)
+
+    hg("update", "--clean", "-r", added_revision)
+    restored_records = native_records()
+    assert restored_records == committed_records
+    assert new_file.exists()
+    assert policy.explain("deferred/new.txt").membership == "versioned"
+    restored_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert restored_walk == set(restored_records)
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
