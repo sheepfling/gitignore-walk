@@ -1021,7 +1021,10 @@ def test_nested_hg_workspace_is_not_traversed(tmp_path: Path) -> None:
     assert visible.is_file()
 
 
-@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.skipif(
+    os.environ.get("GITIGNORE_WALK_HG") is None and shutil.which("hg") is None,
+    reason="Mercurial client is not installed",
+)
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 def test_membership_aware_policy_tracks_ignore_file_status_transitions(
     tmp_path: Path, topdown: bool
@@ -1037,10 +1040,12 @@ def test_membership_aware_policy_tracks_ignore_file_status_transitions(
     environment.update(
         {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
     )
+    hg_executable = os.environ.get("GITIGNORE_WALK_HG") or shutil.which("hg")
+    assert hg_executable is not None
 
     def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
         result = subprocess.run(
-            [shutil.which("hg") or "hg", *arguments],
+            [hg_executable, *arguments],
             cwd=root,
             env=environment,
             capture_output=True,
@@ -1069,7 +1074,11 @@ def test_membership_aware_policy_tracks_ignore_file_status_transitions(
 
     selection = select_policy(
         root,
-        MercurialPolicyConfig(membership_aware=True, environment=environment),
+        MercurialPolicyConfig(
+            hg_executable=hg_executable,
+            membership_aware=True,
+            environment=environment,
+        ),
     )
     assert isinstance(selection, MercurialPolicySelection)
     policy = selection.policy

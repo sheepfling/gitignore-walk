@@ -835,6 +835,13 @@ jobs:
                   assert all(case["candidate_matches"] is True for case in capture["cases"])
               print(name, len(capture["cases"]), "cases; all closed cases matched")
           '@ | python -
+      - name: Run Mercurial membership transitions against pinned 7.2.4
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $env:GITIGNORE_WALK_HG = Join-Path $env:RUNNER_TEMP 'compat-clients\hg-7.2.4-venv\Scripts\hg.exe'
+          python -m pytest tests/test_mercurial.py -k membership_aware_policy_tracks_ignore_file_status_transitions -q
+          if ($LASTEXITCODE -ne 0) { throw "Mercurial 7.2.4 membership transition tests failed: $LASTEXITCODE" }
       - name: Run native-backed Windows policy tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-

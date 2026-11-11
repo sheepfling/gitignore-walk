@@ -24,7 +24,9 @@ separate workflow artifacts. It records single-path `debugignore` observations a
 Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows Server 2025
 x86_64 Mercurial 7.1.2. A hosted Ubuntu x86_64 capture records Mercurial 6.7.2 from the native
 Linux CI job. The current Mercurial 7.2.4 Windows profile is installed from a checksum-pinned
-CPython 3.12 wheel. The original 48 path cases include case-sensitive glob
+CPython 3.12 wheel; the Windows job also runs the focused membership-transition test against that
+executable to compare its status behavior with the system-installed Mercurial. The original 48
+path cases include case-sensitive glob
 matching, Unicode normalization-form sensitivity, missing-source behavior, an external include
 symlink, an undecodable byte in a glob pattern, and trailing-space behavior: glob rules trim trailing
 spaces, while regexp

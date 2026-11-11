@@ -817,11 +817,16 @@ ignored tracked file moves through clean (`C`), pending forget (`R`), committed 
 (`I`), re-added (`A`), committed (`C`), and pending removal (`R`) states. It compares each native
 status snapshot with the policy and included/ignored/all walker selections in both traversal
 orders. This runs against the Mercurial client installed on each native CI platform; the captured
-path and walk oracle profiles remain separate evidence.
+path and walk oracle profiles remain separate evidence. The Windows job also runs the focused
+transition test against its checksum-pinned Mercurial 7.2.4 executable, independent of the
+system-installed client used by the full policy suite.
 
 **Next unfinished slice:** compare remaining Mercurial workspace-membership and configuration
 behavior across the captured VCS profiles, prioritizing sparse refresh and out-of-profile
-transitions that are not covered by the existing live fixtures.
+transitions that are not covered by the existing live fixtures. An exploratory macOS arm64 probe
+on Mercurial 7.2.4 raised `ProgrammingError` from `hg debugsparse --refresh` after manually
+removing an exclusion from `.hg/sparse`; treat this as a native-client failure observation, not a
+portable refresh contract, until the same setup is checked on other versions.
 Sapling and Jujutsu already have pinned cross-version profiles: Sapling
 0.2.20261028/0.2.20261102/0.2.20261103 and Jujutsu
 0.45.1/0.46.0/0.47.0/0.47.1. The full Sapling 0.2.20261102 profile matches on Debian 13 ARM64,
