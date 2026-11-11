@@ -1023,6 +1023,93 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     assert restored_all == restored_paths
 
 
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_committed_sparse_profile_update_changes_native_walk_membership(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Follow Mercurial membership as a committed sparse profile switches subtrees."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("[extensions]\nsparse =\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    def native_paths() -> set[str]:
+        native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+        return {
+            record[2:].decode(errors="surrogateescape")
+            for record in native.split(b"\0")
+            if record and len(record) >= 3 and record[1:2] == b" "
+        }
+
+    hg("init")
+    for relative in ("one/a.tmp", "two/b.tmp"):
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"{relative}\n", encoding="utf-8")
+    (root / ".hgignore").write_text("syntax: glob\none/a.tmp\ntwo/b.tmp\n", encoding="utf-8")
+    sparse_profile = root / ".hgsparse"
+    sparse_profile.write_text("[include]\none/**\n", encoding="utf-8")
+    hg("add", ".hgignore", ".hgsparse", "one/a.tmp", "two/b.tmp")
+    hg("commit", "-m", "add sparse profile fixture", "-u", "gitignore-walk test")
+    hg("debugsparse", "--enable-profile", ".hgsparse")
+
+    initial_paths = native_paths()
+    assert initial_paths == {".hgignore", ".hgsparse", "one/a.tmp"}
+    assert (root / "one/a.tmp").exists()
+    assert not (root / "two/b.tmp").exists()
+
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    walker = IgnoreWalker(root, policy=policy)
+    missing_decision = policy.explain("two/b.tmp")
+    assert missing_decision.ignored
+    assert missing_decision.membership is None
+    initial_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    assert initial_walk == initial_paths
+
+    sparse_profile.write_text("[include]\ntwo/**\n", encoding="utf-8")
+    hg("commit", "-m", "switch sparse profile", "-u", "gitignore-walk test")
+
+    updated_paths = native_paths()
+    assert updated_paths == {".hgignore", ".hgsparse", "two/b.tmp"}
+    assert not (root / "one/a.tmp").exists()
+    assert (root / "two/b.tmp").exists()
+    restored_decision = policy.explain("two/b.tmp")
+    assert restored_decision.ignored
+    assert restored_decision.membership == "versioned"
+    updated_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    assert updated_walk == updated_paths
+
+
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     (root / ".hg").mkdir(parents=True)

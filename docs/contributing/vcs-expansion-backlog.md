@@ -556,7 +556,9 @@ return paths present in the sparse working tree. The fixture is verified locally
 The same fixture now deletes that exclusion through `hg debugsparse --delete`, verifies Mercurial
 restores the file and reports it as versioned, and reuses the policy and walker to confirm the
 membership-aware walk includes the ignored tracked file. This covers one sparse update transition;
-broader sparse-profile coverage remains open.
+an enabled, committed `.hgsparse` profile is also tested switching inclusion from one subtree to
+another across commits, with native status and membership-aware walking checked before and after.
+Broader sparse-profile coverage remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special
