@@ -8,6 +8,7 @@ import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 import pytest
 
@@ -30,6 +31,7 @@ DEFAULT_RULES: tuple[str, ...] = tuple(
         (ORACLE_ROOT / "results" / "brz-3.3.24-macos-arm64.json").read_text(encoding="utf-8")
     )["default_rules"]["patterns"]
 )
+_BREEZY_API_READY = False
 
 
 @pytest.fixture
@@ -367,22 +369,32 @@ def test_membership_aware_policy_matches_native_versioned_listing(
         assert result.returncode == 0, result.stderr.decode(errors="replace")
         return result
 
+    def add(*paths: str) -> None:
+        if os.name != "nt":
+            run("add", "--no-plugins", *paths)
+            return
+
+        import breezy
+        from breezy import plugin
+        from breezy.workingtree import WorkingTree
+
+        global _BREEZY_API_READY
+        with patch.dict(os.environ, environment, clear=True):
+            if not _BREEZY_API_READY:
+                breezy.initialize()
+                plugin.load_plugins()
+                _BREEZY_API_READY = True
+            tree = WorkingTree.open(str(root))
+            with tree.lock_write():
+                tree.add(list(paths))
+
     run("init", "--no-plugins", str(root))
     for name in ("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp"):
         (root / name).write_text(f"{name}\n", encoding="utf-8")
-    # Breezy's Windows launcher resolves relative add paths against the drive root even when
-    # subprocess receives ``cwd``. Absolute paths keep this native membership fixture portable.
-    run(
-        "add",
-        "--no-plugins",
-        *(
-            str(root / name)
-            for name in ("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp")
-        ),
-    )
+    add("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp")
     run("commit", "--no-plugins", "-m", "add initial files")
     (root / ".bzrignore").write_text("*.tmp\n", encoding="utf-8")
-    run("add", "--no-plugins", str(root / ".bzrignore"))
+    add(".bzrignore")
     run("commit", "--no-plugins", "-m", "add ignore rule")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
     (root / "real-dir").mkdir()
@@ -408,7 +420,7 @@ def test_membership_aware_policy_matches_native_versioned_listing(
         if created
     ]
     if linked_entries:
-        run("add", "--no-plugins", *(str(root / name) for name in linked_entries))
+        add(*linked_entries)
         run("commit", "--no-plugins", "-m", "track symlinks")
     (root / "ignored-unversioned.tmp").write_text("ignored and unknown\n", encoding="utf-8")
     (root / "missing.txt").unlink()
