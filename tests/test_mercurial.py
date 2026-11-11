@@ -1343,6 +1343,92 @@ def test_membership_aware_policy_matches_native_status_classes(
     assert walked("all") == included | {"ignored.tmp", tab_ignored}
 
 
+@pytest.mark.skipif(
+    os.environ.get("GITIGNORE_WALK_HG") is None and shutil.which("hg") is None,
+    reason="Mercurial client is not installed",
+)
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_membership_aware_walker_descends_into_ignored_directory(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Retain tracked descendants while still selecting ignored unversioned files."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+    hg_executable = os.environ.get("GITIGNORE_WALK_HG") or shutil.which("hg")
+    assert hg_executable is not None
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [hg_executable, *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    hg("init")
+    (root / ".hgignore").write_text("syntax: glob\ncache\n", encoding="utf-8")
+    tracked = root / "cache" / "tracked.txt"
+    tracked.parent.mkdir()
+    tracked.write_text("tracked\n", encoding="utf-8")
+    untracked = root / "cache" / "untracked.txt"
+    untracked.write_text("ignored\n", encoding="utf-8")
+    hg("add", ".hgignore", "cache/tracked.txt")
+    hg("commit", "-m", "track a file below an ignored directory", "-u", "gitignore-walk test")
+
+    native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+    native_records = {
+        record[2:].decode(errors="surrogateescape").replace("\\", "/"): record[:1].decode("ascii")
+        for record in native.split(b"\0")
+        if record and len(record) >= 3 and record[1:2] == b" "
+    }
+    assert native_records == {
+        ".hgignore": "C",
+        "cache/tracked.txt": "C",
+        "cache/untracked.txt": "I",
+    }
+
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(
+            hg_executable=hg_executable,
+            membership_aware=True,
+            environment=environment,
+        ),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    tracked_decision = policy.explain("cache/tracked.txt")
+    untracked_decision = policy.explain("cache/untracked.txt")
+    assert tracked_decision.ignored
+    assert tracked_decision.membership == "versioned"
+    assert untracked_decision.ignored
+    assert untracked_decision.membership == "unversioned"
+
+    walker = IgnoreWalker(policy.root, policy=policy)
+
+    def walked(name: Literal["included", "ignored", "all"]) -> set[str]:
+        return {
+            path.relative_to(policy.root).as_posix()
+            for path in walker.iter_files(selection=name, topdown=topdown)
+        }
+
+    assert walked("included") == {".hgignore", "cache/tracked.txt"}
+    assert walked("ignored") == {"cache/untracked.txt"}
+    assert walked("all") == {".hgignore", "cache/tracked.txt", "cache/untracked.txt"}
+
+
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 def test_sparse_excluded_versioned_paths_keep_unknown_membership(

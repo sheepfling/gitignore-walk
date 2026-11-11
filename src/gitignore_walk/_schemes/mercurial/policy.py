@@ -219,9 +219,9 @@ class MercurialIgnorePolicy(IgnorePolicy):
             yield self._explain_with_sources(target, sources, membership)
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
-        """Prune ignored subtrees because Mercurial ignore rules have no negation."""
+        """Prune ignored subtrees unless native membership may select a tracked descendant."""
         del target
-        return decision.ignored
+        return decision.ignored and not self.membership_aware
 
     def should_descend_directory(self, target: Path) -> bool:
         """Stop at Mercurial metadata and nested workspace boundaries."""

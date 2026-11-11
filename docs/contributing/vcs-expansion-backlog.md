@@ -408,19 +408,19 @@ make internal source-reference records public API without a downstream need.
 change or an explicit limitation, and the custom-policy typing fixture still describes the public
 walker seam.
 
-| Mercurial concern             | Current contract                                                                                   |
-| ----------------------------- | -------------------------------------------------------------------------------------------------- |
-| Caller root vs workspace root | Targets are bounded by the caller root; the nearest `.hg` marker above it supplies workspace scope |
-| Root source                   | Only workspace-root `.hgignore` is discovered automatically                                        |
-| Additional configuration      | Explicit paths or opt-in `hg config --debug ui` discovery through `MercurialPolicyConfig`          |
-| `include`                     | Included patterns retain the current matcher root; nested include paths are workspace-relative     |
-| `subinclude`                  | Included patterns are scoped under the included file's parent directory                            |
-| Syntax and reducer            | `regexp`, unrooted `glob`, and `rootglob`; all matches are additive; no `!` negation               |
-| Parent paths                  | A matching ancestor directory makes a descendant ignored                                           |
-| Provenance and trace          | Decisions carry physical source, line, and logical scope; trace returns matching rules in order    |
-| Incomplete source graph       | Missing/cyclic/over-limit includes return diagnostics and `discovery_complete=False`               |
-| Membership                    | No dirstate lookup; ignored means rule match, not untracked/versioned state                        |
-| Pruning                       | An ignored directory may be pruned because this supported rule set has no inclusion exceptions     |
+| Mercurial concern             | Current contract                                                                                                                                                                 |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Caller root vs workspace root | Targets are bounded by the caller root; the nearest `.hg` marker above it supplies workspace scope                                                                               |
+| Root source                   | Only workspace-root `.hgignore` is discovered automatically                                                                                                                      |
+| Additional configuration      | Explicit paths or opt-in `hg config --debug ui` discovery through `MercurialPolicyConfig`                                                                                        |
+| `include`                     | Included patterns retain the current matcher root; nested include paths are workspace-relative                                                                                   |
+| `subinclude`                  | Included patterns are scoped under the included file's parent directory                                                                                                          |
+| Syntax and reducer            | `regexp`, unrooted `glob`, and `rootglob`; all matches are additive; no `!` negation                                                                                             |
+| Parent paths                  | A matching ancestor directory makes a descendant ignored                                                                                                                         |
+| Provenance and trace          | Decisions carry physical source, line, and logical scope; trace returns matching rules in order                                                                                  |
+| Incomplete source graph       | Missing/cyclic/over-limit includes return diagnostics and `discovery_complete=False`                                                                                             |
+| Membership                    | No dirstate lookup; ignored means rule match, not untracked/versioned state                                                                                                      |
+| Pruning                       | Without membership queries, an ignored directory may be pruned because there are no inclusion exceptions; membership-aware walks keep it traversable to find tracked descendants |
 
 The policy uses provisional graph guards (32 include levels, 256 source visits, 4 MiB per source,
 32 MiB total, and 20,000 bytes per compiled pattern). Tests exercise each ceiling and verify
@@ -556,8 +556,11 @@ unversioned (`?`, `I`). A live disposable-repository comparison covers clean, mo
 staged, scheduled-removal, ignored, and unknown files. It now checks included, ignored, and all-file
 walk selections in both orders; a tracked file matching `.hgignore` stays included, while the
 ignored unversioned file appears only in ignored/all selection. Paths omitted by native status remain
-unknown. Nested untracked descendants are listed at their exact file paths and remain walkable under
-the status snapshot. Membership lookup retains the lexical query path for tracked symlinks, so a
+unknown. Membership-aware walks keep ignored directories traversable because Mercurial may report
+tracked descendants there as clean while marking untracked siblings ignored; a live native fixture
+checks all three selections and both traversal orders. Nested untracked descendants are listed at
+their exact file paths and remain walkable under the status snapshot. Membership lookup retains the
+lexical query path for tracked symlinks, so a
 dangling tracked link remains versioned even when the policy resolves it for rule evaluation; this is
 covered with native Mercurial status and `explain`, `trace`, and `iter_explain`. Native Mercurial
 7.1.2 on Windows reports this tracked dangling link as modified (`M`) rather than clean (`C`) as on

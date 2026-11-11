@@ -145,6 +145,9 @@ such as the tested macOS filesystem, that reject the name. Ignore matching remai
 from tracked membership: the default policy does not query dirstate, while the opt-in
 `membership_aware` mode queries native status. Live integration tests compare that status-derived
 membership with tracked and untracked walker selections.
+Membership-aware walks keep ignored directories traversable: a directory may contain a tracked
+file that Mercurial reports as clean alongside an ignored unversioned file. The live test checks
+included, ignored, and all-file selections against those native statuses in both walk orders.
 The live status-transition test also renames a tracked ignored file to a visible name: while the
 rename is pending, both the removed source and added destination are versioned; after commit, the
 old path still matches the ignore rule but has unknown membership, and the destination remains
