@@ -1272,6 +1272,95 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_sparse_symlink_status_membership_stays_separate_from_regular_file_walk(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Keep sparse status for symlinks without following them during regular-file walks."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("[extensions]\nsparse =\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    hg("init")
+    (root / ".hgignore").write_text("syntax: glob\n*.tmp\n", encoding="utf-8")
+    (root / ".hgsparse").write_text("[include]\ninside/**\n", encoding="utf-8")
+    for relative in ("inside/target.txt", "outside/target.txt"):
+        target = root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("target\n", encoding="utf-8")
+    hg("add", ".hgignore", ".hgsparse", "inside/target.txt", "outside/target.txt")
+    hg("commit", "-m", "add sparse symlink fixture", "-u", "gitignore-walk test")
+    hg("debugsparse", "--enable-profile", ".hgsparse")
+
+    inside = root / "inside"
+    external_target = tmp_path / "outside-target.txt"
+    external_target.write_text("external target\n", encoding="utf-8")
+    try:
+        (inside / "ignored.tmp").symlink_to("target.txt")
+        (inside / "external.tmp").symlink_to(external_target)
+        (inside / "visible-link").symlink_to("target.txt")
+        outside = root / "outside"
+        outside.mkdir(exist_ok=True)
+        (outside / "outside-link").symlink_to("target.txt")
+    except OSError as error:
+        pytest.skip(f"filesystem cannot create Mercurial sparse symlink fixture: {error}")
+
+    native_status = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+    native_records = {
+        record[2:].decode(errors="surrogateescape").replace("\\", "/"): record[:1].decode("ascii")
+        for record in native_status.split(b"\0")
+        if record and len(record) >= 3 and record[1:2] == b" "
+    }
+    assert native_records == {
+        ".hgignore": "C",
+        ".hgsparse": "C",
+        "inside/external.tmp": "I",
+        "inside/ignored.tmp": "I",
+        "inside/target.txt": "C",
+        "inside/visible-link": "?",
+    }
+
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    assert policy.explain("inside/external.tmp").ignored
+    assert policy.explain("inside/external.tmp").membership == "unversioned"
+    assert policy.explain("inside/ignored.tmp").ignored
+    assert policy.explain("inside/ignored.tmp").membership == "unversioned"
+    assert not policy.explain("inside/visible-link").ignored
+    assert policy.explain("inside/visible-link").membership == "unversioned"
+    assert policy.explain("outside/outside-link").membership is None
+
+    walked = {
+        path.relative_to(root).as_posix()
+        for path in IgnoreWalker(root, policy=policy).iter_files(selection="all", topdown=topdown)
+    }
+    assert walked == {".hgignore", ".hgsparse", "inside/target.txt"}
+
+
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 def test_sparse_add_expands_membership_for_an_out_of_profile_path(
     tmp_path: Path, topdown: bool
 ) -> None:

@@ -138,14 +138,8 @@ class MercurialIgnorePolicy(IgnorePolicy):
         self._load_sources()
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
-        """Resolve a target and reject paths outside the caller's traversal root."""
-        path = Path(target).expanduser()
-        if not path.is_absolute():
-            path = self.root / path
-        try:
-            path = path.resolve()
-        except (OSError, RuntimeError) as error:
-            raise ValueError(f"unable to resolve Mercurial target: {error}") from error
+        """Normalize a target without following symlinks and enforce the caller's root."""
+        path = lexical_target_path(self.root, target)
         if not path.is_relative_to(self.root):
             raise ValueError(f"target must be inside policy root: {path}")
         return path

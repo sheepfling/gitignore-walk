@@ -589,6 +589,11 @@ file and its versioned membership, with the reused walker matching native status
 A POSIX FIFO and Unix-domain socket matching `.hgignore` are omitted by native status and all-file
 walks, while direct policy evaluation still reports the ignore match and unknown membership. This
 confirms that ignore decisions do not turn special filesystem nodes into regular-file walk results.
+An additional sparse fixture confirms native status reports in-profile symlinks as ignored (`I`) or
+unknown (`?`), while omitting a physically present symlink outside the active profile. Direct policy
+matching uses the symlink's lexical path even when its target is outside the workspace; membership
+comes from native status, and the regular-file walker does not follow or yield symlinks. The fixture
+runs in both traversal orders and skips only when the host cannot create the required symlinks.
 Broader sparse-profile and special-file coverage remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
