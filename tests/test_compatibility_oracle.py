@@ -280,7 +280,10 @@ JJ_045_FULL_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in JJ_045_FULL_CAPTURE_FILES
 }
-JJ_047_CAPTURE_FILES = ("jj-0.47.0-macos-arm64.json",)
+JJ_047_CAPTURE_FILES = (
+    "jj-0.47.0-macos-arm64.json",
+    "jj-0.47.0-windows-x64.json",
+)
 JJ_047_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in JJ_047_CAPTURE_FILES
@@ -523,6 +526,11 @@ def test_jujutsu_047_capture_reconciles_full_policy_profiles(filename: str) -> N
     capture = JJ_047_CAPTURES[filename]
     assert capture["status"] == "captured"
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.0-")
+    if "windows" in filename:
+        assert capture["platform"].startswith("Windows-2025Server-")
+        assert capture["clients"]["git"].startswith("git version 2.56.0.windows")
+    else:
+        assert capture["platform"].startswith("macOS-26")
     assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
     for case in capture["cases"]:
         assert case["candidate_matches"] is True
