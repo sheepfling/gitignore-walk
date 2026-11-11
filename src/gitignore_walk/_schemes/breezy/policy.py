@@ -41,6 +41,7 @@ class _BreezyRule:
     regex: bool
     root_only: bool
     expression: re.Pattern[str]
+    exception_scope: re.Pattern[str] | None = None
     diagnostic: IgnoreDiagnostic | None = None
 
     def matches(self, relative_path: str) -> bool:
@@ -52,6 +53,15 @@ class _BreezyRule:
         else:
             candidate = relative_path.rsplit("/", 1)[-1]
         return self.expression.match(candidate) is not None
+
+    def opens_exception_scope(self, relative_path: str) -> bool:
+        """Return whether an exception reopens this path's containing directory."""
+        if self.priority != "exception" or self.exception_scope is None:
+            return False
+        return any(
+            self.exception_scope.fullmatch(prefix) is not None
+            for prefix in _path_prefixes(relative_path)
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -302,8 +312,13 @@ class BreezyIgnorePolicy(IgnorePolicy):
     ) -> tuple[_BreezyRule, ...]:
         # Breezy compares each rule with the complete workspace-relative path when the
         # pattern contains a slash or is a regex, and otherwise with the final path component.
-        # Ancestor exceptions affect traversal reachability, not the target's rule decision.
-        return tuple(rule for rule in snapshot.rules if rule.matches(relative))
+        # Native captures show that a nested file exception also reopens its containing nested
+        # directory for sibling matching; a top-level directory exception remains exact.
+        return tuple(
+            rule
+            for rule in snapshot.rules
+            if rule.matches(relative) or rule.opens_exception_scope(relative)
+        )
 
     def _decision(
         self,
@@ -420,6 +435,22 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
     if root_only:
         expression_text = expression_text[2:]
         root_only = "/" not in expression_text
+    exception_scope: re.Pattern[str] | None = None
+    if priority == "exception" and "/" in expression_text:
+        scope_text = (
+            _regex_parent_expression(expression_text)
+            if regex
+            else expression_text.rsplit("/", 1)[0]
+        )
+        if scope_text and "/" in scope_text:
+            try:
+                exception_scope = re.compile(
+                    f"({scope_text})$" if regex else _glob_to_regex(scope_text)
+                )
+            except re.error:
+                # A valid file rule can have an incomplete regex before its final slash. Leave
+                # such syntax to ordinary matching rather than inventing a directory scope.
+                exception_scope = None
     diagnostic = None
     try:
         if regex:
@@ -456,8 +487,30 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
         regex=regex,
         root_only=root_only,
         expression=expression,
+        exception_scope=exception_scope,
         diagnostic=diagnostic,
     )
+
+
+def _regex_parent_expression(expression: str) -> str | None:
+    """Return the regex prefix before its last path separator outside a character class."""
+    escaped = False
+    in_character_class = False
+    last_separator = -1
+    for index, character in enumerate(expression):
+        if escaped:
+            escaped = False
+        elif character == "\\":
+            escaped = True
+        elif character == "[":
+            in_character_class = True
+        elif character == "]":
+            in_character_class = False
+        elif character == "/" and not in_character_class:
+            last_separator = index
+    if last_separator < 0:
+        return None
+    return expression[:last_separator]
 
 
 def _glob_to_regex(pattern: str) -> str:

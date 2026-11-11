@@ -523,6 +523,154 @@
       "release_gate": "Verify the native status walk enters an ignored parent for a child exception."
     },
     {
+      "id": "brz.walk-deep-exception-opens-ancestor-chain",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "!cache/deep/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "deep exception target\n",
+          "cache/deep/drop.tmp": "ignored sibling\n",
+          "cache/drop.tmp": "ignored ancestor sibling\n"
+        }
+      },
+      "query": "cache/deep/keep.tmp",
+      "expected_candidate": false,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify Breezy traverses each ignored ancestor for a deeper exception and reports the exception target as unknown."
+    },
+    {
+      "id": "brz.deep-file-exception-unignores-siblings",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!cache/deep/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "exception target\n",
+          "cache/deep/drop.tmp": "same-directory sibling\n",
+          "cache/drop.tmp": "ancestor sibling\n"
+        }
+      },
+      "query": "cache/deep/drop.tmp",
+      "expected_candidate": false,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify a file exception reopens its containing directory so sibling files are not ignored, while sibling paths outside that directory remain ignored."
+    },
+    {
+      "id": "brz.deep-file-exception-unignores-descendants",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!cache/deep/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "exception target\n",
+          "cache/deep/sub/nested.tmp": "descendant of reopened directory\n"
+        }
+      },
+      "query": "cache/deep/sub/nested.tmp",
+      "expected_candidate": false,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify the file exception's reopened directory includes deeper descendants, not only same-directory siblings."
+    },
+    {
+      "id": "brz.deep-file-exception-keeps-ancestor-sibling-ignored",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!cache/deep/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "exception target\n",
+          "cache/deep/drop.tmp": "same-directory sibling\n",
+          "cache/drop.tmp": "ancestor sibling\n"
+        }
+      },
+      "query": "cache/drop.tmp",
+      "expected_candidate": true,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify the deep file exception does not unignore a sibling in its ignored ancestor directory."
+    },
+    {
+      "id": "brz.regex-file-exception-unignores-siblings",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!RE:^cache/deep/keep\\.tmp$"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "exception target\n",
+          "cache/deep/drop.tmp": "same-directory sibling\n",
+          "cache/drop.tmp": "ancestor sibling\n"
+        }
+      },
+      "query": "cache/deep/drop.tmp",
+      "expected_candidate": false,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify a regex file exception also reopens its containing directory for sibling files."
+    },
+    {
       "id": "brz.walk-root-anchored-nested-exception",
       "profile": "breezy",
       "dimension": "traversal",

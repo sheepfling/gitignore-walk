@@ -192,6 +192,35 @@ def test_breezy_walker_preserves_exception_siblings_and_selects_strong_exclusion
     assert hidden in ignored
 
 
+@pytest.mark.parametrize("topdown", [True, False])
+def test_breezy_deep_exception_keeps_ignored_parent_traversable(
+    breezy_root: Path, topdown: bool
+) -> None:
+    cache = breezy_root / "cache"
+    deep = cache / "deep"
+    deep.mkdir(parents=True)
+    kept = deep / "keep.tmp"
+    deep_sibling = deep / "drop.tmp"
+    cache_sibling = cache / "drop.tmp"
+    kept.touch()
+    deep_sibling.touch()
+    cache_sibling.touch()
+    (breezy_root / ".bzrignore").write_text("cache\n!cache/deep/keep.tmp\n", encoding="utf-8")
+    policy = BreezyIgnorePolicy(breezy_root)
+    walker = IgnoreWalker(breezy_root, policy=policy)
+
+    cache_decision = policy.explain(cache)
+    assert cache_decision.ignored
+    assert policy.can_prune_ignored_directory(cache, cache_decision) is False
+    assert not policy.explain(deep).ignored
+    assert policy.explain("cache/deep/keep.tmp").ignored is False
+    assert policy.explain("cache/deep/drop.tmp").ignored is False
+    included = set(walker.iter_files(topdown=topdown))
+    ignored = set(walker.iter_files(topdown=topdown, selection="ignored"))
+    assert {kept, deep_sibling, cache_sibling} <= included
+    assert not {kept, deep_sibling, cache_sibling} & ignored
+
+
 def test_breezy_named_capture_is_normalized_with_diagnostic() -> None:
     rule = _compile_rule("RE:(?P<name>cache)/.*", source=".bzrignore", line=1)
     assert rule is not None

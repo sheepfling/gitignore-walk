@@ -158,9 +158,9 @@ def test_breezy_debian13_profile_records_exact_client_and_python() -> None:
 
     assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
     assert capture["client"]["runner_python"].startswith("3.13.")
-    assert len(capture["cases"]) == 41
+    assert len(capture["cases"]) == 46
     assert len(capture["excluded_cases"]) == 4
-    assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 37
+    assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 42
     assert sum(case["winning_pattern_matches"] is not None for case in capture["cases"]) == 3
 
 
@@ -315,10 +315,12 @@ def test_breezy_walker_matches_captured_exception_parent_status(
     "case_id",
     [
         "brz.walk-root-anchored-nested-exception",
+        "brz.walk-deep-exception-opens-ancestor-chain",
+        "brz.deep-file-exception-unignores-siblings",
         "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
     ],
 )
-def test_breezy_walker_matches_root_anchored_pruning_captures(
+def test_breezy_walker_matches_exception_pruning_captures(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, topdown: bool, case_id: str
 ) -> None:
     profile = "brz-3.3.24-macos-arm64.json"
@@ -359,10 +361,22 @@ def test_breezy_walker_matches_root_anchored_pruning_captures(
         assert ignored - tracked == set(observation["ignored_paths"])
         assert "cache/keep.tmp" in included
         assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False
-    else:
+    elif case_id == "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable":
         # Native status collapses an entirely ignored unversioned subtree to its directory entry.
         assert set(observation["ignored_paths"]) == {"cache"}
         assert ignored - tracked == {"cache/drop.tmp"}
         assert "cache/drop.tmp" not in included
         assert "other/keep.tmp" in included
         assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is True
+    elif case_id == "brz.walk-deep-exception-opens-ancestor-chain":
+        assert ignored - tracked == set(observation["ignored_paths"])
+        assert "cache/deep/keep.tmp" in included
+        assert {"cache/deep/drop.tmp", "cache/drop.tmp"} <= included
+        assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False
+    else:
+        assert ignored - tracked == set(observation["ignored_paths"])
+        assert {"cache/deep/keep.tmp", "cache/deep/drop.tmp"} <= included
+        assert "cache/drop.tmp" not in included
+        assert "cache/drop.tmp" in ignored
+        assert policy.explain("cache/deep/drop.tmp").reason == "matched-exception"
+        assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False
