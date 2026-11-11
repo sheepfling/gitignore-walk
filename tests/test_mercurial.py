@@ -1119,6 +1119,114 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_sparse_add_expands_membership_for_an_out_of_profile_path(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Match native membership when ``hg add -s`` adds into an excluded sparse subtree."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("[extensions]\nsparse =\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    def native_records() -> dict[str, str]:
+        native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+        return {
+            record[2:].decode(errors="surrogateescape").replace("\\", "/"): record[:1].decode(
+                "ascii"
+            )
+            for record in native.split(b"\0")
+            if record and len(record) >= 3 and record[1:2] == b" "
+        }
+
+    hg("init")
+    for relative in ("included/visible.txt", "deferred/old.txt"):
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"{relative}\n", encoding="utf-8")
+    (root / ".hgsparse").write_text("[include]\nincluded/**\n", encoding="utf-8")
+    hg("add", ".hgsparse", "included/visible.txt", "deferred/old.txt")
+    hg("commit", "-m", "add sparse fixture", "-u", "gitignore-walk test")
+    hg("debugsparse", "--enable-profile", ".hgsparse")
+
+    before_records = native_records()
+    assert before_records == {".hgsparse": "C", "included/visible.txt": "C"}
+    assert not (root / "deferred/old.txt").exists()
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    walker = IgnoreWalker(root, policy=policy)
+    assert policy.explain("deferred/old.txt").membership is None
+
+    new_file = root / "deferred" / "new.txt"
+    new_file.parent.mkdir(parents=True)
+    new_file.write_text("new file outside sparse profile\n", encoding="utf-8")
+    hg("add", "-s", "deferred/new.txt")
+
+    added_records = native_records()
+    assert added_records == {
+        ".hgsparse": "C",
+        "deferred/new.txt": "A",
+        "deferred/old.txt": "C",
+        "included/visible.txt": "C",
+    }
+    assert (root / "deferred/old.txt").exists()
+    assert policy.explain("deferred/old.txt").membership == "versioned"
+    assert policy.explain("deferred/new.txt").membership == "versioned"
+    included_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    ignored_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    all_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert included_walk == set(added_records)
+    assert ignored_walk == set()
+    assert all_walk == set(added_records)
+
+    hg("commit", "-m", "add file outside sparse profile", "-u", "gitignore-walk test")
+    committed_records = native_records()
+    assert committed_records == {
+        ".hgsparse": "C",
+        "deferred/new.txt": "C",
+        "deferred/old.txt": "C",
+        "included/visible.txt": "C",
+    }
+    assert policy.explain("deferred/new.txt").membership == "versioned"
+    committed_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert committed_walk == set(committed_records)
+
+
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 def test_committed_sparse_profile_update_changes_native_walk_membership(
     tmp_path: Path, topdown: bool
 ) -> None:

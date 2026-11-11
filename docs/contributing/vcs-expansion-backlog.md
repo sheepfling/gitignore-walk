@@ -574,6 +574,10 @@ files in both subtrees: native status reports `I` and `?` only inside the active
 physically present files outside that scope stay membership-unknown. Included, ignored, and
 all-file walks match those native status classes in top-down and bottom-up order before the switch,
 after the switch, and after disabling the profile.
+The sparse status-transition fixture also covers `hg add -s` outside the active profile: native
+status reports the new path as added and restores an existing tracked sibling in that directory.
+The membership-aware walker follows both statuses immediately, then matches native `C` statuses
+after commit in both traversal orders.
 A POSIX FIFO and Unix-domain socket matching `.hgignore` are omitted by native status and all-file
 walks, while direct policy evaluation still reports the ignore match and unknown membership. This
 confirms that ignore decisions do not turn special filesystem nodes into regular-file walk results.
