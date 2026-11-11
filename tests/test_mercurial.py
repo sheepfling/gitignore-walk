@@ -1117,6 +1117,84 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     assert updated_walk == updated_paths
 
 
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_sparse_profile_source_omitted_from_status_stays_membership_unknown(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Do not infer status membership for a tracked sparse-profile include omitted on disk."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("[extensions]\nsparse =\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    hg("init")
+    (root / ".hgignore").write_text("syntax: glob\n*.tmp\n", encoding="utf-8")
+    (root / ".hgsparse").write_text("%include shared.sparse\n", encoding="utf-8")
+    (root / "shared.sparse").write_text("[include]\napp/**\n", encoding="utf-8")
+    for relative in ("app/visible.txt", "hidden/unavailable.txt"):
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(f"{relative}\n", encoding="utf-8")
+    hg(
+        "add",
+        ".hgignore",
+        ".hgsparse",
+        "shared.sparse",
+        "app/visible.txt",
+        "hidden/unavailable.txt",
+    )
+    hg("commit", "-m", "add sparse profile include fixture", "-u", "gitignore-walk test")
+    hg("debugsparse", "--enable-profile", ".hgsparse")
+
+    assert (root / "app/visible.txt").exists()
+    assert not (root / "hidden/unavailable.txt").exists()
+    assert not (root / "shared.sparse").exists()
+    native_status = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+    native_paths = {
+        record[2:].decode(errors="surrogateescape").replace("\\", "/")
+        for record in native_status.split(b"\0")
+        if record and len(record) >= 3 and record[1:2] == b" "
+    }
+    assert native_paths == {".hgignore", ".hgsparse", "app/visible.txt"}
+
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    profile_decision = policy.explain("shared.sparse")
+    assert not profile_decision.ignored
+    assert profile_decision.membership is None
+    assert policy.explain("app/visible.txt").membership == "versioned"
+
+    walker = IgnoreWalker(root, policy=policy)
+    walked = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert walked == native_paths
+
+
 @pytest.mark.skipif(os.name == "nt", reason="FIFO files are not available on Windows")
 @pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFO creation is unavailable")
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
