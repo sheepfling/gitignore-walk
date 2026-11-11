@@ -197,8 +197,9 @@ edit, or delete are versioned; present files absent from those lists are unversi
 missing unlisted paths, and dangling symlinks remain unknown. On case-insensitive filesystems,
 filesystem identity preserves membership when a query uses different casing from Perforce's path
 record. This requires a configured connected P4 client and is independent of ignore matching and
-client-view filtering. Directories remain traversable because an unmapped directory can still
-contain files mapped by a wildcard view rule.
+client-view filtering. Membership-aware walks select known versioned files as included even when
+P4IGNORE matches them; the ignored selection omits those files. Directories remain traversable
+because an unmapped directory can still contain files mapped by a wildcard view rule.
 The file list uses semicolon separators. The captured precedence is deepest source directory first,
 then earliest configured filename at that level, then the last matching line in that file. The
 supported subset includes `*`, `**`, leading-slash rules anchored to their ignore file, trailing-slash

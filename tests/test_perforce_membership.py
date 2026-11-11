@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from gitignore_walk import PerforceIgnorePolicy
+from gitignore_walk import IgnoreWalker, PerforceIgnorePolicy
 
 
 def _native_path_matches(output: str, expected: Path) -> bool:
@@ -153,12 +153,14 @@ def test_perforce_membership_matches_native_have_and_opened(
             ),
         )
 
+        (workspace / "cache").mkdir()
         submitted = (
             "tracked.tmp",
             "CaseProbe.tmp",
             "modified.txt",
             "missing.txt",
             "deleted.txt",
+            "cache/tracked.tmp",
         )
         for name in submitted:
             (workspace / name).write_text(f"initial {name}\n", encoding="utf-8")
@@ -174,7 +176,8 @@ def test_perforce_membership_matches_native_have_and_opened(
         (workspace / "pending-add.tmp").write_text("pending add\n", encoding="utf-8")
         run("add", "pending-add.tmp")
         (workspace / "untracked.tmp").write_text("untracked\n", encoding="utf-8")
-        (workspace / ".p4ignore").write_text("*.tmp\n", encoding="utf-8")
+        (workspace / "cache" / "untracked.tmp").write_text("untracked\n", encoding="utf-8")
+        (workspace / ".p4ignore").write_text("cache/\n*.tmp\n", encoding="utf-8")
 
         have = run("-ztag", "have").stdout
         opened = run("-ztag", "opened").stdout
@@ -182,6 +185,7 @@ def test_perforce_membership_matches_native_have_and_opened(
         assert _native_path_matches(have, workspace / "tracked.tmp")
         assert _native_path_matches(have, workspace / "CaseProbe.tmp")
         assert _native_path_matches(have, workspace / "missing.txt")
+        assert _native_path_matches(have, workspace / "cache" / "tracked.tmp")
         assert "... action delete" in opened
         assert "... action edit" in opened
         assert "... action add" in opened
@@ -202,6 +206,9 @@ def test_perforce_membership_matches_native_have_and_opened(
             "directory",
             "missing-unlisted.txt",
             "caseprobe.tmp",
+            "cache",
+            "cache/tracked.tmp",
+            "cache/untracked.tmp",
         )
         (workspace / "directory").mkdir()
         decisions = policy.explain_many(names)
@@ -224,10 +231,25 @@ def test_perforce_membership_matches_native_have_and_opened(
             "directory": None,
             "missing-unlisted.txt": None,
             "caseprobe.tmp": "versioned" if case_alias_exists else None,
+            "cache": None,
+            "cache/tracked.tmp": "versioned",
+            "cache/untracked.tmp": "unversioned",
         }
         assert decisions[0].ignored is True
         assert decisions[4].ignored is True
         assert decisions[5].ignored is True
+        assert decisions[-3].ignored is True
+        assert decisions[-2].ignored is True
+        assert decisions[-1].ignored is True
+
+        for topdown in (True, False):
+            walker = IgnoreWalker(workspace, policy=policy)
+            included = set(walker.iter_files(selection="included", topdown=topdown))
+            ignored = set(walker.iter_files(selection="ignored", topdown=topdown))
+            assert workspace / "cache" / "tracked.tmp" in included
+            assert workspace / "cache" / "tracked.tmp" not in ignored
+            assert workspace / "cache" / "untracked.tmp" not in included
+            assert workspace / "cache" / "untracked.tmp" in ignored
     finally:
         server.terminate()
         try:
