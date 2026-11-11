@@ -23,7 +23,8 @@ separate workflow artifacts. It records single-path `debugignore` observations a
 `status --ignored` plus `status --unknown` file walks. The committed captures cover macOS arm64
 Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows Server 2025
 x86_64 Mercurial 7.1.2. A hosted Ubuntu x86_64 capture records Mercurial 6.7.2 from the native
-Linux CI job. The original 48 path cases include case-sensitive glob
+Linux CI job. The current Mercurial 7.2.4 Windows profile is installed from a checksum-pinned
+CPython 3.12 wheel. The original 48 path cases include case-sensitive glob
 matching, Unicode normalization-form sensitivity, missing-source behavior, an external include
 symlink, an undecodable byte in a glob pattern, and trailing-space behavior: glob rules trim trailing
 spaces, while regexp
@@ -61,7 +62,7 @@ retains both sources and marks `.hgignore` effective. The captures are in the ma
 results, and the regression test checks all four profiles.
 The full Mercurial test module passes in Debian 13 Linux aarch64 and x86_64 containers.
 
-The reviewed Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: 60 closed
+The reviewed historical Windows capture is committed in `results/hg-7.1.2-windows-x86_64.json`: 60 closed
 boolean comparisons and the structured invalid-syntax result match, with no differing closed
 result; four path probes skip for platform constraints. The include-cycle observation remains the
 documented safe divergence. The nested-subinclude case is also captured here: Mercurial raises
@@ -77,6 +78,10 @@ the library now marks those sources unavailable and leaves their paths unignored
 is in `results/hg-walk-7.1.2-windows-x86_64.json`; all six fixtures match, including the repeated
 source under two symlink scopes, whose paths remain unknown because Windows Mercurial does not read
 the symlinked sources. The remaining skips leave POSIX-specific behavior unverified on Windows.
+Mercurial 7.2.4 on Windows captures 71 policy cases: 65 closed observations match, six remain open,
+and four are skipped because their fixtures require POSIX behavior. Its full ignored/unknown walk
+profile matches all six fixtures. Results are in `results/hg-7.2.4-windows-x86_64.json` and
+`results/hg-walk-7.2.4-windows-x86_64.json`; the regression suite replays both captures.
 
 The `oracle-hg` command also probes repository-config trust on POSIX. It creates a temporary
 repository whose `.hg/hgrc` enables one ignore file, observes the file as owned by the

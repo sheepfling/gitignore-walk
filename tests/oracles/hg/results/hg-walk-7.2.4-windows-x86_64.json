@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "client": {
+    "executable": "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+    "version": "Mercurial Distributed SCM (version 7.2.4)",
+    "platform": "Windows-2025Server-10.0.26100-SP0",
+    "runner_python": "3.12.10"
+  },
+  "cases": [
+    {
+      "id": "hg.walk.ignored-parent-descendants",
+      "dimension": "walk-pruning",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "cache/nested/first.tmp",
+        "cache/second.txt"
+      ],
+      "observed_ignored_paths": [
+        "cache/nested/first.tmp",
+        "cache/second.txt"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "cacheable/visible.txt",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "cacheable/visible.txt",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "cache/nested/first.tmp",
+            "cache/second.txt"
+          ],
+          "stdout": "cache\\nested\\first.tmp\u0000cache\\second.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "8c22ff57128335495159d38b9e950df510b035d1570bb35050dcdd55713b2b05",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "cacheable/visible.txt",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000cacheable\\visible.txt\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "ca83479848ba907121c407d1d1facfdb2fdcbb525692430ebcf2df240ac91316",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.include-source",
+      "dimension": "walk-source-discovery",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "nested/one.tmp",
+        "one.tmp"
+      ],
+      "observed_ignored_paths": [
+        "nested/one.tmp",
+        "one.tmp"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "nested/keep.txt",
+        "rules",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "nested/keep.txt",
+        "rules",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "nested/one.tmp",
+            "one.tmp"
+          ],
+          "stdout": "nested\\one.tmp\u0000one.tmp\u0000",
+          "stderr": "",
+          "stdout_sha256": "45970cf73c31865c7ddbd0448db771740ef9adf8965b4a093a281a49fec6d5a8",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "nested/keep.txt",
+            "rules",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000nested\\keep.txt\u0000rules\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "1989440e9dd1a67a4ed1b258cfdcdf97566675cf7cee2c9529d6deefb6e0dd3b",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.subinclude-scope",
+      "dimension": "walk-source-scope",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "pkg/build/one.tmp"
+      ],
+      "observed_ignored_paths": [
+        "pkg/build/one.tmp"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "other/build/two.tmp",
+        "pkg/keep.txt",
+        "pkg/rules"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "other/build/two.tmp",
+        "pkg/keep.txt",
+        "pkg/rules"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "pkg/build/one.tmp"
+          ],
+          "stdout": "pkg\\build\\one.tmp\u0000",
+          "stderr": "",
+          "stdout_sha256": "d66056ee7e47560f50fd3286b12b60c4caf74ef9d25dcb8be205c26b80134955",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "other/build/two.tmp",
+            "pkg/keep.txt",
+            "pkg/rules"
+          ],
+          "stdout": ".hgignore\u0000other\\build\\two.tmp\u0000pkg\\keep.txt\u0000pkg\\rules\u0000",
+          "stderr": "",
+          "stdout_sha256": "e1bd2fc8c87bfb71e5ad4403e22ebb4f26f4c297f543c153a3310ce420e893e9",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.tracked-ignore-membership",
+      "dimension": "membership-boundary",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [
+        "unknown.tmp"
+      ],
+      "observed_ignored_paths": [
+        "unknown.tmp"
+      ],
+      "expected_unknown_paths": [
+        ".hgignore"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [
+        "tracked.tmp"
+      ],
+      "observations": {
+        "ignored": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            "unknown.tmp"
+          ],
+          "stdout": "unknown.tmp\u0000",
+          "stderr": "",
+          "stdout_sha256": "713e1f909ef77f6a678f97ce3beefb32f4d77cf540916fb40f865a5044d02e70",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore"
+          ],
+          "stdout": ".hgignore\u0000",
+          "stderr": "",
+          "stdout_sha256": "306297f774be67efa5dae8125ffee0c18856221eae36a1399584c908d9e90063",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [
+        0
+      ],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.nested-workspace-boundary",
+      "dimension": "walk-workspace-boundary",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [],
+          "stdout": "",
+          "stderr": "",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "3081ecca89643a566696cc8f76c1d0c05459a53d1d2290201c61a2808d208051",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [
+        0
+      ],
+      "add_exit_codes": [],
+      "exit_code": 0
+    },
+    {
+      "id": "hg.walk.repeated-include-distinct-scopes",
+      "dimension": "walk-source-cache-scope",
+      "evidence_status": "candidate-until-native-capture",
+      "native_status": "captured",
+      "expected_ignored_paths": [],
+      "observed_ignored_paths": [],
+      "expected_unknown_paths": [
+        ".hgignore",
+        "one/first.tmp",
+        "one/rules",
+        "one/visible.txt",
+        "root.tmp",
+        "shared/rules",
+        "two/rules",
+        "two/second.tmp",
+        "two/visible.txt",
+        "visible.txt"
+      ],
+      "observed_unknown_paths": [
+        ".hgignore",
+        "one/first.tmp",
+        "one/rules",
+        "one/visible.txt",
+        "root.tmp",
+        "shared/rules",
+        "two/rules",
+        "two/second.tmp",
+        "two/visible.txt",
+        "visible.txt"
+      ],
+      "candidate_matches": true,
+      "tracked_paths": [],
+      "observations": {
+        "ignored": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--ignored",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [],
+          "stdout": "",
+          "stderr": "",
+          "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "unknown": {
+          "command": [
+            "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+            "status",
+            "--unknown",
+            "--no-status",
+            "-0"
+          ],
+          "exit_code": 0,
+          "paths": [
+            ".hgignore",
+            "one/first.tmp",
+            "one/rules",
+            "one/visible.txt",
+            "root.tmp",
+            "shared/rules",
+            "two/rules",
+            "two/second.tmp",
+            "two/visible.txt",
+            "visible.txt"
+          ],
+          "stdout": ".hgignore\u0000one\\first.tmp\u0000one\\rules\u0000one\\visible.txt\u0000root.tmp\u0000shared\\rules\u0000two\\rules\u0000two\\second.tmp\u0000two\\visible.txt\u0000visible.txt\u0000",
+          "stderr": "",
+          "stdout_sha256": "8f2c9e37de647c6084d58f79d28e881b3ee587d9ecaba8fc734c93d53b83d61e",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "nested_init_exit_codes": [],
+      "add_exit_codes": [],
+      "exit_code": 0
+    }
+  ]
+}

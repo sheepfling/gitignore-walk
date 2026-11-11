@@ -39,6 +39,7 @@ MATCHING_CAPTURE_FILES = (
     "hg-7.0.1-linux-aarch64.json",
     "hg-7.0.1-linux-x86_64.json",
     "hg-7.1.2-windows-x86_64.json",
+    "hg-7.2.4-windows-x86_64.json",
 )
 MATCHING_OBSERVATIONS = {
     path: {
@@ -66,6 +67,7 @@ WALK_CAPTURE_FILES = (
     "hg-walk-7.0.1-linux-aarch64.json",
     "hg-walk-7.0.1-linux-x86_64.json",
     "hg-walk-7.1.2-windows-x86_64.json",
+    "hg-walk-7.2.4-windows-x86_64.json",
 )
 WALK_OBSERVATIONS = {
     path: {
@@ -269,6 +271,7 @@ def test_nested_subinclude_preserves_portable_result_when_native_matcher_fails(
         "hg-7.0.1-linux-aarch64.json",
         "hg-7.0.1-linux-x86_64.json",
         "hg-7.1.2-windows-x86_64.json",
+        "hg-7.2.4-windows-x86_64.json",
     ):
         observation = MATCHING_OBSERVATIONS[profile][case["id"]]
         assert observation["native_status"] == "captured"
@@ -523,6 +526,7 @@ def test_configured_ignore_sources_keep_captured_native_order(tmp_path: Path, pr
         "hg-7.0.1-linux-aarch64.json",
         "hg-7.0.1-linux-x86_64.json",
         "hg-7.1.2-windows-x86_64.json",
+        "hg-7.2.4-windows-x86_64.json",
     ),
 )
 def test_workspace_ignore_precedes_duplicate_configured_source(
