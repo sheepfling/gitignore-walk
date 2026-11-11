@@ -1035,7 +1035,11 @@ def test_membership_aware_policy_matches_native_status_classes(
     (root / "staged.tmp").write_text("staged\n", encoding="utf-8")
     hg("add", "staged.tmp")
     (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
+    tab_ignored = "tab\tname.tmp"
+    (root / tab_ignored).write_text("ignored with tab in its name\n", encoding="utf-8")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
+    newline_unknown = "line\nbreak.txt"
+    (root / newline_unknown).write_text("unknown with newline in its name\n", encoding="utf-8")
     nested_unknown = root / "unknown" / "deep" / "nested-unknown.txt"
     nested_unknown.parent.mkdir(parents=True)
     nested_unknown.write_text("nested unknown\n", encoding="utf-8")
@@ -1068,7 +1072,9 @@ def test_membership_aware_policy_matches_native_status_classes(
         assert native_records["dangling-link"] == expected_dangling_status
     assert native_records["staged.tmp"] == "A"
     assert native_records["ignored.tmp"] == "I"
+    assert native_records[tab_ignored] == "I"
     assert native_records["unknown.txt"] == "?"
+    assert native_records[newline_unknown] == "?"
     assert native_records["unknown/deep/nested-unknown.txt"] == "?"
     decisions = {
         decision.path.name: decision
@@ -1081,7 +1087,9 @@ def test_membership_aware_policy_matches_native_status_classes(
                 "removed.txt",
                 "staged.tmp",
                 "ignored.tmp",
+                tab_ignored,
                 "unknown.txt",
+                newline_unknown,
                 "unknown/deep/nested-unknown.txt",
             ]
         )
@@ -1098,9 +1106,13 @@ def test_membership_aware_policy_matches_native_status_classes(
         )
     )
     assert decisions["ignored.tmp"].membership == "unversioned"
+    assert decisions[tab_ignored].membership == "unversioned"
     assert decisions["unknown.txt"].membership == "unversioned"
+    assert decisions[newline_unknown].membership == "unversioned"
     assert decisions["nested-unknown.txt"].membership == "unversioned"
     assert decisions["ignored.tmp"].ignored
+    assert decisions[tab_ignored].ignored
+    assert not decisions[newline_unknown].ignored
     assert decisions["tracked.tmp"].ignored
     if dangling_link_created:
         assert policy.explain("dangling-link").membership == "versioned"
@@ -1120,13 +1132,14 @@ def test_membership_aware_policy_matches_native_status_classes(
         "clean.txt",
         "modified.txt",
         "staged.tmp",
+        newline_unknown,
         "tracked.tmp",
         "unknown.txt",
         "unknown/deep/nested-unknown.txt",
     }
     assert walked("included") == included
-    assert walked("ignored") == {"ignored.tmp"}
-    assert walked("all") == included | {"ignored.tmp"}
+    assert walked("ignored") == {"ignored.tmp", tab_ignored}
+    assert walked("all") == included | {"ignored.tmp", tab_ignored}
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")

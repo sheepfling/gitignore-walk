@@ -555,6 +555,9 @@ covered with native Mercurial status and `explain`, `trace`, and `iter_explain`.
 7.1.2 on Windows reports this tracked dangling link as modified (`M`) rather than clean (`C`) as on
 POSIX; both status classes indicate versioned membership and are included in the live cross-platform
 test. Broader sparse, symlink, and cross-profile membership behavior remains open.
+The live membership fixture also checks NUL-delimited status records for filenames containing a tab
+or newline: the tab-bearing `*.tmp` path is ignored, while the newline-bearing `.txt` path remains
+unignored and unversioned. Both names survive status parsing and both traversal orders intact.
 
 A live sparse-checkout regression now covers a committed file removed by
 `hg debugsparse --exclude`. Mercurial omits the absent file from
