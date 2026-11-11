@@ -1110,6 +1110,78 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     assert updated_walk == updated_paths
 
 
+@pytest.mark.skipif(os.name == "nt", reason="FIFO files are not available on Windows")
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="FIFO creation is unavailable")
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_ignored_fifo_matches_policy_but_is_not_a_native_walk_file(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Keep ignore matching separate from Mercurial's regular-file walk results."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    hg("init")
+    (root / ".hgignore").write_text("syntax: glob\npipe.tmp\n", encoding="utf-8")
+    os.mkfifo(root / "pipe.tmp")
+
+    native_status = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+    native_paths = {
+        record[2:].decode(errors="surrogateescape")
+        for record in native_status.split(b"\0")
+        if record and len(record) >= 3 and record[1:2] == b" "
+    }
+    assert native_paths == {".hgignore"}
+    assert hg("status", "--ignored", "-0").stdout == b""
+
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    decision = policy.explain("pipe.tmp")
+    assert decision.ignored
+    assert decision.membership is None
+
+    walker = IgnoreWalker(root, policy=policy)
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    all_files = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert included == native_paths
+    assert ignored == set()
+    assert all_files == native_paths
+
+
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     (root / ".hg").mkdir(parents=True)
