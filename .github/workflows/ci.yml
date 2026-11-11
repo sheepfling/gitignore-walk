@@ -764,7 +764,7 @@ jobs:
             -Uri 'https://files.pythonhosted.org/packages/f8/65/d0ca4958ae4ec12f996cbe3d6209767ea90cddebfd393553f44e40b9b469/mercurial-7.2.4-cp312-cp312-win_amd64.whl' `
             -OutFile $wheel
           $digest = (Get-FileHash -Algorithm SHA256 $wheel).Hash.ToLowerInvariant()
-          if ($digest -ne '68d66b296da018fa14b06eda60c4d8570d29186328612296ad3a1fe043208df3') {
+          if ($digest -ne '68d66b296da018fa14b06eda60c4d8570d29186328612296ad3a1fe043208df0') {
             throw "Mercurial 7.2.4 wheel checksum mismatch: $digest"
           }
           $venv = Join-Path $clientDir 'hg-7.2.4-venv'
