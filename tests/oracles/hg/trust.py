@@ -193,23 +193,27 @@ def _identity() -> tuple[list[str] | None, int | None, int | None, str | None]:
     return [], os.geteuid(), os.getegid(), None
 
 
+def _write_skipped(output: Path, reason: str) -> int:
+    result: dict[str, Any] = {
+        "schema_version": 1,
+        "status": "skipped",
+        "reason": reason,
+        "client": None,
+        "states": [],
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    print(f"Mercurial trust probe skipped: {reason}")
+    return 0
+
+
 def capture(output: Path, hg: str) -> int:
     executable = shutil.which(hg)
     identity_prefix, trusted_uid, trusted_gid, skip_reason = _identity()
     if executable is None:
         skip_reason = f"Mercurial executable not found: {hg}"
     if skip_reason is not None:
-        result: dict[str, Any] = {
-            "schema_version": 1,
-            "status": "skipped",
-            "reason": skip_reason,
-            "client": None,
-            "states": [],
-        }
-        output.parent.mkdir(parents=True, exist_ok=True)
-        output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
-        print(f"Mercurial trust probe skipped: {skip_reason}")
-        return 0
+        return _write_skipped(output, skip_reason)
 
     with tempfile.TemporaryDirectory(prefix="gitignore-walk-hg-trust-") as temporary:
         temp = Path(temporary)
@@ -252,15 +256,24 @@ def capture(output: Path, hg: str) -> int:
                 identity_prefix=identity_prefix or [],
             )
         ]
-        if os.geteuid() == 0:
-            os.chown(repository_hgrc, 0, 0)
-        else:
-            subprocess.run(
-                ["sudo", "-n", "chown", "root:root", str(repository_hgrc)],
-                check=True,
-                capture_output=True,
-                timeout=30,
-            )
+        try:
+            if os.geteuid() == 0:
+                os.chown(repository_hgrc, 0, 0)
+            else:
+                subprocess.run(
+                    ["sudo", "-n", "chown", "root:root", str(repository_hgrc)],
+                    check=True,
+                    capture_output=True,
+                    timeout=30,
+                )
+        except (OSError, subprocess.CalledProcessError) as error:
+            detail = error.stderr
+            if isinstance(detail, bytes):
+                detail = detail.decode(errors="replace")
+            reason = "cannot make repository hgrc root-owned"
+            if detail:
+                reason = f"{reason}: {detail.strip()}"
+            return _write_skipped(output, reason)
         states.append(
             _capture_state(
                 "untrusted",
