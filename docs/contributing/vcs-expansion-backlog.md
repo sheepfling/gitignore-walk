@@ -206,8 +206,11 @@ an unmapped directory can contain mapped descendants. P4IGNORE decisions and ver
 remain independent. The opt-in `membership_aware=True` query now combines the native `p4 have` list
 with `p4 opened` records mapped by `p4 where`; present listed files are versioned (including files
 opened for add, edit, or delete), present unlisted files are unversioned, and directories or missing
-unlisted paths are unknown. Focused tests cover the query records and confirm membership does not
-change ignore decisions. Broader syntax and native workspace discovery edge cases remain open.
+unlisted paths are unknown. Focused query-record tests confirm membership does not change ignore
+decisions. A live disposable P4D test compares the policy against native `have`, `opened`, and
+`where` queries across clean, modified, missing, opened-delete, pending-add, ignored-untracked,
+directory, and missing-unlisted states. Broader syntax and native workspace discovery edge cases
+remain open.
 
 The initial [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 [Breezy oracle notes](../../tests/oracles/breezy/README.md) describe the observed corpora and their

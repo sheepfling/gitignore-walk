@@ -52,6 +52,12 @@ descendant, so client-view-aware walks filter files and keep directories travers
 `client_view_aware` selection requires client-root discovery; its checks remain independent of
 P4IGNORE decisions and versioned membership.
 
+When `p4` and `p4d` are installed, `tests/test_perforce_membership.py` creates an isolated local
+server and compares policy annotations with live tagged `p4 have`, `p4 opened`, and `p4 where`
+queries. It covers clean, modified, missing, and opened-for-delete submitted files, a pending add,
+an ignored untracked file, and unknown directories and missing paths. The fixture authenticates a
+temporary super user and isolates workspace, home, ticket, and trust paths from developer config.
+
 | Capture file                              | Environment                   | Python  | Cases matching                         |
 | ----------------------------------------- | ----------------------------- | ------- | -------------------------------------- |
 | `p4-2026.1-macos-arm64.json`              | macOS 26.6.2 arm64            | 3.12.16 | 42/42 + platform + 3 errors + view     |
