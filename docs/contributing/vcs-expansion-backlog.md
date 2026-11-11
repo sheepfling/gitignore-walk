@@ -471,6 +471,8 @@ When a named `ui.ignore` key is repeated across those files, a live native compa
 later configuration value replaces the earlier source instead of merging both values.
 Another live comparison confirms relative global `ui.ignore` paths resolve from the workspace root,
 not from the home directory containing `HGRCPATH`.
+Configured paths also expand environment variables from the policy's supplied environment using
+Mercurial's POSIX `$VAR`/`${VAR}` and Windows `%VAR%`/`$VAR` forms.
 7.2.4 also confirms the workspace `.hgignore` is reported before a configured `ui.ignore` file when
 both supply the same matching rule; the policy trace retains both sources and the effective source.
 This precedence probe is currently captured on macOS arm64 and Debian 13 Linux x86_64. Native

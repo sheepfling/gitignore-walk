@@ -443,10 +443,11 @@ def _discover_ui_ignore_files(
 def _expand_configured_path(
     value: str, environment: Mapping[str, str], *, windows: bool | None = None
 ) -> Path:
-    """Expand Mercurial's home-relative paths using the discovery environment."""
+    """Expand environment variables and home-relative paths in Mercurial config values."""
+    if windows is None:
+        windows = os.name == "nt"
+    value = _expand_environment_variables(value, environment, windows=windows)
     if value == "~" or value.startswith(("~/", "~\\")):
-        if windows is None:
-            windows = os.name == "nt"
         home = (
             environment.get("USERPROFILE") or environment.get("HOME")
             if windows
@@ -455,3 +456,42 @@ def _expand_configured_path(
         if home:
             return Path(home) / value[2:] if value != "~" else Path(home)
     return Path(value).expanduser()
+
+
+def _expand_environment_variables(
+    value: str, environment: Mapping[str, str], *, windows: bool
+) -> str:
+    """Expand the variable forms used by the active platform's ``os.path.expandvars``."""
+    if windows:
+        variable = re.compile(r"%%|%([^%]+)%|\$\$|\$([A-Za-z0-9_-]+|\{[^}]*\})")
+
+        def replace_windows(match: re.Match[str]) -> str:
+            token = match.group(0)
+            if token in {"%%", "$$"}:
+                return token[0]
+            name = match.group(1) or match.group(2)
+            if name.startswith("{") and name.endswith("}"):
+                name = name[1:-1]
+            replacement = environment.get(name)
+            if replacement is None:
+                replacement = next(
+                    (
+                        value
+                        for key, value in environment.items()
+                        if key.casefold() == name.casefold()
+                    ),
+                    None,
+                )
+            return token if replacement is None else replacement
+
+        return variable.sub(replace_windows, value)
+
+    variable = re.compile(r"\$(\w+|\{[^}]*\})", re.ASCII)
+
+    def replace_posix(match: re.Match[str]) -> str:
+        name = match.group(1)
+        if name.startswith("{") and name.endswith("}"):
+            name = name[1:-1]
+        return environment.get(name, match.group(0))
+
+    return variable.sub(replace_posix, value)

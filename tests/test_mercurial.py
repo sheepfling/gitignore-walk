@@ -835,6 +835,56 @@ def test_client_config_discovery_resolves_relative_global_ignore_from_workspace(
     assert not home_trace.decision.ignored
 
 
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+def test_client_config_discovery_expands_environment_variables_in_ignore_paths(
+    tmp_path: Path,
+) -> None:
+    """Expand caller-supplied environment variables as native Mercurial does."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    (root / ".hg").mkdir()
+    (root / ".hgignore").write_text("", encoding="utf-8")
+    home = tmp_path / "home"
+    home.mkdir()
+    ignore_file = home / "environment.ignore"
+    ignore_file.write_text("syntax: glob\nenvironment.tmp\n", encoding="utf-8")
+    hgrc = home / "hgrc"
+    variable = "GITIGNORE_WALK_HG_IGNORE"
+    hgrc_value = f"%{variable}%" if os.name == "nt" else f"${variable}"
+    hgrc.write_text(f"[ui]\nignore.environment = {hgrc_value}\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "HGRCPATH": str(hgrc),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+            variable: str(ignore_file),
+        }
+    )
+
+    native = subprocess.run(
+        [shutil.which("hg") or "hg", "debugignore", "-v", "environment.tmp"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert native.returncode == 0, native.stderr.decode(errors="replace")
+    native_output = native.stdout.decode(errors="replace").replace("\\", "/").casefold()
+    assert "environment.tmp is ignored" in native_output
+    assert ignore_file.as_posix().casefold() in native_output
+
+    policy = MercurialIgnorePolicy(root, read_client_config=True, environment=environment)
+    trace = policy.trace("environment.tmp")
+
+    assert trace.decision.ignored
+    assert trace.decision.source == str(ignore_file)
+    assert tuple(match.source for match in trace.matches) == (str(ignore_file),)
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_walker_prunes_mercurial_ignored_directories(tmp_path: Path, topdown: bool) -> None:
     root = tmp_path / "repo"
@@ -1792,6 +1842,24 @@ def test_windows_home_relative_client_paths_prefer_userprofile() -> None:
     )
 
     assert path.as_posix() == "C:/Users/fixture/.project-ignore"
+
+
+@pytest.mark.parametrize(
+    ("configured", "windows"),
+    [
+        ("$HG_IGNORE_RULES", False),
+        ("${HG_IGNORE_RULES}", False),
+        ("%HG_IGNORE_RULES%", True),
+        ("$HG_IGNORE_RULES", True),
+        ("${HG_IGNORE_RULES}", True),
+    ],
+)
+def test_configured_path_expands_explicit_environment(configured: str, windows: bool) -> None:
+    path = mercurial_policy_module._expand_configured_path(
+        configured, {"HG_IGNORE_RULES": "/explicit/rules.ignore"}, windows=windows
+    )
+
+    assert path == Path("/explicit/rules.ignore")
 
 
 def test_repeated_symlinked_source_retains_each_subinclude_scope(tmp_path: Path) -> None:
