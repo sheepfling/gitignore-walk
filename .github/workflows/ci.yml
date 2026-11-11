@@ -131,8 +131,8 @@ jobs:
         run: |
           # Ubuntu hosted runners prefer an Azure mirror that can stall during DNS outages.
           # Bound retries so apt reaches its configured fallback mirror without spending minutes
-          # retrying the same unavailable endpoint.
-          cat <<'EOF' | sudo tee /etc/apt/apt.conf.d/zz-gitignore-walk-retries
+          # retrying the same unavailable endpoint. The filename sorts after runner zz-retries.
+          cat <<'EOF' | sudo tee /etc/apt/apt.conf.d/zzzz-gitignore-walk-retries
           Acquire::Retries "1";
           Acquire::http::Timeout "15";
           Acquire::https::Timeout "15";
