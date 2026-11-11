@@ -1153,6 +1153,37 @@ def test_membership_aware_policy_tracks_ignore_file_status_transitions(
     assert walked("ignored") == set()
     assert walked("all") == {".hgignore"}
 
+    hg("revert", "tracked.tmp")
+    assert native_status() == {".hgignore": "C", "tracked.tmp": "C"}
+    hg("rename", "tracked.tmp", "visible.txt")
+    renamed_status = native_status()
+    assert renamed_status == {
+        ".hgignore": "C",
+        "tracked.tmp": "R",
+        "visible.txt": "A",
+    }
+    renamed_source = policy.explain("tracked.tmp")
+    renamed_target = policy.explain("visible.txt")
+    assert renamed_source.ignored
+    assert renamed_source.membership == "versioned"
+    assert not renamed_target.ignored
+    assert renamed_target.membership == "versioned"
+    assert walked("included") == {".hgignore", "visible.txt"}
+    assert walked("ignored") == set()
+    assert walked("all") == {".hgignore", "visible.txt"}
+
+    hg("commit", "-m", "rename ignored tracked file", "-u", "gitignore-walk test")
+    assert native_status() == {".hgignore": "C", "visible.txt": "C"}
+    committed_source = policy.explain("tracked.tmp")
+    committed_target = policy.explain("visible.txt")
+    assert committed_source.membership is None
+    assert committed_source.ignored
+    assert not committed_target.ignored
+    assert committed_target.membership == "versioned"
+    assert walked("included") == {".hgignore", "visible.txt"}
+    assert walked("ignored") == set()
+    assert walked("all") == {".hgignore", "visible.txt"}
+
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
