@@ -3,14 +3,45 @@
 from __future__ import annotations
 
 import json
+import subprocess
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from tests.oracles.compat.run import _sapling_status_paths
+from tests.oracles.compat.sapling_pattern_profile import _capture_probe
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
+
+
+def test_legacy_sapling_pattern_client_errors_are_not_candidate_matches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    result = subprocess.CompletedProcess(
+        args=["sl", "status"],
+        returncode=101,
+        stdout="",
+        stderr="thread panicked: StripPrefixError",
+    )
+    monkeypatch.setattr(
+        "tests.oracles.compat.sapling_pattern_profile._run", lambda *args, **kwargs: result
+    )
+
+    observation = _capture_probe(
+        "sl",
+        root=tmp_path,
+        environment={},
+        probe_id="sapling.sl-mode.pattern_discovery",
+        query_files=["nested/file.txt"],
+        expected_ignored=["nested/file.txt"],
+    )
+
+    assert observation["native_status"] == "client-error"
+    assert observation["status_exit_code"] == 101
+    assert observation["candidate_matches"] is None
+
+
 CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json",

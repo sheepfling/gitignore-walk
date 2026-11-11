@@ -729,6 +729,12 @@ configured workspace for `.tfignore` behavior ([TFVC-DOC]). This repository has 
 server/workspace fixture nor a configured server, so
 keep those cases unrun instead of treating Visual Studio availability as a native oracle.
 
+The Windows workflow now adds a separate probe for Sapling 0.2.20261028 `.sl` path-pattern
+behavior. It records the 13-path and extended pattern commands as matched, mismatched, or native
+client errors without treating an error as a conformance result. The result will be available in the
+`native-windows-oracles` artifact after the updated workflow runs; the full legacy `.sl` matrix
+remains excluded pending that observation.
+
 The SVN baseline is retained below for reference: its initial property policy, inherited
 `svn:global-ignores` discovery, switched-subtree scoping, sparse-depth boundaries, listed externals,
 and opt-in membership are implemented. The 21-case oracle includes all 13 status-profile probes from

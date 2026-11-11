@@ -42,6 +42,10 @@ matches the full 13-path pattern matrix on both Linux and Windows. Every profile
 `sapling.sl-mode.pattern_discovery` in `excluded_probes`; Jujutsu's pattern probes and both clients'
 source/configuration probes still run and match. Reproduce these captures with
 `run.py --sl <older-sapling> --jj <jj> --skip-sapling-pattern-mode sl --output <capture.json>`.
+The Windows job also runs `sapling_pattern_profile.py` against the old `.sl` client in separate
+disposable workspaces. It records both the 13-path and extended pattern commands as candidate
+matches, candidate mismatches, or explicit client errors; an error has no `candidate_matches` value
+and is never counted as conformance. The full compatibility matrix remains excluded for this mode.
 
 Sapling 0.2.20261103 is captured on Windows Server 2025 x64 in both `.git` and `.sl` modes alongside
 Jujutsu 0.47.1. The candidate, source/configuration, and path-pattern probes match in both Sapling

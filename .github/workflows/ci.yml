@@ -923,6 +923,30 @@ jobs:
           for case in capture["cases"]:
               print(case["id"], "candidate_matches=", case["candidate_matches"])
           '@ | python -
+          $patternOutput = Join-Path $nativeDir 'sapling-0.2.20261028-sl-patterns-windows-x64.json'
+          python tests/oracles/compat/sapling_pattern_profile.py --sl $sl --output $patternOutput
+          if ($LASTEXITCODE -ne 0) { throw "Sapling legacy .sl pattern probe failed to capture: $LASTEXITCODE" }
+          @'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261028-sl-patterns-windows-x64.json"
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert capture["status"] == "captured", capture
+          assert capture["client"].startswith("Sapling 0.2.20261028"), capture["client"]
+          assert capture["storage_mode"] == "sl", capture
+          assert capture["isolated_temporary_workspaces"] is True, capture
+          assert len(capture["probes"]) == 2, capture
+          for probe in capture["probes"]:
+              assert probe["native_status"] in {"captured", "client-error"}, probe
+              if probe["native_status"] == "client-error":
+                  assert probe["candidate_matches"] is None, probe
+              else:
+                  assert isinstance(probe["candidate_matches"], bool), probe
+              print(probe["id"], "native_status=", probe["native_status"], "candidate_matches=", probe["candidate_matches"])
+          print("Conformance classification:", capture["conformance"])
+          '@ | python -
       - name: Check Windows Registry and INI precedence
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-
