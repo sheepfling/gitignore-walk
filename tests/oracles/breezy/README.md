@@ -60,7 +60,10 @@ the ignored subtree hidden. The local policy is checked against all 52 boolean c
 macOS arm64 and 36 on Linux aarch64; the other two Breezy 3.3.24 committed profiles retain 33
 checked cases. The Debian Breezy 3.3.11 profile checks 48 boolean candidates. Variable directory
 scopes from `*`, `**`, and regex exceptions are captured on Breezy 3.3.24/macOS and 3.3.11/Debian;
-the policy walker matches the native paths in both traversal orders. Additional
+the policy walker matches the native paths in both traversal orders. A native-backed test also
+confirms that a parent walk stops at a nested Breezy tree: `brz status --short` reports the child
+tree as one `nested+` directory and does not enumerate its files, matching the policy in both
+traversal orders. The current captured client is Breezy 3.3.24/macOS arm64. Additional
 regex probes cover Unicode `\\w` and `\\d`, fixed-width lookbehind, and Breezy's native parse error
 for a numeric backreference to its open regex wrapper. These four probes are currently captured on
 macOS arm64 only. Native fixtures cover both sides of root-anchored exception pruning on Breezy

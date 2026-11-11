@@ -168,7 +168,9 @@ exception-aware directory traversal, anchored RE matches, negative lookahead, sc
 and named-capture normalization. A new native
 status capture verifies that an exception under ignored `cache` exposes sibling files; policy walk
 results match native unknown and ignored paths in both directions on all four profiles. Broader
-RE semantics and source-location precedence remain open. Native captures also show that the
+RE semantics and source-location precedence remain open. A live Breezy 3.3.24/macOS fixture also
+confirms parent walks stop at nested working trees in top-down and bottom-up order, matching
+`brz status --short`. Native captures also show that the
 documented global inline regex flag example is rejected with exit code 3 in all four pinned Breezy
 profiles. Four additional regex cases now capture exact whole-path matching, `!!RE` priority, and
 the 3.3.24 backslash normalization quirk on all four profiles. Other non-Git

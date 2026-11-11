@@ -165,6 +165,8 @@ match the complete workspace-relative path while other globs match the last path
 captured RE subset now covers anchored path matching and named-capture normalization. All four pinned
 3.3.24 clients reject `RE:(?i)foo` with an invalid-pattern error, despite the published guide example.
 Broader regex flags and restrictions and additional native Windows client profiles remain open.
+Parent Breezy walks also stop at nested working trees, matching `brz status --short` on Breezy
+3.3.24/macOS arm64 in both traversal orders.
 See the [Breezy oracle notes](../../tests/oracles/breezy/README.md), [Breezy pattern
 reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and [Breezy ignore
 reference](https://www.breezy-vcs.org/doc/en/user-reference/ignore-help.html).

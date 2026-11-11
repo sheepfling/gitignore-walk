@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -84,6 +85,59 @@ def test_default_rule_query_uses_isolated_brz_home(
     assert Path(captured["BRZ_HOME"]) == Path(captured["HOME"]) / "brz-home"
     assert Path(captured["BRZ_HOME"]) != appdata
     assert captured["BRZ_PLUGIN_PATH"] == ""
+
+
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_breezy_walk_stops_at_nested_tree(tmp_path: Path, topdown: bool) -> None:
+    brz = shutil.which("brz")
+    if brz is None:
+        pytest.skip("Breezy is not installed")
+    parent = tmp_path / "parent"
+    child = parent / "nested"
+    parent.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = {
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "BRZ_HOME": str(home / "brz-home"),
+        "BRZ_PLUGIN_PATH": "",
+        "BRZ_LOG": os.devnull,
+        "PATH": str(Path(brz).parent),
+        "LC_ALL": "C",
+        "LANG": "C",
+        "TZ": "UTC",
+    }
+
+    def run(*arguments: str, cwd: Path = parent) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [brz, *arguments],
+            cwd=cwd,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    run("init", "--no-plugins", str(parent))
+    (parent / "outer.txt").write_text("outer\n", encoding="utf-8")
+    run("init", "--no-plugins", str(child))
+    (child / "inner.txt").write_text("inner\n", encoding="utf-8")
+
+    native_status = run("status", "--no-plugins", "--short")
+    policy = BreezyIgnorePolicy(
+        parent, brz_executable=brz, environment=environment, global_ignore_file=home / "none"
+    )
+    walked_paths = {
+        path.relative_to(parent).as_posix()
+        for path in IgnoreWalker(parent, policy=policy).iter_files(topdown=topdown)
+    }
+
+    assert b"nested+" in native_status.stdout
+    assert b"inner.txt" not in native_status.stdout
+    assert walked_paths == {"outer.txt"}
 
 
 def test_globstar_matches_zero_or_more_directory_segments() -> None:

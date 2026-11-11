@@ -22,6 +22,7 @@ from ..._policy import (
     IgnoreTraceMatch,
     _IgnoreWalkSession,
 )
+from ..._util import is_nested_workspace_directory
 from .errors import BreezyIgnoreError
 
 _WORKSPACE_MARKER = ".bzr"
@@ -162,6 +163,10 @@ class BreezyIgnorePolicy(IgnorePolicy):
         if not path.is_relative_to(self.root):
             raise ValueError(f"target must be inside policy root: {path}")
         return path
+
+    def should_descend_directory(self, target: Path) -> bool:
+        """Stop at nested Breezy trees while allowing traversal into this tree's root."""
+        return not is_nested_workspace_directory(target, self.workspace_root, (_WORKSPACE_MARKER,))
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether Breezy ignore rules affect one target."""

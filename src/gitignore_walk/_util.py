@@ -17,3 +17,12 @@ def lexical_target_path(root: Path, target: str | os.PathLike[str]) -> Path:
     if not target_path.is_absolute():
         target_path = root / target_path
     return Path(os.path.abspath(target_path))
+
+
+def is_nested_workspace_directory(
+    target: Path, workspace_root: Path, markers: tuple[str, ...]
+) -> bool:
+    """Return whether a descendant directory contains another workspace's marker."""
+    if target == workspace_root or not target.is_relative_to(workspace_root):
+        return False
+    return any((target / marker).exists() for marker in markers)

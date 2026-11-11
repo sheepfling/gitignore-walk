@@ -20,6 +20,7 @@ from ..._policy import (
     IgnoreTraceMatch,
     _IgnoreWalkSession,
 )
+from ..._util import is_nested_workspace_directory
 from .errors import FossilIgnoreError
 
 _WORKSPACE_MARKERS = (".fslckout", "_FOSSIL_")
@@ -142,9 +143,7 @@ class FossilIgnorePolicy(IgnorePolicy):
 
     def should_descend_directory(self, target: Path) -> bool:
         """Stop at nested Fossil checkouts while allowing traversal into this checkout root."""
-        if target == self.workspace_root or not target.is_relative_to(self.workspace_root):
-            return True
-        return not any((target / marker).exists() for marker in _WORKSPACE_MARKERS)
+        return not is_nested_workspace_directory(target, self.workspace_root, _WORKSPACE_MARKERS)
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether Fossil's effective ignore setting matches one path."""

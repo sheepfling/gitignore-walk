@@ -236,9 +236,10 @@ exceptions (`!`), and strong exclusions (`!!`). Patterns with a slash match the 
 workspace-relative path; patterns without a slash match its final component. An exception below an
 ignored directory keeps the directory traversable, even if the exception's target is absent. A
 wildcard or regex exception also reopens its matching nested directory for siblings and descendants,
-without unignoring a sibling in an ancestor directory. Rule decisions and pruning are separate: an
-ignored parent can remain a traversal candidate. `initial_excludes`
-defaults to `.bzr` metadata. Named regex capture groups are normalized to non-capturing groups and
+without unignoring a sibling in an ancestor directory. Parent walks stop at nested Breezy trees,
+matching native `brz status` behavior. Rule decisions and pruning are separate: an ignored parent
+can remain a traversal candidate. `initial_excludes` defaults to `.bzr` metadata. Named regex
+capture groups are normalized to non-capturing groups and
 reported as diagnostics; malformed regexes raise `BreezyIgnoreError`. The policy does not inspect
 versioned membership. The 52 boolean candidates on Breezy 3.3.24/macOS arm64 and 36 on Linux aarch64
 include exact-path versus `/**` strong exclusions, `BRZ_HOME` global-ignore discovery, negative
