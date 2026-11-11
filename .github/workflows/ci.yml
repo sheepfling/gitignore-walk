@@ -139,7 +139,7 @@ jobs:
           sudo sed -i \
             's|^URIs: mirror+file:/etc/apt/apt-mirrors.txt$|URIs: https://archive.ubuntu.com/ubuntu|' \
             /etc/apt/sources.list.d/ubuntu.sources
-          rg -n '^(URIs|Suites):' /etc/apt/sources.list.d/ubuntu.sources
+          grep -nE '^(URIs|Suites):' /etc/apt/sources.list.d/ubuntu.sources
           apt-config dump Acquire::Retries Acquire::http::Timeout Acquire::https::Timeout
           sudo apt-get update -qq
           sudo apt-get install -y -qq mercurial subversion fossil libatomic1
