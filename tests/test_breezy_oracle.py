@@ -110,6 +110,21 @@ def test_breezy_source_precedence_profile_enables_only_three_scoped_cases() -> N
     assert excluded == []
 
 
+@pytest.mark.parametrize("profile", CAPTURE_FILES[2:4])
+def test_breezy_source_precedence_profiles_match_native_winners(profile: str) -> None:
+    capture = CAPTURES[profile]
+    observations = {case["id"]: case for case in capture["cases"]}
+
+    assert capture["status"] == "captured"
+    assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.24"
+    assert all(
+        observations[case_id]["observed_pattern"] == pattern
+        and observations[case_id]["winning_pattern_matches"] is True
+        and observations[case_id]["candidate_matches"] is True
+        for case_id, pattern in SOURCE_PRECEDENCE_CASES.items()
+    )
+
+
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])
 def test_breezy_captures_match_versioned_candidates(case: dict[str, Any]) -> None:
     profiles = case.get("capture_profiles", CAPTURE_FILES)

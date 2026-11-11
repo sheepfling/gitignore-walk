@@ -16,7 +16,9 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 
 Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
 aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original 33 boolean
-candidate cases and explicit regex/error cases are captured across all four profiles. An additional
+candidate cases and explicit regex/error cases are captured across all four profiles. The three
+source-precedence cases are captured across all four profiles. The Linux x86_64 and Windows
+captures contain 39 cases, with 17 profile-scoped exclusions. An additional
 Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 48 boolean candidates
 match there, and all three source-precedence probes match their expected winning patterns. Four
 newer or platform-scoped probes are explicitly excluded. The Unicode `\\w` and `\\d` probes remain
@@ -25,7 +27,8 @@ Unicode paths from both `brz ignored` and status when those regex rules were pre
 needs investigation before it can be treated as a comparable result. Linux native CI recaptures this
 profile in a digest-pinned Debian 13 image and checks the client/Python identity and candidate results.
 Three additional
-source-precedence cases are captured on macOS arm64 and Linux aarch64: with overlapping regular
+source-precedence cases are captured on all four Breezy 3.3.24 profiles and the Debian 13 Breezy
+3.3.11 profile: with overlapping regular
 ignores, Breezy reports the global pattern before the built-in pattern, and the built-in pattern
 before the branch `.bzrignore` pattern. The policy now preserves this observed global, built-in,
 branch order for equal-priority rules. The live `oracle-brz` runner checks these expected winning
