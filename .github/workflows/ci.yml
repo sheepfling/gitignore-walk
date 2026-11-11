@@ -110,7 +110,7 @@ jobs:
           assert len(capture["cases"]) == 2
           assert all(case["candidate_matches"] for case in capture["cases"])
           PY
-          GITIGNORE_WALK_JJ="$client_dir/jj" python -m pytest -q tests/test_jujutsu.py
+          PYTHONPATH=src GITIGNORE_WALK_JJ="$client_dir/jj" python -m pytest -q tests/test_jujutsu.py
       - uses: actions/upload-artifact@v4
         if: always() && matrix.os == 'macos-latest'
         with:
@@ -1082,7 +1082,8 @@ jobs:
           ])
           '@ | python -
           $env:GITIGNORE_WALK_JJ = $jj045
-          python -m pytest -q tests/test_jujutsu.py
+          $testTemp = Join-Path $env:RUNNER_TEMP 'jj-0.45.1-pytest'
+          python -m pytest -q --basetemp $testTemp tests/test_jujutsu.py
           if ($LASTEXITCODE -ne 0) { throw "Jujutsu 0.45.1 membership tests failed: $LASTEXITCODE" }
           Remove-Item Env:GITIGNORE_WALK_JJ
       - name: Capture Sapling on Windows
