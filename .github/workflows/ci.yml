@@ -39,6 +39,27 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
           cache-dependency-path: pyproject.toml
+      - name: Download pinned Perforce 2026.1 Windows binaries
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $p4 = Join-Path $env:RUNNER_TEMP 'p4.exe'
+          $p4d = Join-Path $env:RUNNER_TEMP 'p4d.exe'
+          Invoke-WebRequest `
+            -Uri 'https://ftp.perforce.com/perforce/r26.1/bin.ntx64/p4.exe' `
+            -OutFile $p4
+          Invoke-WebRequest `
+            -Uri 'https://ftp.perforce.com/perforce/r26.1/bin.ntx64/p4d.exe' `
+            -OutFile $p4d
+          if ((Get-FileHash $p4 -Algorithm SHA256).Hash.ToLowerInvariant() -ne `
+              'f7962fec744cfc809f53338a19ebc9bb718bf76fb349a9eb0229f301f4b202a3') {
+            throw 'Perforce 2026.1 p4.exe checksum mismatch'
+          }
+          if ((Get-FileHash $p4d -Algorithm SHA256).Hash.ToLowerInvariant() -ne `
+              'eee7ac13927872282bcb3e4b037af960f2ec0905a1e6747cb343e77ac1e7091d') {
+            throw 'Perforce 2026.1 p4d.exe checksum mismatch'
+          }
+          Add-Content -Path $env:GITHUB_PATH -Value $env:RUNNER_TEMP
       - if: matrix.checks == 'all'
         run: python -m pip install -e '.[dev]'
       - if: matrix.checks == 'test'

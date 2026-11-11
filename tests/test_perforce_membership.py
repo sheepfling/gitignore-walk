@@ -14,6 +14,17 @@ import pytest
 from gitignore_walk import PerforceIgnorePolicy
 
 
+def _native_path_matches(output: str, expected: Path) -> bool:
+    """Compare tagged native local paths with the host filesystem's path conventions."""
+    expected_key = os.path.normcase(os.path.abspath(expected))
+    for line in output.splitlines():
+        if line.startswith("... path "):
+            observed = line[9:]
+            if os.path.normcase(os.path.abspath(observed)) == expected_key:
+                return True
+    return False
+
+
 def test_perforce_membership_matches_native_have_and_opened(
     tmp_path: Path,
 ) -> None:
@@ -150,13 +161,13 @@ def test_perforce_membership_matches_native_have_and_opened(
         have = run("-ztag", "have").stdout
         opened = run("-ztag", "opened").stdout
         where = run("-ztag", "where", "//membership-test/pending-add.tmp").stdout
-        assert "... path " + str(workspace / "tracked.tmp") in have
-        assert "... path " + str(workspace / "CaseProbe.tmp") in have
-        assert "... path " + str(workspace / "missing.txt") in have
+        assert _native_path_matches(have, workspace / "tracked.tmp")
+        assert _native_path_matches(have, workspace / "CaseProbe.tmp")
+        assert _native_path_matches(have, workspace / "missing.txt")
         assert "... action delete" in opened
         assert "... action edit" in opened
         assert "... action add" in opened
-        assert "... path " + str(workspace / "pending-add.tmp") in where
+        assert _native_path_matches(where, workspace / "pending-add.tmp")
 
         policy = PerforceIgnorePolicy(
             workspace,

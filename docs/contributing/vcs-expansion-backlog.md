@@ -210,10 +210,11 @@ unlisted paths are unknown. Focused query-record tests confirm membership does n
 decisions. A live disposable P4D test compares the policy against native `have`, `opened`, and
 `where` queries across clean, modified, missing, opened-delete, pending-add, ignored-untracked,
 directory, and missing-unlisted states. The live test passes with P4/P4D 2026.1 on macOS arm64 and
-Ubuntu 24.04 x86_64 using the checksum-pinned Linux binaries from CI; Windows remains unverified.
-On case-insensitive macOS filesystems, a case-only query alias resolves to the listed tracked entry;
-case-sensitive Linux correctly leaves the absent spelling unknown. Broader syntax and native
-workspace discovery edge cases remain open.
+Ubuntu 24.04 x86_64 using the checksum-pinned Linux binaries from CI. The Windows test job now
+downloads and checksum-verifies the official 2026.1 client/server executables before running this
+test; its first hosted result is pending. On case-insensitive macOS filesystems, a case-only query
+alias resolves to the listed tracked entry; case-sensitive Linux correctly leaves the absent
+spelling unknown. Broader syntax and native workspace discovery edge cases remain open.
 
 The initial [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 [Breezy oracle notes](../../tests/oracles/breezy/README.md) describe the observed corpora and their
