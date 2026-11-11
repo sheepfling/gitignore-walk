@@ -784,6 +784,57 @@ def test_client_config_discovery_respects_later_hgrc_override_for_named_ignore(
     assert tuple(match.source for match in trace.matches) == (str(second_ignore),)
 
 
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+def test_client_config_discovery_resolves_relative_global_ignore_from_workspace(
+    tmp_path: Path,
+) -> None:
+    """Resolve a relative global ``ui.ignore`` path from the workspace root."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    (root / ".hg").mkdir()
+    (root / ".hgignore").write_text("", encoding="utf-8")
+    home = tmp_path / "home"
+    home.mkdir()
+    workspace_ignore = root / "rules.ignore"
+    workspace_ignore.write_text("syntax: glob\nworkspace.tmp\n", encoding="utf-8")
+    home_ignore = home / "rules.ignore"
+    home_ignore.write_text("syntax: glob\nhome.tmp\n", encoding="utf-8")
+    hgrc = home / "hgrc"
+    hgrc.write_text("[ui]\nignore.relative = rules.ignore\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "HGRCPATH": str(hgrc),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+        }
+    )
+
+    native = subprocess.run(
+        [shutil.which("hg") or "hg", "debugignore", "-v", "workspace.tmp"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert native.returncode == 0, native.stderr.decode(errors="replace")
+    native_output = native.stdout.decode(errors="replace").replace("\\", "/").casefold()
+    assert "workspace.tmp is ignored" in native_output
+    assert workspace_ignore.as_posix().casefold() in native_output
+
+    policy = MercurialIgnorePolicy(root, read_client_config=True, environment=environment)
+    trace = policy.trace("workspace.tmp")
+    home_trace = policy.trace("home.tmp")
+
+    assert trace.decision.ignored
+    assert trace.decision.source == str(workspace_ignore)
+    assert tuple(match.source for match in trace.matches) == (str(workspace_ignore),)
+    assert not home_trace.decision.ignored
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_walker_prunes_mercurial_ignored_directories(tmp_path: Path, topdown: bool) -> None:
     root = tmp_path / "repo"
