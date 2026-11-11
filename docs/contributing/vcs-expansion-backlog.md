@@ -209,8 +209,9 @@ opened for add, edit, or delete), present unlisted files are unversioned, and di
 unlisted paths are unknown. Focused query-record tests confirm membership does not change ignore
 decisions. A live disposable P4D test compares the policy against native `have`, `opened`, and
 `where` queries across clean, modified, missing, opened-delete, pending-add, ignored-untracked,
-directory, and missing-unlisted states. Broader syntax and native workspace discovery edge cases
-remain open.
+directory, and missing-unlisted states. The live test passes with P4/P4D 2026.1 on macOS arm64 and
+Ubuntu 24.04 x86_64 using the checksum-pinned Linux binaries from CI; Windows remains unverified.
+Broader syntax and native workspace discovery edge cases remain open.
 
 The initial [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 [Breezy oracle notes](../../tests/oracles/breezy/README.md) describe the observed corpora and their
