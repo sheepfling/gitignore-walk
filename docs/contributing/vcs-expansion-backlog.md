@@ -825,10 +825,12 @@ system-installed client used by the full policy suite.
 
 **Next unfinished slice:** compare remaining Mercurial workspace-membership and configuration
 behavior across the captured VCS profiles, prioritizing sparse refresh and out-of-profile
-transitions that are not covered by the existing live fixtures. An exploratory macOS arm64 probe
-on Mercurial 7.2.4 raised `ProgrammingError` from `hg debugsparse --refresh` after manually
-removing an exclusion from `.hg/sparse`; treat this as a native-client failure observation, not a
-portable refresh contract, until the same setup is checked on other versions.
+transitions that are not covered by the existing live fixtures. Reproductions on Mercurial
+7.0.1/Debian 13 x86_64 and 7.2.4/macOS arm64 both raised `ProgrammingError` from
+`hg debugsparse --refresh` after manually removing an exclusion from `.hg/sparse`. In both, the
+file returned to disk but native status then reported it as unknown (`?`). Treat this as a native
+client failure observation, not a portable refresh contract; do not interpret its post-error status
+as the intended semantics of a successful sparse refresh.
 Sapling and Jujutsu already have pinned cross-version profiles: Sapling
 0.2.20261028/0.2.20261102/0.2.20261103 and Jujutsu
 0.45.1/0.46.0/0.47.0/0.47.1. The full Sapling 0.2.20261102 profile matches on Debian 13 ARM64,
