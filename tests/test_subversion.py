@@ -1134,6 +1134,19 @@ def test_sparse_empty_directory_keeps_its_native_ignore_property(
         for path in walker.iter_files(selection="all", topdown=topdown)
         if ".svn" not in path.relative_to(root).parts
     }
+    subtree_root = root / "pkg"
+    subtree_policy = SubversionIgnorePolicy(
+        subtree_root,
+        config_dir=config_dir,
+        environment=environment,
+        membership_aware=True,
+    )
+    subtree_walk_files = {
+        path.relative_to(subtree_root).as_posix()
+        for path in IgnoreWalker(subtree_root, policy=subtree_policy).iter_files(
+            selection="all", topdown=topdown
+        )
+    }
 
     assert not (root / "pkg" / "tracked.tmp").exists()
     assert policy.is_ignored("pkg/tracked.tmp")
@@ -1142,6 +1155,8 @@ def test_sparse_empty_directory_keeps_its_native_ignore_property(
     assert native_ignored == {"pkg/loose.tmp"}
     assert native_walk_files == {"pkg/loose.tmp", "pkg/visible.txt"}
     assert membership_walk_files == native_walk_files
+    assert subtree_policy.explain("tracked.tmp").membership is None
+    assert subtree_walk_files == {"loose.tmp", "visible.txt"}
     assert policy_ignored == native_ignored
 
 

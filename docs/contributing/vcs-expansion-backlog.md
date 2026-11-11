@@ -817,7 +817,8 @@ native versioned file entries. Paths omitted by sparse status remain unknown by 
 An absent queried candidate omitted from verbose status also remains membership-unknown even when
 an ignore property matches its name. At sparse `depth=empty`, a tracked file omitted by status stays
 unknown, while a local unversioned file that native status lists remains walkable in both traversal
-orders; this differs from Mercurial's sparse-profile omission of physically present untracked files.
+orders. The result also holds when the policy and walker are rooted at the sparse subtree. This
+differs from Mercurial's sparse-profile omission of physically present untracked files.
 Further work is broader native status traversal and configuration-precedence profiles; do not
 classify omitted paths as unversioned without new native evidence.
 
