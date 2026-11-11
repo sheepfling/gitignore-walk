@@ -239,7 +239,9 @@ class BreezyIgnorePolicy(IgnorePolicy):
         return IgnoreTrace(decision=decision, matches=trace, complete=True)
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
-        """Keep ignored directories traversable when a Breezy exception can reach below them."""
+        """Keep ignored directories traversable for membership or Breezy exceptions."""
+        if self.membership_aware:
+            return False
         return self._can_prune(target, decision, self._load_snapshot())
 
     def _open_walk(self) -> _IgnoreWalkSession:

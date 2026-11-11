@@ -98,11 +98,11 @@ writes a marker rule at the path returned by `breezy.bedding.user_ignore_config_
 the process `APPDATA` agrees with the shell folder and preserves normalized command output. The probe
 requires the explicit
 `--allow-user-config-mutation` flag and is only for the disposable Windows CI account; the default
-`oracle-brz` command remains isolated from the user's config. These results establish candidate
-behavior for Breezy 3.3.24 on the captured Windows runner only; they do not establish future versions,
-tracked-file traversal, path
-encodings, or complete exception semantics. In particular, status unknown/ignored membership is
-recorded separately from rule matching.
+`oracle-brz` command remains isolated from the user's config. A live membership-aware walker test
+tracks a file under an ignore-matched `cache/` directory. `brz ls --versioned` reports that child as
+versioned, and top-down and bottom-up walks both retain it while omitting an ignored unversioned
+sibling. Broader cross-profile tracked-file traversal, path encodings, and complete exception
+semantics remain open. Status unknown/ignored membership is recorded separately from rule matching.
 
 The probes are informed by Breezy's [ignore command reference](https://www.breezy-vcs.org/doc/en/user-reference/ignore-help.html),
 [pattern reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and

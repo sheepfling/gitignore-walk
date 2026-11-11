@@ -206,8 +206,9 @@ opt-in membership query uses NUL-delimited `sl status --all`; Jujutsu's opt-in q
 selection remains appropriate only when an actual `.git` repository is available.
 
 Live membership-aware walk tests also track a file beneath an ignore-matched `cache/` directory.
-Both native clients report the child as versioned, so the policies keep ignored directories
-traversable when membership is enabled and check the descendant in both traversal orders.
+Sapling and Jujutsu report the child as versioned, so their policies keep ignored directories
+traversable when membership is enabled and check the descendant in both traversal orders. Breezy
+has the same native-backed fixture in `tests/test_breezy.py`.
 
 Linked Git worktrees expose a source-location difference. Git and Sapling `.git` mode read
 `info/exclude` from the shared Git directory; colocated Jujutsu reads it from the linked worktree's

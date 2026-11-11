@@ -391,9 +391,12 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     run("init", "--no-plugins", str(root))
     for name in ("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp"):
         (root / name).write_text(f"{name}\n", encoding="utf-8")
-    add("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp")
+    tracked_in_ignored_directory = root / "cache" / "tracked.txt"
+    tracked_in_ignored_directory.parent.mkdir()
+    tracked_in_ignored_directory.write_text("tracked below ignored directory\n", encoding="utf-8")
+    add("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp", "cache/tracked.txt")
     run("commit", "--no-plugins", "-m", "add initial files")
-    (root / ".bzrignore").write_text("*.tmp\n", encoding="utf-8")
+    (root / ".bzrignore").write_text("*.tmp\ncache\ncache/**\n", encoding="utf-8")
     add(".bzrignore")
     run("commit", "--no-plugins", "-m", "add ignore rule")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
@@ -428,6 +431,7 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     native = run("ls", "--no-plugins", "--from-root", "--recursive", "--versioned", "--null").stdout
     native_paths = {os.fsdecode(record) for record in native.split(b"\0") if record}
     assert "tracked.txt" in native_paths
+    assert "cache/tracked.txt" in native_paths
     assert "ignored.tmp" in native_paths
     if symlink_created:
         assert "linked.txt" in native_paths
@@ -448,6 +452,7 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     policy = selection.policy
     query_targets = [
         "tracked.txt",
+        "cache/tracked.txt",
         "ignored.tmp",
         "unknown.txt",
         "linked.txt",
@@ -457,6 +462,8 @@ def test_membership_aware_policy_matches_native_versioned_listing(
     ]
     decisions = dict(zip(query_targets, policy.explain_many(query_targets), strict=True))
     assert decisions["tracked.txt"].membership == "versioned"
+    assert decisions["cache/tracked.txt"].membership == "versioned"
+    assert decisions["cache/tracked.txt"].ignored
     assert decisions["ignored.tmp"].membership == "versioned"
     assert decisions["ignored.tmp"].ignored
     assert decisions["unknown.txt"].membership == "unversioned"
@@ -474,6 +481,7 @@ def test_membership_aware_policy_matches_native_versioned_listing(
         for path in IgnoreWalker(root, policy=policy).iter_files(topdown=topdown)
     }
     assert "ignored.tmp" in walked
+    assert "cache/tracked.txt" in walked
     assert "ignored-unversioned.tmp" not in walked
 
 
