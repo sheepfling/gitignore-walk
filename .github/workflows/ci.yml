@@ -434,6 +434,9 @@ jobs:
             'https://github.com/meta/sapling/releases/download/0.2.20261028-123539%2B7415fb2f/sapling-0.2.20261028-123539+7415fb2f-linux-x64.tar.xz' \
             --output "$RUNNER_TEMP/compat-clients/sapling-0.2.20261028-linux-x64.tar.xz"
           curl --fail --location --silent --show-error \
+            'https://github.com/meta/sapling/releases/download/0.2.20261102-153821%2Ba53273dc/sapling-0.2.20261102-153821+a53273dc-linux-x64.tar.xz' \
+            --output "$RUNNER_TEMP/compat-clients/sapling-0.2.20261102-linux-x64.tar.xz"
+          curl --fail --location --silent --show-error \
             'https://github.com/jj-vcs/jj/releases/download/v0.47.1/jj-v0.47.1-x86_64-unknown-linux-musl.tar.gz' \
             --output "$RUNNER_TEMP/compat-clients/jj-linux-x64.tar.gz"
           curl --fail --location --silent --show-error \
@@ -444,6 +447,7 @@ jobs:
             --output "$RUNNER_TEMP/compat-clients/jj-0.46.0-linux-x64.tar.gz"
           echo '682f965b3abeae0a5ca0e1d64f35558679bad2fc79d5f6df34c7e82a52f9788c  '"$RUNNER_TEMP/compat-clients/sapling-linux-x64.tar.xz" | sha256sum --check
           echo '9504b9514ed16dce3b5443811f7625742a363e66a44b316bcaad70a9d013b274  '"$RUNNER_TEMP/compat-clients/sapling-0.2.20261028-linux-x64.tar.xz" | sha256sum --check
+          echo '7c6f88ada401fed0cab1e6c06a7e7924d353f91977a85bf5bcf09b535488f5a0  '"$RUNNER_TEMP/compat-clients/sapling-0.2.20261102-linux-x64.tar.xz" | sha256sum --check
           echo 'd4b657f622ee50929c8916466dfa3d6a6c17a0a32b50e7b2c793707ec9ebcad7  '"$RUNNER_TEMP/compat-clients/jj-linux-x64.tar.gz" | sha256sum --check
           echo 'f35438350b5d61963aac5dd74ede510b31d6b9690769d1a6268cf058cc825f72  '"$RUNNER_TEMP/compat-clients/jj-0.45.1-linux-x64.tar.gz" | sha256sum --check
           echo 'fce0271158e665ceb82dc66c5eb95b1728649094e9133074f3b5baece345fc08  '"$RUNNER_TEMP/compat-clients/jj-0.46.0-linux-x64.tar.gz" | sha256sum --check
@@ -456,7 +460,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/jj /tmp/jj046 && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-x64.tar.xz -C /tmp/sapling-old && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj046 && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/sapling_pattern_profile.py --sl /tmp/sapling-old/sl --output /output/sapling-0.2.20261028-sl-patterns-debian13-x86_64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --workspace-boundary-only --output /output/workspace-boundaries-jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --output /output/jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/sapling-fix /tmp/jj /tmp/jj046 && tar -xJf /clients/sapling-linux-x64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-x64.tar.xz -C /tmp/sapling-old && tar -xJf /clients/sapling-0.2.20261102-linux-x64.tar.xz -C /tmp/sapling-fix && tar -xzf /clients/jj-linux-x64.tar.gz -C /tmp/jj && tar -xzf /clients/jj-0.46.0-linux-x64.tar.gz -C /tmp/jj046 && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-fix/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261102-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/sapling_pattern_profile.py --sl /tmp/sapling-old/sl --output /output/sapling-0.2.20261028-sl-patterns-debian13-x86_64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --workspace-boundary-only --output /output/workspace-boundaries-jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --jj /tmp/jj046/jj --jj-only --output /output/jj-0.46.0-debian13-x86_64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json'
           python - <<'PY'
           import json
           import os
@@ -495,6 +499,16 @@ jobs:
           assert all(case["configured_repository"]["candidate_matches"] for case in capture["cases"])
           assert all(case["environment_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
+          fix_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261102-jj-0.47.1-debian13-x86_64.json"
+          fix_result = inspect_capture(fix_path)
+          fix_capture = json.loads(fix_path.read_text(encoding="utf-8"))
+          assert fix_result["passed"], fix_result
+          assert fix_capture["status"] == "captured"
+          assert "x86_64" in fix_capture["platform"]
+          assert fix_capture["clients"]["sapling"].startswith("Sapling 0.2.20261102")
+          assert fix_capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+          assert len(fix_capture["cases"]) == 4
+          assert all(case["candidate_matches"] for case in fix_capture["cases"])
           older_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json"
           older = json.loads(older_path.read_text(encoding="utf-8"))
           assert all(

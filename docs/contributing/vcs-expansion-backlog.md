@@ -747,9 +747,10 @@ The Jujutsu-only linked-worktree probe is also captured on macOS arm64 and Windo
 the Windows job recaptures it against pinned Jujutsu 0.47.1 and checks the Git/Jujutsu distinction.
 
 **Next unfinished slice:** broaden Sapling and Jujutsu version/platform and configuration profiles
-beyond current pinned profiles for Sapling 0.2.20261028/0.2.20261103 and Jujutsu 0.47.1, plus
-the full 0.2.20261102 profile on Debian 13 ARM64 and its focused Windows fix-release capture. The
-captured macOS/Linux clients also need broader version and configuration coverage. TFVC remains
+beyond current pinned profiles for Sapling 0.2.20261028/0.2.20261103 and Jujutsu 0.47.1. The full
+Sapling 0.2.20261102 profile now matches on Debian 13 ARM64 and x86_64; Windows has a focused
+fix-release capture, but the full cross-scheme profile remains to be measured there. The captured
+macOS/Linux clients also need broader version and configuration coverage. TFVC remains
 deferred until its workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders
 and a cross-profile nested-repository case. Its local/global/configured source overlap matches on

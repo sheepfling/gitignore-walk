@@ -44,6 +44,7 @@ def test_legacy_sapling_pattern_client_errors_are_not_candidate_matches(
 
 
 SAPLING_FIX_RELEASE_CAPTURE_FILE = "sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json"
+SAPLING_FIX_RELEASE_X64_CAPTURE_FILE = "sapling-0.2.20261102-jj-0.47.1-debian13-x86_64.json"
 CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json",
@@ -51,12 +52,14 @@ CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
     SAPLING_FIX_RELEASE_CAPTURE_FILE,
+    SAPLING_FIX_RELEASE_X64_CAPTURE_FILE,
 )
 PATTERN_CAPTURE_FILES = (
     CAPTURE_FILES[0],
     CAPTURE_FILES[3],
     CAPTURE_FILES[4],
     SAPLING_FIX_RELEASE_CAPTURE_FILE,
+    SAPLING_FIX_RELEASE_X64_CAPTURE_FILE,
 )
 EARLIER_PATTERN_CAPTURE_FILES = (CAPTURE_FILES[1], CAPTURE_FILES[2])
 PATTERN_FIXTURE = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))
@@ -93,12 +96,14 @@ ENVIRONMENT_GLOBAL_CAPTURE_FILES = (
     CAPTURE_FILES[3],
     CAPTURE_FILES[4],
     SAPLING_FIX_RELEASE_CAPTURE_FILE,
+    SAPLING_FIX_RELEASE_X64_CAPTURE_FILE,
 )
 SYMLINK_CAPTURE_FILES = (
     CAPTURE_FILES[0],
     CAPTURE_FILES[3],
     CAPTURE_FILES[4],
     SAPLING_FIX_RELEASE_CAPTURE_FILE,
+    SAPLING_FIX_RELEASE_X64_CAPTURE_FILE,
 )
 CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
@@ -361,6 +366,7 @@ def test_linked_worktree_windows_capture_records_the_pinned_clients() -> None:
         ("sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json", "aarch64"),
         ("sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json", "x86_64"),
         ("sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json", "aarch64"),
+        (SAPLING_FIX_RELEASE_X64_CAPTURE_FILE, "x86_64"),
     ],
 )
 def test_linux_compatibility_capture_records_its_architecture(
