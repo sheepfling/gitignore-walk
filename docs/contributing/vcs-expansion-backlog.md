@@ -751,7 +751,9 @@ beyond current pinned profiles for Sapling 0.2.20261028/0.2.20261102/0.2.2026110
 0.45.1/0.46.0/0.47.0/0.47.1. The full Sapling 0.2.20261102 profile matches on Debian 13 ARM64,
 x86_64, and Windows Server 2025 x64. The Jujutsu 0.47.0 profile matches on macOS arm64 and Windows
 Server 2025 x64; Linux is excluded because the published 0.47.0 Linux binary has a dependency error
-fixed in 0.47.1. Broader cross-version configuration coverage remains open. TFVC remains
+fixed in 0.47.1. The full Jujutsu 0.45.1 profile now replays configuration and legacy symlink
+behavior on macOS arm64, Debian 13 x86_64, and Windows Server 2025 x64. Broader cross-version
+configuration coverage remains open. TFVC remains
 deferred until its workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders
 and a cross-profile nested-repository case. Its local/global/configured source overlap matches on

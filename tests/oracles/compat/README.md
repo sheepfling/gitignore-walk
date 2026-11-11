@@ -151,6 +151,10 @@ release boundary. Windows captures match on Sapling 0.2.20261103 and Jujutsu 0.4
 results are incorporated into the versioned profiles. The portable policy and walker tests replay
 the same cases.
 
+The full Jujutsu 0.45.1 capture also matches on Windows Server 2025 x64. Its configuration probes
+and pre-0.46 symlink-following behavior are now replayed alongside the macOS arm64 and Debian 13
+x86_64 profiles.
+
 A separate nested-source probe places `nested/.gitignore` as a symlink to an ignore file outside
 the workspace. Sapling `.sl` mode follows the symlink and ignores `nested/probe.symlink`; Sapling
 `.git` mode and both Jujutsu modes skip the symlinked ignore source and leave the candidate visible.

@@ -275,6 +275,7 @@ WINDOWS_JJ_CAPTURE = json.loads(
 JJ_045_FULL_CAPTURE_FILES = (
     "jj-0.45.1-macos-arm64.json",
     "jj-0.45.1-debian13-x86_64.json",
+    "jj-0.45.1-windows-x64.json",
 )
 JJ_045_FULL_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
@@ -563,6 +564,9 @@ def test_jujutsu_045_capture_reconciles_config_profiles_and_legacy_symlink_behav
     if "macos" in filename:
         assert capture["platform"].startswith("macOS-26")
         assert "arm64" in capture["platform"]
+    elif "windows" in filename:
+        assert capture["platform"].startswith("Windows-2025Server-")
+        assert capture["clients"]["git"].startswith("git version 2.56.0.windows")
     else:
         assert capture["platform"].startswith("Linux-")
         assert "x86_64" in capture["platform"]
