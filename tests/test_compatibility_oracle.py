@@ -113,6 +113,10 @@ WINDOWS_SAPLING_CAPTURE_FILE = "sapling-0.2.20261103-jj-0.47.1-windows-x64.json"
 WINDOWS_SAPLING_CAPTURE = json.loads(
     (ORACLE_ROOT / "results" / WINDOWS_SAPLING_CAPTURE_FILE).read_text(encoding="utf-8")
 )
+WINDOWS_FIX_SAPLING_CAPTURE_FILE = "sapling-0.2.20261102-jj-0.47.1-windows-x64.json"
+WINDOWS_FIX_SAPLING_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / WINDOWS_FIX_SAPLING_CAPTURE_FILE).read_text(encoding="utf-8")
+)
 OLDER_SAPLING_WINDOWS_CAPTURE_FILE = "sapling-0.2.20261028-jj-0.47.1-windows-x64.json"
 OLDER_SAPLING_WINDOWS_CAPTURE = json.loads(
     (ORACLE_ROOT / "results" / OLDER_SAPLING_WINDOWS_CAPTURE_FILE).read_text(encoding="utf-8")
@@ -159,12 +163,20 @@ def test_sapling_status_paths_normalize_windows_separators_without_rewriting_pos
     )
 
 
-def test_sapling_windows_capture_reconciles_both_storage_modes() -> None:
+@pytest.mark.parametrize(
+    ("capture", "sapling_version"),
+    [
+        (WINDOWS_SAPLING_CAPTURE, "0.2.20261103"),
+        (WINDOWS_FIX_SAPLING_CAPTURE, "0.2.20261102"),
+    ],
+)
+def test_sapling_windows_capture_reconciles_both_storage_modes(
+    capture: dict[str, Any], sapling_version: str
+) -> None:
     """Retain the native Windows Sapling profile and its scheme-specific symlink result."""
-    capture = WINDOWS_SAPLING_CAPTURE
     assert capture["status"] == "captured"
     assert capture["platform"].startswith("Windows-2025Server-")
-    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
+    assert capture["clients"]["sapling"].startswith(f"Sapling {sapling_version}")
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
     cases = {case["id"]: case for case in capture["cases"]}
     assert set(cases) == {

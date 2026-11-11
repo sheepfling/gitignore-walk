@@ -219,6 +219,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261102-behavior-windows-x64.json`                           | Windows Server 2025 x64    | 0.2.20261102 | —       |
 | `sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261102 | 0.47.1  |
 | `sapling-0.2.20261102-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261102 | 0.47.1  |
+| `sapling-0.2.20261102-jj-0.47.1-windows-x64.json`                          | Windows Server 2025 x64    | 0.2.20261102 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-windows-x64.json`                          | Windows Server 2025 x64    | 0.2.20261028 | 0.47.1  |

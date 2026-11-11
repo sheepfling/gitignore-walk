@@ -748,9 +748,9 @@ the Windows job recaptures it against pinned Jujutsu 0.47.1 and checks the Git/J
 
 **Next unfinished slice:** broaden Sapling and Jujutsu version/platform and configuration profiles
 beyond current pinned profiles for Sapling 0.2.20261028/0.2.20261103 and Jujutsu 0.47.1. The full
-Sapling 0.2.20261102 profile now matches on Debian 13 ARM64 and x86_64; Windows has a focused
-fix-release capture, but the full cross-scheme profile remains to be measured there. The captured
-macOS/Linux clients also need broader version and configuration coverage. TFVC remains
+Sapling 0.2.20261102 profile now matches on Debian 13 ARM64, x86_64, and Windows Server 2025 x64.
+The Windows capture also confirms Jujutsu 0.47.1 in both workspace modes. The captured macOS/Linux
+clients still need broader version and configuration coverage. TFVC remains
 deferred until its workspace/server fixture is reproducible. Darcs walking has native
 membership-aware selection checks in both traversal orders
 and a cross-profile nested-repository case. Its local/global/configured source overlap matches on
