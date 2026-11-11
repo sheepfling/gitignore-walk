@@ -11,7 +11,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from tests.oracles.compat.run import _sapling_status_paths
+if __package__:
+    from .run import _sapling_status_paths
+else:
+    from run import _sapling_status_paths
 
 _PROBES = {
     "empty/target/under-empty-ignore.tmp": "target/ rule below an empty .gitignore",
