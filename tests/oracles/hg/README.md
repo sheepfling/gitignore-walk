@@ -24,7 +24,9 @@ workflow artifacts. The main path runner records single-path `debugignore` obser
 runner records `status --ignored` plus `status --unknown` file walks. The committed captures cover
 macOS arm64 Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1, and Windows
 Server 2025 x86_64 Mercurial 7.1.2. A hosted Ubuntu x86_64 capture records Mercurial 6.7.2 from
-the native Linux CI job. The current Mercurial 7.2.4 Windows profile is installed from a checksum-pinned
+the native Linux CI job. A supplementary Ubuntu 24.04 x86_64 container capture of the same 6.7.2
+client extends its config-precedence coverage; the container uses LinuxKit's x86_64 kernel.
+The current Mercurial 7.2.4 Windows profile is installed from a checksum-pinned
 CPython 3.12 wheel; the Windows job also runs the focused membership-transition test against that
 executable to compare its status behavior with the system-installed Mercurial. The original 48
 path cases include case-sensitive glob
@@ -59,10 +61,10 @@ UTF-8 path. The test suite also compares these patterns directly with the instal
 each client-enabled CI profile. The Windows capture now contains all 67 path cases, including the
 additional byte-semantics and nested-subinclude failure probes.
 An additional source-precedence probe gives `.hgignore` and a configured `ui.ignore` file the same
-matching rule. On Mercurial 7.2.4/macOS arm64, 7.0.1/Debian 13 Linux x86_64, and 7.1.2/Windows
-x86_64, native `debugignore` attributes the decision to the workspace `.hgignore`; the policy trace
-retains both sources and marks `.hgignore` effective. The captures are in the matching profile
-results, and the regression test checks all four profiles.
+matching rule. On Mercurial 7.2.4/macOS arm64, 7.0.1/Debian 13 Linux x86_64, 7.1.2/Windows
+x86_64, and Ubuntu 24.04 x86_64 Mercurial 6.7.2, native `debugignore` attributes the decision to the
+workspace `.hgignore`; the policy trace retains both sources and marks `.hgignore` effective. The
+captures are in the matching profile results, and the regression test checks each captured profile.
 Configured-path environment expansion is captured with Mercurial 7.2.4 on macOS arm64 and Windows
 x86_64, and Mercurial 7.0.1 on Debian 13 Linux aarch64 and x86_64. The POSIX captures cover
 `$VAR`/`${VAR}` paths; the Windows capture covers `%VAR%` expansion. Live native tests also exercise

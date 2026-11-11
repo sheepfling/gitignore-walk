@@ -35,7 +35,9 @@ also compares them with the installed Mercurial on each platform. Fourteen regex
 match native on macOS arm64, hosted Ubuntu x86_64, Windows Server 2025 x86_64, and both Debian 13
 Linux architectures. The live-client differential test exercises the full set.
 Workspace `.hgignore` precedence over a matching configured `ui.ignore` source is now captured and
-checked on macOS, Linux x86_64, and Windows. Two symlink-source boundary probes match on macOS and
+checked on macOS, Debian Linux x86_64, Windows, and Ubuntu 24.04 x86_64 with Mercurial 6.7.2. The
+Ubuntu 6.7.2 precedence profile runs in a container and supplements the hosted-client capture. Two
+symlink-source boundary probes match on macOS and
 Debian Linux x86_64. A self-referential include-source loop also matches on macOS and Windows.
 Live-client tests exercise the regex cases. The latest Mercurial module run on macOS passes with
 631 passed and 11 skipped.
@@ -823,9 +825,12 @@ path and walk oracle profiles remain separate evidence. The Windows job also run
 transition test against its checksum-pinned Mercurial 7.2.4 executable, independent of the
 system-installed client used by the full policy suite.
 
-**Next unfinished slice:** broaden Mercurial configuration-precedence and workspace-membership
-coverage across supported client profiles, focusing on transitions not covered by the existing live
-fixtures. Reproductions on Mercurial
+**Next unfinished slice:** expand Mercurial workspace-membership transitions across supported
+client profiles and platforms. Configuration precedence now has an additional native capture for
+Ubuntu 24.04's Mercurial 6.7.2 package, including the workspace `.hgignore` versus configured
+`ui.ignore` source-order probe. The existing live membership fixture already covers clean,
+pending-forget, forgotten, re-added, committed, and pending-remove states; add only transitions that
+reveal a distinct native membership contract. Reproductions on Mercurial
 7.0.1/Debian 13 x86_64 and 7.2.4/macOS arm64 both raised `ProgrammingError` from
 `hg debugsparse --refresh` after manually removing an exclusion from `.hg/sparse`. In both, the
 file returned to disk but native status then reported it as unknown (`?`). Treat this as a native

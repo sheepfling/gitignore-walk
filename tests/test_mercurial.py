@@ -53,6 +53,13 @@ MATCHING_OBSERVATIONS = {
     }
     for path in MATCHING_CAPTURE_FILES
 }
+SUPPLEMENTAL_CONFIG_PROFILE = "hg-6.7.2-ubuntu-24.04-container-x86_64.json"
+MATCHING_OBSERVATIONS[SUPPLEMENTAL_CONFIG_PROFILE] = {
+    case["id"]: case
+    for case in json.loads(
+        (ORACLE_ROOT / "results" / SUPPLEMENTAL_CONFIG_PROFILE).read_text(encoding="utf-8")
+    )["cases"]
+}
 CAPTURED_CASE_PROFILE_PARAMS = [
     pytest.param(
         case,
@@ -538,6 +545,7 @@ def test_configured_ignore_sources_keep_captured_native_order(tmp_path: Path, pr
         "hg-7.2.4-macos-arm64.json",
         "hg-7.0.1-linux-aarch64.json",
         "hg-7.0.1-linux-x86_64.json",
+        SUPPLEMENTAL_CONFIG_PROFILE,
         "hg-7.1.2-windows-x86_64.json",
         "hg-7.2.4-windows-x86_64.json",
     ),
