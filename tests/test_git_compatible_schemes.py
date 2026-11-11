@@ -1302,6 +1302,117 @@ def test_native_schemes_honor_git_config_count_environment(
     assert policy.explain(probe).ignored is native_ignored
 
 
+@pytest.mark.parametrize("mode", ["sapling-git", "sapling-sl", "jj-colocated", "jj-noncolocated"])
+def test_native_schemes_honor_git_config_nosystem(
+    tmp_path: Path,
+    mode: str,
+) -> None:
+    """A system ignore setting is disabled when Git config says to skip system config."""
+    sapling_mode = mode.startswith("sapling-")
+    client = "sl" if sapling_mode else "jj"
+    executable = shutil.which(client)
+    if executable is None:
+        pytest.skip(f"{client} is not installed")
+    git_executable = shutil.which("git") or "git"
+
+    root = tmp_path / "workspace"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    ignore_file = home / "system-ignore"
+    ignore_file.write_text("system-probe.tmp\n", encoding="utf-8")
+    system_config = home / "system.gitconfig"
+    system_config.write_text(
+        f"[core]\n\texcludesFile = {ignore_file.as_posix()}\n", encoding="utf-8"
+    )
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+    environment = os.environ.copy()
+    for key in tuple(environment):
+        if key.upper().startswith("GIT_CONFIG_"):
+            environment.pop(key)
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_CONFIG_SYSTEM": str(system_config),
+        }
+    )
+
+    if mode == "sapling-git":
+        result = subprocess.run(
+            ["git", "init", "-q", str(root)],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+    elif mode == "sapling-sl":
+        result = subprocess.run(
+            [executable, "init", str(root)],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+    else:
+        init = [executable, "git", "init"]
+        if mode == "jj-noncolocated":
+            init.append("--no-colocate")
+        result = subprocess.run(
+            init,
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+
+    probe = root / "system-probe.tmp"
+    probe.touch()
+    if sapling_mode:
+        native = subprocess.run(
+            [executable, "status", "-iu", "--print0"],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert native.returncode == 0, native.stderr.decode(errors="replace")
+        assert b"I system-probe.tmp\0" not in native.stdout
+        policy = select_policy(
+            root,
+            SaplingPolicyConfig(
+                environment=environment,
+                read_git_config=True,
+                git_executable=git_executable,
+            ),
+        ).policy
+    else:
+        native = subprocess.run(
+            [executable, "file", "list"],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert native.returncode == 0, native.stderr.decode(errors="replace")
+        assert b"system-probe.tmp" in native.stdout
+        policy = select_policy(
+            root,
+            JujutsuPolicyConfig(
+                environment=environment,
+                read_git_config=True,
+                git_executable=git_executable,
+            ),
+        ).policy
+
+    assert not policy.explain(probe).ignored
+
+
 def _git_init(root: Path) -> None:
     result = subprocess.run(
         ["git", "init", "-q", str(root)], capture_output=True, text=True, check=False

@@ -13,6 +13,7 @@ from tests.oracles.compat.run import _sapling_status_paths
 from tests.oracles.compat.sapling_pattern_profile import _capture_probe
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
+COMPAT_FIXTURE = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))
 
 
 def test_legacy_sapling_pattern_client_errors_are_not_candidate_matches(
@@ -662,6 +663,24 @@ def test_compatibility_capture_reconciles_system_global_ignore(profile: str, cas
         "system.visible",
     ]
     assert configured_system["ignored"] == expected_ignored[case_id]
+
+
+def test_current_compatibility_capture_records_system_config_suppression() -> None:
+    """Retain the native result when GIT_CONFIG_NOSYSTEM disables a configured system file."""
+    capture = CAPTURES[CAPTURE_FILES[0]]
+    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
+    expected = COMPAT_FIXTURE["expected_environment_nosystem_ignored"]
+    for case in capture["cases"]:
+        probe = case["configured_system"]["nosystem_probe"]
+        assert probe["config_environment_variable"] == "GIT_CONFIG_NOSYSTEM"
+        assert probe["query_files"] == [
+            "system.custom",
+            "system.system",
+            "system.visible",
+        ]
+        assert probe["candidate_matches"] is True
+        assert probe["ignored"] == expected[case["id"]]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)

@@ -88,6 +88,9 @@ resolution to Git. These observations are captured on macOS arm64 and Debian 13 
 x86_64, including a separate Git 2.56 profile; Windows captures the same behavior for both Jujutsu
 modes. Native live tests also cover `GIT_CONFIG_COUNT`/`KEY_n`/`VALUE_n` injection for Sapling `.git`
 and both Jujutsu modes; Sapling `.sl` remains isolated from Git config. A repository-local
+`GIT_CONFIG_NOSYSTEM=1` probe with an explicit `GIT_CONFIG_SYSTEM` file confirms the system ignore
+is suppressed in Sapling `.git`/`.sl` and both Jujutsu modes on macOS 26 arm64. The live policy test
+compares this with `read_git_config=True`; Linux and Windows native jobs recapture the probe.
 `core.excludesFile` overrides system and user values in
 Sapling `.git` mode and both Jujutsu modes; Sapling `.sl` ignores Git config. A `gitdir` conditional
 include selects the user file in Sapling `.git` mode and colocated Jujutsu; non-colocated Jujutsu

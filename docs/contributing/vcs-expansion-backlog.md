@@ -657,7 +657,10 @@ mode and both Jujutsu modes honor the injected value, while Sapling `.sl` mode i
 `read_git_config=True` policies follow Git's resolution of the same environment entries. The
 compatibility oracle now records this injected-config result in every Sapling/Jujutsu storage mode,
 and its pinned-client CI captures fail if any mode diverges from the recorded behavior. Broader
-environment-variable and client-version profiles remain open.
+environment-variable and client-version profiles remain open. A new `GIT_CONFIG_NOSYSTEM=1` probe
+with an explicit `GIT_CONFIG_SYSTEM` path confirms the system ignore is suppressed across all four
+Sapling/Jujutsu modes on macOS 26 arm64; native Linux and Windows capture jobs now verify the same
+profile behavior.
 
 A focused Sapling release profile now compares 0.2.20261028 with 0.2.20261103 using identical
 Debian 13 ARM64 fixtures. It probes directory-only `target/` rules below missing and empty

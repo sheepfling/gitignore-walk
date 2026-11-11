@@ -55,6 +55,12 @@
     "jj.colocated": ["system.system"],
     "jj.noncolocated": ["system.system"]
   },
+  "expected_environment_nosystem_ignored": {
+    "sapling.git-mode": [],
+    "sapling.sl-mode": [],
+    "jj.colocated": [],
+    "jj.noncolocated": []
+  },
   "configured_repository_probe_files": {
     "repository.global": "must be visible when repository core.excludesFile is set\n",
     "repository.local": "must be ignored by repository core.excludesFile\n",

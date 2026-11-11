@@ -789,6 +789,23 @@ def _capture_configured_global_sapling(
         "candidate_matches": system_ignored == expected,
         "status_stdout": status.stdout.replace(str(root), "<workspace>"),
     }
+    no_system_environment = dict(probe_environment)
+    no_system_environment["GIT_CONFIG_NOSYSTEM"] = "1"
+    status = _run(
+        [executable, "status", "-iu", "--print0"], cwd=root, environment=no_system_environment
+    )
+    _require_success(status, "sl status GIT_CONFIG_NOSYSTEM")
+    _, ignored_paths = _sapling_status_paths(status.stdout)
+    nosystem_ignored = sorted(ignored_paths & set(system_query_files))
+    expected = fixture["expected_environment_nosystem_ignored"][f"sapling.{mode}-mode"]
+    configured_system["nosystem_probe"] = {
+        "config_environment_variable": "GIT_CONFIG_NOSYSTEM",
+        "query_files": system_query_files,
+        "ignored": nosystem_ignored,
+        "included": sorted(set(system_query_files) - set(nosystem_ignored)),
+        "candidate_matches": nosystem_ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+    }
     conditional_global = _capture_conditional_global_sapling(
         executable, mode, root, home, probe_environment, fixture
     )
@@ -875,6 +892,24 @@ def _capture_configured_global_jj(
         "ignored": system_ignored,
         "included": sorted(set(system_query_files) & included_paths),
         "candidate_matches": system_ignored == expected,
+        "status_stdout": status.stdout.replace(str(root), "<workspace>"),
+        "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
+    }
+    no_system_environment = dict(probe_environment)
+    no_system_environment["GIT_CONFIG_NOSYSTEM"] = "1"
+    status = _run([executable, "status", "--no-pager"], cwd=root, environment=no_system_environment)
+    _require_success(status, "jj status GIT_CONFIG_NOSYSTEM")
+    listed = _run([executable, "file", "list"], cwd=root, environment=no_system_environment)
+    _require_success(listed, "jj file list GIT_CONFIG_NOSYSTEM")
+    included_paths = _jujutsu_paths(listed.stdout)
+    nosystem_ignored = sorted(set(system_query_files) - included_paths)
+    expected = fixture["expected_environment_nosystem_ignored"][f"jj.{mode}"]
+    configured_system["nosystem_probe"] = {
+        "config_environment_variable": "GIT_CONFIG_NOSYSTEM",
+        "query_files": system_query_files,
+        "ignored": nosystem_ignored,
+        "included": sorted(set(system_query_files) & included_paths),
+        "candidate_matches": nosystem_ignored == expected,
         "status_stdout": status.stdout.replace(str(root), "<workspace>"),
         "file_list_stdout": listed.stdout.replace(str(root), "<workspace>"),
     }

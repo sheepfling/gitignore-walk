@@ -297,6 +297,10 @@ jobs:
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          for case in capture["cases"]:
+              nosystem = case["configured_system"]["nosystem_probe"]
+              assert nosystem["config_environment_variable"] == "GIT_CONFIG_NOSYSTEM"
+              assert nosystem["candidate_matches"] and nosystem["ignored"] == [], nosystem
           boundary_path = Path(os.environ["RUNNER_TEMP"]) / "native/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
           boundary = json.loads(boundary_path.read_text(encoding="utf-8"))
           linked_path = Path(os.environ["RUNNER_TEMP"]) / "native/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
@@ -361,6 +365,11 @@ jobs:
           assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
           assert all(case["configured_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["configured_system"]["candidate_matches"] for case in capture["cases"])
+          assert all(
+              case["configured_system"]["nosystem_probe"]["candidate_matches"]
+              and case["configured_system"]["nosystem_probe"]["ignored"] == []
+              for case in capture["cases"]
+          )
           assert all(case["conditional_global"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_gitdir_i"]["candidate_matches"] for case in capture["cases"])
           assert all(case["conditional_worktree"]["candidate_matches"] for case in capture["cases"])
@@ -464,6 +473,11 @@ jobs:
           assert all(case["symlinked_gitignore"]["candidate_matches"] for case in capture["cases"])
           older_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json"
           older = json.loads(older_path.read_text(encoding="utf-8"))
+          assert all(
+              case["configured_system"]["nosystem_probe"]["candidate_matches"]
+              and case["configured_system"]["nosystem_probe"]["ignored"] == []
+              for case in older["cases"]
+          )
           older_patterns_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261028-sl-patterns-debian13-x86_64.json"
           older_patterns = json.loads(older_patterns_path.read_text(encoding="utf-8"))
           assert older_patterns["client"].startswith("Sapling 0.2.20261028")
@@ -943,6 +957,9 @@ jobs:
           assert {case["id"] for case in sapling_cases} == {"sapling.git-mode", "sapling.sl-mode"}
           for case in sapling_cases:
               assert case["candidate_matches"], case
+              nosystem = case["configured_system"]["nosystem_probe"]
+              assert nosystem["config_environment_variable"] == "GIT_CONFIG_NOSYSTEM"
+              assert nosystem["candidate_matches"] and nosystem["ignored"] == [], nosystem
               for probe in (
                   "source_discovery",
                   "pattern_discovery",
@@ -1006,6 +1023,9 @@ jobs:
               "sapling.git-mode", "sapling.sl-mode", "jj.colocated", "jj.noncolocated"
           }
           for case in capture["cases"]:
+              nosystem = case["configured_system"]["nosystem_probe"]
+              assert nosystem["config_environment_variable"] == "GIT_CONFIG_NOSYSTEM"
+              assert nosystem["candidate_matches"] and nosystem["ignored"] == [], nosystem
               print(case["id"], "candidate_matches=", case["candidate_matches"])
           '@ | python -
           $patternOutput = Join-Path $nativeDir 'sapling-0.2.20261028-sl-patterns-windows-x64.json'
