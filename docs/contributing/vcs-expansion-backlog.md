@@ -561,7 +561,9 @@ another across commits, with native status and membership-aware walking checked 
 Its overlapping `[include]` and `[exclude]` patterns confirm that the native exclusion takes
 precedence, including after the profile update. A tracked `%include` sparse-profile source that
 Mercurial omits from disk and native status remains membership-unknown, while the membership-aware
-walk matches native status for the files selected by the profile.
+walk matches native status for the files selected by the profile. Disabling the active profile
+restores all committed files; the same policy refreshes their membership and the walker matches the
+expanded native status set.
 A POSIX FIFO and Unix-domain socket matching `.hgignore` are omitted by native status and all-file
 walks, while direct policy evaluation still reports the ignore match and unknown membership. This
 confirms that ignore decisions do not turn special filesystem nodes into regular-file walk results.

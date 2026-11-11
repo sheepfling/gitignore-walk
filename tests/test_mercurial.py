@@ -1118,6 +1118,23 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     }
     assert updated_walk == updated_paths
 
+    hg("debugsparse", "--disable-profile", ".hgsparse")
+    restored_paths = native_paths()
+    assert restored_paths == {
+        ".hgignore",
+        ".hgsparse",
+        "one/a.tmp",
+        "two/b.tmp",
+        "two/excluded.tmp",
+    }
+    assert policy.explain("one/a.tmp").membership == "versioned"
+    assert policy.explain("two/excluded.tmp").membership == "versioned"
+    restored_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    assert restored_walk == restored_paths
+
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
