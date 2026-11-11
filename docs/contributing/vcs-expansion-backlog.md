@@ -22,7 +22,7 @@ on Linux, plus one malformed-input observation. It also supplies 88 non-Git cand
 documentation/source-derived and 21 open questions. The original Mercurial native corpus has 48 path
 probes and six traversal fixtures, captured with Mercurial 7.2.4 on macOS arm64, 7.0.1 on Linux
 aarch64 and x86_64, and 7.1.2 on Windows x86_64. A hosted Ubuntu x86_64 capture adds Mercurial
-6.7.2. The current Mercurial 7.2.4 Windows profile adds 71 path cases: 65 closed observations
+6.7.2. The current Mercurial 7.2.4 Windows profile captures 72 path cases: 66 closed observations
 match, six remain open, and four skip because their fixtures require POSIX behavior. Its six walk
 fixtures match. The historical Windows 7.1.2 capture has 67 path cases, including 60 closed boolean
 comparisons and one structured invalid-syntax match, while four path probes skip on platform

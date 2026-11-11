@@ -1136,6 +1136,55 @@
       "raw_stderr": ""
     },
     {
+      "id": "hg.config-discovery-environment-variable-path",
+      "profile": "hg",
+      "dimension": "configuration",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+        "debugignore",
+        "-v",
+        "--",
+        "environment.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": "<temp>/hgrc",
+        "HGPLAIN": "1",
+        "LC_ALL": "C",
+        "HG_ORACLE_IGNORE_FILE": "<home>/environment.ignore"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "environment.tmp is ignored\n(ignore rule in <home>/environment.ignore, line 2: 'environment.tmp')\n",
+      "stderr": "",
+      "configuration": {
+        "command": [
+          "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+          "config",
+          "--debug",
+          "ui"
+        ],
+        "exit_code": 0,
+        "stdout": "read config from: <hgrc>\n<hgrc>:2: ui.ignore.environment=%HG_ORACLE_IGNORE_FILE%\n--verbose: ui.verbose=False\n--debug: ui.debug=True\n--quiet: ui.quiet=False\n",
+        "stderr": "",
+        "normalized_stdout_sha256": "bbf265715a4549eaa80de9fdff870a3492cc930b7cfd4926381187341d2458d7"
+      },
+      "normalized_stdout_sha256": "9eb8c8053b15956f08a98f7aaf9729d9016e22f2fe3407a8d99bd3c71eb7644e",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "environment.tmp is ignored\n(ignore rule in C:\\Users\\RUNNER~1\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-hfilsfjs\\home/environment.ignore, line 2: 'environment.tmp')\n",
+      "raw_stderr": ""
+    },
+    {
       "id": "hg.config-discovery-included-hgrc",
       "profile": "hg",
       "dimension": "configuration",

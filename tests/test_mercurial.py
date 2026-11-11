@@ -62,6 +62,10 @@ CAPTURED_CASE_PROFILE_PARAMS = [
     for profile in MATCHING_CAPTURE_FILES
     for case in CASES
     if case["id"] in MATCHING_OBSERVATIONS[profile]
+    and (
+        case["id"] != "hg.config-discovery-environment-variable-path"
+        or ("windows" in profile) == (os.name == "nt")
+    )
 ]
 WALK_CASES = json.loads((ORACLE_ROOT / "walk_cases.json").read_text(encoding="utf-8"))["cases"]
 WALK_CAPTURE_FILES = (
@@ -600,6 +604,7 @@ def test_client_config_discovery_preserves_effective_source_order_and_paths(
         profile
         for profile in MATCHING_CAPTURE_FILES
         if "hg.config-discovery-environment-variable-path" in MATCHING_OBSERVATIONS[profile]
+        and ("windows" in profile) == (os.name == "nt")
     ),
     ids=lambda name: name.removesuffix(".json"),
 )
