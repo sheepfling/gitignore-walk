@@ -58,7 +58,18 @@ def test_sapling_release_profile_records_version_command_failure(
     result = subprocess.CompletedProcess(
         args=["sl", "--version"], returncode=255, stdout="", stderr="client failed to start"
     )
-    monkeypatch.setattr(sapling_release_profiles.subprocess, "run", lambda *args, **kwargs: result)
+
+    def failed_version_probe(
+        command: list[str], **kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        assert command == ["sl", "--version"]
+        environment = kwargs["env"]
+        assert isinstance(environment, dict)
+        assert Path(environment["HOME"], ".gitconfig").is_file()
+        return result
+
+    monkeypatch.setattr(sapling_release_profiles.subprocess, "run", failed_version_probe)
+    monkeypatch.setattr(sapling_release_profiles.platform, "platform", lambda: "test-platform")
     monkeypatch.setattr(
         sys,
         "argv",

@@ -37,28 +37,35 @@ def _run(
     )
 
 
+def _isolated_environment(home: Path) -> dict[str, str]:
+    """Build a clean client home, including the empty config needed by Windows Sapling."""
+    home.mkdir(parents=True)
+    (home / ".gitconfig").write_text("", encoding="utf-8")
+    environment = {
+        **os.environ,
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "XDG_CONFIG_HOME": str(home / ".config"),
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "HGPLAIN": "1",
+        "SL_USER": "Oracle <oracle@example.invalid>",
+        "PAGER": "cat",
+    }
+    for key in tuple(environment):
+        if key.startswith(("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_")):
+            environment.pop(key)
+    for key in ("GIT_CONFIG_COUNT", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM"):
+        environment.pop(key, None)
+    return environment
+
+
 def _capture_mode(executable: str, version: str, mode: str) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix=f"sapling-{version}-{mode}-") as temporary:
         base = Path(temporary)
         home = base / "home"
-        home.mkdir()
+        environment = _isolated_environment(home)
         root = base / "workspace"
         root.mkdir()
-        environment = {
-            **os.environ,
-            "HOME": str(home),
-            "USERPROFILE": str(home),
-            "XDG_CONFIG_HOME": str(home / ".config"),
-            "GIT_CONFIG_NOSYSTEM": "1",
-            "HGPLAIN": "1",
-            "SL_USER": "Oracle <oracle@example.invalid>",
-            "PAGER": "cat",
-        }
-        for key in tuple(environment):
-            if key.startswith(("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_")):
-                environment.pop(key)
-        for key in ("GIT_CONFIG_COUNT", "GIT_CONFIG_GLOBAL", "GIT_CONFIG_SYSTEM"):
-            environment.pop(key, None)
 
         if mode == "git":
             result = _run(["git", "init", "-q", str(root)], cwd=root, environment=environment)
@@ -119,9 +126,16 @@ def main() -> int:
     )
     parser.add_argument("--output", type=Path, required=True, help="JSON capture destination")
     arguments = parser.parse_args()
-    version = subprocess.run(
-        [arguments.sl, "--version"], capture_output=True, text=True, check=False, timeout=30
-    )
+    with tempfile.TemporaryDirectory(prefix="sapling-release-version-") as temporary:
+        version_environment = _isolated_environment(Path(temporary) / "home")
+        version = subprocess.run(
+            [arguments.sl, "--version"],
+            capture_output=True,
+            text=True,
+            env=version_environment,
+            check=False,
+            timeout=30,
+        )
     capture = {
         "schema_version": 1,
         "status": "captured" if version.returncode == 0 else "client-error",
