@@ -96,23 +96,32 @@ def test_perforce_membership_matches_native_have_and_opened(
         stderr=subprocess.DEVNULL,
     )
     try:
-        for _ in range(100):
-            info = subprocess.run(
-                [p4, "info"],
-                cwd=workspace,
-                env=environment,
-                capture_output=True,
-                text=True,
-                timeout=30,
-                check=False,
-            )
-            if info.returncode == 0:
-                break
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
             if server.poll() is not None:
-                pytest.fail(f"disposable p4d exited during startup: {server.returncode}")
-            time.sleep(0.05)
+                log_path = server_root / "log"
+                log = (
+                    log_path.read_text(encoding="utf-8", errors="replace")
+                    if log_path.exists()
+                    else "<p4d exited before creating its log>"
+                )
+                pytest.fail(
+                    f"disposable p4d exited during startup ({server.returncode}): {log[-2000:]}"
+                )
+            try:
+                with socket.create_connection(("127.0.0.1", port), timeout=0.2):
+                    break
+            except OSError:
+                time.sleep(0.1)
         else:
-            pytest.fail("disposable p4d did not accept connections")
+            log_path = server_root / "log"
+            log = (
+                log_path.read_text(encoding="utf-8", errors="replace")
+                if log_path.exists()
+                else "<p4d has not created its log>"
+            )
+            pytest.fail(f"disposable p4d did not accept connections: {log[-2000:]}")
+        run("info")
 
         run(
             "passwd",
