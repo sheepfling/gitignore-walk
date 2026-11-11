@@ -796,10 +796,15 @@ jobs:
               assert capture["cases"], name
               assert not any(case["candidate_matches"] is False for case in capture["cases"]), name
               if name == "hg-7.2.4-windows-x86_64.json":
-                  assert len(capture["cases"]) == 71, len(capture["cases"])
-                  assert sum(case["candidate_matches"] is True for case in capture["cases"]) == 65
+                  assert len(capture["cases"]) == 72, len(capture["cases"])
+                  assert sum(case["candidate_matches"] is True for case in capture["cases"]) == 66
                   assert sum(case["candidate_matches"] is None for case in capture["cases"]) == 6
                   assert sum(case["native_status"] == "skipped" for case in capture["cases"]) == 4
+                  environment_path = next(
+                      case for case in capture["cases"]
+                      if case["id"] == "hg.config-discovery-environment-variable-path"
+                  )
+                  assert environment_path["candidate_matches"] is True, environment_path
               else:
                   assert len(capture["cases"]) == 6, len(capture["cases"])
                   assert all(case["candidate_matches"] is True for case in capture["cases"])
