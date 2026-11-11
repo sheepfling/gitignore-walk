@@ -17,7 +17,7 @@ python -m scripts.ci oracle-brz --output /tmp/brz-oracle.json
 Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Homebrew client, Linux
 aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original 33 boolean
 candidate cases and explicit regex/error cases are captured across all four profiles. An additional
-Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 42 boolean candidates
+Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 48 boolean candidates
 match there, and all three source-precedence probes match their expected winning patterns. Four
 newer or platform-scoped probes are explicitly excluded. The Unicode `\\w` and `\\d` probes remain
 scoped to Breezy 3.3.24/macOS: an exploratory 3.3.11/Linux run under `LC_ALL=C` omitted the queried
@@ -53,9 +53,11 @@ policy walker matches
 captured status unknown/ignored paths when an exception opens an ignored parent and exposes its
 siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
-the ignored subtree hidden. The local policy is checked against all 46 boolean candidate cases on
+the ignored subtree hidden. The local policy is checked against all 52 boolean candidate cases on
 macOS arm64 and 36 on Linux aarch64; the other two Breezy 3.3.24 committed profiles retain 33
-checked cases. The Debian Breezy 3.3.11 profile checks 42 boolean candidates. Additional
+checked cases. The Debian Breezy 3.3.11 profile checks 48 boolean candidates. Variable directory
+scopes from `*`, `**`, and regex exceptions are captured on Breezy 3.3.24/macOS and 3.3.11/Debian;
+the policy walker matches the native paths in both traversal orders. Additional
 regex probes cover Unicode `\\w` and `\\d`, fixed-width lookbehind, and Breezy's native parse error
 for a numeric backreference to its open regex wrapper. These four probes are currently captured on
 macOS arm64 only. Native fixtures cover both sides of root-anchored exception pruning on Breezy

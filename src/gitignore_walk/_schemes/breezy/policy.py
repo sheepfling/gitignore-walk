@@ -54,14 +54,14 @@ class _BreezyRule:
             candidate = relative_path.rsplit("/", 1)[-1]
         return self.expression.match(candidate) is not None
 
-    def opens_exception_scope(self, relative_path: str) -> bool:
+    def opens_exception_scope(self, relative_path: str, *, is_directory: bool) -> bool:
         """Return whether an exception reopens this path's containing directory."""
         if self.priority != "exception" or self.exception_scope is None:
             return False
-        return any(
-            self.exception_scope.fullmatch(prefix) is not None
-            for prefix in _path_prefixes(relative_path)
-        )
+        prefixes = _path_prefixes(relative_path)
+        if not is_directory:
+            prefixes = prefixes[1:]
+        return any(self.exception_scope.fullmatch(prefix) is not None for prefix in prefixes)
 
 
 @dataclass(frozen=True, slots=True)
@@ -187,7 +187,7 @@ class BreezyIgnorePolicy(IgnorePolicy):
         path = self.resolve_target(target)
         snapshot = self._load_snapshot()
         relative = path.relative_to(self.workspace_root).as_posix()
-        matches = self._matching_rules(relative, snapshot)
+        matches = self._matching_rules(relative, snapshot, is_directory=path.is_dir())
         decision = self._decision(path, relative, snapshot, matches)
         effective = decision.source, decision.pattern, decision.line
         trace = tuple(
@@ -302,13 +302,15 @@ class BreezyIgnorePolicy(IgnorePolicy):
     ) -> IgnoreDecision:
         path = self.resolve_target(target)
         relative = path.relative_to(self.workspace_root).as_posix()
-        matches = self._matching_rules(relative, snapshot)
+        matches = self._matching_rules(relative, snapshot, is_directory=path.is_dir())
         return self._decision(path, relative, snapshot, matches)
 
     def _matching_rules(
         self,
         relative: str,
         snapshot: _BreezySnapshot,
+        *,
+        is_directory: bool,
     ) -> tuple[_BreezyRule, ...]:
         # Breezy compares each rule with the complete workspace-relative path when the
         # pattern contains a slash or is a regex, and otherwise with the final path component.
@@ -317,7 +319,8 @@ class BreezyIgnorePolicy(IgnorePolicy):
         return tuple(
             rule
             for rule in snapshot.rules
-            if rule.matches(relative) or rule.opens_exception_scope(relative)
+            if rule.matches(relative)
+            or rule.opens_exception_scope(relative, is_directory=is_directory)
         )
 
     def _decision(

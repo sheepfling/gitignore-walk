@@ -2002,6 +2002,54 @@
         "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
+    },
+    {
+      "id": "brz.globbed-file-exception-reopens-scope",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
+    },
+    {
+      "id": "brz.globbed-file-exception-keeps-ancestor-sibling-ignored",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
+    },
+    {
+      "id": "brz.globstar-file-exception-reopens-scope",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
+    },
+    {
+      "id": "brz.globstar-file-exception-keeps-direct-sibling-ignored",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
+    },
+    {
+      "id": "brz.regex-wildcard-parent-exception-reopens-scope",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
+    },
+    {
+      "id": "brz.regex-wildcard-parent-exception-keeps-ancestor-sibling-ignored",
+      "required_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "current_profile": "brz-3.3.24-linux-aarch64-py312.json"
     }
   ]
 }

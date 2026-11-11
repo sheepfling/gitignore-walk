@@ -234,14 +234,18 @@ for decision in selection.policy.explain_many(["build/output.tmp", "src/main.py"
 The evaluator supports basename and workspace-relative globs, `**`, `RE:` regular expressions,
 exceptions (`!`), and strong exclusions (`!!`). Patterns with a slash match the complete
 workspace-relative path; patterns without a slash match its final component. An exception below an
-ignored directory keeps the directory traversable, even if the exception's target is absent. Rule
-decisions and pruning are separate: an ignored parent can remain a traversal candidate. `initial_excludes`
+ignored directory keeps the directory traversable, even if the exception's target is absent. A
+wildcard or regex exception also reopens its matching nested directory for siblings and descendants,
+without unignoring a sibling in an ancestor directory. Rule decisions and pruning are separate: an
+ignored parent can remain a traversal candidate. `initial_excludes`
 defaults to `.bzr` metadata. Named regex capture groups are normalized to non-capturing groups and
 reported as diagnostics; malformed regexes raise `BreezyIgnoreError`. The policy does not inspect
-versioned membership. All 36 boolean candidates, including exact-path versus `/**` strong exclusions,
-`BRZ_HOME` global-ignore discovery, negative lookahead, and scoped inline regex flags, are compared
-with Breezy 3.3.24 on macOS arm64 and Linux aarch64; 33 are captured on Linux x86_64 and Windows
-Server 2025 x86_64. Native winning-pattern probes establish regular source order as global ignores,
+versioned membership. The 52 boolean candidates on Breezy 3.3.24/macOS arm64 and 36 on Linux aarch64
+include exact-path versus `/**` strong exclusions, `BRZ_HOME` global-ignore discovery, negative
+lookahead, scoped inline regex flags, and variable wildcard/regex exception scopes. Linux x86_64 and
+Windows Server 2025 x86_64 captures contain 33 checked cases; Breezy 3.3.11/Debian 13 x86_64 matches
+48 boolean candidates, including the variable exception scopes. Native winning-pattern probes
+establish regular source order as global ignores,
 built-in defaults, then branch `.bzrignore` on macOS arm64 and Linux aarch64. Both profiles also
 reject `RE:(?i)foo` with a native invalid-pattern error, despite the published pattern guide showing
 that form. Other regex, global-config, and platform behavior remain open; see the

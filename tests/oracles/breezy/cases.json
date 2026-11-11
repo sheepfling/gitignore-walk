@@ -153,13 +153,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^cache/.*\\.tmp$"]
+        "patterns": [
+          "RE:^cache/.*\\.tmp$"
+        ]
       },
       "query": "cache/a.tmp",
       "expected_candidate": true,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured path-scoped RE matching on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
@@ -167,13 +171,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^cache/.*\\.tmp$"]
+        "patterns": [
+          "RE:^cache/.*\\.tmp$"
+        ]
       },
       "query": "a.tmp",
       "expected_candidate": false,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured anchored RE non-matches on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
@@ -181,13 +189,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:cache"]
+        "patterns": [
+          "RE:cache"
+        ]
       },
       "query": "cache",
       "expected_candidate": true,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured exact regex full-path match on Breezy 3.3.24."
     },
     {
@@ -195,13 +207,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:cache"]
+        "patterns": [
+          "RE:cache"
+        ]
       },
       "query": "cache.tmp",
       "expected_candidate": false,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured that RE patterns match the complete path rather than using re.search, on Breezy 3.3.24."
     },
     {
@@ -209,13 +225,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:(?P<name>foo)\\.tmp"]
+        "patterns": [
+          "RE:(?P<name>foo)\\.tmp"
+        ]
       },
       "query": "foo.tmp",
       "expected_candidate": true,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured named-capture normalization and matching on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
@@ -244,13 +264,19 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["!RE:^cache/keep\\.tmp$", "!!RE:^cache/.*.tmp$"]
+        "patterns": [
+          "!RE:^cache/keep\\.tmp$",
+          "!!RE:^cache/.*.tmp$"
+        ]
       },
       "query": "cache/keep.tmp",
       "expected_candidate": true,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured that !!RE rules override matching RE exceptions on Breezy 3.3.24."
     },
     {
@@ -258,13 +284,18 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["!!RE:^cache/.*\\.tmp$"]
+        "patterns": [
+          "!!RE:^cache/.*\\.tmp$"
+        ]
       },
       "query": "cache/drop.tmp",
       "expected_candidate": false,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured Breezy 3.3.24 path normalization of backslashes in !!RE patterns."
     },
     {
@@ -376,7 +407,9 @@
       "profile": "breezy",
       "dimension": "source-precedence",
       "setup": {
-        "patterns": ["keep.*"],
+        "patterns": [
+          "keep.*"
+        ],
         "global_ignore_file_content": "*.tmp\n"
       },
       "query": "keep.tmp",
@@ -389,7 +422,9 @@
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE"],
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
       "release_gate": "Capture which matching regular ignore source Breezy reports when global and branch rules overlap."
     },
     {
@@ -397,7 +432,9 @@
       "profile": "breezy",
       "dimension": "source-precedence",
       "setup": {
-        "patterns": ["module.*"]
+        "patterns": [
+          "module.*"
+        ]
       },
       "query": "module.pyc",
       "expected_candidate": true,
@@ -409,7 +446,9 @@
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE"],
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
       "release_gate": "Capture local versus built-in rule provenance for an overlapping ignore."
     },
     {
@@ -429,7 +468,9 @@
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE"],
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
       "release_gate": "Capture global versus built-in rule provenance for an overlapping ignore."
     },
     {
@@ -437,7 +478,9 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:(?i)foo"]
+        "patterns": [
+          "RE:(?i)foo"
+        ]
       },
       "query": "foo",
       "expected_candidate": null,
@@ -519,7 +562,9 @@
       "expected_candidate": false,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE"],
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
       "release_gate": "Verify the native status walk enters an ignored parent for a child exception."
     },
     {
@@ -675,7 +720,11 @@
       "profile": "breezy",
       "dimension": "traversal",
       "setup": {
-        "patterns": ["cache", "cache/**", "!./cache/keep.tmp"],
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!./cache/keep.tmp"
+        ],
         "files": {
           "cache/keep.tmp": "exception target\n",
           "cache/drop.tmp": "ignored sibling\n",
@@ -684,10 +733,15 @@
       },
       "query": "cache/sibling.tmp",
       "expected_candidate": true,
-      "capture_profiles": ["brz-3.3.24-macos-arm64.json"],
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Confirm Breezy's ./-anchored nested exception matches its exact workspace path and prevents pruning an ignored parent."
     },
     {
@@ -695,7 +749,11 @@
       "profile": "breezy",
       "dimension": "traversal",
       "setup": {
-        "patterns": ["cache", "cache/**", "!./other/keep.tmp"],
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!./other/keep.tmp"
+        ],
         "files": {
           "cache/drop.tmp": "ignored subtree\n",
           "other/keep.tmp": "unignored exception target\n"
@@ -703,10 +761,15 @@
       },
       "query": "other/keep.tmp",
       "expected_candidate": false,
-      "capture_profiles": ["brz-3.3.24-macos-arm64.json"],
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Confirm an unrelated root-anchored exception does not keep an ignored directory traversable."
     },
     {
@@ -725,7 +788,10 @@
       "expected_candidate": false,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE", "BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Compare regex exception traversal with an otherwise identical ignored parent."
     },
     {
@@ -744,7 +810,9 @@
       "expected_candidate": true,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-IGNORE"],
+      "source_ids": [
+        "BRZ-IGNORE"
+      ],
       "release_gate": "Confirm the ignored subtree stays pruned when no exception can reopen it."
     },
     {
@@ -830,13 +898,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^(?!vendor/).*\\.tmp$"]
+        "patterns": [
+          "RE:^(?!vendor/).*\\.tmp$"
+        ]
       },
       "query": "src/cache.tmp",
       "expected_candidate": true,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured positive path lookahead behavior on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
@@ -844,13 +916,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^(?!vendor/).*\\.tmp$"]
+        "patterns": [
+          "RE:^(?!vendor/).*\\.tmp$"
+        ]
       },
       "query": "vendor/cache.tmp",
       "expected_candidate": false,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured negative path lookahead behavior on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
@@ -858,13 +934,17 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:(?i:cache)\\.tmp"]
+        "patterns": [
+          "RE:(?i:cache)\\.tmp"
+        ]
       },
       "query": "CACHE.tmp",
       "expected_candidate": true,
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Captured scoped case-insensitive regex behavior on Breezy 3.3.24 macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64."
     },
     {
@@ -872,7 +952,9 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^cache/(src)-\\1\\.tmp$"]
+        "patterns": [
+          "RE:^cache/(src)-\\1\\.tmp$"
+        ]
       },
       "query": "cache/src-src.tmp",
       "expected_candidate": null,
@@ -882,7 +964,9 @@
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Capture Breezy's invalid-pattern behavior for a backreference to its open regex wrapper on Breezy 3.3.24 macOS arm64 and Linux aarch64."
     },
     {
@@ -890,16 +974,20 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^\\w+\\.tmp$"]
+        "patterns": [
+          "RE:^\\w+\\.tmp$"
+        ]
       },
-      "query": "café.tmp",
+      "query": "caf\u00e9.tmp",
       "expected_candidate": true,
       "capture_profiles": [
         "brz-3.3.24-macos-arm64.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Capture Unicode word-class behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
     },
     {
@@ -907,16 +995,20 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^\\d+\\.tmp$"]
+        "patterns": [
+          "RE:^\\d+\\.tmp$"
+        ]
       },
-      "query": "٣.tmp",
+      "query": "\u0663.tmp",
       "expected_candidate": true,
       "capture_profiles": [
         "brz-3.3.24-macos-arm64.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Capture Unicode digit-class behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
     },
     {
@@ -924,7 +1016,9 @@
       "profile": "breezy",
       "dimension": "regex",
       "setup": {
-        "patterns": ["RE:^cache/(?<=cache/)keep\\.tmp$"]
+        "patterns": [
+          "RE:^cache/(?<=cache/)keep\\.tmp$"
+        ]
       },
       "query": "cache/keep.tmp",
       "expected_candidate": true,
@@ -934,8 +1028,191 @@
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
-      "source_ids": ["BRZ-PATTERNS"],
+      "source_ids": [
+        "BRZ-PATTERNS"
+      ],
       "release_gate": "Capture fixed-width lookbehind behavior on Breezy 3.3.24 macOS arm64 and Linux aarch64."
+    },
+    {
+      "id": "brz.globbed-file-exception-reopens-scope",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!cache/*/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "target\n",
+          "cache/deep/drop.tmp": "sibling\n",
+          "cache/drop.tmp": "ancestor sibling\n"
+        }
+      },
+      "query": "cache/deep/drop.tmp",
+      "expected_candidate": false,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify wildcard-derived Breezy exception scopes with a sibling inside and outside the reopened directory."
+    },
+    {
+      "id": "brz.globbed-file-exception-keeps-ancestor-sibling-ignored",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!cache/*/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "target\n",
+          "cache/deep/drop.tmp": "sibling\n",
+          "cache/drop.tmp": "ancestor sibling\n"
+        }
+      },
+      "query": "cache/drop.tmp",
+      "expected_candidate": true,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify wildcard-derived Breezy exception scopes with a sibling inside and outside the reopened directory."
+    },
+    {
+      "id": "brz.globstar-file-exception-reopens-scope",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!cache/**/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/nested/keep.tmp": "target\n",
+          "cache/deep/nested/drop.tmp": "sibling\n",
+          "cache/deep/drop.tmp": "deeper sibling\n"
+        }
+      },
+      "query": "cache/deep/nested/drop.tmp",
+      "expected_candidate": false,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify wildcard-derived Breezy exception scopes with a sibling inside and outside the reopened directory."
+    },
+    {
+      "id": "brz.globstar-file-exception-keeps-direct-sibling-ignored",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!cache/**/keep.tmp"
+        ],
+        "files": {
+          "cache/deep/nested/keep.tmp": "target\n",
+          "cache/deep/nested/drop.tmp": "sibling\n",
+          "cache/deep/drop.tmp": "deeper sibling\n",
+          "cache/drop.tmp": "direct sibling\n"
+        }
+      },
+      "query": "cache/drop.tmp",
+      "expected_candidate": true,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify wildcard-derived Breezy exception scopes with a sibling inside and outside the reopened directory."
+    },
+    {
+      "id": "brz.regex-wildcard-parent-exception-reopens-scope",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!RE:^cache/[^/]+/keep\\.tmp$"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "target\n",
+          "cache/deep/drop.tmp": "sibling\n",
+          "cache/drop.tmp": "ancestor sibling\n"
+        }
+      },
+      "query": "cache/deep/drop.tmp",
+      "expected_candidate": false,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify wildcard-derived Breezy exception scopes with a sibling inside and outside the reopened directory."
+    },
+    {
+      "id": "brz.regex-wildcard-parent-exception-keeps-ancestor-sibling-ignored",
+      "profile": "breezy",
+      "dimension": "traversal",
+      "setup": {
+        "patterns": [
+          "cache",
+          "cache/**",
+          "!RE:^cache/[^/]+/keep\\.tmp$"
+        ],
+        "files": {
+          "cache/deep/keep.tmp": "target\n",
+          "cache/deep/drop.tmp": "sibling\n",
+          "cache/drop.tmp": "ancestor sibling\n"
+        }
+      },
+      "query": "cache/drop.tmp",
+      "expected_candidate": true,
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
+      ],
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "BRZ-IGNORE",
+        "BRZ-PATTERNS"
+      ],
+      "release_gate": "Verify wildcard-derived Breezy exception scopes with a sibling inside and outside the reopened directory."
     }
   ]
 }

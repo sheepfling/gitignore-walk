@@ -158,9 +158,9 @@ def test_breezy_debian13_profile_records_exact_client_and_python() -> None:
 
     assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
     assert capture["client"]["runner_python"].startswith("3.13.")
-    assert len(capture["cases"]) == 46
+    assert len(capture["cases"]) == 52
     assert len(capture["excluded_cases"]) == 4
-    assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 42
+    assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 48
     assert sum(case["winning_pattern_matches"] is not None for case in capture["cases"]) == 3
 
 
@@ -380,3 +380,53 @@ def test_breezy_walker_matches_exception_pruning_captures(
         assert "cache/drop.tmp" in ignored
         assert policy.explain("cache/deep/drop.tmp").reason == "matched-exception"
         assert policy.can_prune_ignored_directory(root / "cache", policy.explain("cache")) is False
+
+
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+@pytest.mark.parametrize(
+    "case_id",
+    [
+        "brz.globbed-file-exception-reopens-scope",
+        "brz.globstar-file-exception-reopens-scope",
+        "brz.regex-wildcard-parent-exception-reopens-scope",
+    ],
+)
+def test_breezy_walker_matches_variable_exception_scope_captures(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    topdown: bool,
+    case_id: str,
+) -> None:
+    profile = "brz-3.3.24-macos-arm64.json"
+    case = next(case for case in CASES if case["id"] == case_id)
+    observation = next(item for item in CAPTURES[profile]["cases"] if item["id"] == case_id)
+    monkeypatch.setattr(
+        BreezyIgnorePolicy,
+        "_load_default_patterns",
+        lambda self: tuple(CAPTURES[profile]["default_rules"]["patterns"]),
+    )
+    root = tmp_path / "checkout"
+    root.mkdir()
+    (root / ".bzr").mkdir()
+    for relative, contents in case["setup"]["files"].items():
+        path = root / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding="utf-8")
+    (root / ".bzrignore").write_text("\n".join(case["setup"]["patterns"]) + "\n")
+    query = root / case["query"]
+    anchor = query.parent / ".oracle-walk-anchor"
+    anchor.write_text("native walker anchor\n", encoding="utf-8")
+    policy = BreezyIgnorePolicy(root, global_ignore_file=tmp_path / "missing-global-ignore")
+    walker = IgnoreWalker(root, policy=policy)
+    tracked = {anchor.relative_to(root).as_posix()}
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+
+    assert included - tracked == set(observation["unknown_paths"])
+    assert ignored - tracked == set(observation["ignored_paths"])
