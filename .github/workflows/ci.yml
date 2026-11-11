@@ -1113,10 +1113,17 @@ jobs:
           python tests/oracles/compat/sapling_release_profiles.py `
             --sl $sl --profile-version 0.2.20261102 --output $output
           if ($LASTEXITCODE -ne 0) { throw "Sapling fix-release capture failed: $LASTEXITCODE" }
+          $jj = Join-Path (Join-Path $clientDir 'jj') 'jj.exe'
+          if (-not (Test-Path $jj)) { throw "Jujutsu executable was not found: $jj" }
+          $fullOutput = Join-Path $nativeDir 'sapling-0.2.20261102-jj-0.47.1-windows-x64.json'
+          python tests/oracles/compat/run.py --sl $sl --jj $jj --output $fullOutput
+          if ($LASTEXITCODE -ne 0) { throw "Sapling/Jujutsu fix-release capture failed: $LASTEXITCODE" }
           @'
           import json
           import os
           from pathlib import Path
+
+          from scripts.ci_native import inspect_capture
 
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261102-behavior-windows-x64.json"
           capture = json.loads(path.read_text(encoding="utf-8"))
@@ -1131,6 +1138,18 @@ jobs:
               assert capture["conformance"] == "client-error-observed", capture
               assert capture["version_probe"]["exit_code"] == 255, capture["version_probe"]
               assert capture["cases"] == [], capture["cases"]
+          full_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261102-jj-0.47.1-windows-x64.json"
+          full_result = inspect_capture(full_path)
+          full_capture = json.loads(full_path.read_text(encoding="utf-8"))
+          assert full_result["passed"], full_result
+          assert full_capture["status"] == "captured", full_capture
+          assert full_capture["platform"].startswith("Windows-2025Server-"), full_capture["platform"]
+          assert full_capture["clients"]["sapling"].startswith("Sapling 0.2.20261102"), full_capture["clients"]
+          assert full_capture["clients"]["jujutsu"].startswith("jj 0.47.1"), full_capture["clients"]
+          assert {case["id"] for case in full_capture["cases"]} == {
+              "sapling.git-mode", "sapling.sl-mode", "jj.colocated", "jj.noncolocated"
+          }
+          assert all(case["candidate_matches"] for case in full_capture["cases"]), full_capture["cases"]
           '@ | python -
       - name: Check Windows Registry and INI precedence
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
