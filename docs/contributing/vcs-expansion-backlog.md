@@ -763,8 +763,11 @@ Sapling's optional membership-aware walk now uses `sl status --all --print0` and
 status states with policy decisions and walker selections in both traversal orders. The live
 fixture covers clean, modified, added, removed, missing, ignored, and unknown paths; a tracked file
 matching `.gitignore` remains selected as included because membership is independent from rule
-matching. The check runs with the client-enabled native integration suite. Jujutsu now has an
-opt-in membership query based on `jj --ignore-working-copy file list` rather than `jj status`,
+matching. The check runs with the client-enabled native integration suite. The Jujutsu fixture now
+makes the same assertion for a present tracked file matching `.gitignore`, alongside an ignored
+unversioned file; it checks included, ignored, and all-file walks in both traversal orders while
+confirming the membership query does not create a new operation. Jujutsu has an opt-in membership
+query based on `jj --ignore-working-copy file list` rather than `jj status`,
 which snapshots the working copy. The saved `@` tree identifies versioned paths; present files
 missing from that tree are unversioned, while missing unlisted paths and directories remain
 unknown. A live fixture checks policy selections in both walk orders and confirms the operation ID

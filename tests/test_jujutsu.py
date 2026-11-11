@@ -62,7 +62,6 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
     else:
         broken_link_created = True
     jj("status")
-    (root / "tracked.tmp").unlink()
     (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
 
@@ -120,9 +119,15 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
             for path in walker.iter_files(selection=selection_name, topdown=topdown)
         }
 
-    assert walked("included") == {".gitignore", "clean.txt", "unknown.txt"}
+    assert walked("included") == {".gitignore", "clean.txt", "tracked.tmp", "unknown.txt"}
     assert walked("ignored") == {"ignored.tmp"}
-    assert walked("all") == {".gitignore", "clean.txt", "ignored.tmp", "unknown.txt"}
+    assert walked("all") == {
+        ".gitignore",
+        "clean.txt",
+        "ignored.tmp",
+        "tracked.tmp",
+        "unknown.txt",
+    }
     operation_after = jj(
         "op", "log", "-n", "1", "-T", 'id ++ "\\n"', ignore_working_copy=True
     ).stdout
