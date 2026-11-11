@@ -752,6 +752,56 @@ jobs:
       - name: Install package and test tools
         id: setup
         run: python -m pip install -e . 'pytest>=8.3' breezy==3.3.24
+      - name: Capture current Mercurial 7.2.4 Windows profile
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $clientDir = Join-Path $env:RUNNER_TEMP 'compat-clients'
+          $nativeDir = Join-Path $env:RUNNER_TEMP 'native'
+          New-Item -ItemType Directory -Force -Path $clientDir, $nativeDir | Out-Null
+          $wheel = Join-Path $clientDir 'mercurial-7.2.4-cp312-cp312-win_amd64.whl'
+          Invoke-WebRequest `
+            -Uri 'https://files.pythonhosted.org/packages/f8/65/d0ca4958ae4ec12f996cbe3d6209767ea90cddebfd393553f44e40b9b469/mercurial-7.2.4-cp312-cp312-win_amd64.whl' `
+            -OutFile $wheel
+          $digest = (Get-FileHash -Algorithm SHA256 $wheel).Hash.ToLowerInvariant()
+          if ($digest -ne '68d66b296da018fa14b06eda60c4d8570d29186328612296ad3a1fe043208df3') {
+            throw "Mercurial 7.2.4 wheel checksum mismatch: $digest"
+          }
+          $venv = Join-Path $clientDir 'hg-7.2.4-venv'
+          python -m venv $venv
+          $python = Join-Path $venv 'Scripts\python.exe'
+          & $python -m pip install --no-deps $wheel
+          $hg = Join-Path $venv 'Scripts\hg.exe'
+          if (-not (Test-Path $hg)) { throw "Mercurial executable was not installed: $hg" }
+          & $hg --version
+          if ($LASTEXITCODE -ne 0) { throw "Mercurial 7.2.4 --version failed: $LASTEXITCODE" }
+          $policyOutput = Join-Path $nativeDir 'hg-7.2.4-windows-x86_64.json'
+          python tests/oracles/hg/run.py --hg $hg --output $policyOutput
+          if ($LASTEXITCODE -ne 0) { throw "Mercurial 7.2.4 policy capture failed: $LASTEXITCODE" }
+          $walkOutput = Join-Path $nativeDir 'hg-walk-7.2.4-windows-x86_64.json'
+          python tests/oracles/hg/walk.py --hg $hg --output $walkOutput
+          if ($LASTEXITCODE -ne 0) { throw "Mercurial 7.2.4 walk capture failed: $LASTEXITCODE" }
+          @'
+          import json
+          import os
+          from pathlib import Path
+
+          directory = Path(os.environ["RUNNER_TEMP"]) / "native"
+          for name in ("hg-7.2.4-windows-x86_64.json", "hg-walk-7.2.4-windows-x86_64.json"):
+              capture = json.loads((directory / name).read_text(encoding="utf-8"))
+              assert capture["status"] == "captured", capture
+              assert capture["client"]["version"].startswith(
+                  "Mercurial Distributed SCM (version 7.2.4)"
+              ), capture["client"]
+              assert capture["cases"], name
+              assert not any(case["candidate_matches"] is False for case in capture["cases"]), name
+              assert all(
+                  case["candidate_matches"] is True
+                  for case in capture["cases"]
+                  if case["native_status"] != "skipped"
+              ), name
+              print(name, len(capture["cases"]), "cases; all closed cases matched")
+          '@ | python -
       - name: Run native-backed Windows policy tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-
