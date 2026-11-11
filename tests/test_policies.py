@@ -6,7 +6,9 @@ import os
 import shutil
 import subprocess
 from collections.abc import Iterable, Iterator
+from dataclasses import replace
 from pathlib import Path, PureWindowsPath
+from typing import ClassVar, Literal
 from unittest.mock import patch
 
 import pytest
@@ -138,6 +140,28 @@ class NonPruningPolicy(IgnorePolicy):
         yield from (self.explain(target) for target in targets)
 
 
+class MembershipPolicy(NonPruningPolicy):
+    """Scheme-neutral fixture whose rule matches and membership results are independent."""
+
+    memberships: ClassVar[dict[str, Literal["versioned", "unversioned"] | None]] = {
+        "tracked-ignored.tmp": "versioned",
+        "loose-ignored.tmp": "unversioned",
+        "unknown-ignored.tmp": None,
+        "visible.tmp": "unversioned",
+    }
+
+    def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
+        decision = super().explain(target)
+        membership = self.memberships.get(decision.path.name)
+        if decision.path.name not in self.memberships:
+            return decision
+        return replace(
+            decision,
+            ignored=decision.path.name != "visible.tmp",
+            membership=membership,
+        )
+
+
 class TestPolicyContract(RepositoryCase):
     def test_decision_model_carries_neutral_provenance_and_diagnostics(self) -> None:
         diagnostic = IgnoreDiagnostic(
@@ -185,6 +209,36 @@ class TestPolicyContract(RepositoryCase):
         assert trace.matches[0].scheme == "test"
         assert trace.matches[0].property_name == "test-ignore-property"
         assert trace.matches[0].line is None
+
+    @pytest.mark.parametrize("topdown", [True, False])
+    def test_walker_selects_by_membership_without_changing_ignore_decisions(
+        self, topdown: bool
+    ) -> None:
+        for name in MembershipPolicy.memberships:
+            self.write(name)
+        policy = MembershipPolicy(self.root)
+        walker = IgnoreWalker(self.root, policy=policy)
+        tracked_ignored = self.root / "tracked-ignored.tmp"
+        loose_ignored = self.root / "loose-ignored.tmp"
+        unknown_ignored = self.root / "unknown-ignored.tmp"
+        visible = self.root / "visible.tmp"
+
+        assert policy.explain(tracked_ignored).ignored
+        assert policy.explain(tracked_ignored).membership == "versioned"
+        assert set(walker.iter_files(topdown=topdown, selection="included")) == {
+            tracked_ignored,
+            visible,
+        }
+        assert set(walker.iter_files(topdown=topdown, selection="ignored")) == {
+            loose_ignored,
+            unknown_ignored,
+        }
+        assert set(walker.iter_files(topdown=topdown, selection="all")) == {
+            tracked_ignored,
+            loose_ignored,
+            unknown_ignored,
+            visible,
+        }
 
     @pytest.mark.parametrize("native", [False, True])
     def test_batch_and_lazy_contract(self, native: bool) -> None:

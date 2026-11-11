@@ -391,6 +391,9 @@ expectations remain unasserted until captured or explicitly excluded from scope.
 
 **Status:** Initial contract is implemented and tested; tracked-state and cross-platform boundaries
 remain open.
+A scheme-neutral walker regression covers membership independently of matching in both traversal
+orders: ignored-but-versioned files stay in included results, while unversioned and unknown ignored
+files appear in ignored results.
 
 Map Mercurial behaviors to `IgnoreDecision`, `IgnoreDiagnostic`, `IgnoreTrace`, `IgnorePolicy`, and
 `IgnoreWalker`. Keep caller traversal root, workspace root, physical source parent, matcher root and
