@@ -152,6 +152,9 @@ The live status-transition test also renames a tracked ignored file to a visible
 rename is pending, both the removed source and added destination are versioned; after commit, the
 old path still matches the ignore rule but has unknown membership, and the destination remains
 versioned. Included, ignored, and all-file walks are checked in both traversal orders.
+The same transition fixture runs against Mercurial 7.0.1 on Debian 13 x86_64 and ARM64 in hosted
+Linux CI, in addition to the installed clients on the native CI platforms and the pinned Windows
+Mercurial 7.2.4 client.
 
 This oracle asks `hg debugignore` whether a single path matches ignore rules. It does not establish
 tracked-file behavior, add/status behavior, traversal output, or compatibility with other Mercurial

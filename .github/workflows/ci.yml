@@ -294,6 +294,33 @@ jobs:
               )
               assert known_failure or fixed_behavior, sparse
           PY
+      - name: Run Mercurial membership transitions on Debian 13 x86_64 and ARM64
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          docker run --rm --platform linux/amd64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc '
+              set -e
+              apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 python3-pytest
+              PYTHONPATH=/workspace/src:/workspace GITIGNORE_WALK_HG=/usr/bin/hg \
+                python3 -m pytest -q tests/test_mercurial.py \
+                -k test_membership_aware_policy_tracks_ignore_file_status_transitions
+            '
+          docker run --rm --platform linux/arm64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --workdir /workspace \
+            debian:13-slim \
+            bash -lc '
+              set -e
+              apt-get update -qq
+              DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 python3-pytest
+              PYTHONPATH=/workspace/src:/workspace GITIGNORE_WALK_HG=/usr/bin/hg \
+                python3 -m pytest -q tests/test_mercurial.py \
+                -k test_membership_aware_policy_tracks_ignore_file_status_transitions
+            '
       - name: Capture Darcs oracle on Debian 13 ARM64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |

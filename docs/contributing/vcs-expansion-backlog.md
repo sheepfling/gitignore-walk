@@ -837,16 +837,17 @@ path and walk oracle profiles remain separate evidence. The Windows job also run
 transition test against its checksum-pinned Mercurial 7.2.4 executable, independent of the
 system-installed client used by the full policy suite.
 
-**Next unfinished slice:** expand Mercurial workspace-membership transitions across supported
-client profiles and platforms. Configuration precedence now has an additional native capture for
+**Next unfinished slice:** broaden Mercurial membership and source-precedence profiles beyond the
+currently tested clients and platforms. Workspace-membership transitions now run against the
+installed clients on native CI platforms, pinned Mercurial 7.2.4 on Windows, and Mercurial 7.0.1 on
+Debian 13 x86_64 and ARM64. Configuration precedence also has a native capture for
 Ubuntu 24.04's Mercurial 6.7.2 package, including the workspace `.hgignore` versus configured
 `ui.ignore` source-order probe. The existing live membership fixture already covers clean,
 pending-forget, forgotten, re-added, committed, and pending-remove states. A new regression also
 checks a tracked rename from an ignored name to a visible name: pending source/destination paths
 remain versioned, and after commit the absent old path remains ignore-matched with unknown
-membership. It has passed locally on Mercurial 7.2.4/macOS; verify it on the hosted client matrix,
-then add only transitions that reveal a distinct native membership contract. Reproductions on Mercurial
-7.0.1/Debian 13 x86_64 and 7.2.4/macOS arm64 both raised `ProgrammingError` from
+membership. Add only transitions that reveal a distinct native membership contract. Reproductions
+on Mercurial 7.0.1/Debian 13 x86_64 and 7.2.4/macOS arm64 both raised `ProgrammingError` from
 `hg debugsparse --refresh` after manually removing an exclusion from `.hg/sparse`. In both, the
 file returned to disk but native status then reported it as unknown (`?`). Treat this as a native
 client failure observation, not a portable refresh contract; do not interpret its post-error status
