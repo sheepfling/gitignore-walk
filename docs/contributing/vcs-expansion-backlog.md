@@ -549,7 +549,8 @@ A live sparse-checkout regression now covers a committed file removed by
 `hg status --all --unknown --ignored -0`, even when its path matches `.hgignore`; the policy keeps
 the rule match and unknown membership separate. Included-file walks in both traversal orders only
 return paths present in the sparse working tree. The fixture is verified locally on Mercurial
-7.2.4/macOS arm64; hosted Windows and Linux results are pending.
+7.2.4/macOS arm64 and in hosted Windows and Ubuntu native-backed policy jobs for commit `def07df`.
+Broader sparse-profile and sparse-update behavior remain open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special
