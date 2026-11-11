@@ -193,7 +193,8 @@ class BreezyPolicyConfig:
         environment: Optional complete environment passed to Breezy and used to locate global
             ignore configuration. Include PATH when ``brz_executable`` is not absolute.
         global_ignore_file: Optional explicit user ignore file overriding standard discovery.
-        timeout: Maximum duration for the native default-rule query.
+        timeout: Maximum duration for each native Breezy query.
+        membership_aware: Query Breezy's versioned-file listing for known file membership.
         initial_excludes: Walker baseline exclusions, defaulting to Breezy's ``.bzr`` metadata.
     """
 
@@ -202,6 +203,7 @@ class BreezyPolicyConfig:
     environment: Mapping[str, str] | None = None
     global_ignore_file: str | os.PathLike[str] | None = None
     timeout: float = 30.0
+    membership_aware: bool = False
     initial_excludes: Sequence[str] = (".bzr",)
 
 
@@ -745,6 +747,7 @@ def select_policy(
                 environment=selected.environment,
                 global_ignore_file=selected.global_ignore_file,
                 timeout=selected.timeout,
+                membership_aware=selected.membership_aware,
                 initial_excludes=selected.initial_excludes,
             )
         )

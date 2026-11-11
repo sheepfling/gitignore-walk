@@ -12,7 +12,8 @@ import subprocess
 import tempfile
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath, PureWindowsPath
+from typing import Literal
 
 from ..._policy import (
     IgnoreDecision,
@@ -78,6 +79,7 @@ class _BreezyWalkSession:
     def __init__(self, policy: BreezyIgnorePolicy) -> None:
         self._policy = policy
         self._snapshot = policy._load_snapshot()
+        self._membership = policy._load_membership() if policy.membership_aware else None
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
         return self._policy.resolve_target(target)
@@ -86,7 +88,10 @@ class _BreezyWalkSession:
         return self.resolve_target(target)
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
-        return [self._policy._explain_with_snapshot(target, self._snapshot) for target in targets]
+        return [
+            self._policy._explain_with_snapshot(target, self._snapshot, self._membership)
+            for target in targets
+        ]
 
     def should_descend_directory(self, target: Path) -> bool:
         return self._policy.should_descend_directory(target)
@@ -105,13 +110,14 @@ class BreezyIgnorePolicy(IgnorePolicy):
     read-only ``brz ignore --default-rules`` command, and evaluates all rules locally. It supports
     basename and root-relative globs, ``/**/``, ``RE:`` expressions over complete
     workspace-relative paths, exception priority, and ``!!`` strong exclusions. A declared exception
-    can keep an ignored ancestor traversable even when its target does not exist. Ignore decisions
-    describe rule behavior, not tracked membership.
+    can keep an ignored ancestor traversable even when its target does not exist. Rule decisions
+    remain independent from optional versioned-file membership.
 
     Attributes:
         root: Caller traversal root, bounded to this policy's targets.
         workspace_root: Discovered Breezy working-tree root.
         scheme: Stable ``"breezy"`` identifier.
+        membership_aware: Whether known file membership is queried with ``brz ls``.
     """
 
     @property
@@ -127,9 +133,20 @@ class BreezyIgnorePolicy(IgnorePolicy):
         environment: Mapping[str, str] | None = None,
         global_ignore_file: str | os.PathLike[str] | None = None,
         timeout: float = 30.0,
+        membership_aware: bool = False,
         initial_excludes: Sequence[str] = (_WORKSPACE_MARKER,),
     ) -> None:
-        """Bind a caller root to a Breezy tree and load the client's built-in rules."""
+        """Bind a caller root to a Breezy tree and load the client's built-in rules.
+
+        Args:
+            root: Directory within the Breezy working tree to evaluate and walk.
+            brz_executable: Breezy client executable used for native queries.
+            environment: Optional subprocess environment and Breezy configuration context.
+            global_ignore_file: Explicit user ignore file, overriding standard discovery.
+            timeout: Maximum duration for each native query.
+            membership_aware: Query native versioned-file membership when explaining paths.
+            initial_excludes: Hard walker exclusions, defaulting to Breezy metadata.
+        """
         try:
             self.root = Path(root).expanduser().resolve()
         except (OSError, RuntimeError) as error:
@@ -140,6 +157,7 @@ class BreezyIgnorePolicy(IgnorePolicy):
             raise ValueError("timeout must be finite and positive")
         self.brz_executable = brz_executable
         self.timeout = timeout
+        self.membership_aware = membership_aware
         self._environment = dict(os.environ if environment is None else environment)
         self._global_ignore_file = (
             Path(global_ignore_file).expanduser() if global_ignore_file is not None else None
@@ -170,12 +188,14 @@ class BreezyIgnorePolicy(IgnorePolicy):
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether Breezy ignore rules affect one target."""
-        return self._explain_with_snapshot(target, self._load_snapshot())
+        membership = self._load_membership() if self.membership_aware else None
+        return self._explain_with_snapshot(target, self._load_snapshot(), membership)
 
     def explain_many(self, targets: Iterable[str | os.PathLike[str]]) -> list[IgnoreDecision]:
         """Explain an ordered set of targets against one rule snapshot."""
         snapshot = self._load_snapshot()
-        return [self._explain_with_snapshot(target, snapshot) for target in targets]
+        membership = self._load_membership() if self.membership_aware else None
+        return [self._explain_with_snapshot(target, snapshot, membership) for target in targets]
 
     def iter_explain(
         self, targets: Iterable[str | os.PathLike[str]], *, batch_size: int = 256
@@ -184,16 +204,18 @@ class BreezyIgnorePolicy(IgnorePolicy):
         if batch_size < 1:
             raise ValueError("batch_size must be positive")
         snapshot = self._load_snapshot()
+        membership = self._load_membership() if self.membership_aware else None
         for target in targets:
-            yield self._explain_with_snapshot(target, snapshot)
+            yield self._explain_with_snapshot(target, snapshot, membership)
 
     def trace(self, target: str | os.PathLike[str]) -> IgnoreTrace:
         """Return all matching rules, ordered by Breezy's ignore/exception priority."""
         path = self.resolve_target(target)
         snapshot = self._load_snapshot()
+        membership = self._load_membership() if self.membership_aware else None
         relative = path.relative_to(self.workspace_root).as_posix()
         matches = self._matching_rules(relative, snapshot, is_directory=path.is_dir())
-        decision = self._decision(path, relative, snapshot, matches)
+        decision = self._decision(path, relative, snapshot, matches, membership)
         effective = decision.source, decision.pattern, decision.line
         trace = tuple(
             IgnoreTraceMatch(
@@ -258,6 +280,42 @@ class BreezyIgnorePolicy(IgnorePolicy):
             rules.extend(_load_rule_file(local_path))
         return _BreezySnapshot(tuple(rules))
 
+    def _load_membership(self) -> frozenset[str]:
+        """Return Breezy's present, versioned file paths relative to the working-tree root."""
+        result = self._run_brz(
+            ("ls", "--no-plugins", "--from-root", "--recursive", "--versioned", "--null"),
+            self._environment,
+            cwd=self.workspace_root,
+        )
+        if result.returncode != 0:
+            detail = result.stderr.decode("utf-8", errors="replace").strip()
+            raise BreezyIgnoreError(
+                f"Unable to discover Breezy versioned-file membership: {detail}",
+                operation="membership",
+            )
+        paths: set[str] = set()
+        for record in result.stdout.split(b"\0"):
+            if not record:
+                continue
+            relative = os.fsdecode(record)
+            if os.name == "nt":
+                relative = relative.replace("\\", "/")
+            posix_path = PurePosixPath(relative)
+            windows_path = PureWindowsPath(relative)
+            if (
+                posix_path.is_absolute()
+                or windows_path.is_absolute()
+                or windows_path.drive
+                or ".." in posix_path.parts
+                or relative in ("", ".")
+            ):
+                raise BreezyIgnoreError(
+                    "Breezy returned a versioned path outside its working tree.",
+                    operation="membership",
+                )
+            paths.add(posix_path.as_posix())
+        return frozenset(paths)
+
     def _global_ignore_path(self) -> Path:
         """Resolve the standard XDG user ignore file unless the caller chose an explicit path."""
         if self._global_ignore_file is not None:
@@ -303,12 +361,15 @@ class BreezyIgnorePolicy(IgnorePolicy):
             ) from error
 
     def _explain_with_snapshot(
-        self, target: str | os.PathLike[str], snapshot: _BreezySnapshot
+        self,
+        target: str | os.PathLike[str],
+        snapshot: _BreezySnapshot,
+        membership: frozenset[str] | None = None,
     ) -> IgnoreDecision:
         path = self.resolve_target(target)
         relative = path.relative_to(self.workspace_root).as_posix()
         matches = self._matching_rules(relative, snapshot, is_directory=path.is_dir())
-        return self._decision(path, relative, snapshot, matches)
+        return self._decision(path, relative, snapshot, matches, membership)
 
     def _matching_rules(
         self,
@@ -334,7 +395,14 @@ class BreezyIgnorePolicy(IgnorePolicy):
         relative: str,
         snapshot: _BreezySnapshot,
         matches: tuple[_BreezyRule, ...],
+        membership: frozenset[str] | None,
     ) -> IgnoreDecision:
+        membership_value: Literal["versioned", "unversioned"] | None = None
+        if membership is not None and not path.is_dir():
+            if relative in membership:
+                membership_value = "versioned"
+            elif path.is_file():
+                membership_value = "unversioned"
         relative_to_root = path.relative_to(self.root).as_posix()
         baseline = next(
             (
@@ -358,6 +426,7 @@ class BreezyIgnorePolicy(IgnorePolicy):
                 reason="baseline-exclusion",
                 discovery_complete=True,
                 diagnostics=diagnostics,
+                membership=membership_value,
             )
         winning = _winning_rule(matches)
         if winning is None:
@@ -368,6 +437,7 @@ class BreezyIgnorePolicy(IgnorePolicy):
                 reason="no-matching-rule",
                 discovery_complete=True,
                 diagnostics=diagnostics,
+                membership=membership_value,
             )
         ignored = winning.priority != "exception"
         return IgnoreDecision(
@@ -381,6 +451,7 @@ class BreezyIgnorePolicy(IgnorePolicy):
             reason="matched-exception" if winning.priority == "exception" else "matched-rule",
             discovery_complete=True,
             diagnostics=diagnostics,
+            membership=membership_value,
         )
 
     def _can_prune(self, target: Path, decision: IgnoreDecision, snapshot: _BreezySnapshot) -> bool:

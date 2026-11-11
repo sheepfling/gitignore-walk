@@ -167,6 +167,10 @@ captured RE subset now covers anchored path matching and named-capture normaliza
 Broader regex flags and restrictions and additional native Windows client profiles remain open.
 Parent Breezy walks also stop at nested working trees, matching `brz status --short` on Breezy
 3.3.24/macOS arm64 in both traversal orders.
+Opt-in membership discovery uses Breezy's NUL-delimited versioned-file listing: present listed files
+are versioned, present unlisted files are unversioned, and directories or missing files remain
+unknown. A live fixture compares these decisions with native output, including a tracked ignored file,
+in both traversal orders.
 See the [Breezy oracle notes](../../tests/oracles/breezy/README.md), [Breezy pattern
 reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and [Breezy ignore
 reference](https://www.breezy-vcs.org/doc/en/user-reference/ignore-help.html).

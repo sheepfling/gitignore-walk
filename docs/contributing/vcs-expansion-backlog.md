@@ -284,6 +284,10 @@ across those two client profiles. The policy walker matches the native path sele
 traversal orders, and direct candidate tests ensure a wildcard scope does not unignore a sibling in
 its ignored parent. See `tests/oracles/breezy/cases.json` and the two matching result files.
 
+Breezy now also supports opt-in file-membership queries through its NUL-delimited versioned listing.
+Present listed files are versioned, present unlisted files are unversioned, and missing files or
+directories remain unknown. A live native fixture covers tracked ignored files and both walk orders.
+
 SVN now has a live status-transition test for normal, modified, added, deleted, missing, replaced,
 obstructed, and conflicted entries, alongside ignored-unversioned files. The conflict uses two
 working copies and overlapping edits. It checks native status membership, membership-aware walk

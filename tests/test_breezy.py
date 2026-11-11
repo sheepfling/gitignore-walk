@@ -326,6 +326,98 @@ def test_breezy_selector_uses_discriminated_selection(breezy_root: Path) -> None
     assert isinstance(selection.policy, BreezyIgnorePolicy)
 
 
+@pytest.mark.skipif(shutil.which("brz") is None, reason="Breezy is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_membership_aware_policy_matches_native_versioned_listing(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Keep native Breezy membership separate from ignore rules and missing paths."""
+    brz = shutil.which("brz")
+    assert brz is not None
+    root = tmp_path / "checkout"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "XDG_CONFIG_HOME": str(home / ".config"),
+            "BRZ_HOME": str(home / "brz-home"),
+            "BRZ_PLUGIN_PATH": "",
+            "BRZ_LOG": os.devnull,
+            "BRZ_EMAIL": "gitignore-walk test <test@example.invalid>",
+            "PATH": str(Path(brz).parent),
+            "LC_ALL": "C",
+            "LANG": "C",
+            "TZ": "UTC",
+        }
+    )
+
+    def run(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [brz, *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    run("init", "--no-plugins", str(root))
+    for name in ("tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp"):
+        (root / name).write_text(f"{name}\n", encoding="utf-8")
+    run("add", "--no-plugins", "tracked.txt", "tracked.tmp", "missing.txt", "ignored.tmp")
+    run("commit", "--no-plugins", "-m", "add initial files")
+    (root / ".bzrignore").write_text("*.tmp\n", encoding="utf-8")
+    run("add", "--no-plugins", ".bzrignore")
+    run("commit", "--no-plugins", "-m", "add ignore rule")
+    (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
+    (root / "ignored-unversioned.tmp").write_text("ignored and unknown\n", encoding="utf-8")
+    (root / "missing.txt").unlink()
+
+    native = run("ls", "--no-plugins", "--from-root", "--recursive", "--versioned", "--null").stdout
+    native_paths = {os.fsdecode(record) for record in native.split(b"\0") if record}
+    assert "tracked.txt" in native_paths
+    assert "ignored.tmp" in native_paths
+    assert "missing.txt" not in native_paths
+
+    selection = select_policy(
+        root,
+        BreezyPolicyConfig(
+            brz_executable=brz,
+            environment=environment,
+            global_ignore_file=home / "missing-global-ignore",
+            membership_aware=True,
+        ),
+    )
+    assert isinstance(selection.policy, BreezyIgnorePolicy)
+    policy = selection.policy
+    decisions = {
+        decision.path.name: decision
+        for decision in policy.explain_many(
+            ["tracked.txt", "ignored.tmp", "unknown.txt", "ignored-unversioned.tmp", "missing.txt"]
+        )
+    }
+    assert decisions["tracked.txt"].membership == "versioned"
+    assert decisions["ignored.tmp"].membership == "versioned"
+    assert decisions["ignored.tmp"].ignored
+    assert decisions["unknown.txt"].membership == "unversioned"
+    assert decisions["ignored-unversioned.tmp"].membership == "unversioned"
+    assert decisions["ignored-unversioned.tmp"].ignored
+    assert decisions["missing.txt"].membership is None
+
+    walked = {
+        path.relative_to(root).as_posix()
+        for path in IgnoreWalker(root, policy=policy).iter_files(topdown=topdown)
+    }
+    assert "ignored.tmp" in walked
+    assert "ignored-unversioned.tmp" not in walked
+
+
 @pytest.mark.parametrize(
     "case",
     [case for case in ORACLE_CASES if isinstance(case["expected_candidate"], bool)],
