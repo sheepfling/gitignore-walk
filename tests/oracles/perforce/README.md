@@ -58,8 +58,9 @@ queries. It covers clean, modified, missing, and opened-for-delete submitted fil
 an ignored untracked file, and unknown directories and missing paths. The fixture authenticates a
 temporary super user and isolates workspace, home, ticket, and trust paths from developer config.
 This live membership check passes with Perforce 2026.1 on macOS arm64 and in Ubuntu 24.04 x86_64
-using the same checksum-pinned client/server binaries as native CI. The native Windows client
-profile remains unverified.
+using the same checksum-pinned client/server binaries as native CI. It also checks a case-only query
+alias: macOS resolves it to the submitted path, while case-sensitive Linux leaves its missing path
+unknown. The native Windows client profile remains unverified.
 
 | Capture file                              | Environment                   | Python  | Cases matching                         |
 | ----------------------------------------- | ----------------------------- | ------- | -------------------------------------- |

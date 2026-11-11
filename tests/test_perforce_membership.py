@@ -126,7 +126,13 @@ def test_perforce_membership_matches_native_have_and_opened(
             ),
         )
 
-        submitted = ("tracked.tmp", "modified.txt", "missing.txt", "deleted.txt")
+        submitted = (
+            "tracked.tmp",
+            "CaseProbe.tmp",
+            "modified.txt",
+            "missing.txt",
+            "deleted.txt",
+        )
         for name in submitted:
             (workspace / name).write_text(f"initial {name}\n", encoding="utf-8")
         run("add", *submitted)
@@ -145,6 +151,7 @@ def test_perforce_membership_matches_native_have_and_opened(
         opened = run("-ztag", "opened").stdout
         where = run("-ztag", "where", "//membership-test/pending-add.tmp").stdout
         assert "... path " + str(workspace / "tracked.tmp") in have
+        assert "... path " + str(workspace / "CaseProbe.tmp") in have
         assert "... path " + str(workspace / "missing.txt") in have
         assert "... action delete" in opened
         assert "... action edit" in opened
@@ -165,9 +172,16 @@ def test_perforce_membership_matches_native_have_and_opened(
             "untracked.tmp",
             "directory",
             "missing-unlisted.txt",
+            "caseprobe.tmp",
         )
         (workspace / "directory").mkdir()
         decisions = policy.explain_many(names)
+        try:
+            case_alias_exists = os.path.samefile(
+                workspace / "CaseProbe.tmp", workspace / "caseprobe.tmp"
+            )
+        except OSError:
+            case_alias_exists = False
 
         assert {
             name: decision.membership for name, decision in zip(names, decisions, strict=True)
@@ -180,6 +194,7 @@ def test_perforce_membership_matches_native_have_and_opened(
             "untracked.tmp": "unversioned",
             "directory": None,
             "missing-unlisted.txt": None,
+            "caseprobe.tmp": "versioned" if case_alias_exists else None,
         }
         assert decisions[0].ignored is True
         assert decisions[4].ignored is True

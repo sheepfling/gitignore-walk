@@ -52,6 +52,35 @@ def _membership_key(path: Path) -> str:
 
 
 @dataclass(frozen=True, slots=True)
+class _PerforceMembershipSnapshot:
+    """Submitted and opened local paths, indexed for exact and case-aliased lookup."""
+
+    paths: frozenset[str]
+    casefolded_paths: Mapping[str, tuple[str, ...]]
+
+
+def _is_case_alias(path: Path, candidate: Path) -> bool:
+    """Return whether two differently spelled paths identify the same directory entry."""
+    try:
+        first = path.lstat()
+        second = candidate.lstat()
+    except OSError:
+        return False
+    return first.st_ino != 0 and (first.st_dev, first.st_ino) == (second.st_dev, second.st_ino)
+
+
+def _membership_contains(path: Path, membership: _PerforceMembershipSnapshot) -> bool:
+    """Match native Perforce spelling exactly, with a verified filesystem case-alias fallback."""
+    key = _membership_key(path)
+    if key in membership.paths:
+        return True
+    return any(
+        _is_case_alias(path, Path(candidate))
+        for candidate in membership.casefolded_paths.get(key.casefold(), ())
+    )
+
+
+@dataclass(frozen=True, slots=True)
 class _PerforceRule:
     """One compiled P4IGNORE rule and its source-relative matching contract."""
 
@@ -489,7 +518,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
             path = self.root / path
         return Path(os.path.abspath(path))
 
-    def _load_membership(self) -> frozenset[str]:
+    def _load_membership(self) -> _PerforceMembershipSnapshot:
         """Capture submitted and opened local paths from the selected Perforce client."""
         cwd = self.workspace_root if self._discover_client_workspace else self.root
         have = self._run_membership_query(("-ztag", "have"), cwd=cwd)
@@ -509,7 +538,13 @@ class PerforceIgnorePolicy(IgnorePolicy):
             for record in _tagged_records(where.stdout):
                 if local_path := record.get("path"):
                     local_paths.add(_membership_key(Path(local_path)))
-        return frozenset(local_paths)
+        by_casefold: dict[str, list[str]] = {}
+        for local_path in local_paths:
+            by_casefold.setdefault(local_path.casefold(), []).append(local_path)
+        return _PerforceMembershipSnapshot(
+            paths=frozenset(local_paths),
+            casefolded_paths={key: tuple(paths) for key, paths in by_casefold.items()},
+        )
 
     def _run_membership_query(
         self, arguments: Sequence[str], *, cwd: Path
@@ -757,7 +792,7 @@ class PerforceIgnorePolicy(IgnorePolicy):
         path: Path,
         rules: tuple[_PerforceRule, ...],
         p4config_name: str | None = None,
-        membership_paths: frozenset[str] | None = None,
+        membership_paths: _PerforceMembershipSnapshot | None = None,
         membership_path: Path | None = None,
     ) -> IgnoreDecision:
         effective = self._effective_rule(path, rules)
@@ -791,12 +826,12 @@ class PerforceIgnorePolicy(IgnorePolicy):
         rule: _PerforceRule | None,
         baseline: str | None,
         p4config_name: str | None,
-        membership_paths: frozenset[str] | None = None,
+        membership_paths: _PerforceMembershipSnapshot | None = None,
         membership_path: Path | None = None,
     ) -> IgnoreDecision:
         membership: Literal["versioned", "unversioned"] | None = None
         if membership_paths is not None and membership_path is not None:
-            if _membership_key(membership_path) in membership_paths:
+            if _membership_contains(membership_path, membership_paths):
                 membership = "versioned"
             else:
                 try:
