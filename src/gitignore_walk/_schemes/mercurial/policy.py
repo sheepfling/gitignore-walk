@@ -138,11 +138,20 @@ class MercurialIgnorePolicy(IgnorePolicy):
         self._load_sources()
 
     def resolve_target(self, target: str | os.PathLike[str]) -> Path:
-        """Normalize a target without following symlinks and enforce the caller's root."""
-        path = lexical_target_path(self.root, target)
-        if not path.is_relative_to(self.root):
-            raise ValueError(f"target must be inside policy root: {path}")
-        return path
+        """Resolve ordinary targets but retain lexical paths for Mercurial symlink matching."""
+        lexical_path = lexical_target_path(self.root, target)
+        if not lexical_path.is_relative_to(self.root):
+            raise ValueError(f"target must be inside policy root: {lexical_path}")
+        current = lexical_path
+        while current != self.root:
+            if current.is_symlink():
+                return lexical_path
+            current = current.parent
+        try:
+            path = lexical_path.resolve()
+        except (OSError, RuntimeError) as error:
+            raise ValueError(f"unable to resolve Mercurial target: {error}") from error
+        return path if path.is_relative_to(self.root) else lexical_path
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether a target matches a Mercurial ignore source."""
