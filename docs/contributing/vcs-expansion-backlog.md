@@ -175,8 +175,8 @@ no captured native result. The November
 7 checkpoint separately records seven Git probes. These captures do not establish complete
 cross-platform behavior.
 
-A fifth Breezy native profile now covers Debian 13 x86_64 with Breezy 3.3.11 and Python 3.13. Its 41
-shared probes include 37 boolean candidates, all matching the portable evaluator, and three
+A fifth Breezy native profile now covers Debian 13 x86_64 with Breezy 3.3.11 and Python 3.13. Its 52
+shared probes include 48 boolean candidates, all matching the portable evaluator, and three
 source-precedence probes matching their expected winning patterns. Four explicitly profile-scoped
 cases remain excluded, including root-anchored traversal probes and two Unicode regex probes. The
 Unicode `\\w` and `\\d` probes remain scoped to Breezy 3.3.24/macOS: an exploratory 3.3.11/Linux run
@@ -649,12 +649,13 @@ also describe a `.gitignore` handling fix for the preceding release. Native CI d
 checksum-pinned ARM64 clients and recaptures the paired profile.
 
 The 0.2.20261028 Sapling client also has Debian 13 ARM64 and x86_64 source/configuration captures
-alongside Jujutsu 0.47.1. The native client panics with `StripPrefixError` for the tested path-pattern
-groups in `.sl` storage mode, even when each pattern rule is isolated; the same 13 cases match in
-`.git` storage mode. Captures skip only `sapling.sl-mode.pattern_discovery` while checking the full
-pattern matrix in `.git` mode plus source discovery, global and conditional configuration,
+alongside Jujutsu 0.47.1. Dedicated isolated probes now confirm that both tested path-pattern groups
+panic with `StripPrefixError` (exit 101) in `.sl` mode on Debian 13 ARM64 and x86_64 as well as
+Windows Server 2025 x64; these are client errors, not candidate matches. The same 13 cases match in
+`.git` storage mode. Combined captures skip only `sapling.sl-mode.pattern_discovery` while checking
+the full pattern matrix in `.git` mode plus source discovery, global and conditional configuration,
 environment-selected configuration, and repository-local precedence. Jujutsu's pattern group runs
-normally. Native CI recaptures both profiles from checksum-pinned Sapling and Jujutsu clients.
+normally. Native CI recaptures the profiles from checksum-pinned Sapling and Jujutsu clients.
 
 The nested-workspace boundary probe now confirms that Sapling stops at nested workspaces using the
 same storage marker, but traverses into a child using the other marker. Jujutsu stops at nested

@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "conformance": "client-error-observed",
+  "client": "Sapling 0.2.20261028-123539+7415fb2f",
+  "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.41",
+  "storage_mode": "sl",
+  "isolated_temporary_workspaces": true,
+  "probes": [
+    {
+      "id": "sapling.sl-mode.pattern_discovery",
+      "query_files": [
+        "!literal",
+        "#literal",
+        "blocked/keep.txt",
+        "cache/drop.tmp",
+        "cache/keep.tmp",
+        "nested/deep/deep.log",
+        "nested/root-only.tmp",
+        "nested/zero.txt",
+        "root-only.tmp",
+        "src/nested/temp.txt",
+        "src/nested/temp2.txt",
+        "src/temp1.txt",
+        "zero.txt"
+      ],
+      "expected_ignored": [
+        "!literal",
+        "#literal",
+        "blocked/keep.txt",
+        "cache/drop.tmp",
+        "nested/deep/deep.log",
+        "nested/zero.txt",
+        "root-only.tmp",
+        "src/nested/temp2.txt",
+        "src/temp1.txt",
+        "zero.txt"
+      ],
+      "status_exit_code": 101,
+      "status_stdout": "",
+      "status_stderr": "\nthread 'main' (<pid>) panicked at lib/pathmatcher/src/gitignore_matcher.rs:112:70:\ncalled `Result::unwrap()` on an `Err` value: StripPrefixError(())\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "native_status": "client-error",
+      "candidate_matches": null
+    },
+    {
+      "id": "sapling.sl-mode.extended_pattern_discovery",
+      "query_files": [
+        "classes/letter-b.txt",
+        "classes/letter-q.txt",
+        "directory-only/deep/probe.txt",
+        "nested/deeper/basename.tmp",
+        "nested/directory-only"
+      ],
+      "expected_ignored": [
+        "classes/letter-b.txt",
+        "directory-only/deep/probe.txt",
+        "nested/deeper/basename.tmp"
+      ],
+      "status_exit_code": 101,
+      "status_stdout": "",
+      "status_stderr": "\nthread 'main' (<pid>) panicked at lib/pathmatcher/src/gitignore_matcher.rs:112:70:\ncalled `Result::unwrap()` on an `Err` value: StripPrefixError(())\nnote: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\n",
+      "native_status": "client-error",
+      "candidate_matches": null
+    }
+  ]
+}
