@@ -1862,6 +1862,29 @@ def test_configured_path_expands_explicit_environment(configured: str, windows: 
     assert path == Path("/explicit/rules.ignore")
 
 
+def test_windows_configured_path_expansion_matches_native_quote_and_case_rules() -> None:
+    environment = {"hg_ignore_rules": "C:/explicit/rules.ignore"}
+
+    assert (
+        mercurial_policy_module._expand_environment_variables(
+            "%HG_IGNORE_RULES%", environment, windows=True
+        )
+        == "C:/explicit/rules.ignore"
+    )
+    assert (
+        mercurial_policy_module._expand_environment_variables(
+            "'%HG_IGNORE_RULES%'", environment, windows=True
+        )
+        == "'%HG_IGNORE_RULES%'"
+    )
+    assert (
+        mercurial_policy_module._expand_environment_variables(
+            "%%HG_IGNORE_RULES%%", environment, windows=True
+        )
+        == "%HG_IGNORE_RULES%"
+    )
+
+
 def test_repeated_symlinked_source_retains_each_subinclude_scope(tmp_path: Path) -> None:
     case = next(
         case for case in WALK_CASES if case["id"] == "hg.walk.repeated-include-distinct-scopes"

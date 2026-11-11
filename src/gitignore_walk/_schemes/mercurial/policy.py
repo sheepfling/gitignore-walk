@@ -463,28 +463,7 @@ def _expand_environment_variables(
 ) -> str:
     """Expand the variable forms used by the active platform's ``os.path.expandvars``."""
     if windows:
-        variable = re.compile(r"%%|%([^%]+)%|\$\$|\$([A-Za-z0-9_-]+|\{[^}]*\})")
-
-        def replace_windows(match: re.Match[str]) -> str:
-            token = match.group(0)
-            if token in {"%%", "$$"}:
-                return token[0]
-            name = match.group(1) or match.group(2)
-            if name.startswith("{") and name.endswith("}"):
-                name = name[1:-1]
-            replacement = environment.get(name)
-            if replacement is None:
-                replacement = next(
-                    (
-                        value
-                        for key, value in environment.items()
-                        if key.casefold() == name.casefold()
-                    ),
-                    None,
-                )
-            return token if replacement is None else replacement
-
-        return variable.sub(replace_windows, value)
+        return _expand_windows_environment_variables(value, environment)
 
     variable = re.compile(r"\$(\w+|\{[^}]*\})", re.ASCII)
 
@@ -495,3 +474,74 @@ def _expand_environment_variables(
         return environment.get(name, match.group(0))
 
     return variable.sub(replace_posix, value)
+
+
+def _expand_windows_environment_variables(value: str, environment: Mapping[str, str]) -> str:
+    """Expand Windows variables, preserving quoted text and escaped percent/dollar signs."""
+    result: list[str] = []
+    index = 0
+    while index < len(value):
+        character = value[index]
+        if character == "'":
+            quote_end = value.find("'", index + 1)
+            if quote_end < 0:
+                result.append(value[index:])
+                break
+            result.append(value[index : quote_end + 1])
+            index = quote_end + 1
+            continue
+        if character == "%":
+            if value[index + 1 : index + 2] == "%":
+                result.append("%")
+                index += 2
+                continue
+            variable_end = value.find("%", index + 1)
+            if variable_end < 0:
+                result.append(value[index:])
+                break
+            name = value[index + 1 : variable_end]
+            original = value[index : variable_end + 1]
+            result.append(_windows_environment_value(name, original, environment))
+            index = variable_end + 1
+            continue
+        if character == "$":
+            if value[index + 1 : index + 2] == "$":
+                result.append("$")
+                index += 2
+                continue
+            if value[index + 1 : index + 2] == "{":
+                variable_end = value.find("}", index + 2)
+                if variable_end < 0:
+                    result.append(value[index:])
+                    break
+                name = value[index + 2 : variable_end]
+                original = value[index : variable_end + 1]
+                result.append(_windows_environment_value(name, original, environment))
+                index = variable_end + 1
+                continue
+            variable_end = index + 1
+            while variable_end < len(value) and value[variable_end] in (
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+            ):
+                variable_end += 1
+            name = value[index + 1 : variable_end]
+            if name:
+                result.append(
+                    _windows_environment_value(name, value[index:variable_end], environment)
+                )
+                index = variable_end
+                continue
+        result.append(character)
+        index += 1
+    return "".join(result)
+
+
+def _windows_environment_value(name: str, original: str, environment: Mapping[str, str]) -> str:
+    """Look up a Windows environment variable without relying on the process environment."""
+    replacement = environment.get(name)
+    if replacement is not None:
+        return replacement
+    return next(
+        (value for key, value in environment.items() if key.casefold() == name.casefold()),
+        original,
+    )
