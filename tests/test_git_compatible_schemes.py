@@ -64,9 +64,12 @@ _PATTERN_IGNORED = {
 }
 _COMPAT_ORACLE_ROOT = Path(__file__).parent / "oracles" / "compat"
 _COMPAT_FIXTURE = json.loads((_COMPAT_ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))
-_JJ_046_FULL_CAPTURE_PROFILES = (
+_JJ_CONFIG_CAPTURE_PROFILES = (
     "jj-0.46.0-macos-arm64.json",
     "jj-0.46.0-debian13-x86_64.json",
+    "jj-0.46.0-windows-x64.json",
+    "jj-0.47.0-macos-arm64.json",
+    "jj-0.47.0-windows-x64.json",
 )
 _CURRENT_PATTERN_CAPTURE_PROFILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
@@ -1124,13 +1127,14 @@ def test_current_sapling_jujutsu_captures_match_the_expanded_pattern_matrix(prof
 
 
 @pytest.mark.parametrize(
-    "profile", _JJ_046_FULL_CAPTURE_PROFILES, ids=lambda name: name.removesuffix(".json")
+    "profile", _JJ_CONFIG_CAPTURE_PROFILES, ids=lambda name: name.removesuffix(".json")
 )
-def test_jujutsu_046_captures_cover_the_supported_policy_subset(profile: str) -> None:
-    """Keep the Jujutsu 0.46.0 pattern and source subset checked on two native profiles."""
+def test_jujutsu_release_captures_cover_the_supported_policy_subset(profile: str) -> None:
+    """Keep Jujutsu release configuration and pattern probes replayed across native profiles."""
     capture = json.loads((_COMPAT_ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     assert capture["status"] == "captured"
-    assert capture["clients"]["jujutsu"].startswith("jj 0.46.0-")
+    version = profile.removeprefix("jj-").split("-", maxsplit=1)[0]
+    assert capture["clients"]["jujutsu"].startswith(f"jj {version}-")
 
     cases = {case["id"]: case for case in capture["cases"]}
     assert set(cases) == {"jj.colocated", "jj.noncolocated"}
@@ -1144,8 +1148,8 @@ def test_jujutsu_046_captures_cover_the_supported_policy_subset(profile: str) ->
         assert case["source_discovery"]["ignored"] == source_expectation
         assert case["pattern_discovery"]["candidate_matches"]
         assert set(case["pattern_discovery"]["ignored"]) == _PATTERN_IGNORED
-        if "debian13" in profile:
-            extended = case["extended_pattern_discovery"]
+        extended = case.get("extended_pattern_discovery")
+        if extended is not None:
             assert extended["candidate_matches"]
             assert set(extended["ignored"]) == set(
                 _COMPAT_FIXTURE["expected_extended_pattern_ignored"]

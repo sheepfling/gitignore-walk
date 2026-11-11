@@ -651,9 +651,10 @@ documents this concrete divergence. Broader client/platform profiles remain open
 x86_64; their captured global, conditional, environment, repository-local, and pattern probes match
 the candidate behavior, while the expected legacy symlink-following result is recorded explicitly.
 Native CI recaptures this full profile with the pinned release asset and verifies it alongside the
-focused 0.45.1/0.46.0 symlink boundary. The Windows native job also captures the complete 0.45.1
-Jujutsu configuration and pattern matrix, and the same full 0.46.0 matrix. Committed Windows
-captures assert the version boundary: 0.45.1 follows nested symlinked `.gitignore` files, while
+focused 0.45.1/0.46.0 symlink boundary. The full 0.46.0 configuration and pattern capture is now
+committed and replayed for Windows as well as macOS and Debian x86_64. The 0.47.0 macOS and Windows
+full captures also replay the supported configuration subset. Committed Windows captures assert the
+version boundary: 0.45.1 follows nested symlinked `.gitignore` files, while
 0.46.0 and 0.47.1 skip them. Fresh run artifacts are retained for seven days; symlink creation may
 be explicitly skipped by the runner.
 

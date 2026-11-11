@@ -23,8 +23,11 @@ the commands found on `PATH`.
 
 The native captures use Sapling 0.2.20261103 and Jujutsu 0.47.1 on macOS 26 arm64, Debian 13
 Linux aarch64 and x86_64, and Windows Server 2025 x64. Full Jujutsu 0.46.0 compatibility is retained
-on Debian 13 x86_64. Full 0.45.1 captures are retained on macOS 26 arm64 and Debian 13 x86_64 for a
-release-boundary comparison of nested `.gitignore` symlink handling. The Linux profiles
+on macOS arm64, Debian 13 x86_64, and Windows Server 2025 x64. Its complete configuration and
+pattern matrix is replayed on all three profiles. Jujutsu 0.47.0 configuration and pattern captures
+are replayed on macOS arm64 and Windows x64; its Linux asset has a known dependency error. Full
+0.45.1 captures are retained on macOS 26 arm64 and Debian 13 x86_64 for a release-boundary
+comparison of nested `.gitignore` symlink handling. The Linux profiles
 download upstream release assets and verify their SHA-256
 digests before running them in isolated Debian containers. Each profile checks four layouts: Sapling
 with `.git`, Sapling with `.sl`, colocated Jujutsu with `.git` and `.jj`, and non-colocated Jujutsu
