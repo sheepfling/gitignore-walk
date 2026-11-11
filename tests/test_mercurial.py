@@ -991,6 +991,37 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     assert included == native_paths
     assert ignored == set()
 
+    # A sparse-rule update restores the committed path. Reuse the same policy and walker to
+    # confirm membership is recaptured and the ignored tracked file is selected as included.
+    hg("debugsparse", "--delete", "glob:sparse/**")
+    assert sparse_file.exists()
+    restored_native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+    restored_paths = {
+        record[2:].decode(errors="surrogateescape")
+        for record in restored_native.split(b"\0")
+        if record and len(record) >= 3 and record[1:2] == b" "
+    }
+    assert restored_paths == {".hgignore", "sparse/tracked.tmp", "visible.txt"}
+    restored_decision = policy.explain("sparse/tracked.tmp")
+    assert restored_decision.ignored
+    assert restored_decision.membership == "versioned"
+
+    restored_included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    restored_ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    restored_all = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert restored_included == restored_paths
+    assert restored_ignored == set()
+    assert restored_all == restored_paths
+
 
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
     root = tmp_path / "repo"

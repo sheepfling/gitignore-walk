@@ -553,7 +553,10 @@ A live sparse-checkout regression now covers a committed file removed by
 the rule match and unknown membership separate. Included-file walks in both traversal orders only
 return paths present in the sparse working tree. The fixture is verified locally on Mercurial
 7.2.4/macOS arm64 and in hosted Windows and Ubuntu native-backed policy jobs for commit `def07df`.
-Broader sparse-profile and sparse-update behavior remain open.
+The same fixture now deletes that exclusion through `hg debugsparse --delete`, verifies Mercurial
+restores the file and reports it as versioned, and reuses the policy and walker to confirm the
+membership-aware walk includes the ignored tracked file. This covers one sparse update transition;
+broader sparse-profile coverage remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special
@@ -750,8 +753,10 @@ source. This is covered on macOS arm64 and Debian 13 Linux aarch64/x86_64.
 The Jujutsu-only linked-worktree probe is also captured on macOS arm64 and Windows Server 2025 x64;
 the Windows job recaptures it against pinned Jujutsu 0.47.1 and checks the Git/Jujutsu distinction.
 
-**Next unfinished slice:** broaden Sapling and Jujutsu version/platform and configuration profiles
-beyond current pinned profiles for Sapling 0.2.20261028/0.2.20261102/0.2.20261103 and Jujutsu
+**Next unfinished slice:** broaden Mercurial sparse profile and status-transition coverage, then
+compare remaining workspace-membership and configuration behavior across the captured VCS profiles.
+Sapling and Jujutsu already have pinned cross-version profiles: Sapling
+0.2.20261028/0.2.20261102/0.2.20261103 and Jujutsu
 0.45.1/0.46.0/0.47.0/0.47.1. The full Sapling 0.2.20261102 profile matches on Debian 13 ARM64,
 x86_64, and Windows Server 2025 x64. The Jujutsu 0.47.0 profile matches on macOS arm64 and Windows
 Server 2025 x64; Linux is excluded because the published 0.47.0 Linux binary has a dependency error
