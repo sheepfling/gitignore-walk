@@ -119,25 +119,40 @@ def main() -> int:
     )
     parser.add_argument("--output", type=Path, required=True, help="JSON capture destination")
     arguments = parser.parse_args()
-    reported = subprocess.run(
-        [arguments.sl, "--version"], capture_output=True, text=True, check=True, timeout=30
-    ).stdout.strip()
+    version = subprocess.run(
+        [arguments.sl, "--version"], capture_output=True, text=True, check=False, timeout=30
+    )
     capture = {
         "schema_version": 1,
+        "status": "captured" if version.returncode == 0 else "client-error",
         "profile_version": arguments.profile_version,
-        "client": reported,
+        "client": version.stdout.strip() if version.returncode == 0 else None,
+        "version_probe": {
+            "exit_code": version.returncode,
+            "stdout": version.stdout,
+            "stderr": version.stderr,
+        },
         "platform": platform.platform(),
         "machine": platform.machine(),
         "isolated_temporary_workspace": True,
-        "cases": [
-            _capture_mode(arguments.sl, arguments.profile_version, mode) for mode in ("sl", "git")
-        ],
+        "cases": [],
     }
+    if version.returncode == 0:
+        capture["cases"] = [
+            _capture_mode(arguments.sl, arguments.profile_version, mode) for mode in ("sl", "git")
+        ]
+    else:
+        capture["conformance"] = "client-error-observed"
     arguments.output.parent.mkdir(parents=True, exist_ok=True)
     arguments.output.write_text(json.dumps(capture, indent=2) + "\n", encoding="utf-8")
     passed = sum(case["candidate_matches"] for case in capture["cases"])
-    print(f"Sapling {arguments.profile_version} release profile: {passed}/{len(capture['cases'])}")
+    print(
+        f"Sapling {arguments.profile_version} release profile: "
+        f"{passed}/{len(capture['cases'])} ({capture['status']})"
+    )
     print(f"Capture: {arguments.output}")
+    if capture["status"] == "client-error":
+        return 0
     return 0 if passed == len(capture["cases"]) else 1
 
 

@@ -3,7 +3,13 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
+
+import pytest
+
+from tests.oracles.compat import sapling_release_profiles
 
 _ORACLE_RESULTS = Path(__file__).parent / "oracles" / "compat" / "results"
 _PROBES = {
@@ -42,3 +48,35 @@ def test_sapling_release_profiles_capture_storage_mode_behavior() -> None:
             assert case["candidate_matches"]
             assert set(case["query_files"]) == _PROBES
             assert set(case["ignored"]) == expected
+
+
+def test_sapling_release_profile_records_version_command_failure(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Record startup failure without labeling absent probes as conformance."""
+    output = tmp_path / "capture.json"
+    result = subprocess.CompletedProcess(
+        args=["sl", "--version"], returncode=255, stdout="", stderr="client failed to start"
+    )
+    monkeypatch.setattr(sapling_release_profiles.subprocess, "run", lambda *args, **kwargs: result)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "sapling_release_profiles.py",
+            "--sl",
+            "sl",
+            "--profile-version",
+            "0.2.20261102",
+            "--output",
+            str(output),
+        ],
+    )
+
+    assert sapling_release_profiles.main() == 0
+    capture = json.loads(output.read_text(encoding="utf-8"))
+    assert capture["status"] == "client-error"
+    assert capture["conformance"] == "client-error-observed"
+    assert capture["version_probe"]["exit_code"] == 255
+    assert capture["version_probe"]["stderr"] == "client failed to start"
+    assert capture["cases"] == []

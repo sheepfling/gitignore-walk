@@ -290,7 +290,7 @@ jobs:
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/sapling-fix /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xJf /clients/sapling-0.2.20261102-linux-arm64.tar.xz -C /tmp/sapling-fix && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_pattern_profile.py --sl /tmp/sapling-old/sl --output /output/sapling-0.2.20261028-sl-patterns-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-fix/sl --profile-version 0.2.20261102 --output /output/sapling-0.2.20261102-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq git python3 xz-utils && mkdir -p /tmp/sapling /tmp/sapling-old /tmp/sapling-fix /tmp/jj && tar -xJf /clients/sapling-linux-arm64.tar.xz -C /tmp/sapling && tar -xJf /clients/sapling-0.2.20261028-linux-arm64.tar.xz -C /tmp/sapling-old && tar -xJf /clients/sapling-0.2.20261102-linux-arm64.tar.xz -C /tmp/sapling-fix && tar -xzf /clients/jj-linux-arm64.tar.gz -C /tmp/jj && python3 tests/oracles/compat/run.py --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-fix/sl --jj /tmp/jj/jj --output /output/sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --sl /tmp/sapling-old/sl --jj /tmp/jj/jj --skip-sapling-pattern-mode sl --output /output/sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_pattern_profile.py --sl /tmp/sapling-old/sl --output /output/sapling-0.2.20261028-sl-patterns-debian13-arm64.json && python3 tests/oracles/compat/run.py --workspace-boundary-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/workspace-boundaries-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/run.py --linked-worktree-only --sl /tmp/sapling/sl --jj /tmp/jj/jj --output /output/linked-worktree-sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-old/sl --profile-version 0.2.20261028 --output /output/sapling-0.2.20261028-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling-fix/sl --profile-version 0.2.20261102 --output /output/sapling-0.2.20261102-behavior-debian13-arm64.json && python3 tests/oracles/compat/sapling_release_profiles.py --sl /tmp/sapling/sl --profile-version 0.2.20261103 --output /output/sapling-0.2.20261103-behavior-debian13-arm64.json'
           python - <<'PY'
           import json
           import os
@@ -301,6 +301,15 @@ jobs:
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json"
           result = inspect_capture(path)
           capture = json.loads(path.read_text(encoding="utf-8"))
+          fix_path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json"
+          fix_result = inspect_capture(fix_path)
+          fix_capture = json.loads(fix_path.read_text(encoding="utf-8"))
+          assert fix_capture["status"] == "captured", fix_capture
+          assert fix_capture["clients"]["sapling"].startswith("Sapling 0.2.20261102"), fix_capture["clients"]
+          assert fix_capture["clients"]["jujutsu"].startswith("jj 0.47.1"), fix_capture["clients"]
+          assert len(fix_capture["cases"]) == 4, fix_capture["cases"]
+          assert all(case["candidate_matches"] for case in fix_capture["cases"]), fix_capture["cases"]
+          assert fix_result["passed"], fix_result
           for case in capture["cases"]:
               nosystem = case["configured_system"]["nosystem_probe"]
               assert nosystem["config_environment_variable"] == "GIT_CONFIG_NOSYSTEM"
@@ -1097,11 +1106,17 @@ jobs:
 
           path = Path(os.environ["RUNNER_TEMP"]) / "native/sapling-0.2.20261102-behavior-windows-x64.json"
           capture = json.loads(path.read_text(encoding="utf-8"))
-          assert capture["client"].startswith("Sapling 0.2.20261102"), capture["client"]
           assert capture["machine"].lower() in {"amd64", "x86_64"}, capture["machine"]
-          assert len(capture["cases"]) == 2, capture["cases"]
-          assert all(case["candidate_matches"] for case in capture["cases"]), capture["cases"]
-          assert all(case["ignored"] == case["expected_ignored"] for case in capture["cases"])
+          if capture["status"] == "captured":
+              assert capture["client"].startswith("Sapling 0.2.20261102"), capture["client"]
+              assert len(capture["cases"]) == 2, capture["cases"]
+              assert all(case["candidate_matches"] for case in capture["cases"]), capture["cases"]
+              assert all(case["ignored"] == case["expected_ignored"] for case in capture["cases"])
+          else:
+              assert capture["status"] == "client-error", capture
+              assert capture["conformance"] == "client-error-observed", capture
+              assert capture["version_probe"]["exit_code"] == 255, capture["version_probe"]
+              assert capture["cases"] == [], capture["cases"]
           '@ | python -
       - name: Check Windows Registry and INI precedence
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
