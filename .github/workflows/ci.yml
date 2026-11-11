@@ -65,31 +65,6 @@ jobs:
       - if: matrix.checks == 'test'
         run: python -m pip install 'pytest>=8.3'
       - run: python -m scripts.ci ${{ matrix.checks }}
-      - name: Capture Mercurial config trust on macOS
-        if: matrix.os == 'macos-latest'
-        run: |
-          set -euo pipefail
-          if ! command -v hg >/dev/null 2>&1; then
-            brew install mercurial
-          fi
-          output="$RUNNER_TEMP/native/hg-trust-macos.json"
-          mkdir -p "$(dirname "$output")"
-          hg --version
-          python tests/oracles/hg/trust.py --hg "$(command -v hg)" --output "$output"
-          python - "$output" <<'PY'
-          import json
-          import platform
-          import sys
-          from pathlib import Path
-
-          capture = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-          assert capture["status"] == "captured", capture
-          assert capture["client"]["version"].startswith("Mercurial Distributed SCM (version ")
-          assert platform.machine() in capture["client"]["platform"]
-          assert [state["label"] for state in capture["states"]] == ["trusted", "untrusted"]
-          assert all(state["matches"] for state in capture["states"]), capture["states"]
-          assert [state["policy"]["ignored"] for state in capture["states"]] == [True, False]
-          PY
       - name: Capture Jujutsu 0.45.1 compatibility profile
         if: matrix.os == 'macos-latest'
         run: |

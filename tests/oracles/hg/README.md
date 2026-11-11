@@ -104,9 +104,10 @@ probe writes an explicit skipped capture and does not count as passing trust evi
 repository config trust rules. Native CI also captures the same trusted/untrusted states with
 Mercurial 7.0.1 in Debian 13 x86_64 and ARM64, extending the trust check across both pinned Debian
 architecture profiles. The native Ubuntu 24.04 CI job also checks the states with system Mercurial
-6.7.2 on x86_64. The macOS test job captures its installed Mercurial client as a separate POSIX
-profile and requires both ownership states to match; the exact client version and architecture are
-recorded in the uploaded `native-macos-oracles` artifact.
+6.7.2 on x86_64. The hosted macOS runner cannot change the fixture's owner to root, even through
+non-interactive `sudo`, so it cannot provide this ownership-based trust evidence. The oracle records
+an explicit skip when a local runner lacks the required ownership capability; that skip is not
+treated as a passing trust capture.
 
 The `oracle-hg` command also runs the isolated `sparse_refresh.py` probe. It removes an exclusion
 from `.hg/sparse`, runs `hg debugsparse --refresh`, and records the command result, file presence,
