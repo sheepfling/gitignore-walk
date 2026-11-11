@@ -10,6 +10,10 @@ import pytest
 
 from gitignore_walk import BreezyIgnorePolicy, IgnoreWalker
 from tests.oracles.breezy.run import _capture_profile_name, _select_cases_for_profile
+from tests.oracles.breezy.source_precedence import (
+    SOURCE_PRECEDENCE_CASES,
+    _cases_for_profile,
+)
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "breezy"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
@@ -82,7 +86,6 @@ def test_breezy_capture_only_runs_cases_declared_for_the_current_profile() -> No
         {"id": "shared"},
         {"id": "mac-only", "capture_profiles": ["brz-3.3.24-macos-arm64.json"]},
     ]
-
     selected, excluded = _select_cases_for_profile(cases, "brz-3.3.24-windows-x86_64-py312.json")
 
     assert [case["id"] for case in selected] == ["shared"]
@@ -93,6 +96,18 @@ def test_breezy_capture_only_runs_cases_declared_for_the_current_profile() -> No
             "current_profile": "brz-3.3.24-windows-x86_64-py312.json",
         }
     ]
+
+
+def test_breezy_source_precedence_profile_enables_only_three_scoped_cases() -> None:
+    profile = "brz-3.3.24-windows-x86_64-py312.json"
+    cases_data = _cases_for_profile(
+        {"cases": [{"id": case_id} for case_id in SOURCE_PRECEDENCE_CASES]}, profile
+    )
+
+    assert all(case["capture_profiles"] == [profile] for case in cases_data["cases"])
+    selected, excluded = _select_cases_for_profile(cases_data["cases"], profile)
+    assert {case["id"] for case in selected} == set(SOURCE_PRECEDENCE_CASES)
+    assert excluded == []
 
 
 @pytest.mark.parametrize("case", CASES, ids=lambda case: case["id"])

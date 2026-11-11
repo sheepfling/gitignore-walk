@@ -549,6 +549,11 @@ jobs:
           python -m scripts.ci native --include-trust
           --backends hg svn fossil brz p4
           --output-dir "$RUNNER_TEMP/native"
+      - name: Capture Breezy source precedence on Linux x86_64
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: >-
+          python tests/oracles/breezy/source_precedence.py
+          --output "$RUNNER_TEMP/native/brz-source-precedence-linux-x86_64-py312.json"
       - name: Check Breezy 3.3.11 on Debian 13
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |
@@ -690,6 +695,11 @@ jobs:
         run: >-
           python -m scripts.ci native --backends hg svn brz
           --output-dir "$env:RUNNER_TEMP/native"
+      - name: Capture Breezy source precedence on Windows x86_64
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: >-
+          python tests/oracles/breezy/source_precedence.py
+          --output "$env:RUNNER_TEMP/native/brz-source-precedence-windows-x86_64-py312.json"
       - name: Capture Jujutsu on Windows
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: pwsh
