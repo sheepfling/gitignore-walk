@@ -959,7 +959,7 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
 
     native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
     native_paths = {
-        record[2:].decode(errors="surrogateescape")
+        record[2:].decode(errors="surrogateescape").replace("\\", "/")
         for record in native.split(b"\0")
         if record and len(record) >= 3 and record[1:2] == b" "
     }
@@ -997,7 +997,7 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     assert sparse_file.exists()
     restored_native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
     restored_paths = {
-        record[2:].decode(errors="surrogateescape")
+        record[2:].decode(errors="surrogateescape").replace("\\", "/")
         for record in restored_native.split(b"\0")
         if record and len(record) >= 3 and record[1:2] == b" "
     }
@@ -1055,7 +1055,7 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     def native_paths() -> set[str]:
         native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
         return {
-            record[2:].decode(errors="surrogateescape")
+            record[2:].decode(errors="surrogateescape").replace("\\", "/")
             for record in native.split(b"\0")
             if record and len(record) >= 3 and record[1:2] == b" "
         }
@@ -1147,7 +1147,7 @@ def test_ignored_fifo_matches_policy_but_is_not_a_native_walk_file(
 
     native_status = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
     native_paths = {
-        record[2:].decode(errors="surrogateescape")
+        record[2:].decode(errors="surrogateescape").replace("\\", "/")
         for record in native_status.split(b"\0")
         if record and len(record) >= 3 and record[1:2] == b" "
     }
