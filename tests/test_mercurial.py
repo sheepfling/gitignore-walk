@@ -910,6 +910,84 @@ def test_membership_aware_policy_matches_native_status_classes(
     assert walked("all") == included | {"ignored.tmp"}
 
 
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_sparse_excluded_versioned_paths_keep_unknown_membership(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Do not infer membership for versioned files omitted by Mercurial sparse status."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("[extensions]\nsparse =\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    hg("init")
+    sparse_file = root / "sparse" / "tracked.tmp"
+    sparse_file.parent.mkdir()
+    sparse_file.write_text("tracked before sparse exclusion\n", encoding="utf-8")
+    (root / "visible.txt").write_text("visible\n", encoding="utf-8")
+    hg("add", "sparse/tracked.tmp", "visible.txt")
+    hg("commit", "-m", "add files", "-u", "gitignore-walk test")
+
+    (root / ".hgignore").write_text("syntax: glob\nsparse/tracked.tmp\n", encoding="utf-8")
+    hg("add", ".hgignore")
+    hg("commit", "-m", "ignore the sparse file", "-u", "gitignore-walk test")
+    hg("debugsparse", "--exclude", "glob:sparse/**")
+    assert not sparse_file.exists()
+
+    native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+    native_paths = {
+        record[2:].decode(errors="surrogateescape")
+        for record in native.split(b"\0")
+        if record and len(record) >= 3 and record[1:2] == b" "
+    }
+    assert native_paths == {".hgignore", "visible.txt"}
+    missing_sparse_status = hg(
+        "status", "--all", "--unknown", "--ignored", "-0", "--", "sparse/tracked.tmp"
+    )
+    assert missing_sparse_status.stdout == b""
+
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    assert policy.explain("sparse/tracked.tmp").ignored
+    assert policy.explain("sparse/tracked.tmp").membership is None
+    assert policy.explain("visible.txt").membership == "versioned"
+
+    walker = IgnoreWalker(root, policy=policy)
+    included = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="included", topdown=topdown)
+    }
+    ignored = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    assert included == native_paths
+    assert ignored == set()
+
+
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
     root = tmp_path / "repo"
     (root / ".hg").mkdir(parents=True)

@@ -372,7 +372,9 @@ independent of that annotation. Membership-aware walks select versioned paths as
 they match `.hgignore`, and they keep ignored-only selection for ignored unversioned paths. This
 option requires the `hg` executable and a real working copy.
 Paths omitted by native status remain unknown. Each direct query, batch, or walk uses one captured
-status snapshot.
+status snapshot. Mercurial sparse checkouts can omit files that are versioned in repository history;
+the policy leaves those absent paths unknown instead of inferring membership from sparse rules or an
+ignore match.
 
 The policy discovers the enclosing `.hg` workspace, reads its root `.hgignore`, and loads any
 additional files passed with `ignore_files`. Relative extra-file paths are resolved from the

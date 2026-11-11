@@ -544,6 +544,13 @@ covered with native Mercurial status and `explain`, `trace`, and `iter_explain`.
 POSIX; both status classes indicate versioned membership and are included in the live cross-platform
 test. Broader sparse, symlink, and cross-profile membership behavior remains open.
 
+A live sparse-checkout regression now covers a committed file removed by
+`hg debugsparse --exclude`. Mercurial omits the absent file from
+`hg status --all --unknown --ignored -0`, even when its path matches `.hgignore`; the policy keeps
+the rule match and unknown membership separate. Included-file walks in both traversal orders only
+return paths present in the sparse working tree. The fixture is verified locally on Mercurial
+7.2.4/macOS arm64; hosted Windows and Linux results are pending.
+
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special
 files, tracked/versioned paths, and nested workspace boundaries. Override pruning only when native
