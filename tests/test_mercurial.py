@@ -1146,10 +1146,12 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
         assert result.returncode == 0, result.stderr.decode(errors="replace")
         return result
 
-    def native_paths() -> set[str]:
+    def native_records() -> dict[str, str]:
         native = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
         return {
-            record[2:].decode(errors="surrogateescape").replace("\\", "/")
+            record[2:].decode(errors="surrogateescape").replace("\\", "/"): record[:1].decode(
+                "ascii"
+            )
             for record in native.split(b"\0")
             if record and len(record) >= 3 and record[1:2] == b" "
         }
@@ -1160,16 +1162,30 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(f"{relative}\n", encoding="utf-8")
     (root / ".hgignore").write_text(
-        "syntax: glob\none/a.tmp\ntwo/b.tmp\ntwo/excluded.tmp\n", encoding="utf-8"
+        "syntax: glob\none/a.tmp\none/ignored.tmp\ntwo/b.tmp\ntwo/excluded.tmp\ntwo/ignored.tmp\n",
+        encoding="utf-8",
     )
     sparse_profile = root / ".hgsparse"
     sparse_profile.write_text("[include]\none/**\ntwo/**\n[exclude]\ntwo/**\n", encoding="utf-8")
     hg("add", ".hgignore", ".hgsparse", "one/a.tmp", "two/b.tmp", "two/excluded.tmp")
     hg("commit", "-m", "add sparse profile fixture", "-u", "gitignore-walk test")
+    for relative in (
+        "one/ignored.tmp",
+        "one/untracked.txt",
+        "two/ignored.tmp",
+        "two/untracked.txt",
+    ):
+        (root / relative).write_text(f"{relative}\n", encoding="utf-8")
     hg("debugsparse", "--enable-profile", ".hgsparse")
 
-    initial_paths = native_paths()
-    assert initial_paths == {".hgignore", ".hgsparse", "one/a.tmp"}
+    initial_records = native_records()
+    assert initial_records == {
+        ".hgignore": "C",
+        ".hgsparse": "C",
+        "one/a.tmp": "C",
+        "one/ignored.tmp": "I",
+        "one/untracked.txt": "?",
+    }
     assert (root / "one/a.tmp").exists()
     assert not (root / "two/b.tmp").exists()
     assert not (root / "two/excluded.tmp").exists()
@@ -1184,17 +1200,41 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     missing_decision = policy.explain("two/b.tmp")
     assert missing_decision.ignored
     assert missing_decision.membership is None
-    initial_walk = {
+    initial_included_walk = {
         path.relative_to(root).as_posix()
         for path in walker.iter_files(selection="included", topdown=topdown)
     }
-    assert initial_walk == initial_paths
+    initial_ignored_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    initial_all_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert initial_included_walk == {
+        ".hgignore",
+        ".hgsparse",
+        "one/a.tmp",
+        "one/untracked.txt",
+    }
+    assert initial_ignored_walk == {"one/ignored.tmp"}
+    assert initial_all_walk == set(initial_records)
+    assert policy.explain("one/untracked.txt").membership == "unversioned"
+    assert policy.explain("one/ignored.tmp").membership == "unversioned"
+    assert policy.explain("two/untracked.txt").membership is None
 
     sparse_profile.write_text("[include]\ntwo/**\n[exclude]\ntwo/excluded.tmp\n", encoding="utf-8")
     hg("commit", "-m", "switch sparse profile", "-u", "gitignore-walk test")
 
-    updated_paths = native_paths()
-    assert updated_paths == {".hgignore", ".hgsparse", "two/b.tmp"}
+    updated_records = native_records()
+    assert updated_records == {
+        ".hgignore": "C",
+        ".hgsparse": "C",
+        "two/b.tmp": "C",
+        "two/ignored.tmp": "I",
+        "two/untracked.txt": "?",
+    }
     assert not (root / "one/a.tmp").exists()
     assert (root / "two/b.tmp").exists()
     assert not (root / "two/excluded.tmp").exists()
@@ -1204,28 +1244,68 @@ def test_committed_sparse_profile_update_changes_native_walk_membership(
     excluded_decision = policy.explain("two/excluded.tmp")
     assert excluded_decision.ignored
     assert excluded_decision.membership is None
-    updated_walk = {
+    updated_included_walk = {
         path.relative_to(root).as_posix()
         for path in walker.iter_files(selection="included", topdown=topdown)
     }
-    assert updated_walk == updated_paths
-
-    hg("debugsparse", "--disable-profile", ".hgsparse")
-    restored_paths = native_paths()
-    assert restored_paths == {
+    updated_ignored_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    updated_all_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert updated_included_walk == {
         ".hgignore",
         ".hgsparse",
-        "one/a.tmp",
         "two/b.tmp",
-        "two/excluded.tmp",
+        "two/untracked.txt",
+    }
+    assert updated_ignored_walk == {"two/ignored.tmp"}
+    assert updated_all_walk == set(updated_records)
+    assert policy.explain("two/untracked.txt").membership == "unversioned"
+    assert policy.explain("two/ignored.tmp").membership == "unversioned"
+    assert policy.explain("one/untracked.txt").membership is None
+
+    hg("debugsparse", "--disable-profile", ".hgsparse")
+    restored_records = native_records()
+    assert restored_records == {
+        ".hgignore": "C",
+        ".hgsparse": "C",
+        "one/a.tmp": "C",
+        "one/ignored.tmp": "I",
+        "one/untracked.txt": "?",
+        "two/b.tmp": "C",
+        "two/excluded.tmp": "C",
+        "two/ignored.tmp": "I",
+        "two/untracked.txt": "?",
     }
     assert policy.explain("one/a.tmp").membership == "versioned"
     assert policy.explain("two/excluded.tmp").membership == "versioned"
-    restored_walk = {
+    restored_included_walk = {
         path.relative_to(root).as_posix()
         for path in walker.iter_files(selection="included", topdown=topdown)
     }
-    assert restored_walk == restored_paths
+    restored_ignored_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="ignored", topdown=topdown)
+    }
+    restored_all_walk = {
+        path.relative_to(root).as_posix()
+        for path in walker.iter_files(selection="all", topdown=topdown)
+    }
+    assert restored_included_walk == {
+        ".hgignore",
+        ".hgsparse",
+        "one/a.tmp",
+        "one/untracked.txt",
+        "two/b.tmp",
+        "two/excluded.tmp",
+        "two/untracked.txt",
+    }
+    assert restored_ignored_walk == {"one/ignored.tmp", "two/ignored.tmp"}
+    assert restored_all_walk == set(restored_records)
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
