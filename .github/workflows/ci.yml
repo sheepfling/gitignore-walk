@@ -69,6 +69,9 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           set -euo pipefail
+          if ! command -v hg >/dev/null 2>&1; then
+            brew install mercurial
+          fi
           output="$RUNNER_TEMP/native/hg-trust-macos.json"
           mkdir -p "$(dirname "$output")"
           hg --version
