@@ -11,6 +11,8 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+from tests.oracles.compat.run import _sapling_status_paths
+
 _PROBES = {
     "empty/target/under-empty-ignore.tmp": "target/ rule below an empty .gitignore",
     "missing/target/under-missing-ignore.tmp": "target/ rule below a missing .gitignore",
@@ -96,12 +98,8 @@ def _capture_mode(executable: str, version: str, mode: str) -> dict[str, Any]:
         )
         if status.returncode:
             raise RuntimeError(f"sl status failed: {status.stderr.decode(errors='replace')}")
-        records = [record for record in status.stdout.split(b"\0") if record]
-        ignored = sorted(
-            os.fsdecode(record[2:])
-            for record in records
-            if len(record) >= 3 and record[:2] == b"I " and os.fsdecode(record[2:]) in _PROBES
-        )
+        _, ignored_paths = _sapling_status_paths(status.stdout.decode(errors="replace"))
+        ignored = sorted(ignored_paths.intersection(_PROBES))
         return {
             "mode": mode,
             "query_files": sorted(_PROBES),
