@@ -142,8 +142,10 @@ for scheduled additions, missing files, edits, and renames, plus unknown for an 
 path; ignore decisions remain unchanged. Membership-aware included, ignored, and all-file walks
 now cover those states in both top-down and bottom-up order, keeping scheduled additions, edits,
 renames, and missing tracked files separate from ignored unversioned files. Fossil selection now
-retains its metadata-marker baseline by default, with explicit `initial_excludes` replacement.
-Cross-profile status and broader traversal coverage remain open.
+retains its metadata-marker baseline by default, with explicit `initial_excludes` replacement. A
+Fossil 2.28/macOS native comparison also confirms parent walks stop at a nested checkout opened
+with `fossil open --nested`, in both top-down and bottom-up traversal. Cross-profile status and
+broader traversal coverage remain open.
 Breezy's corpus is now
 captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64 with
 isolated user configuration: all thirty-three boolean cases agree, including global-versus-branch

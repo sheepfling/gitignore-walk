@@ -160,6 +160,55 @@ def test_fossil_policy_uses_effective_setting_and_prunes_ignored_directories(
 
 
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_fossil_walk_stops_at_nested_checkout(tmp_path: Path, topdown: bool) -> None:
+    fossil = shutil.which("fossil")
+    if fossil is None:
+        pytest.skip("Fossil is not installed")
+    parent = tmp_path / "parent"
+    child = parent / "nested"
+    parent_repository = tmp_path / "parent.fossil"
+    child_repository = tmp_path / "child.fossil"
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = {
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "USER": "pytest",
+        "PATH": str(Path(fossil).parent),
+        "LC_ALL": "C",
+    }
+
+    def run(*arguments: str, cwd: Path = tmp_path) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [fossil, *arguments],
+            cwd=cwd,
+            env=environment,
+            capture_output=True,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    run("init", "--admin-user", "pytest", str(parent_repository))
+    run("open", "--nosync", "--workdir", str(parent), str(parent_repository))
+    (parent / "outer.txt").write_text("outer\n", encoding="utf-8")
+    run("init", "--admin-user", "pytest", str(child_repository))
+    run("open", "--nested", "--nosync", "--workdir", str(child), str(child_repository))
+    (child / "inner.txt").write_text("inner\n", encoding="utf-8")
+
+    native = run("extras", "--dotfiles", cwd=parent)
+    native_paths = set(native.stdout.decode().splitlines())
+    policy = FossilIgnorePolicy(parent, fossil_executable=fossil, environment=environment)
+    walked_paths = {
+        path.relative_to(parent).as_posix()
+        for path in IgnoreWalker(parent, policy=policy).iter_files(topdown=topdown)
+    }
+
+    assert native_paths == {"outer.txt"}
+    assert walked_paths == native_paths
+
+
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
     tmp_path: Path, topdown: bool
 ) -> None:

@@ -73,7 +73,8 @@ class FossilIgnorePolicy(IgnorePolicy):
     relative to the Fossil checkout root, and ``*`` can match directory separators. The policy
     implements the Fossil list separators and quote-delimited patterns. Fossil has no negation.
     Ignore matches describe exclusion rules, not whether a path is already tracked. The walker
-    baseline omits the Fossil checkout marker files by default.
+    baseline omits the Fossil checkout marker files by default, and nested Fossil checkouts are
+    traversal boundaries matching parent ``fossil extras`` behavior.
 
     Set ``membership_aware=True`` to query Fossil's structured checkout JSON and report known file
     membership independently from ignore decisions. Directory membership remains unknown because
@@ -138,6 +139,12 @@ class FossilIgnorePolicy(IgnorePolicy):
         if not path.is_relative_to(self.root):
             raise ValueError(f"target must be inside policy root: {path}")
         return path
+
+    def should_descend_directory(self, target: Path) -> bool:
+        """Stop at nested Fossil checkouts while allowing traversal into this checkout root."""
+        if target == self.workspace_root or not target.is_relative_to(self.workspace_root):
+            return True
+        return not any((target / marker).exists() for marker in _WORKSPACE_MARKERS)
 
     def explain(self, target: str | os.PathLike[str]) -> IgnoreDecision:
         """Explain whether Fossil's effective ignore setting matches one path."""

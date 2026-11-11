@@ -144,7 +144,9 @@ pruning. A captured extras fixture checks included and ignored walk results agai
 across macOS and both Linux profiles, including exclusion of the Fossil workspace marker from
 included results. Opt-in file-membership discovery uses structured Fossil JSON directory and
 checkout-status responses, independently of ignore decisions; directories remain
-membership-unknown. Other tokenizer boundaries and broader native/platform profiles remain open.
+membership-unknown. The parent walker also stops at nested Fossil checkouts, matching native
+`fossil extras` on Fossil 2.28/macOS arm64 in both traversal orders. Other tokenizer boundaries
+and broader native/platform profiles remain open.
 See the [Fossil oracle notes](../../tests/oracles/fossil/README.md) and
 [Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md).
 

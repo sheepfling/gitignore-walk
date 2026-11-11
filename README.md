@@ -273,7 +273,9 @@ data, and a backslash does not escape those separators. Patterns are additive wi
 Ignored directory matches can be pruned. The default baseline excludes Fossil checkout markers from
 included walks; `selection="ignored"` and `selection="all"` can still return those marker files.
 Native `fossil extras` output agrees with included and ignored selections for the captured untracked
-traversal fixture. Decisions report ignore-rule matches independently from tracked membership. To
+traversal fixture. Parent walks also stop at nested Fossil checkouts, matching native
+`fossil extras` on Fossil 2.28/macOS arm64. Decisions report ignore-rule matches independently
+from tracked membership. To
 query file membership as well, opt in with `FossilPolicyConfig(membership_aware=True)`; this reads
 Fossil's structured JSON directory and checkout-status results. Membership remains `None` for
 directories, which Fossil does not track as files. This initial implementation matches 41 boolean
