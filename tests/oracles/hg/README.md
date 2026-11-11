@@ -126,8 +126,10 @@ the shared walker must stop at that boundary. The policy also treats the workspa
 metadata directory as non-traversable. The library comparison in `tests/test_mercurial.py` compares
 all three profiles' untracked file paths. A separate Linux integration case creates a filename with
 an undecodable byte and compares the walk with NUL-delimited native status; it skips filesystems,
-such as the tested macOS filesystem, that reject the name. Tracked-file membership is asserted
-separately because the policy reports ignore matching and does not query Mercurial's dirstate.
+such as the tested macOS filesystem, that reject the name. Ignore matching remains independent
+from tracked membership: the default policy does not query dirstate, while the opt-in
+`membership_aware` mode queries native status. Live integration tests compare that status-derived
+membership with tracked and untracked walker selections.
 
 This oracle asks `hg debugignore` whether a single path matches ignore rules. It does not establish
 tracked-file behavior, add/status behavior, traversal output, or compatibility with other Mercurial
