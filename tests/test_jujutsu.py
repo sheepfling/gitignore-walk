@@ -64,6 +64,8 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
     jj("status")
     (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
+    (root / "tracked.tmp").write_text("modified after the saved tree\n", encoding="utf-8")
+    (root / "clean.txt").unlink()
 
     native_tree = jj(
         "file",
@@ -119,11 +121,10 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
             for path in walker.iter_files(selection=selection_name, topdown=topdown)
         }
 
-    assert walked("included") == {".gitignore", "clean.txt", "tracked.tmp", "unknown.txt"}
+    assert walked("included") == {".gitignore", "tracked.tmp", "unknown.txt"}
     assert walked("ignored") == {"ignored.tmp"}
     assert walked("all") == {
         ".gitignore",
-        "clean.txt",
         "ignored.tmp",
         "tracked.tmp",
         "unknown.txt",

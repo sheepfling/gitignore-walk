@@ -775,11 +775,12 @@ confirming the membership query does not create a new operation. Jujutsu has an 
 query based on `jj --ignore-working-copy file list` rather than `jj status`,
 which snapshots the working copy. The saved `@` tree identifies versioned paths; present files
 missing from that tree are unversioned, while missing unlisted paths and directories remain
-unknown. A live fixture checks policy selections in both walk orders and confirms the operation ID
-does not change during membership queries. Both scheme adapters retain the lexical query path for
-membership lookup, so tracked dangling symlinks remain versioned even though the policy resolves
-their targets for rule evaluation. Sapling/Jujutsu broader client and configuration profiles
-remain open.
+unknown. A live fixture edits a saved-tree file and removes another after the last status snapshot;
+both remain versioned by the saved tree, while the walker omits the missing filesystem entry. It
+checks policy selections in both walk orders and confirms the operation ID does not change during
+membership queries. Both scheme adapters retain the lexical query path for membership lookup, so
+tracked dangling symlinks remain versioned even though the policy resolves their targets for rule
+evaluation. Sapling/Jujutsu broader client and configuration profiles remain open.
 
 The nested symlinked `.gitignore` probe now confirms a source-layout difference: Sapling `.sl` mode
 follows a symlink to an ignore file outside the workspace, while Sapling `.git` and Jujutsu skip
