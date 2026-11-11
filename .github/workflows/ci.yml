@@ -202,13 +202,15 @@ jobs:
               cp /tmp/hg-7.0.1-linux-x86_64.json /output/hg-7.0.1-linux-x86_64.json
               PYTHONPATH=/workspace/src python3 tests/oracles/hg/trust.py --hg /usr/bin/hg \
                 --output /output/hg-trust-7.0.1-linux-x86_64.json
+              PYTHONPATH=/workspace/src python3 tests/oracles/hg/sparse_refresh.py --hg /usr/bin/hg \
+                --output /output/hg-sparse-refresh-7.0.1-linux-x86_64.json
             '
           docker run --rm --platform linux/arm64 \
             --volume "$GITHUB_WORKSPACE:/workspace" \
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
             debian:13-slim \
-            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 util-linux && su -s /bin/sh nobody -c "python3 tests/oracles/hg/run.py --output /tmp/hg-7.0.1-linux-aarch64.json" && cp /tmp/hg-7.0.1-linux-aarch64.json /output/hg-7.0.1-linux-aarch64.json'
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mercurial python3 util-linux && su -s /bin/sh nobody -c "python3 tests/oracles/hg/run.py --output /tmp/hg-7.0.1-linux-aarch64.json" && cp /tmp/hg-7.0.1-linux-aarch64.json /output/hg-7.0.1-linux-aarch64.json && PYTHONPATH=/workspace/src python3 tests/oracles/hg/sparse_refresh.py --hg /usr/bin/hg --output /output/hg-sparse-refresh-7.0.1-linux-aarch64.json'
           python - <<'PY'
           import json
           import os
@@ -247,6 +249,27 @@ jobs:
           assert [state["label"] for state in trust["states"]] == ["trusted", "untrusted"]
           assert all(state["matches"] for state in trust["states"]), trust["states"]
           assert [state["policy"]["ignored"] for state in trust["states"]] == [True, False]
+          for architecture in ("x86_64", "aarch64"):
+              sparse_path = directory / f"hg-sparse-refresh-7.0.1-linux-{architecture}.json"
+              sparse = json.loads(sparse_path.read_text(encoding="utf-8"))
+              assert sparse["status"] == "captured", sparse
+              assert sparse["client"]["version"] == "Mercurial Distributed SCM (version 7.0.1)"
+              assert architecture in sparse["client"]["platform"]
+              after = sparse["after_refresh"]
+              assert after["file_exists"]
+              assert after["policy_matches_native_status"]
+              known_failure = (
+                  sparse["refresh"]["exit_code"] == 1
+                  and sparse["refresh"]["programming_error"]
+                  and after["status_code"] == "?"
+                  and after["policy_membership"] == "unversioned"
+              )
+              fixed_behavior = (
+                  sparse["refresh"]["exit_code"] == 0
+                  and after["status_membership"] == "versioned"
+                  and after["policy_membership"] == "versioned"
+              )
+              assert known_failure or fixed_behavior, sparse
           PY
       - name: Capture Darcs oracle on Debian 13 ARM64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}

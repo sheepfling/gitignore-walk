@@ -101,6 +101,15 @@ probe writes an explicit skipped capture and does not count as passing trust evi
 repository config trust rules. Native CI also captures the same trusted/untrusted states with
 Mercurial 7.0.1 in Debian 13 x86_64, extending the trust check to the pinned Debian client profile.
 
+The isolated `sparse_refresh.py` probe removes an exclusion from `.hg/sparse`, runs
+`hg debugsparse --refresh`, and records the command result, file presence, native status, and
+membership-aware policy result. Run it locally with
+`PYTHONPATH=src python tests/oracles/hg/sparse_refresh.py --hg hg --output /tmp/hg-sparse-refresh.json`.
+Native CI captures Mercurial 7.0.1 on Debian 13 x86_64 and ARM64. The known `ProgrammingError`
+failure is recorded as an observation; if a future client fixes it, CI accepts a successful refresh
+that restores versioned membership. In either case the policy must agree with native status. This
+probe only uses a fresh temporary repository.
+
 The six walk fixtures cover
 ignored-parent descendants, included rule sources,
 subinclude scope (including one physical source reached through symlink aliases under two scopes),

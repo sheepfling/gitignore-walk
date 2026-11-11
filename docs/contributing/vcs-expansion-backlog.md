@@ -830,7 +830,10 @@ transitions that are not covered by the existing live fixtures. Reproductions on
 `hg debugsparse --refresh` after manually removing an exclusion from `.hg/sparse`. In both, the
 file returned to disk but native status then reported it as unknown (`?`). Treat this as a native
 client failure observation, not a portable refresh contract; do not interpret its post-error status
-as the intended semantics of a successful sparse refresh.
+as the intended semantics of a successful sparse refresh. The isolated probe now records native
+status and policy membership on both sides of refresh; the Debian 13 CI oracle captures Mercurial
+7.0.1 on x86_64 and ARM64 and accepts either this known failure profile or a future successful
+refresh that restores versioned membership.
 Sapling and Jujutsu already have pinned cross-version profiles: Sapling
 0.2.20261028/0.2.20261102/0.2.20261103 and Jujutsu
 0.45.1/0.46.0/0.47.0/0.47.1. The full Sapling 0.2.20261102 profile matches on Debian 13 ARM64,
