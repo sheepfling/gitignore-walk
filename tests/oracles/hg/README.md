@@ -100,7 +100,8 @@ passwordless `sudo` solely to make the repository config root-owned. Without tha
 probe writes an explicit skipped capture and does not count as passing trust evidence. See the
 [Mercurial configuration documentation](https://mercurial-scm.org/help/topics/config) for its
 repository config trust rules. Native CI also captures the same trusted/untrusted states with
-Mercurial 7.0.1 in Debian 13 x86_64, extending the trust check to the pinned Debian client profile.
+Mercurial 7.0.1 in Debian 13 x86_64 and ARM64, extending the trust check across both pinned Debian
+architecture profiles.
 
 The `oracle-hg` command also runs the isolated `sparse_refresh.py` probe. It removes an exclusion
 from `.hg/sparse`, runs `hg debugsparse --refresh`, and records the command result, file presence,
