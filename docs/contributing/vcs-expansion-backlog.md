@@ -731,9 +731,12 @@ keep those cases unrun instead of treating Visual Studio availability as a nativ
 
 The Windows workflow now adds a separate probe for Sapling 0.2.20261028 `.sl` path-pattern
 behavior. It records the 13-path and extended pattern commands as matched, mismatched, or native
-client errors without treating an error as a conformance result. The result will be available in the
-`native-windows-oracles` artifact after the updated workflow runs; the full legacy `.sl` matrix
-remains excluded pending that observation.
+client errors without treating an error as a conformance result. The Windows capture now confirms
+both commands panic with `StripPrefixError` (exit 101), matching the Debian observations; both
+probes have `candidate_matches: null`. The result is retained as
+`tests/oracles/compat/results/sapling-0.2.20261028-sl-patterns-windows-x64.json`. The full legacy
+`.sl` matrix remains excluded because the native client fails before returning path matches; the
+newer Sapling `.sl` profile continues to provide the conformance evidence for that mode.
 
 The SVN baseline is retained below for reference: its initial property policy, inherited
 `svn:global-ignores` discovery, switched-subtree scoping, sparse-depth boundaries, listed externals,

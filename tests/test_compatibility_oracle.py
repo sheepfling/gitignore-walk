@@ -98,6 +98,29 @@ OLDER_SAPLING_WINDOWS_CAPTURE_FILE = "sapling-0.2.20261028-jj-0.47.1-windows-x64
 OLDER_SAPLING_WINDOWS_CAPTURE = json.loads(
     (ORACLE_ROOT / "results" / OLDER_SAPLING_WINDOWS_CAPTURE_FILE).read_text(encoding="utf-8")
 )
+OLDER_SAPLING_WINDOWS_PATTERN_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / "sapling-0.2.20261028-sl-patterns-windows-x64.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+
+def test_older_sapling_windows_sl_pattern_capture_preserves_client_errors() -> None:
+    """Keep native panics distinct from pattern conformance on the older Windows client."""
+    capture = OLDER_SAPLING_WINDOWS_PATTERN_CAPTURE
+    assert capture["status"] == "captured"
+    assert capture["client"].startswith("Sapling 0.2.20261028")
+    assert capture["platform"].startswith("Windows-2025Server-")
+    assert capture["conformance"] == "client-error-observed"
+    assert {probe["id"] for probe in capture["probes"]} == {
+        "sapling.sl-mode.pattern_discovery",
+        "sapling.sl-mode.extended_pattern_discovery",
+    }
+    for probe in capture["probes"]:
+        assert probe["native_status"] == "client-error"
+        assert probe["status_exit_code"] == 101
+        assert probe["candidate_matches"] is None
+        assert "StripPrefixError" in probe["status_stderr"]
 
 
 def test_sapling_status_paths_normalize_windows_separators_without_rewriting_posix_names() -> None:

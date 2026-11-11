@@ -37,15 +37,18 @@ Sapling 0.2.20261028 has version-scoped Debian 13 arm64 and x86_64 captures for 
 and global-configuration behavior alongside Jujutsu 0.47.1. The Windows Server 2025 x64 capture
 adds both Sapling storage modes and Jujutsu 0.47.1. On the Debian profiles, Sapling `.sl` mode
 panics with `StripPrefixError` for each tested path-pattern group; the Windows capture also excludes
-that group, so it does not establish old-version `.sl` pattern behavior on Windows. The `.git` mode
-matches the full 13-path pattern matrix on both Linux and Windows. Every profile marks
+that group in the combined compatibility profile. A separate Windows capture now runs both the
+13-path and extended `.sl` groups and records the same `StripPrefixError` panic with exit code 101;
+both observations have `native_status: "client-error"` and `candidate_matches: null`. This is
+evidence of a client failure, not evidence that the candidate patterns match. The capture is
+versioned as `sapling-0.2.20261028-sl-patterns-windows-x64.json`. The `.git` mode matches the full
+13-path pattern matrix on both Linux and Windows. Every combined profile marks
 `sapling.sl-mode.pattern_discovery` in `excluded_probes`; Jujutsu's pattern probes and both clients'
 source/configuration probes still run and match. Reproduce these captures with
 `run.py --sl <older-sapling> --jj <jj> --skip-sapling-pattern-mode sl --output <capture.json>`.
-The Windows job also runs `sapling_pattern_profile.py` against the old `.sl` client in separate
-disposable workspaces. It records both the 13-path and extended pattern commands as candidate
-matches, candidate mismatches, or explicit client errors; an error has no `candidate_matches` value
-and is never counted as conformance. The full compatibility matrix remains excluded for this mode.
+The separate Windows probe uses `sapling_pattern_profile.py`; it runs each pattern group in a
+disposable workspace and normalizes the process ID in the native panic text for a stable fixture.
+The full compatibility matrix remains excluded for this mode.
 
 Sapling 0.2.20261103 is captured on Windows Server 2025 x64 in both `.git` and `.sl` modes alongside
 Jujutsu 0.47.1. The candidate, source/configuration, and path-pattern probes match in both Sapling
@@ -199,6 +202,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-windows-x64.json`                          | Windows Server 2025 x64    | 0.2.20261028 | 0.47.1  |
+| `sapling-0.2.20261028-sl-patterns-windows-x64.json`                        | Windows Server 2025 x64    | 0.2.20261028 | —       |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`           | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`               | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.47.1  |

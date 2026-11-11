@@ -6,6 +6,7 @@ import argparse
 import json
 import os
 import platform
+import re
 import tempfile
 from pathlib import Path
 from typing import Any
@@ -49,13 +50,15 @@ def _capture_probe(
         cwd=root,
         environment=environment,
     )
+    stderr = status.stderr.replace(str(root), "<workspace>")
+    stderr = re.sub(r"(thread 'main' \()\d+(\))", r"\1<pid>\2", stderr)
     observation: dict[str, Any] = {
         "id": probe_id,
         "query_files": sorted(query_files),
         "expected_ignored": sorted(expected_ignored),
         "status_exit_code": status.returncode,
         "status_stdout": status.stdout.replace(str(root), "<workspace>"),
-        "status_stderr": status.stderr.replace(str(root), "<workspace>"),
+        "status_stderr": stderr,
     }
     if status.returncode != 0:
         observation.update(native_status="client-error", candidate_matches=None)
