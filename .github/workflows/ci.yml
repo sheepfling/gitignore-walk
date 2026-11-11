@@ -164,6 +164,27 @@ jobs:
       - name: Run native-backed policy tests
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: python -m scripts.ci test
+      - name: Capture Mercurial 6.7.2 config trust on Ubuntu 24.04
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/native"
+          hg --version
+          python tests/oracles/hg/trust.py --hg "$(command -v hg)" \
+            --output "$RUNNER_TEMP/native/hg-trust-6.7.2-ubuntu-24.04-x86_64.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/hg-trust-6.7.2-ubuntu-24.04-x86_64.json"
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert capture["status"] == "captured", capture
+          assert capture["client"]["version"] == "Mercurial Distributed SCM (version 6.7.2)"
+          assert "x86_64" in capture["client"]["platform"]
+          assert [state["label"] for state in capture["states"]] == ["trusted", "untrusted"]
+          assert all(state["matches"] for state in capture["states"]), capture["states"]
+          assert [state["policy"]["ignored"] for state in capture["states"]] == [True, False]
+          PY
       - name: Capture isolated Subversion config precedence in Debian
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |

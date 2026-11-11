@@ -835,8 +835,8 @@ and policy membership on both sides of refresh. `oracle-hg` and the local native
 the installed client; hosted capture checks cover Mercurial 7.0.1 on Debian 13 x86_64 and ARM64 plus
 the pinned Mercurial 7.2.4 Windows client. It accepts either this known failure profile or a future
 successful refresh that restores versioned membership. Repository-config trust now matches native
-Mercurial 7.0.1 on Debian 13 x86_64 and ARM64; broader client-version and operating-system profiles
-remain open.
+Mercurial 7.0.1 on Debian 13 x86_64 and ARM64 and is wired to capture Ubuntu 24.04 system Mercurial
+6.7.2; broader client-version and operating-system profiles remain open.
 Sapling and Jujutsu already have pinned cross-version profiles: Sapling
 0.2.20261028/0.2.20261102/0.2.20261103 and Jujutsu
 0.45.1/0.46.0/0.47.0/0.47.1. The full Sapling 0.2.20261102 profile matches on Debian 13 ARM64,
