@@ -467,6 +467,8 @@ remain separate where they need dedicated setup.
 captured platform profiles, including named global entries and repository-local config. Mercurial
 also preserves ordered `HGRCPATH` files: when two configured ignore sources match, native
 `debugignore` and policy traces identify the first source while retaining both matches.
+When a named `ui.ignore` key is repeated across those files, a live native comparison confirms the
+later configuration value replaces the earlier source instead of merging both values.
 7.2.4 also confirms the workspace `.hgignore` is reported before a configured `ui.ignore` file when
 both supply the same matching rule; the policy trace retains both sources and the effective source.
 This precedence probe is currently captured on macOS arm64 and Debian 13 Linux x86_64. Native
