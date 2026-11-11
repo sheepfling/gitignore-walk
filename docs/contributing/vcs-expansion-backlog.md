@@ -812,8 +812,16 @@ source. This is covered on macOS arm64 and Debian 13 Linux aarch64/x86_64.
 The Jujutsu-only linked-worktree probe is also captured on macOS arm64 and Windows Server 2025 x64;
 the Windows job recaptures it against pinned Jujutsu 0.47.1 and checks the Git/Jujutsu distinction.
 
-**Next unfinished slice:** broaden Mercurial sparse profile and status-transition coverage, then
-compare remaining workspace-membership and configuration behavior across the captured VCS profiles.
+The Mercurial live status-transition fixture now reuses one membership-aware policy while an
+ignored tracked file moves through clean (`C`), pending forget (`R`), committed untracked/ignored
+(`I`), re-added (`A`), committed (`C`), and pending removal (`R`) states. It compares each native
+status snapshot with the policy and included/ignored/all walker selections in both traversal
+orders. This runs against the Mercurial client installed on each native CI platform; the captured
+path and walk oracle profiles remain separate evidence.
+
+**Next unfinished slice:** compare remaining Mercurial workspace-membership and configuration
+behavior across the captured VCS profiles, prioritizing sparse refresh and out-of-profile
+transitions that are not covered by the existing live fixtures.
 Sapling and Jujutsu already have pinned cross-version profiles: Sapling
 0.2.20261028/0.2.20261102/0.2.20261103 and Jujutsu
 0.45.1/0.46.0/0.47.0/0.47.1. The full Sapling 0.2.20261102 profile matches on Debian 13 ARM64,

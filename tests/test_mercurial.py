@@ -1023,6 +1023,122 @@ def test_nested_hg_workspace_is_not_traversed(tmp_path: Path) -> None:
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_membership_aware_policy_tracks_ignore_file_status_transitions(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Refresh membership as an ignored path moves between tracked and untracked states."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    home = tmp_path / "home"
+    home.mkdir()
+    hgrc = tmp_path / "hgrc"
+    hgrc.write_text("", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {"HOME": str(home), "USERPROFILE": str(home), "HGRCPATH": str(hgrc), "HGPLAIN": "1"}
+    )
+
+    def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [shutil.which("hg") or "hg", *arguments],
+            cwd=root,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    def native_status() -> dict[str, str]:
+        output = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+        return {
+            record[2:].decode(errors="surrogateescape").replace("\\", "/"): record[:1].decode(
+                "ascii"
+            )
+            for record in output.split(b"\0")
+            if record and len(record) >= 3 and record[1:2] == b" "
+        }
+
+    hg("init")
+    (root / ".hgignore").write_text("syntax: glob\n*.tmp\n", encoding="utf-8")
+    tracked = root / "tracked.tmp"
+    tracked.write_text("ignored while untracked\n", encoding="utf-8")
+    hg("add", ".hgignore", "tracked.tmp")
+    hg("commit", "-m", "add ignored tracked file", "-u", "gitignore-walk test")
+
+    selection = select_policy(
+        root,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(selection, MercurialPolicySelection)
+    policy = selection.policy
+    walker = IgnoreWalker(root, policy=policy)
+
+    def walked(name: Literal["included", "ignored", "all"]) -> set[str]:
+        return {
+            path.relative_to(root).as_posix()
+            for path in walker.iter_files(selection=name, topdown=topdown)
+        }
+
+    assert native_status() == {".hgignore": "C", "tracked.tmp": "C"}
+    initial = policy.explain("tracked.tmp")
+    assert initial.ignored
+    assert initial.membership == "versioned"
+    assert walked("included") == {".hgignore", "tracked.tmp"}
+    assert walked("ignored") == set()
+    assert walked("all") == {".hgignore", "tracked.tmp"}
+
+    hg("forget", "tracked.tmp")
+    assert native_status() == {".hgignore": "C", "tracked.tmp": "R"}
+    pending_removal = policy.explain("tracked.tmp")
+    assert pending_removal.ignored
+    assert pending_removal.membership == "versioned"
+    assert walked("included") == {".hgignore", "tracked.tmp"}
+    assert walked("ignored") == set()
+    assert walked("all") == {".hgignore", "tracked.tmp"}
+
+    hg("commit", "-m", "forget ignored tracked file", "-u", "gitignore-walk test")
+    assert native_status() == {".hgignore": "C", "tracked.tmp": "I"}
+    forgotten = policy.explain("tracked.tmp")
+    assert forgotten.ignored
+    assert forgotten.membership == "unversioned"
+    assert walked("included") == {".hgignore"}
+    assert walked("ignored") == {"tracked.tmp"}
+    assert walked("all") == {".hgignore", "tracked.tmp"}
+
+    hg("add", "tracked.tmp")
+    assert native_status() == {".hgignore": "C", "tracked.tmp": "A"}
+    readded = policy.explain("tracked.tmp")
+    assert readded.ignored
+    assert readded.membership == "versioned"
+    assert walked("included") == {".hgignore", "tracked.tmp"}
+    assert walked("ignored") == set()
+    assert walked("all") == {".hgignore", "tracked.tmp"}
+
+    hg("commit", "-m", "re-add ignored tracked file", "-u", "gitignore-walk test")
+    assert native_status() == {".hgignore": "C", "tracked.tmp": "C"}
+    committed = policy.explain("tracked.tmp")
+    assert committed.ignored
+    assert committed.membership == "versioned"
+    assert walked("included") == {".hgignore", "tracked.tmp"}
+    assert walked("ignored") == set()
+    assert walked("all") == {".hgignore", "tracked.tmp"}
+
+    hg("remove", "tracked.tmp")
+    removed_status = native_status()
+    assert removed_status == {".hgignore": "C", "tracked.tmp": "R"}
+    removed = policy.explain("tracked.tmp")
+    assert removed.ignored
+    assert removed.membership == "versioned"
+    assert not tracked.exists()
+    assert walked("included") == {".hgignore"}
+    assert walked("ignored") == set()
+    assert walked("all") == {".hgignore"}
+
+
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 def test_membership_aware_policy_matches_native_status_classes(
     tmp_path: Path, topdown: bool
 ) -> None:
