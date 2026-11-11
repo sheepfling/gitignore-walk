@@ -540,8 +540,9 @@ unversioned (`?`, `I`). A live disposable-repository comparison covers clean, mo
 staged, scheduled-removal, ignored, and unknown files. It now checks included, ignored, and all-file
 walk selections in both orders; a tracked file matching `.hgignore` stays included, while the
 ignored unversioned file appears only in ignored/all selection. Paths omitted by native status remain
-unknown. Membership lookup retains the lexical query path for tracked symlinks, so a dangling
-tracked link remains versioned even when the policy resolves it for rule evaluation; this is
+unknown. Nested untracked descendants are listed at their exact file paths and remain walkable under
+the status snapshot. Membership lookup retains the lexical query path for tracked symlinks, so a
+dangling tracked link remains versioned even when the policy resolves it for rule evaluation; this is
 covered with native Mercurial status and `explain`, `trace`, and `iter_explain`. Native Mercurial
 7.1.2 on Windows reports this tracked dangling link as modified (`M`) rather than clean (`C`) as on
 POSIX; both status classes indicate versioned membership and are included in the live cross-platform

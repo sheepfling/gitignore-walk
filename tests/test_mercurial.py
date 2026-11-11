@@ -830,6 +830,9 @@ def test_membership_aware_policy_matches_native_status_classes(
     hg("add", "staged.tmp")
     (root / "ignored.tmp").write_text("ignored\n", encoding="utf-8")
     (root / "unknown.txt").write_text("unknown\n", encoding="utf-8")
+    nested_unknown = root / "unknown" / "deep" / "nested-unknown.txt"
+    nested_unknown.parent.mkdir(parents=True)
+    nested_unknown.write_text("nested unknown\n", encoding="utf-8")
     (root / "modified.txt").write_text("modified\n", encoding="utf-8")
     (root / "missing.txt").unlink()
     (root / "removed.txt").unlink()
@@ -860,6 +863,7 @@ def test_membership_aware_policy_matches_native_status_classes(
     assert native_records["staged.tmp"] == "A"
     assert native_records["ignored.tmp"] == "I"
     assert native_records["unknown.txt"] == "?"
+    assert native_records["unknown/deep/nested-unknown.txt"] == "?"
     decisions = {
         decision.path.name: decision
         for decision in policy.explain_many(
@@ -872,6 +876,7 @@ def test_membership_aware_policy_matches_native_status_classes(
                 "staged.tmp",
                 "ignored.tmp",
                 "unknown.txt",
+                "unknown/deep/nested-unknown.txt",
             ]
         )
     }
@@ -888,6 +893,7 @@ def test_membership_aware_policy_matches_native_status_classes(
     )
     assert decisions["ignored.tmp"].membership == "unversioned"
     assert decisions["unknown.txt"].membership == "unversioned"
+    assert decisions["nested-unknown.txt"].membership == "unversioned"
     assert decisions["ignored.tmp"].ignored
     assert decisions["tracked.tmp"].ignored
     if dangling_link_created:
@@ -910,6 +916,7 @@ def test_membership_aware_policy_matches_native_status_classes(
         "staged.tmp",
         "tracked.tmp",
         "unknown.txt",
+        "unknown/deep/nested-unknown.txt",
     }
     assert walked("included") == included
     assert walked("ignored") == {"ignored.tmp"}
