@@ -562,10 +562,10 @@ Its overlapping `[include]` and `[exclude]` patterns confirm that the native exc
 precedence, including after the profile update. A tracked `%include` sparse-profile source that
 Mercurial omits from disk and native status remains membership-unknown, while the membership-aware
 walk matches native status for the files selected by the profile.
-A POSIX FIFO matching `.hgignore` is also omitted by native status and all walker selections, while
-direct policy evaluation still reports the ignore match and unknown membership. This confirms that
-ignore decisions do not turn a special filesystem node into a regular-file walk result. Broader
-sparse-profile and special-file coverage remains open.
+A POSIX FIFO and Unix-domain socket matching `.hgignore` are omitted by native status and all-file
+walks, while direct policy evaluation still reports the ignore match and unknown membership. This
+confirms that ignore decisions do not turn special filesystem nodes into regular-file walk results.
+Broader sparse-profile and special-file coverage remains open.
 
 Test included-only, ignored-only, and all-entry walks in top-down and bottom-up modes. Cover ignored
 parents with included descendants, contents-only exclusions, nested rule sources, symlinks, special

@@ -5,7 +5,9 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import socket
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any, Literal
 
@@ -1265,6 +1267,75 @@ def test_ignored_fifo_matches_policy_but_is_not_a_native_walk_file(
     assert included == native_paths
     assert ignored == set()
     assert all_files == native_paths
+
+
+@pytest.mark.skipif(os.name == "nt", reason="Unix-domain sockets are unavailable on Windows")
+@pytest.mark.skipif(not hasattr(socket, "AF_UNIX"), reason="Unix-domain sockets are unavailable")
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_ignored_unix_socket_matches_policy_but_is_not_a_native_walk_file(topdown: bool) -> None:
+    """Keep ignored Unix sockets out of Mercurial and regular-file walk results."""
+    # AF_UNIX path length is limited on macOS, so keep this test's checkout root shallow.
+    with tempfile.TemporaryDirectory(prefix="hgw-", dir="/tmp") as temporary_directory:
+        base = Path(temporary_directory).resolve()
+        root = base / "repo"
+        root.mkdir()
+        home = base / "home"
+        home.mkdir()
+        hgrc = base / "hgrc"
+        hgrc.write_text("", encoding="utf-8")
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "HOME": str(home),
+                "USERPROFILE": str(home),
+                "HGRCPATH": str(hgrc),
+                "HGPLAIN": "1",
+            }
+        )
+
+        def hg(*arguments: str) -> subprocess.CompletedProcess[bytes]:
+            result = subprocess.run(
+                [shutil.which("hg") or "hg", *arguments],
+                cwd=root,
+                env=environment,
+                capture_output=True,
+                check=False,
+                timeout=30,
+            )
+            assert result.returncode == 0, result.stderr.decode(errors="replace")
+            return result
+
+        hg("init")
+        (root / ".hgignore").write_text("syntax: glob\nspecial.sock\n", encoding="utf-8")
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+            listener.bind(str(root / "special.sock"))
+
+            native_status = hg("status", "--all", "--unknown", "--ignored", "-0").stdout
+            native_paths = {
+                record[2:].decode(errors="surrogateescape").replace("\\", "/")
+                for record in native_status.split(b"\0")
+                if record and len(record) >= 3 and record[1:2] == b" "
+            }
+            assert native_paths == {".hgignore"}
+            assert hg("status", "--ignored", "-0").stdout == b""
+
+            selection = select_policy(
+                root,
+                MercurialPolicyConfig(membership_aware=True, environment=environment),
+            )
+            assert isinstance(selection, MercurialPolicySelection)
+            policy = selection.policy
+            decision = policy.explain("special.sock")
+            assert decision.ignored
+            assert decision.membership is None
+
+            walker = IgnoreWalker(root, policy=policy)
+            walked = {
+                path.relative_to(root).as_posix()
+                for path in walker.iter_files(selection="all", topdown=topdown)
+            }
+            assert walked == native_paths
 
 
 def test_trace_retains_source_scope_and_line(tmp_path: Path) -> None:
