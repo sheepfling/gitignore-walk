@@ -987,6 +987,16 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     assert untracked_sparse_decision.membership is None
     assert policy.explain("visible.txt").membership == "versioned"
 
+    subtree_selection = select_policy(
+        sparse_file.parent,
+        MercurialPolicyConfig(membership_aware=True, environment=environment),
+    )
+    assert isinstance(subtree_selection, MercurialPolicySelection)
+    subtree_policy = subtree_selection.policy
+    assert subtree_policy.explain("untracked.txt").membership is None
+    subtree_walker = IgnoreWalker(sparse_file.parent, policy=subtree_policy)
+    assert list(subtree_walker.iter_files(selection="all", topdown=topdown)) == []
+
     walker = IgnoreWalker(root, policy=policy)
     included = {
         path.relative_to(root).as_posix()
@@ -1024,6 +1034,11 @@ def test_sparse_excluded_versioned_paths_keep_unknown_membership(
     assert restored_decision.ignored
     assert restored_decision.membership == "versioned"
     assert policy.explain("sparse/untracked.txt").membership == "unversioned"
+    assert subtree_policy.explain("untracked.txt").membership == "unversioned"
+    assert {path.name for path in subtree_walker.iter_files(topdown=topdown)} == {
+        "tracked.tmp",
+        "untracked.txt",
+    }
 
     restored_included = {
         path.relative_to(root).as_posix()

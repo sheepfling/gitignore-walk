@@ -552,8 +552,9 @@ A live sparse-checkout regression now covers a committed file removed by
 `hg status --all --unknown --ignored -0`, even when its path matches `.hgignore`; the policy keeps
 the rule match and unknown membership separate. A physically present untracked file outside the
 active sparse profile is also omitted by native status and membership-aware walks, while its direct
-policy decision remains membership-unknown. Included-file walks in both traversal orders only
-return paths present in the sparse working tree. The fixture is verified locally on Mercurial
+policy decision remains membership-unknown. A membership-aware policy rooted at the sparse subtree
+also matches repository-root-relative status records. Included-file walks in both traversal orders
+only return paths present in the sparse working tree. The fixture is verified locally on Mercurial
 7.2.4/macOS arm64 and in hosted Windows and Ubuntu native-backed policy jobs for commit `def07df`.
 The same fixture now deletes that exclusion through `hg debugsparse --delete`, verifies Mercurial
 restores the file and reports it as versioned, and reuses the policy and walker to confirm the
