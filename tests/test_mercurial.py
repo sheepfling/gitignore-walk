@@ -679,6 +679,59 @@ def test_client_config_discovery_runs_the_installed_hg_client(tmp_path: Path) ->
     assert policy.trace("nested/file.configured").decision.source == str(ignore_file)
 
 
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+def test_client_config_discovery_preserves_hgrc_path_source_order(tmp_path: Path) -> None:
+    """Use native HGRCPATH order for configured ignore-source precedence."""
+    root = tmp_path / "repo"
+    root.mkdir()
+    (root / ".hg").mkdir()
+    (root / ".hgignore").write_text("", encoding="utf-8")
+    home = tmp_path / "home"
+    home.mkdir()
+    first_ignore = tmp_path / "first.ignore"
+    first_ignore.write_text("syntax: glob\nshared.tmp\n", encoding="utf-8")
+    second_ignore = tmp_path / "second.ignore"
+    second_ignore.write_text("syntax: glob\nshared.tmp\n", encoding="utf-8")
+    first_hgrc = tmp_path / "first.rc"
+    first_hgrc.write_text(f"[ui]\nignore.first = {first_ignore}\n", encoding="utf-8")
+    second_hgrc = tmp_path / "second.rc"
+    second_hgrc.write_text(f"[ui]\nignore.second = {second_ignore}\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "HGRCPATH": os.pathsep.join((str(first_hgrc), str(second_hgrc))),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+        }
+    )
+
+    native = subprocess.run(
+        [shutil.which("hg") or "hg", "debugignore", "-v", "shared.tmp"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert native.returncode == 0, native.stderr.decode(errors="replace")
+    native_output = native.stdout.decode(errors="replace").replace("\\", "/").casefold()
+    assert "shared.tmp is ignored" in native_output
+    assert first_ignore.as_posix().casefold() in native_output
+    assert second_ignore.as_posix().casefold() not in native_output
+
+    policy = MercurialIgnorePolicy(root, read_client_config=True, environment=environment)
+    trace = policy.trace("shared.tmp")
+
+    assert trace.decision.ignored
+    assert trace.decision.source == str(first_ignore)
+    assert tuple(match.source for match in trace.matches) == (
+        str(first_ignore),
+        str(second_ignore),
+    )
+
+
 @pytest.mark.parametrize("topdown", [True, False])
 def test_walker_prunes_mercurial_ignored_directories(tmp_path: Path, topdown: bool) -> None:
     root = tmp_path / "repo"
