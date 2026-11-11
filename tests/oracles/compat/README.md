@@ -135,8 +135,9 @@ contents-only negation, root anchoring, recursive `**`, escaped leading `#` and 
 four Sapling/Jujutsu mode results match the candidates. The portable policy tests replay the same
 rules through direct explanations and included/ignored walker selections. Sapling/Jujutsu 0.47.1
 matches on macOS arm64 and Debian 13 Linux aarch64/x86_64; Jujutsu 0.46.0 also matches on macOS
-arm64 and Debian 13 x86_64. This remains a focused compatibility subset, not broad Git-dialect
-certification.
+arm64 and Debian 13 x86_64. Jujutsu 0.47.0 also matches on macOS arm64; its Linux release archive
+has a documented dependency error fixed in 0.47.1, so no Linux 0.47.0 profile is claimed. This
+remains a focused compatibility subset, not broad Git-dialect certification.
 
 An extended path probe adds a character-class range, a basename pattern matched below a nested
 directory, and a directory-only pattern paired with a same-named file control. Sapling 0.2.20261103
@@ -229,6 +230,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json`           | Debian 13 x86_64 in Docker | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json`               | macOS 26 arm64             | 0.2.20261103 | 0.47.1  |
 | `jj-0.47.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.47.1  |
+| `jj-0.47.0-macos-arm64.json`                                               | macOS 26 arm64             | —            | 0.47.0  |
 | `jj-0.46.0-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.46.0  |
 | `jj-0.45.1-windows-x64.json`                                               | Windows Server 2025 x64    | —            | 0.45.1  |
 | `jj-0.45.1-macos-arm64.json`                                               | macOS 26 arm64             | —            | 0.45.1  |

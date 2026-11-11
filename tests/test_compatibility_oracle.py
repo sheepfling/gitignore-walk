@@ -280,6 +280,11 @@ JJ_045_FULL_CAPTURES = {
     filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
     for filename in JJ_045_FULL_CAPTURE_FILES
 }
+JJ_047_CAPTURE_FILES = ("jj-0.47.0-macos-arm64.json",)
+JJ_047_CAPTURES = {
+    filename: json.loads((ORACLE_ROOT / "results" / filename).read_text(encoding="utf-8"))
+    for filename in JJ_047_CAPTURE_FILES
+}
 OLDER_SAPLING_PROFILE_FILES = (
     "sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json",
@@ -510,6 +515,34 @@ def test_jujutsu_windows_capture_reconciles_the_expanded_pattern_matrix() -> Non
         assert pattern["query_files"] == PATTERN_QUERY_FILES
         assert pattern["ignored"] == PATTERN_IGNORED
         assert pattern["included"] == PATTERN_INCLUDED
+
+
+@pytest.mark.parametrize("filename", JJ_047_CAPTURE_FILES)
+def test_jujutsu_047_capture_reconciles_full_policy_profiles(filename: str) -> None:
+    """Retain full 0.47.0 evidence where the release publishes a runnable native client."""
+    capture = JJ_047_CAPTURES[filename]
+    assert capture["status"] == "captured"
+    assert capture["clients"]["jujutsu"].startswith("jj 0.47.0-")
+    assert {case["id"] for case in capture["cases"]} == {"jj.colocated", "jj.noncolocated"}
+    for case in capture["cases"]:
+        assert case["candidate_matches"] is True
+        for probe in (
+            "source_discovery",
+            "pattern_discovery",
+            "configured_global",
+            "configured_system",
+            "conditional_global",
+            "conditional_gitdir_i",
+            "conditional_worktree",
+            "conditional_worktree_i",
+            "conditional_onbranch",
+            "conditional_remote_url",
+            "conditional_gitdir_override",
+            "configured_repository",
+            "environment_global",
+            "environment_count",
+        ):
+            assert case[probe]["candidate_matches"] is True, (filename, case["id"], probe)
 
 
 @pytest.mark.parametrize("filename", JJ_045_FULL_CAPTURE_FILES)
