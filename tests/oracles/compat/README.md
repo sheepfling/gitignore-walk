@@ -60,6 +60,16 @@ mode skips it. The isolated capture home retains an empty `~/.gitconfig` so Sapl
 timestamp translation works without adding any Git settings. Windows CI recaptures this profile
 from a checksum-pinned Sapling release asset and retains the artifact for seven days.
 
+Sapling 0.2.20261102 has a separate release-boundary profile for the `.gitignore` fix described in
+its release notes. The four probes cover directory-only rules below missing and empty ignore files
+and a nested ignore source below an empty parent. Both `.sl` and `.git` modes ignore all four paths
+on Debian 13 ARM64 and Windows Server 2025 x64. The older 0.2.20261028 profile leaves these paths
+visible in `.sl` mode; 0.2.20261103 preserves the fixed behavior. These captures establish this
+specific fix across the tested releases and platforms, not full dialect conformance for 0.2.20261102.
+The full compatibility matrix also matches Sapling 0.2.20261102 and Jujutsu 0.47.1 on Debian 13
+ARM64 across both Sapling storage modes, both Jujutsu modes, source discovery, path patterns,
+configuration, and symlink probes.
+
 Jujutsu 0.45.1, 0.46.0, and 0.47.1 are captured on Windows Server 2025 x64 in colocated and
 non-colocated modes. All three releases match the candidate, source/configuration, and path-pattern
 probes. The versioned captures also establish that 0.45.1 follows nested symlinked `.gitignore`
@@ -207,6 +217,7 @@ corresponding source directories remain scheme-specific.
 | `sapling-0.2.20261103-jj-0.47.1-windows-x64.json`                          | Windows Server 2025 x64    | 0.2.20261103 | 0.47.1  |
 | `sapling-0.2.20261102-behavior-debian13-arm64.json`                        | Debian 13 arm64 in Docker  | 0.2.20261102 | —       |
 | `sapling-0.2.20261102-behavior-windows-x64.json`                           | Windows Server 2025 x64    | 0.2.20261102 | —       |
+| `sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261102 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-arm64.json`                       | Debian 13 arm64 in Docker  | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-debian13-x86_64.json`                      | Debian 13 x86_64 in Docker | 0.2.20261028 | 0.47.1  |
 | `sapling-0.2.20261028-jj-0.47.1-windows-x64.json`                          | Windows Server 2025 x64    | 0.2.20261028 | 0.47.1  |

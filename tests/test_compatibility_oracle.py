@@ -43,14 +43,21 @@ def test_legacy_sapling_pattern_client_errors_are_not_candidate_matches(
     assert observation["candidate_matches"] is None
 
 
+SAPLING_FIX_RELEASE_CAPTURE_FILE = "sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json"
 CAPTURE_FILES = (
     "sapling-0.2.20261103-jj-0.47.1-macos-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-macos-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-git-2.56.0-debian13-x86_64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json",
     "sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json",
+    SAPLING_FIX_RELEASE_CAPTURE_FILE,
 )
-PATTERN_CAPTURE_FILES = (CAPTURE_FILES[0], CAPTURE_FILES[3], CAPTURE_FILES[4])
+PATTERN_CAPTURE_FILES = (
+    CAPTURE_FILES[0],
+    CAPTURE_FILES[3],
+    CAPTURE_FILES[4],
+    SAPLING_FIX_RELEASE_CAPTURE_FILE,
+)
 EARLIER_PATTERN_CAPTURE_FILES = (CAPTURE_FILES[1], CAPTURE_FILES[2])
 PATTERN_FIXTURE = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))
 PATTERN_QUERY_FILES = sorted(PATTERN_FIXTURE["pattern_query_files"])
@@ -85,8 +92,14 @@ ENVIRONMENT_GLOBAL_CAPTURE_FILES = (
     CAPTURE_FILES[2],
     CAPTURE_FILES[3],
     CAPTURE_FILES[4],
+    SAPLING_FIX_RELEASE_CAPTURE_FILE,
 )
-SYMLINK_CAPTURE_FILES = (CAPTURE_FILES[0], CAPTURE_FILES[3], CAPTURE_FILES[4])
+SYMLINK_CAPTURE_FILES = (
+    CAPTURE_FILES[0],
+    CAPTURE_FILES[3],
+    CAPTURE_FILES[4],
+    SAPLING_FIX_RELEASE_CAPTURE_FILE,
+)
 CAPTURES: dict[str, dict[str, Any]] = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
@@ -287,7 +300,10 @@ def test_compatibility_capture_records_exact_client_families(profile: str) -> No
 
     assert capture["status"] == "captured"
     assert capture["clients"]["git"].startswith("git version ")
-    assert "Sapling 0.2.20261103" in capture["clients"]["sapling"]
+    assert any(
+        f"Sapling {version}" in capture["clients"]["sapling"]
+        for version in ("0.2.20261102", "0.2.20261103")
+    )
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
 
 
@@ -344,6 +360,7 @@ def test_linked_worktree_windows_capture_records_the_pinned_clients() -> None:
     [
         ("sapling-0.2.20261103-jj-0.47.1-debian13-arm64.json", "aarch64"),
         ("sapling-0.2.20261103-jj-0.47.1-debian13-x86_64.json", "x86_64"),
+        ("sapling-0.2.20261102-jj-0.47.1-debian13-arm64.json", "aarch64"),
     ],
 )
 def test_linux_compatibility_capture_records_its_architecture(
@@ -415,12 +432,15 @@ def test_git_256_captures_reconcile_the_earlier_path_pattern_subset(
 
 
 @pytest.mark.parametrize("profile", PATTERN_CAPTURE_FILES)
-def test_extended_compatibility_patterns_match_current_native_profiles(profile: str) -> None:
-    """Retain macOS and Debian evidence for class, basename, and directory-only patterns."""
+def test_extended_compatibility_patterns_match_native_release_profiles(profile: str) -> None:
+    """Retain Sapling release evidence for class, basename, and directory-only patterns."""
     capture = CAPTURES[profile]
     assert capture["status"] == "captured"
     assert capture["platform"].startswith(("macOS-26", "Linux-"))
-    assert capture["clients"]["sapling"].startswith("Sapling 0.2.20261103")
+    assert any(
+        capture["clients"]["sapling"].startswith(f"Sapling {version}")
+        for version in ("0.2.20261102", "0.2.20261103")
+    )
     assert capture["clients"]["jujutsu"].startswith("jj 0.47.1")
 
     expected_query_files = sorted(PATTERN_FIXTURE["extended_pattern_query_files"])

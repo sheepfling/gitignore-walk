@@ -50,6 +50,25 @@ def test_sapling_release_profiles_capture_storage_mode_behavior() -> None:
             assert set(case["ignored"]) == expected
 
 
+def test_sapling_fix_release_windows_capture_matches_both_storage_modes() -> None:
+    """Retain native Windows evidence for Sapling's 0.2.20261102 ignore fix."""
+    capture = json.loads(
+        (_ORACLE_RESULTS / "sapling-0.2.20261102-behavior-windows-x64.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert capture["status"] == "captured"
+    assert capture["profile_version"] == "0.2.20261102"
+    assert capture["client"].startswith("Sapling 0.2.20261102")
+    assert capture["platform"].startswith("Windows-2025Server-")
+    assert capture["machine"].lower() in {"amd64", "x86_64"}
+    assert {case["mode"] for case in capture["cases"]} == {"sl", "git"}
+    for case in capture["cases"]:
+        assert case["candidate_matches"]
+        assert set(case["ignored"]) == _PROBES
+
+
 def test_sapling_release_profile_records_version_command_failure(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
