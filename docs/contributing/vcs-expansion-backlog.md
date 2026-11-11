@@ -778,8 +778,10 @@ missing from that tree are unversioned, while missing unlisted paths and directo
 unknown. A live fixture edits a saved-tree file and removes another after the last status snapshot;
 both remain versioned by the saved tree, while the walker omits the missing filesystem entry. It
 checks policy selections in both walk orders and confirms the operation ID does not change during
-membership queries. Both scheme adapters retain the lexical query path for membership lookup, so
-tracked dangling symlinks remain versioned even though the policy resolves their targets for rule
+membership queries. The same fixture runs against pinned Jujutsu 0.45.1 on macOS arm64, Debian Linux
+x86_64, and Windows Server 2025 x64; the local client-enabled run also exercises the installed
+release. Both scheme adapters retain the lexical query path for membership lookup, so tracked
+dangling symlinks remain versioned even though the policy resolves their targets for rule
 evaluation. Sapling/Jujutsu broader client and configuration profiles remain open.
 
 The nested symlinked `.gitignore` probe now confirms a source-layout difference: Sapling `.sl` mode

@@ -18,7 +18,7 @@ def test_jujutsu_membership_walk_uses_saved_tree_without_mutation(
     tmp_path: Path,
     topdown: bool,
 ) -> None:
-    executable = shutil.which("jj")
+    executable = os.environ.get("GITIGNORE_WALK_JJ") or shutil.which("jj")
     if executable is None:
         pytest.skip("Jujutsu is not installed")
 

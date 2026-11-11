@@ -110,6 +110,7 @@ jobs:
           assert len(capture["cases"]) == 2
           assert all(case["candidate_matches"] for case in capture["cases"])
           PY
+          GITIGNORE_WALK_JJ="$client_dir/jj" python -m pytest -q tests/test_jujutsu.py
       - uses: actions/upload-artifact@v4
         if: always() && matrix.os == 'macos-latest'
         with:
@@ -628,6 +629,14 @@ jobs:
           }
           assert all(case["candidate_matches"] for case in full_capture["cases"])
           PY
+      - name: Run Jujutsu 0.45.1 membership test on Linux
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          set -euo pipefail
+          client_dir="$RUNNER_TEMP/compat-clients/jj-0.45.1"
+          mkdir -p "$client_dir"
+          tar -xzf "$RUNNER_TEMP/compat-clients/jj-0.45.1-linux-x64.tar.gz" -C "$client_dir"
+          GITIGNORE_WALK_JJ="$client_dir/jj" python -m pytest -q tests/test_jujutsu.py
       - name: Capture worktree conditional behavior with Git 2.56
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |
@@ -1050,6 +1059,10 @@ jobs:
               for case in (capture, middle, older)
           ])
           '@ | python -
+          $env:GITIGNORE_WALK_JJ = $jj045
+          python -m pytest -q tests/test_jujutsu.py
+          if ($LASTEXITCODE -ne 0) { throw "Jujutsu 0.45.1 membership tests failed: $LASTEXITCODE" }
+          Remove-Item Env:GITIGNORE_WALK_JJ
       - name: Capture Sapling on Windows
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         shell: pwsh
