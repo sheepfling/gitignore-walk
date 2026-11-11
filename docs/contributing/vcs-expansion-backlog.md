@@ -146,7 +146,10 @@ directories remain membership-unknown. A live Fossil 2.28/macOS fixture verifies
 for scheduled additions, missing files, edits, and renames, plus unknown for an absent unreported
 path; ignore decisions remain unchanged. Membership-aware included, ignored, and all-file walks
 now cover those states in both top-down and bottom-up order, keeping scheduled additions, edits,
-renames, and missing tracked files separate from ignored unversioned files. Fossil selection now
+renames, and missing tracked files separate from ignored unversioned files. Membership-aware walks
+also keep ignore-matched directories traversable: a Fossil 2.28/macOS native fixture confirms a
+tracked child remains included while `fossil extras` omits its ignored untracked sibling, in both
+traversal orders. Fossil selection now
 retains its metadata-marker baseline by default, with explicit `initial_excludes` replacement. A
 Fossil 2.28/macOS native comparison also confirms parent walks stop at a nested checkout opened
 with `fossil open --nested`, in both top-down and bottom-up traversal. Cross-profile status and

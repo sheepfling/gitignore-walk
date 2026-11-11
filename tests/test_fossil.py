@@ -365,3 +365,82 @@ def test_fossil_membership_uses_native_json_without_changing_ignore_decisions(
         "unversioned-dir/nested.tmp",
         "visible.txt",
     }
+
+
+@pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
+def test_fossil_membership_walk_descends_into_ignored_directory(
+    tmp_path: Path, topdown: bool
+) -> None:
+    """Include check-in files below an ignored directory in membership-aware walks."""
+    fossil = shutil.which("fossil")
+    if fossil is None:
+        pytest.skip("Fossil is not installed")
+    checkout = tmp_path / "checkout"
+    repository = tmp_path / "repository.fossil"
+    home = tmp_path / "home"
+    home.mkdir()
+    environment = {
+        "HOME": str(home),
+        "USERPROFILE": str(home),
+        "USER": "pytest",
+        "PATH": str(Path(fossil).parent),
+        "LC_ALL": "C",
+    }
+
+    def run(*arguments: str, cwd: Path = tmp_path) -> subprocess.CompletedProcess[bytes]:
+        result = subprocess.run(
+            [fossil, *arguments],
+            cwd=cwd,
+            env=environment,
+            capture_output=True,
+            check=False,
+            timeout=30,
+        )
+        assert result.returncode == 0, result.stderr.decode(errors="replace")
+        return result
+
+    run("init", "--admin-user", "pytest", str(repository))
+    run("open", "--nosync", "--workdir", str(checkout), str(repository))
+    run("settings", "ignore-glob", "cache.tmp", cwd=checkout)
+    ignored_directory = checkout / "cache.tmp"
+    ignored_directory.mkdir()
+    tracked = ignored_directory / "tracked.txt"
+    tracked.write_text("tracked despite ignore\n", encoding="utf-8")
+    untracked = ignored_directory / "untracked.txt"
+    untracked.write_text("ignored unversioned file\n", encoding="utf-8")
+    run("add", "--force", "cache.tmp/tracked.txt", cwd=checkout)
+    run("commit", "--no-warnings", "-m", "track a file below an ignored directory", cwd=checkout)
+
+    nested_entries = json.loads(
+        run("json", "dir", "--checkin", "current", "--name", "cache.tmp", cwd=checkout).stdout
+    )["payload"]["entries"]
+    assert {entry["name"] for entry in nested_entries} == {"tracked.txt"}
+    extras = run("extras", "--rel-paths", cwd=checkout).stdout.decode(errors="replace")
+    assert "cache.tmp/untracked.txt" not in extras
+
+    selection = select_policy(
+        checkout, FossilPolicyConfig(environment=environment, membership_aware=True)
+    )
+    policy = selection.policy
+    tracked_decision = policy.explain("cache.tmp/tracked.txt")
+    untracked_decision = policy.explain("cache.tmp/untracked.txt")
+    assert tracked_decision.ignored
+    assert tracked_decision.membership == "versioned"
+    assert untracked_decision.ignored
+    assert untracked_decision.membership == "unversioned"
+
+    walker = IgnoreWalker(checkout, policy=policy)
+
+    def walked(selection_name: str) -> set[str]:
+        return {
+            path.relative_to(checkout).as_posix()
+            for path in walker.iter_files(selection=selection_name, topdown=topdown)
+        }
+
+    assert walked("included") == {"cache.tmp/tracked.txt"}
+    assert walked("ignored") == {".fslckout", "cache.tmp/untracked.txt"}
+    assert walked("all") == {
+        ".fslckout",
+        "cache.tmp/tracked.txt",
+        "cache.tmp/untracked.txt",
+    }

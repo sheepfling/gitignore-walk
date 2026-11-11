@@ -201,9 +201,9 @@ class FossilIgnorePolicy(IgnorePolicy):
         return IgnoreTrace(decision=decision, matches=trace, complete=True)
 
     def can_prune_ignored_directory(self, target: Path, decision: IgnoreDecision) -> bool:
-        """Prune matched directories because Fossil ignore patterns have no negation."""
+        """Prune matched directories only when membership is not needed for descendants."""
         del target
-        return decision.ignored
+        return decision.ignored and not self.membership_aware
 
     def _open_walk(self) -> _IgnoreWalkSession:
         """Create a walk session with a stable Fossil setting snapshot."""

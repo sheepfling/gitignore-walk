@@ -51,3 +51,6 @@ The test also checks native status entries for scheduled additions (`new`), miss
 an absent, unreported path stays unknown. Directory membership remains unknown. This status-shape
 capture is currently exercised by the live Fossil 2.28/macOS test; broader cross-profile status and
 traversal conformance remain open.
+Membership-aware walking keeps ignored directories traversable because they may contain versioned
+descendants. The Fossil 2.28/macOS live fixture checks that a tracked child is selected as included
+while `fossil extras` omits its ignored untracked sibling, in both traversal orders.
