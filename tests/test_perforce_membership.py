@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import shutil
 import socket
+import stat
 import subprocess
 import time
 from pathlib import Path
@@ -166,7 +167,9 @@ def test_perforce_membership_matches_native_have_and_opened(
 
         run("edit", "modified.txt")
         (workspace / "modified.txt").write_text("modified\n", encoding="utf-8")
-        (workspace / "missing.txt").unlink()
+        missing = workspace / "missing.txt"
+        missing.chmod(missing.stat().st_mode | stat.S_IWRITE)
+        missing.unlink()
         run("delete", "-k", "deleted.txt")
         (workspace / "pending-add.tmp").write_text("pending add\n", encoding="utf-8")
         run("add", "pending-add.tmp")
