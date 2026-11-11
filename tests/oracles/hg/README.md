@@ -80,7 +80,7 @@ the library now marks those sources unavailable and leaves their paths unignored
 is in `results/hg-walk-7.1.2-windows-x86_64.json`; all six fixtures match, including the repeated
 source under two symlink scopes, whose paths remain unknown because Windows Mercurial does not read
 the symlinked sources. The remaining skips leave POSIX-specific behavior unverified on Windows.
-Mercurial 7.2.4 on Windows captures 71 policy cases: 65 closed observations match, six remain open,
+Mercurial 7.2.4 on Windows captures 72 policy cases: 66 closed observations match, six remain open,
 and four are skipped because their fixtures require POSIX behavior. Its full ignored/unknown walk
 profile matches all six fixtures. Results are in `results/hg-7.2.4-windows-x86_64.json` and
 `results/hg-walk-7.2.4-windows-x86_64.json`; the regression suite replays both captures.
