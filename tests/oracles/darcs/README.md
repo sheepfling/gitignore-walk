@@ -36,9 +36,9 @@ non-matching local rules and a configured `boringfile`, on all five tested profi
 The captured invalid pattern emits a warning and is ignored. Other regex error messages, locales,
 and native pattern/path encodings remain untested.
 
-The two Debian Sid profiles install the exact `darcs=2.18.5-2` package inside the pinned
-`debian:sid` image and match all eighteen closed candidates. The ARM64 capture runs under QEMU in
-hosted Linux CI; both architecture captures are retained in `results/`.
+The two Debian Sid profiles install the exact `darcs=2.18.5-2` package inside architecture-specific,
+digest-pinned Debian Sid images and match all eighteen closed candidates. The ARM64 capture runs
+under QEMU in hosted Linux CI; both architecture captures are retained in `results/`.
 
 Darcs boring rules control add-candidate discovery, not a membership-free filesystem ignore
 decision: already managed files are exempt. `DarcsBoringPolicy` preserves that distinction by

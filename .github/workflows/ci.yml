@@ -212,13 +212,13 @@ jobs:
             --volume "$GITHUB_WORKSPACE:/workspace" \
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
-            debian:sid@sha256:e276677157e13bc51ea5b8651f54ad28883f503cc37b3e3af2c4b6cc2f4efe7b \
+            debian@sha256:c0f83151fe951f044562d40a54235ca650a5300edb92e856727bd5619c26d315 \
             bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs=2.18.5-2 python3 && case "$(dpkg --print-architecture)" in amd64) arch=x86_64 ;; arm64) arch=aarch64 ;; *) exit 2 ;; esac && python3 tests/oracles/darcs/run.py --output "/output/darcs-2.18.5-debian-sid-${arch}.json"'
           docker run --rm --platform linux/arm64 \
             --volume "$GITHUB_WORKSPACE:/workspace" \
             --volume "$RUNNER_TEMP/native:/output" \
             --workdir /workspace \
-            debian:sid@sha256:e276677157e13bc51ea5b8651f54ad28883f503cc37b3e3af2c4b6cc2f4efe7b \
+            debian@sha256:9f592561cd54eb4b2ab02115788a6559c52d0de9c8efe04975c5e7ca5467ee6a \
             bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs=2.18.5-2 python3 && case "$(dpkg --print-architecture)" in amd64) arch=x86_64 ;; arm64) arch=aarch64 ;; *) exit 2 ;; esac && python3 tests/oracles/darcs/run.py --output "/output/darcs-2.18.5-debian-sid-${arch}.json"'
           python - <<'PY'
           import json
