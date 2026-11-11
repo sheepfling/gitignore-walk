@@ -205,6 +205,40 @@ jobs:
             debian:13-slim \
             bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs python3 && python3 tests/oracles/darcs/run.py --output /output/darcs-debian13-arm64.json'
           python -c "from pathlib import Path; from scripts.ci_native import inspect_capture; path = Path(r'$RUNNER_TEMP/native/darcs-debian13-arm64.json'); result = inspect_capture(path); print(result); raise SystemExit(not result['passed'])"
+      - name: Capture current Darcs 2.18.5 on Debian Sid
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          docker run --rm --platform linux/amd64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:sid@sha256:e276677157e13bc51ea5b8651f54ad28883f503cc37b3e3af2c4b6cc2f4efe7b \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs=2.18.5-2 python3 && case "$(dpkg --print-architecture)" in amd64) arch=x86_64 ;; arm64) arch=aarch64 ;; *) exit 2 ;; esac && python3 tests/oracles/darcs/run.py --output "/output/darcs-2.18.5-debian-sid-${arch}.json"'
+          docker run --rm --platform linux/arm64 \
+            --volume "$GITHUB_WORKSPACE:/workspace" \
+            --volume "$RUNNER_TEMP/native:/output" \
+            --workdir /workspace \
+            debian:sid@sha256:e276677157e13bc51ea5b8651f54ad28883f503cc37b3e3af2c4b6cc2f4efe7b \
+            bash -lc 'apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq darcs=2.18.5-2 python3 && case "$(dpkg --print-architecture)" in amd64) arch=x86_64 ;; arm64) arch=aarch64 ;; *) exit 2 ;; esac && python3 tests/oracles/darcs/run.py --output "/output/darcs-2.18.5-debian-sid-${arch}.json"'
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          directory = Path(os.environ["RUNNER_TEMP"]) / "native"
+          for expected_architecture in ("x86_64", "aarch64"):
+              path = directory / f"darcs-2.18.5-debian-sid-{expected_architecture}.json"
+              capture = json.loads(path.read_text(encoding="utf-8"))
+              assert capture["status"] == "captured"
+              assert capture["client"]["version"] == "2.18.5 (release)"
+              assert expected_architecture in capture["client"]["platform"]
+              assert len(capture["cases"]) == 19
+              assert all(
+                  case["expected_boring"] is None
+                  or case["observed_boring"] is case["expected_boring"]
+                  for case in capture["cases"]
+              )
+          PY
       - name: Download pinned Sapling and Jujutsu ARM64 releases
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |

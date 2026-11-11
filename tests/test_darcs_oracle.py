@@ -14,9 +14,15 @@ ORACLE_ROOT = Path(__file__).parent / "oracles" / "darcs"
 CASES = json.loads((ORACLE_ROOT / "cases.json").read_text(encoding="utf-8"))["cases"]
 CAPTURE_FILES = (
     "darcs-2.18.5-macos-arm64.json",
+    "darcs-2.18.5-debian-sid-x86_64.json",
+    "darcs-2.18.5-debian-sid-aarch64.json",
     "darcs-debian13-x86_64.json",
     "darcs-debian13-arm64.json",
 )
+SID_CAPTURE_ARCHITECTURES = {
+    "darcs-2.18.5-debian-sid-x86_64.json": "x86_64",
+    "darcs-2.18.5-debian-sid-aarch64.json": "aarch64",
+}
 CAPTURES = {
     profile: json.loads((ORACLE_ROOT / "results" / profile).read_text(encoding="utf-8"))
     for profile in CAPTURE_FILES
@@ -59,6 +65,21 @@ def test_darcs_capture_profiles_are_isolated_and_complete(profile: str) -> None:
     assert capture["client"]["version"].startswith("2.18.")
     assert {case["id"] for case in capture["cases"]} == {case["id"] for case in CASES}
     assert all(case["setup_isolated"] is True for case in capture["cases"])
+
+
+@pytest.mark.parametrize("profile,architecture", SID_CAPTURE_ARCHITECTURES.items())
+def test_debian_sid_captures_cover_current_darcs_on_both_architectures(
+    profile: str, architecture: str
+) -> None:
+    capture = CAPTURES[profile]
+
+    assert capture["client"]["version"] == "2.18.5 (release)"
+    assert architecture in capture["client"]["platform"]
+    assert len(capture["cases"]) == len(CASES)
+    assert all(
+        case["expected_boring"] is None or case["observed_boring"] is case["expected_boring"]
+        for case in capture["cases"]
+    )
 
 
 def test_historical_windows_profile_retains_its_version_specific_precedence() -> None:

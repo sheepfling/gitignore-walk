@@ -12,11 +12,12 @@ Run from the repository root:
 python -m scripts.ci oracle-darcs --output /tmp/darcs-oracle.json
 ```
 
-The current corpus has nineteen probes across macOS arm64 Darcs 2.18.5, Debian 13 x86_64, and Debian
-13 arm64 with Darcs 2.18.4 on both Linux profiles. Eighteen closed candidates cover ERE alternation,
+The current corpus has nineteen probes across macOS arm64 Darcs 2.18.5, Debian Sid x86_64 and
+aarch64 Darcs 2.18.5, and Debian 13 x86_64 and arm64 with Darcs 2.18.4 on both Linux profiles.
+Eighteen closed candidates cover ERE alternation,
 a POSIX character class, global boring rules, a configured boringfile, managed-file behavior, and
 lexical rules, a nested-repository walking case, and overlap between local, global, and configured
-boring sources. All three profiles agree on all eighteen.
+boring sources. All five current-release profiles agree on all eighteen.
 Native probes confirm a `#` comment only at
 the start of a rule, leading/trailing spaces
 and tabs remain part of the regex, and `#` inside a rule is data. UTF-8 literal regexes match NFC
@@ -31,9 +32,13 @@ a file matching the configured boringfile is also boring. The observation was re
 recording the preference on Darcs 2.18.5. The client behavior therefore differs from its own docs;
 the policy delegates this behavior to native Darcs and does not need a Python-side precedence rule.
 New overlapping-source probes also show that the global `~/.darcs/boring` remains active alongside
-non-matching local rules and a configured `boringfile`, on all three profiles.
+non-matching local rules and a configured `boringfile`, on all five tested profiles.
 The captured invalid pattern emits a warning and is ignored. Other regex error messages, locales,
 and native pattern/path encodings remain untested.
+
+The two Debian Sid profiles install the exact `darcs=2.18.5-2` package inside the pinned
+`debian:sid` image and match all eighteen closed candidates. The ARM64 capture runs under QEMU in
+hosted Linux CI; both architecture captures are retained in `results/`.
 
 Darcs boring rules control add-candidate discovery, not a membership-free filesystem ignore
 decision: already managed files are exempt. `DarcsBoringPolicy` preserves that distinction by
@@ -45,15 +50,17 @@ broader configuration, platform behavior, and other Darcs versions remain open.
 
 The nested-repository probe records an important boundary behavior: outer `darcs whatsnew` still
 lists a file inside a nested Darcs repository as an outer add candidate. The walker follows that
-directory while excluding the nested `_darcs` metadata. This behavior matches all three captured
+directory while excluding the nested `_darcs` metadata. This behavior matches all five captured
 profiles and both traversal orders.
 
-| Capture file                      | Environment                   | Darcs version | Closed candidates |
-| --------------------------------- | ----------------------------- | ------------- | ----------------- |
-| `darcs-2.18.5-macos-arm64.json`   | macOS 26.6.2 arm64            | 2.18.5        | 18/18             |
-| `darcs-debian13-x86_64.json`      | Debian 13 x86_64 in Docker    | 2.18.4        | 18/18             |
-| `darcs-debian13-arm64.json`       | Debian 13 arm64 in Docker     | 2.18.4        | 18/18             |
-| `darcs-2.16.3-windows-x64.json`   | Windows Server 2025 x64       | 2.16.3        | 17/18             |
+| Capture file                           | Environment                 | Darcs version | Closed candidates |
+| -------------------------------------- | --------------------------- | ------------- | ----------------- |
+| `darcs-2.18.5-macos-arm64.json`        | macOS 26.6.2 arm64          | 2.18.5        | 18/18             |
+| `darcs-2.18.5-debian-sid-x86_64.json`  | Debian Sid x86_64 in Docker | 2.18.5        | 18/18             |
+| `darcs-2.18.5-debian-sid-aarch64.json` | Debian Sid arm64 in Docker  | 2.18.5        | 18/18             |
+| `darcs-debian13-x86_64.json`           | Debian 13 x86_64 in Docker  | 2.18.4        | 18/18             |
+| `darcs-debian13-arm64.json`            | Debian 13 arm64 in Docker   | 2.18.4        | 18/18             |
+| `darcs-2.16.3-windows-x64.json`        | Windows Server 2025 x64     | 2.16.3        | 17/18             |
 
 The Windows native job captures the official Darcs 2.16.3 executable as a historical platform
 probe with the client's `DARCS_TESTING_PREFS_DIR` hook pointed at a disposable global-preferences
