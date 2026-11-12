@@ -853,7 +853,11 @@ currently tested clients and platforms. Workspace-membership transitions now run
 installed clients on native CI platforms, pinned Mercurial 7.2.4 on Windows, and Mercurial 7.0.1 on
 Debian 13 x86_64 and ARM64. Configuration precedence also has a native capture for
 Ubuntu 24.04's Mercurial 6.7.2 package, including the workspace `.hgignore` versus configured
-`ui.ignore` source-order probe. The existing live membership fixture already covers clean,
+`ui.ignore` source-order probe. A live regression also leaves `HGRCPATH` unset and checks the
+default per-user and repository `.hg/hgrc` `ui.ignore` sources against native `debugignore`; the
+workspace `.hgignore` wins while the policy trace retains all three matching sources in order.
+This case runs with installed Mercurial clients on native CI platforms but is not yet a versioned
+profile capture. The existing live membership fixture already covers clean,
 pending-forget, forgotten, re-added, committed, and pending-remove states. A new regression also
 checks a tracked rename from an ignored name to a visible name: pending source/destination paths
 remain versioned, and after commit the absent old path remains ignore-matched with unknown

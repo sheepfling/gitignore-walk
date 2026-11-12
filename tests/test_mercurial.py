@@ -828,6 +828,66 @@ def test_client_config_discovery_respects_later_hgrc_override_for_named_ignore(
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
+def test_default_user_and_repository_config_sources_follow_workspace_precedence(
+    tmp_path: Path,
+) -> None:
+    """Compare default user and repository ``ui.ignore`` sources with native precedence."""
+    hg = shutil.which("hg")
+    assert hg is not None
+    root = tmp_path / "repo"
+    metadata = root / ".hg"
+    metadata.mkdir(parents=True)
+    home = tmp_path / "home"
+    home.mkdir()
+    user_ignore = root / "user.ignore"
+    user_ignore.write_text("syntax: glob\ncommon.tmp\n", encoding="utf-8")
+    repository_ignore = root / "repository.ignore"
+    repository_ignore.write_text("syntax: glob\ncommon.tmp\n", encoding="utf-8")
+    (root / ".hgignore").write_text("syntax: glob\ncommon.tmp\n", encoding="utf-8")
+    (metadata / "hgrc").write_text(
+        "[ui]\nignore.repository = repository.ignore\n", encoding="utf-8"
+    )
+    user_config = home / ("Mercurial.ini" if os.name == "nt" else ".hgrc")
+    user_config.write_text("[ui]\nignore.user = user.ignore\n", encoding="utf-8")
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "HOME": str(home),
+            "USERPROFILE": str(home),
+            "HGPLAIN": "1",
+            "LC_ALL": "C",
+        }
+    )
+    environment.pop("HGRCPATH", None)
+
+    native = subprocess.run(
+        [hg, "debugignore", "-v", "--", "common.tmp"],
+        cwd=root,
+        env=environment,
+        capture_output=True,
+        check=False,
+        timeout=30,
+    )
+    assert native.returncode == 0, native.stderr.decode(errors="replace")
+    native_output = native.stdout.decode(errors="replace").replace("\\", "/").casefold()
+    assert "common.tmp is ignored" in native_output
+    assert str((root / ".hgignore").resolve()).replace("\\", "/").casefold() in native_output
+    assert "user.ignore" not in native_output
+    assert "repository.ignore" not in native_output
+
+    policy = MercurialIgnorePolicy(root, read_client_config=True, environment=environment)
+    trace = policy.trace("common.tmp")
+
+    assert trace.decision.ignored
+    assert trace.decision.source == str((root / ".hgignore").resolve())
+    assert tuple(Path(match.source).name for match in trace.matches) == (
+        ".hgignore",
+        "user.ignore",
+        "repository.ignore",
+    )
+
+
+@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
 def test_client_config_discovery_resolves_relative_global_ignore_from_workspace(
     tmp_path: Path,
 ) -> None:
