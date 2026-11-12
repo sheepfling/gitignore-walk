@@ -148,6 +148,10 @@ def _make_case(
     config = _case_config(case["setup"])
     if case.get("policy_mode") == "client-config":
         if case["setup"].get("use_default_config"):
+            if profile is None or monkeypatch is None:
+                raise ValueError(
+                    "default-config oracle cases require a captured profile and monkeypatch"
+                )
             environment = os.environ.copy()
             environment.update(
                 {
@@ -158,6 +162,21 @@ def _make_case(
                 }
             )
             environment.pop("HGRCPATH", None)
+            configuration = MATCHING_OBSERVATIONS[profile][case["id"]]["configuration"]
+            if configuration is None or configuration["exit_code"] != 0:
+                raise AssertionError(f"{case['id']}: native config capture is incomplete")
+            config_stdout = (
+                configuration["stdout"].replace("<repo>", str(root)).replace("<home>", str(home))
+            )
+
+            def captured_default_config(
+                command: list[str], **kwargs: Any
+            ) -> subprocess.CompletedProcess[str]:
+                assert command[1:] == ["config", "--debug", "ui"]
+                assert Path(kwargs["cwd"]) == root
+                return subprocess.CompletedProcess(command, 0, config_stdout, "")
+
+            monkeypatch.setattr(mercurial_policy_module.subprocess, "run", captured_default_config)
             return (
                 MercurialIgnorePolicy(root, read_client_config=True, environment=environment),
                 case["query"],
