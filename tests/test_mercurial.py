@@ -166,7 +166,10 @@ def _make_case(
             if configuration is None or configuration["exit_code"] != 0:
                 raise AssertionError(f"{case['id']}: native config capture is incomplete")
             config_stdout = (
-                configuration["stdout"].replace("<repo>", str(root)).replace("<home>", str(home))
+                configuration["stdout"]
+                .replace("\\", "/")
+                .replace("<repo>", str(root).replace("\\", "/"))
+                .replace("<home>", str(home).replace("\\", "/"))
             )
 
             def captured_default_config(

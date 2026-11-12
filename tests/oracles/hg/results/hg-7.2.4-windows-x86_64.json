@@ -2066,6 +2066,54 @@
       "raw_stderr": ""
     },
     {
+      "id": "hg.default-config-source-precedence",
+      "profile": "hg",
+      "dimension": "configuration-precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+        "debugignore",
+        "-v",
+        "--",
+        "common.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": null,
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "common.tmp is ignored\n(ignore rule in <repo>\\.hgignore, line 2: 'common.tmp')\n",
+      "stderr": "",
+      "configuration": {
+        "command": [
+          "D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\hg.exe",
+          "config",
+          "--debug",
+          "ui"
+        ],
+        "exit_code": 0,
+        "stdout": "read config from: resource:mercurial.defaultrc.mergetools.rc\nread config from: D:\\a\\_temp\\compat-clients\\hg-7.2.4-venv\\Scripts\\mercurial.ini\nread config from: <home>\\mercurial.ini\nread config from: <home>\\.hgrc\n<home>\\.hgrc:2: ui.ignore.user=user.ignore\n<repo>/.hg/hgrc:2: ui.ignore.repository=repository.ignore\n--verbose: ui.verbose=False\n--debug: ui.debug=True\n--quiet: ui.quiet=False\n",
+        "stderr": "",
+        "normalized_stdout_sha256": "3f043479d41d5f45beb2b42944660442bf8926eeb9fd4a2ef0c49daea35ae030"
+      },
+      "normalized_stdout_sha256": "bcf4bab5e39c289e1a9911bc15900f4348c3c15072ab8781fd7d09fde3a60e66",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "common.tmp is ignored\n(ignore rule in C:\\Users\\runneradmin\\AppData\\Local\\Temp\\gitignore-walk-hg-oracle-bx9m4ai3\\repo\\.hgignore, line 2: 'common.tmp')\n",
+      "raw_stderr": ""
+    },
+    {
       "id": "hg.glob-unicode-normalization-is-significant",
       "profile": "hg",
       "dimension": "path-normalization",
