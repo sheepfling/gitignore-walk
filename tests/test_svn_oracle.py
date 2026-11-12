@@ -151,12 +151,23 @@ def test_subversion_captured_profiles_agree() -> None:
         assert all(baseline[case_id] == observation[case_id] for case_id in shared_cases)
 
 
-def test_subversion_status_transition_capture_matches_expected_states() -> None:
-    """Keep the committed native status-transition evidence complete and internally consistent."""
-    path = ORACLE_ROOT / "results" / "svn-status-transitions-1.15.0-macos-arm64.json"
+@pytest.mark.parametrize(
+    ("profile", "expected_version"),
+    [
+        ("svn-status-transitions-1.15.0-macos-arm64.json", "1.15.0"),
+        ("svn-status-transitions-1.14.3-ubuntu-24.04-x86_64.json", "1.14.3"),
+        ("svn-status-transitions-1.14.5-windows-x86_64.json", "1.14.5-SlikSvn"),
+    ],
+)
+def test_subversion_status_transition_capture_matches_expected_states(
+    profile: str, expected_version: str
+) -> None:
+    """Keep native status-transition evidence complete across supported CI profiles."""
+    path = ORACLE_ROOT / "results" / profile
     capture = json.loads(path.read_text(encoding="utf-8"))
     assert capture["status"] == "captured"
-    assert capture["client"]["svn"]["version"] == "1.15.0"
+    assert capture["client"]["svn"]["version"] == expected_version
+    assert capture["client"]["svnadmin"]["version"] == expected_version
     assert len(capture["cases"]) == 1
     case = capture["cases"][0]
     assert case["id"] == "svn.status-membership-transitions"

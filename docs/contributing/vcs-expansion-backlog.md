@@ -335,8 +335,8 @@ and that the walker does not descend there. A directory-external check confirms 
 status and membership scope from the external working copy. The transition test passes locally
 against Subversion 1.15.0 and runs in the hosted Ubuntu 1.14.3 and Windows SlikSvn 1.14.5 native
 integration jobs. A live membership test also roots the policy and walker at a nested versioned
-directory and matches its membership with native status from that caller root. The macOS transition
-capture is versioned, and both native CI jobs retain fresh captures with their artifacts; broader
+directory and matches its membership with native status from that caller root. Transition captures
+for macOS 1.15.0, Ubuntu 1.14.3, and Windows SlikSvn 1.14.5 are versioned and replayed; broader
 status traversal remains open.
 
 Reorder this list when user demand, supported client automation, or native probe results justify it.

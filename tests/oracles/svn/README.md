@@ -104,9 +104,9 @@ external working copy itself.
 Membership-aware walks in both traversal orders classify files inside listed directory externals
 from each external working copy's own native status, matching the native ignore selection.
 This live transition test passed locally with Subversion 1.15.0 and runs in the hosted Ubuntu
-Subversion 1.14.3 and Windows SlikSvn 1.14.5 integration jobs. The native status sequence is also
-stored in `results/svn-status-transitions-1.15.0-macos-arm64.json`; each native CI run writes its
-own transition capture alongside the standard Subversion oracle artifact.
+Subversion 1.14.3 and Windows SlikSvn 1.14.5 integration jobs. The native status sequence is stored
+for all three profiles in `results/svn-status-transitions-*.json`; the capture test checks the
+expected states and normalized-output hash for each.
 
 A separate live test checks an interrupted checkout. It polls native status while a disposable
 6,000-file checkout is in progress, terminates the checkout after the working-copy root is reported
