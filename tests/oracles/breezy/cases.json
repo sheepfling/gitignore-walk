@@ -766,7 +766,8 @@
       "query": "cache/sibling.tmp",
       "expected_candidate": true,
       "capture_profiles": [
-        "brz-3.3.24-macos-arm64.json"
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",
@@ -794,7 +795,8 @@
       "query": "other/keep.tmp",
       "expected_candidate": false,
       "capture_profiles": [
-        "brz-3.3.24-macos-arm64.json"
+        "brz-3.3.24-macos-arm64.json",
+        "brz-3.3.11-linux-x86_64-py313.json"
       ],
       "evidence_status": "native-observed",
       "native_status": "captured",

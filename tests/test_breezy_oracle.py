@@ -209,9 +209,9 @@ def test_breezy_debian13_profile_records_exact_client_and_python() -> None:
 
     assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
     assert capture["client"]["runner_python"].startswith("3.13.")
-    assert len(capture["cases"]) == 52
-    assert len(capture["excluded_cases"]) == 5
-    assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 48
+    assert len(capture["cases"]) == 54
+    assert len(capture["excluded_cases"]) == 3
+    assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 50
     assert sum(case["winning_pattern_matches"] is not None for case in capture["cases"]) == 3
 
 
@@ -376,18 +376,37 @@ def test_breezy_walker_matches_captured_exception_parent_status(
 
 @pytest.mark.parametrize("topdown", [True, False], ids=["topdown", "bottomup"])
 @pytest.mark.parametrize(
-    "case_id",
+    ("case_id", "profile"),
     [
-        "brz.walk-root-anchored-nested-exception",
-        "brz.walk-deep-exception-opens-ancestor-chain",
-        "brz.deep-file-exception-unignores-siblings",
-        "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
+        ("brz.walk-root-anchored-nested-exception", "brz-3.3.24-macos-arm64.json"),
+        ("brz.walk-root-anchored-nested-exception", "brz-3.3.11-linux-x86_64-py313.json"),
+        ("brz.walk-deep-exception-opens-ancestor-chain", "brz-3.3.24-macos-arm64.json"),
+        ("brz.deep-file-exception-unignores-siblings", "brz-3.3.24-macos-arm64.json"),
+        (
+            "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
+            "brz-3.3.24-macos-arm64.json",
+        ),
+        (
+            "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
+            "brz-3.3.11-linux-x86_64-py313.json",
+        ),
+    ],
+    ids=[
+        "nested-macos",
+        "nested-debian",
+        "deep-macos",
+        "siblings-macos",
+        "unrelated-macos",
+        "unrelated-debian",
     ],
 )
 def test_breezy_walker_matches_exception_pruning_captures(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, topdown: bool, case_id: str
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    topdown: bool,
+    case_id: str,
+    profile: str,
 ) -> None:
-    profile = "brz-3.3.24-macos-arm64.json"
     case = next(case for case in CASES if case["id"] == case_id)
     observation = next(item for item in CAPTURES[profile]["cases"] if item["id"] == case_id)
     default_patterns = tuple(CAPTURES[profile]["default_rules"]["patterns"])

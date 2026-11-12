@@ -193,10 +193,11 @@ no captured native result. The November
 7 checkpoint separately records seven Git probes. These captures do not establish complete
 cross-platform behavior.
 
-A fifth Breezy native profile now covers Debian 13 x86_64 with Breezy 3.3.11 and Python 3.13. Its 52
-shared probes include 48 boolean candidates, all matching the portable evaluator, and three
-source-precedence probes matching their expected winning patterns. Four explicitly profile-scoped
-cases remain excluded, including root-anchored traversal probes and two Unicode regex probes. The
+A fifth Breezy native profile now covers Debian 13 x86_64 with Breezy 3.3.11 and Python 3.13. Its 54
+shared probes include 50 boolean candidates, all matching the portable evaluator, and three
+source-precedence probes matching their expected winning patterns. Three explicitly profile-scoped
+cases remain excluded, including the Python-version regex probe and two Unicode regex probes. The
+root-anchored traversal probes are now captured on this Debian profile as well as macOS. The
 Unicode `\\w` and `\\d` probes remain scoped to Breezy 3.3.24/macOS: an exploratory 3.3.11/Linux run
 under `LC_ALL=C` omitted the queried Unicode paths from both `brz ignored` and status when those regex
 rules were present. Treat that as an unresolved native observation, not conformance evidence. Linux

@@ -41,20 +41,6 @@
       "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
     },
     {
-      "id": "brz.walk-root-anchored-nested-exception",
-      "required_profiles": [
-        "brz-3.3.24-macos-arm64.json"
-      ],
-      "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
-    },
-    {
-      "id": "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
-      "required_profiles": [
-        "brz-3.3.24-macos-arm64.json"
-      ],
-      "current_profile": "brz-3.3.11-linux-x86_64-py313.json"
-    },
-    {
       "id": "brz.regex-unicode-word-class",
       "required_profiles": [
         "brz-3.3.24-macos-arm64.json"
@@ -1760,6 +1746,107 @@
       "status_stdout": "?   .bzrignore\n+N  cache\n+N  cache/deep\n+N  cache/deep/.oracle-walk-anchor\n?   cache/deep/drop.tmp\n?   cache/deep/keep.tmp\n",
       "status_stderr": "",
       "stdout_sha256": "a8402bed05a73adaf1ebcac38344b298794ee10720974040bad6eb14a48ea19e",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.walk-root-anchored-nested-exception",
+      "dimension": "traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "cache/sibling.tmp",
+      "observed_ignored": true,
+      "observed_pattern": "cache/**",
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "cache/drop.tmp",
+        "cache/sibling.tmp"
+      ],
+      "unknown_paths": [
+        ".bzrignore",
+        "cache/keep.tmp"
+      ],
+      "stdout": "cache/drop.tmp                                     cache/**\ncache/sibling.tmp                                  cache/**\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  cache\n+N  cache/.oracle-walk-anchor\n?   cache/keep.tmp\n",
+      "status_stderr": "",
+      "stdout_sha256": "9bea0fe20b627410ad3ad679155b85cd7158f2b8bac375f95707bb20575a8fe2",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.walk-root-anchored-unrelated-exception-keeps-parent-prunable",
+      "dimension": "traversal",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": false,
+      "query": "other/keep.tmp",
+      "observed_ignored": false,
+      "observed_pattern": null,
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": true,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": 0,
+      "anchor_add_stderr": "",
+      "anchor_add_method": "cli",
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "cache"
+      ],
+      "unknown_paths": [
+        ".bzrignore",
+        "other/keep.tmp"
+      ],
+      "stdout": "cache                                              cache\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n+N  other\n+N  other/.oracle-walk-anchor\n?   other/keep.tmp\n",
+      "status_stderr": "",
+      "stdout_sha256": "f7d46a425b4c48245394927951a594f5579d0a61292247916ec163ae6cbac58d",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "isolated_configuration": true,
       "global_ignore_existed_before": false,

@@ -73,9 +73,10 @@ traversal orders. The current captured client is Breezy 3.3.24/macOS arm64. Addi
 regex probes cover Unicode `\\w` and `\\d`, fixed-width lookbehind, and Breezy's native parse error
 for a numeric backreference to its open regex wrapper. These four probes are currently captured on
 macOS arm64 only. Native fixtures cover both sides of root-anchored exception pruning on Breezy
-3.3.24/macOS arm64. `!./cache/keep.tmp` keeps the ignored parent traversable and exposes the target;
-an unrelated `!./other/keep.tmp` leaves `cache` prunable. A deeper `!cache/deep/keep.tmp` exception
-makes Breezy visit both ignored ancestors and reports the target and siblings as unknown. Top-down
+3.3.24/macOS arm64 and 3.3.11/Debian 13 x86_64. `!./cache/keep.tmp` keeps the ignored parent
+traversable and exposes the target; an unrelated `!./other/keep.tmp` leaves `cache` prunable. A
+deeper `!cache/deep/keep.tmp` exception makes Breezy visit both ignored ancestors and reports the
+target and siblings as unknown. Top-down
 and bottom-up policy walks match the captured native paths. In the negative control, native status
 reports the whole ignored `cache` directory while the file walker reports its ignored leaf, so the
 assertion compares subtree meaning and separately checks that no cache file is selected as included.
