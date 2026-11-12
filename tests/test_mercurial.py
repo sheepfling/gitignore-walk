@@ -60,6 +60,11 @@ MATCHING_OBSERVATIONS[SUPPLEMENTAL_CONFIG_PROFILE] = {
         (ORACLE_ROOT / "results" / SUPPLEMENTAL_CONFIG_PROFILE).read_text(encoding="utf-8")
     )["cases"]
 }
+DEFAULT_CONFIG_CAPTURE_PROFILES = tuple(
+    profile
+    for profile in MATCHING_CAPTURE_FILES
+    if "hg.default-config-source-precedence" in MATCHING_OBSERVATIONS[profile]
+)
 CAPTURED_CASE_PROFILE_PARAMS = [
     pytest.param(
         case,
@@ -142,10 +147,34 @@ def _make_case(
             pytest.skip(f"filesystem cannot create Mercurial source symlink: {error}")
     config = _case_config(case["setup"])
     if case.get("policy_mode") == "client-config":
+        if case["setup"].get("use_default_config"):
+            environment = os.environ.copy()
+            environment.update(
+                {
+                    "HOME": str(home),
+                    "USERPROFILE": str(home),
+                    "HGPLAIN": "1",
+                    "LC_ALL": "C",
+                }
+            )
+            environment.pop("HGRCPATH", None)
+            return (
+                MercurialIgnorePolicy(root, read_client_config=True, environment=environment),
+                case["query"],
+            )
         if profile is None or monkeypatch is None:
             raise ValueError(
                 "client-config oracle cases require a captured profile and monkeypatch"
             )
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "HOME": str(home),
+                "USERPROFILE": str(home),
+                "HGPLAIN": "1",
+                "LC_ALL": "C",
+            }
+        )
         hgrc = root.parent / "oracle-hgrc"
         lines = ["[ui]"]
         lines.extend(
@@ -153,16 +182,7 @@ def _make_case(
             for key, value in config.items()
         )
         hgrc.write_text("\n".join(lines) + "\n", encoding="utf-8")
-        environment = os.environ.copy()
-        environment.update(
-            {
-                "HOME": str(home),
-                "USERPROFILE": str(home),
-                "HGRCPATH": str(hgrc),
-                "HGPLAIN": "1",
-                "LC_ALL": "C",
-            }
-        )
+        environment["HGRCPATH"] = str(hgrc)
         environment.update(
             {
                 key: value.replace("<home>", str(home))
@@ -573,6 +593,37 @@ def test_workspace_ignore_precedes_duplicate_configured_source(
 
 
 @pytest.mark.parametrize(
+    "profile", DEFAULT_CONFIG_CAPTURE_PROFILES, ids=lambda name: name.removesuffix(".json")
+)
+def test_default_config_source_precedence_matches_captured_native_provenance(
+    tmp_path: Path,
+    profile: str,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Check that default user and repo config sources remain behind workspace rules."""
+    case_id = "hg.default-config-source-precedence"
+    case = next(case for case in CASES if case["id"] == case_id)
+    observation = MATCHING_OBSERVATIONS[profile][case_id]
+    native_output = observation["stdout"].replace("\\", "/").casefold()
+
+    assert observation["candidate_matches"] is True
+    assert "ignore rule in <repo>/.hgignore" in native_output
+    assert "user.ignore" not in native_output
+    assert "repository.ignore" not in native_output
+
+    policy, query = _make_case(tmp_path / "repo", case, profile=profile, monkeypatch=monkeypatch)
+    trace = policy.trace(query)
+
+    assert trace.decision.ignored
+    assert Path(trace.decision.source or "").name == ".hgignore"
+    assert [Path(match.source).name for match in trace.matches] == [
+        ".hgignore",
+        "user.ignore",
+        "repository.ignore",
+    ]
+
+
+@pytest.mark.parametrize(
     "case_id",
     [
         "hg.config-discovery-named-ignore-entries",
@@ -825,66 +876,6 @@ def test_client_config_discovery_respects_later_hgrc_override_for_named_ignore(
     assert trace.decision.ignored
     assert trace.decision.source == str(second_ignore)
     assert tuple(match.source for match in trace.matches) == (str(second_ignore),)
-
-
-@pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")
-def test_default_user_and_repository_config_sources_follow_workspace_precedence(
-    tmp_path: Path,
-) -> None:
-    """Compare default user and repository ``ui.ignore`` sources with native precedence."""
-    hg = shutil.which("hg")
-    assert hg is not None
-    root = tmp_path / "repo"
-    metadata = root / ".hg"
-    metadata.mkdir(parents=True)
-    home = tmp_path / "home"
-    home.mkdir()
-    user_ignore = root / "user.ignore"
-    user_ignore.write_text("syntax: glob\ncommon.tmp\n", encoding="utf-8")
-    repository_ignore = root / "repository.ignore"
-    repository_ignore.write_text("syntax: glob\ncommon.tmp\n", encoding="utf-8")
-    (root / ".hgignore").write_text("syntax: glob\ncommon.tmp\n", encoding="utf-8")
-    (metadata / "hgrc").write_text(
-        "[ui]\nignore.repository = repository.ignore\n", encoding="utf-8"
-    )
-    user_config = home / ("Mercurial.ini" if os.name == "nt" else ".hgrc")
-    user_config.write_text("[ui]\nignore.user = user.ignore\n", encoding="utf-8")
-    environment = os.environ.copy()
-    environment.update(
-        {
-            "HOME": str(home),
-            "USERPROFILE": str(home),
-            "HGPLAIN": "1",
-            "LC_ALL": "C",
-        }
-    )
-    environment.pop("HGRCPATH", None)
-
-    native = subprocess.run(
-        [hg, "debugignore", "-v", "--", "common.tmp"],
-        cwd=root,
-        env=environment,
-        capture_output=True,
-        check=False,
-        timeout=30,
-    )
-    assert native.returncode == 0, native.stderr.decode(errors="replace")
-    native_output = native.stdout.decode(errors="replace").replace("\\", "/").casefold()
-    assert "common.tmp is ignored" in native_output
-    assert str((root / ".hgignore").resolve()).replace("\\", "/").casefold() in native_output
-    assert "user.ignore" not in native_output
-    assert "repository.ignore" not in native_output
-
-    policy = MercurialIgnorePolicy(root, read_client_config=True, environment=environment)
-    trace = policy.trace("common.tmp")
-
-    assert trace.decision.ignored
-    assert trace.decision.source == str((root / ".hgignore").resolve())
-    assert tuple(Path(match.source).name for match in trace.matches) == (
-        ".hgignore",
-        "user.ignore",
-        "repository.ignore",
-    )
 
 
 @pytest.mark.skipif(shutil.which("hg") is None, reason="Mercurial client is not installed")

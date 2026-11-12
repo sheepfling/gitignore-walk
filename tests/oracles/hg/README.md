@@ -68,8 +68,9 @@ captures are in the matching profile results, and the regression test checks eac
 An additional live-client regression leaves `HGRCPATH` unset and loads `ui.ignore` from both the
 default per-user config and repository `.hg/hgrc`. With the same path matched by both configured
 files and `.hgignore`, native `debugignore` attributes the decision to `.hgignore`; the opt-in
-policy retains all three matches in precedence order. This checks the host-installed client on
-native CI platforms; it is a live test rather than a versioned capture.
+policy retains all three matches in precedence order. This is captured on Mercurial 7.2.4/macOS
+arm64 and also runs live against installed clients on native CI platforms. Broader versioned
+profiles remain open.
 Configured-path environment expansion is captured with Mercurial 7.2.4 on macOS arm64 and Windows
 x86_64, and Mercurial 7.0.1 on Debian 13 Linux aarch64 and x86_64. The POSIX captures cover
 `$VAR`/`${VAR}` paths; the Windows capture covers `%VAR%` expansion. Live native tests also exercise
@@ -92,7 +93,7 @@ the library now marks those sources unavailable and leaves their paths unignored
 is in `results/hg-walk-7.1.2-windows-x86_64.json`; all six fixtures match, including the repeated
 source under two symlink scopes, whose paths remain unknown because Windows Mercurial does not read
 the symlinked sources. The remaining skips leave POSIX-specific behavior unverified on Windows.
-Mercurial 7.2.4 on Windows captures 72 policy cases: 66 closed observations match, six remain open,
+Mercurial 7.2.4 on Windows captures 73 policy cases: 67 closed observations match, six remain open,
 and four are skipped because their fixtures require POSIX behavior. Its full ignored/unknown walk
 profile matches all six fixtures. Results are in `results/hg-7.2.4-windows-x86_64.json` and
 `results/hg-walk-7.2.4-windows-x86_64.json`; the regression suite replays both captures.

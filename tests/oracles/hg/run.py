@@ -237,12 +237,15 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             {
                 "HOME": str(home),
                 "USERPROFILE": str(home),
-                "HGRCPATH": str(hg_config),
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
                 "PYTHONIOENCODING": "utf-8",
             }
         )
+        if setup.get("use_default_config"):
+            env.pop("HGRCPATH", None)
+        else:
+            env["HGRCPATH"] = str(hg_config)
         fixture_environment = {
             key: value.replace("<home>", str(home))
             for key, value in setup.get("environment", {}).items()
@@ -363,7 +366,7 @@ def _capture_case(case: Mapping[str, Any], executable: str) -> dict[str, Any]:
             "command": command,
             "working_directory": "<repo>",
             "environment": {
-                "HGRCPATH": "<temp>/hgrc",
+                "HGRCPATH": "<temp>/hgrc" if "HGRCPATH" in env else None,
                 "HGPLAIN": "1",
                 "LC_ALL": "C",
                 **{

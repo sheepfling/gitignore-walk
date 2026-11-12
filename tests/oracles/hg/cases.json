@@ -1027,6 +1027,31 @@
       "policy_mode": "client-config"
     },
     {
+      "id": "hg.default-config-source-precedence",
+      "profile": "hg",
+      "dimension": "configuration-precedence",
+      "setup": {
+        "use_default_config": true,
+        "files": {
+          ".hgignore": "syntax: glob\ncommon.tmp\n",
+          ".hg/hgrc": "[ui]\nignore.repository = repository.ignore\n",
+          "<home>/.hgrc": "[ui]\nignore.user = user.ignore\n",
+          "<home>/Mercurial.ini": "[ui]\nignore.user = user.ignore\n",
+          "user.ignore": "syntax: glob\ncommon.tmp\n",
+          "repository.ignore": "syntax: glob\ncommon.tmp\n"
+        }
+      },
+      "query": "common.tmp",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "source_ids": [
+        "HG-IGNORE"
+      ],
+      "release_gate": "Retain default user, repository, and workspace source ordering across native profiles.",
+      "policy_mode": "client-config"
+    },
+    {
       "id": "hg.glob-unicode-normalization-is-significant",
       "profile": "hg",
       "dimension": "path-normalization",

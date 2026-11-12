@@ -22,7 +22,7 @@ on Linux, plus one malformed-input observation. It also supplies 88 non-Git cand
 documentation/source-derived and 21 open questions. The original Mercurial native corpus has 48 path
 probes and six traversal fixtures, captured with Mercurial 7.2.4 on macOS arm64, 7.0.1 on Linux
 aarch64 and x86_64, and 7.1.2 on Windows x86_64. A hosted Ubuntu x86_64 capture adds Mercurial
-6.7.2. The current Mercurial 7.2.4 Windows profile captures 72 path cases: 66 closed observations
+6.7.2. The current Mercurial 7.2.4 Windows profile captures 73 path cases: 67 closed observations
 match, six remain open, and four skip because their fixtures require POSIX behavior. Its six walk
 fixtures match. The historical Windows 7.1.2 capture has 67 path cases, including 60 closed boolean
 comparisons and one structured invalid-syntax match, while four path probes skip on platform
@@ -853,11 +853,12 @@ currently tested clients and platforms. Workspace-membership transitions now run
 installed clients on native CI platforms, pinned Mercurial 7.2.4 on Windows, and Mercurial 7.0.1 on
 Debian 13 x86_64 and ARM64. Configuration precedence also has a native capture for
 Ubuntu 24.04's Mercurial 6.7.2 package, including the workspace `.hgignore` versus configured
-`ui.ignore` source-order probe. A live regression also leaves `HGRCPATH` unset and checks the
-default per-user and repository `.hg/hgrc` `ui.ignore` sources against native `debugignore`; the
-workspace `.hgignore` wins while the policy trace retains all three matching sources in order.
-This case runs with installed Mercurial clients on native CI platforms but is not yet a versioned
-profile capture. The existing live membership fixture already covers clean,
+`ui.ignore` source-order probe. A new native capture on Mercurial 7.2.4/macOS arm64 leaves
+`HGRCPATH` unset and checks the default per-user and repository `.hg/hgrc` `ui.ignore` sources
+against native `debugignore`; the workspace `.hgignore` wins while the policy trace retains all
+three matching sources in order. The case also runs live with installed Mercurial clients on native
+CI platforms. Broader versioned profiles remain open. The existing live membership fixture already
+covers clean,
 pending-forget, forgotten, re-added, committed, and pending-remove states. A new regression also
 checks a tracked rename from an ignored name to a visible name: pending source/destination paths
 remain versioned, and after commit the absent old path remains ignore-matched with unknown

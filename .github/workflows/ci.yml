@@ -251,7 +251,7 @@ jobs:
               assert capture["status"] == "captured"
               assert capture["client"]["version"] == "Mercurial Distributed SCM (version 7.0.1)"
               assert architecture in capture["client"]["platform"]
-              assert len(capture["cases"]) == 72
+              assert len(capture["cases"]) == 73
               assert not any(case["candidate_matches"] is False for case in capture["cases"])
               observations = {case["id"]: case for case in capture["cases"]}
               for case_id, expected in expected_flags.items():
@@ -259,6 +259,13 @@ jobs:
                   assert case["native_status"] == "captured"
                   assert case["candidate_matches"] is True
                   assert case["observed_ignored"] is expected
+              default_config = observations["hg.default-config-source-precedence"]
+              default_config_stdout = default_config["stdout"].replace("\\", "/").casefold()
+              assert default_config["candidate_matches"] is True
+              assert default_config["environment"]["HGRCPATH"] is None
+              assert "ignore rule in <repo>/.hgignore" in default_config_stdout
+              assert "user.ignore" not in default_config_stdout
+              assert "repository.ignore" not in default_config_stdout
               environment_path = observations["hg.config-discovery-environment-variable-path"]
               assert environment_path["native_status"] == "captured"
               assert environment_path["candidate_matches"] is True
@@ -912,8 +919,8 @@ jobs:
               assert capture["cases"], name
               assert not any(case["candidate_matches"] is False for case in capture["cases"]), name
               if name == "hg-7.2.4-windows-x86_64.json":
-                  assert len(capture["cases"]) == 72, len(capture["cases"])
-                  assert sum(case["candidate_matches"] is True for case in capture["cases"]) == 66
+                  assert len(capture["cases"]) == 73, len(capture["cases"])
+                  assert sum(case["candidate_matches"] is True for case in capture["cases"]) == 67
                   assert sum(case["candidate_matches"] is None for case in capture["cases"]) == 6
                   assert sum(case["native_status"] == "skipped" for case in capture["cases"]) == 4
                   environment_path = next(
@@ -921,6 +928,16 @@ jobs:
                       if case["id"] == "hg.config-discovery-environment-variable-path"
                   )
                   assert environment_path["candidate_matches"] is True, environment_path
+                  default_config = next(
+                      case for case in capture["cases"]
+                      if case["id"] == "hg.default-config-source-precedence"
+                  )
+                  default_config_stdout = default_config["stdout"].replace("\\", "/").casefold()
+                  assert default_config["candidate_matches"] is True, default_config
+                  assert default_config["environment"]["HGRCPATH"] is None, default_config
+                  assert "ignore rule in <repo>/.hgignore" in default_config_stdout
+                  assert "user.ignore" not in default_config_stdout
+                  assert "repository.ignore" not in default_config_stdout
               else:
                   assert len(capture["cases"]) == 6, len(capture["cases"])
                   assert all(case["candidate_matches"] is True for case in capture["cases"])
