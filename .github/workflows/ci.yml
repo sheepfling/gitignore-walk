@@ -358,7 +358,7 @@ jobs:
               assert capture["status"] == "captured"
               assert capture["client"]["version"] == "2.18.5 (release)"
               assert expected_architecture in capture["client"]["platform"]
-              assert len(capture["cases"]) == 19
+              assert len(capture["cases"]) == 20
               assert all(
                   case["expected_boring"] is None
                   or case["observed_boring"] is case["expected_boring"]
@@ -797,7 +797,7 @@ jobs:
           assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
           assert capture["client"]["runner_python"].startswith("3.13.")
           assert len(capture["cases"]) == 52
-          assert len(capture["excluded_cases"]) == 4
+          assert len(capture["excluded_cases"]) == 5
           boolean_cases = [case for case in capture["cases"] if case["candidate_matches"] is not None]
           winning_pattern_cases = [
               case for case in capture["cases"] if case["winning_pattern_matches"] is not None

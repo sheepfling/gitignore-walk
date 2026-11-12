@@ -365,18 +365,40 @@
       "home": "<temp>/home"
     },
     {
-      "id": "darcs.comments-and-invalid-regex",
+      "id": "darcs.invalid-regex-is-ignored",
       "dimension": "lexing",
-      "query": null,
-      "expected_boring": null,
-      "observed_boring": null,
-      "candidate_paths": [],
+      "query": "invalid[",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        "invalid["
+      ],
       "tracked_paths": [
         "."
       ],
-      "whatsnew_exit_code": 1,
-      "whatsnew_stdout": "No changes!\n",
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./invalid[\n",
       "whatsnew_stderr": "Warning: Ignored invalid boring regex: invalid[\n",
+      "show_files_exit_code": 0,
+      "setup_isolated": true,
+      "repository_root": "<temp>/repository",
+      "home": "<temp>/home"
+    },
+    {
+      "id": "darcs.leading-space-pattern-matches-leading-space-name",
+      "dimension": "lexing",
+      "query": " unignored",
+      "expected_boring": false,
+      "observed_boring": false,
+      "candidate_paths": [
+        " unignored"
+      ],
+      "tracked_paths": [
+        "."
+      ],
+      "whatsnew_exit_code": 0,
+      "whatsnew_stdout": "a ./ unignored\n",
+      "whatsnew_stderr": "",
       "show_files_exit_code": 0,
       "setup_isolated": true,
       "repository_root": "<temp>/repository",

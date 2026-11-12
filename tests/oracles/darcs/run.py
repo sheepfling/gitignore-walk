@@ -51,7 +51,9 @@ def _paths_from_annotated_lines(output: str, marker: str) -> set[str]:
     for line in output.splitlines():
         match = re.match(rf"^{re.escape(marker)}\s+(.+)$", line)
         if match:
-            paths.add(match.group(1).strip().removeprefix("./"))
+            # Darcs emits a structural ``./`` prefix. Whitespace after that
+            # prefix belongs to the filename and must not be stripped.
+            paths.add(match.group(1).removeprefix("./"))
     return paths
 
 

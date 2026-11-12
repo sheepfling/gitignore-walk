@@ -12,19 +12,22 @@ Run from the repository root:
 python -m scripts.ci oracle-darcs --output /tmp/darcs-oracle.json
 ```
 
-The current corpus has nineteen probes across macOS arm64 Darcs 2.18.5, Debian Sid x86_64 and
+The current corpus has twenty probes across macOS arm64 Darcs 2.18.5, Debian Sid x86_64 and
 aarch64 Darcs 2.18.5, and Debian 13 x86_64 and arm64 with Darcs 2.18.4 on both Linux profiles.
-Eighteen closed candidates cover ERE alternation,
+Twenty closed candidates cover ERE alternation,
 a POSIX character class, global boring rules, a configured boringfile, managed-file behavior, and
 lexical rules, a nested-repository walking case, and overlap between local, global, and configured
-boring sources. All five current-release profiles agree on all eighteen.
+boring sources. All five current-release profiles agree on all twenty.
 Native probes confirm a `#` comment only at
 the start of a rule, leading/trailing spaces
-and tabs remain part of the regex, and `#` inside a rule is data. UTF-8 literal regexes match NFC
-names, distinguish NFD spellings, and keep `[[:alpha:]]` ASCII-only under both `LC_ALL=C` and
+and tabs remain part of the regex, and `#` inside a rule is data. A leading-space regex matches a
+filename with the same leading space; the capture parser preserves that filename. UTF-8 literal
+regexes match NFC names, distinguish NFD spellings, and keep `[[:alpha:]]` ASCII-only under both
+`LC_ALL=C` and
 `LC_ALL=C.UTF-8`. Linux CI captures both architectures under Debian 13, using QEMU for the ARM64
 client on its x86_64 runner. The final
-probe captures how an invalid regular expression is reported.
+probe captures how an invalid regular expression is reported. The captured invalid pattern emits a
+warning and is ignored, leaving its matching filename as an add candidate.
 
 The [Darcs configuration guide](https://darcs.net/Using/Configuration) says `boringfile` overrides
 `_darcs/prefs/boring`. In both current captures, a file matching the local rules remains boring while
@@ -37,7 +40,7 @@ The captured invalid pattern emits a warning and is ignored. Other regex error m
 and native pattern/path encodings remain untested.
 
 The two Debian Sid profiles install the exact `darcs=2.18.5-2` package inside architecture-specific,
-digest-pinned Debian Sid images and match all eighteen closed candidates. The ARM64 capture runs
+digest-pinned Debian Sid images and match all twenty closed candidates. The ARM64 capture runs
 under QEMU in hosted Linux CI; both architecture captures are retained in `results/`.
 
 Darcs boring rules control add-candidate discovery, not a membership-free filesystem ignore

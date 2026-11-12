@@ -211,14 +211,29 @@
       "note": "The POSIX alpha class remains ASCII-only under C.UTF-8 in tested Darcs profiles."
     },
     {
-      "id": "darcs.comments-and-invalid-regex",
+      "id": "darcs.invalid-regex-is-ignored",
       "dimension": "lexing",
       "setup": {
-        "local_boring": "#comment\n #space\ninvalid[\nfoo\t\n"
+        "local_boring": "invalid[\n"
       },
-      "query": null,
-      "expected_boring": null,
-      "native_status": "open-question"
+      "query": "invalid[",
+      "expected_boring": false,
+      "native_status": "captured",
+      "note": "Darcs warns about and ignores an invalid ERE, leaving a matching filename as an add candidate."
+    },
+    {
+      "id": "darcs.leading-space-pattern-matches-leading-space-name",
+      "dimension": "lexing",
+      "setup": {
+        "local_boring": " #space\n",
+        "files": {
+          " #space": "ignored by the leading-space expression\n",
+          " unignored": "remains an add candidate\n"
+        }
+      },
+      "query": " unignored",
+      "expected_boring": false,
+      "native_status": "captured"
     }
   ]
 }
