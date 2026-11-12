@@ -840,13 +840,13 @@ jobs:
           assert result["passed"], result
           assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
           assert capture["client"]["runner_python"].startswith("3.13.")
-          assert len(capture["cases"]) == 52
-          assert len(capture["excluded_cases"]) == 5
+          assert len(capture["cases"]) == 54
+          assert len(capture["excluded_cases"]) == 3
           boolean_cases = [case for case in capture["cases"] if case["candidate_matches"] is not None]
           winning_pattern_cases = [
               case for case in capture["cases"] if case["winning_pattern_matches"] is not None
           ]
-          assert len(boolean_cases) == 48
+          assert len(boolean_cases) == 50
           assert all(case["candidate_matches"] for case in boolean_cases)
           assert len(winning_pattern_cases) == 3
           assert all(case["winning_pattern_matches"] for case in winning_pattern_cases)

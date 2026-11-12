@@ -18,9 +18,9 @@ Four captured Breezy 3.3.24 profiles are committed: macOS 26 arm64 with the Home
 aarch64, Linux x86_64, and Windows Server 2025 x86_64 under Python 3.12. The original 33 boolean
 candidate cases and explicit regex/error cases are captured across all four profiles. The three
 source-precedence cases are captured across all four profiles. The Linux x86_64 and Windows
-captures contain 39 cases, with 17 profile-scoped exclusions. An additional
-Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 48 boolean candidates
-match there, and all three source-precedence probes match their expected winning patterns. Four
+captures contain 39 cases, with 18 profile-scoped exclusions. An additional
+Debian 13 x86_64 profile uses distribution Breezy 3.3.11 with Python 3.13; all 50 boolean candidates
+match there, and all three source-precedence probes match their expected winning patterns. Three
 newer or platform-scoped probes are explicitly excluded. The Unicode `\\w` and `\\d` probes remain
 scoped to Breezy 3.3.24/macOS: an exploratory 3.3.11/Linux run under `LC_ALL=C` omitted the queried
 Unicode paths from both `brz ignored` and status when those regex rules were present, so the behavior
@@ -64,7 +64,7 @@ siblings. A regex exception also opens an ignored parent in top-down and bottom-
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
 the ignored subtree hidden. The local policy is checked against all 53 boolean candidate cases on
 macOS arm64 and 36 on Linux aarch64; the other two Breezy 3.3.24 committed profiles retain 33
-checked cases. The Debian Breezy 3.3.11 profile checks 48 boolean candidates. Variable directory
+checked cases. The Debian Breezy 3.3.11 profile checks 50 boolean candidates. Variable directory
 scopes from `*`, `**`, and regex exceptions are captured on Breezy 3.3.24/macOS and 3.3.11/Debian;
 the policy walker matches the native paths in both traversal orders. A native-backed test also
 confirms that a parent walk stops at a nested Breezy tree: `brz status --short` reports the child
