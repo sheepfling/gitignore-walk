@@ -8,7 +8,9 @@ ignored directory suppresses descendants in `fossil extras`.
 Run from the repository root:
 
 ```sh
-python -m scripts.ci oracle-fossil --output /tmp/fossil-oracle.json
+python -m scripts.ci oracle-fossil \
+  --output /tmp/fossil-oracle.json \
+  --membership-output /tmp/fossil-membership.json
 ```
 
 Each case creates a disposable repository, checkout, and isolated home directory. It records the
@@ -48,9 +50,15 @@ Opt-in membership discovery uses `fossil json dir --checkin current` for the tar
 untracked, and directory targets while asserting that membership does not change ignore decisions.
 The test also checks native status entries for scheduled additions (`new`), missing files, edits
 (`edited`), and renames (`["missing", "renamed"]`), and confirms those paths remain versioned while
-an absent, unreported path stays unknown. Directory membership remains unknown. This status-shape
-capture is currently exercised by the live Fossil 2.28/macOS test; broader cross-profile status and
-traversal conformance remain open.
+an absent, unreported path stays unknown. Directory membership remains unknown. The versioned
+`results/fossil-membership-2.28-macos-arm64.json` capture preserves root and nested check-in
+inventories plus clean, scheduled-add, missing, edited, and rename status evidence. It stores each
+membership query's exit code and raw stdout/stderr as base64 so the parsed fields can be audited.
+The native CI
+runner now emits and validates a fresh transition capture alongside the ignore-glob capture; the
+Linux profile result is retained as a CI artifact. The live policy test also checks the transition
+matrix and membership-aware walker selections. Broader client-version and platform profiles remain
+open.
 Membership-aware walking keeps ignored directories traversable because they may contain versioned
 descendants. The Fossil 2.28/macOS live fixture checks that a tracked child is selected as included
 while `fossil extras` omits its ignored untracked sibling, in both traversal orders.

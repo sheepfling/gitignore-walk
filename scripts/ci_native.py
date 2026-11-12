@@ -84,6 +84,10 @@ def capture_arguments(
             arguments.append("--skip-trust")
     elif backend == "svn":
         outputs.append(directory / "svn-oracle.transitions.json")
+    elif backend == "fossil":
+        membership = directory / "fossil-membership-oracle.json"
+        arguments.extend(["--membership-output", str(membership)])
+        outputs.append(membership)
     elif backend == "compat":
         if sl != "sl":
             arguments.extend(["--sl", sl])

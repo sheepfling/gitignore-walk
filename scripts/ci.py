@@ -198,6 +198,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         default=project_root() / "tests" / "oracles" / "fossil" / "capture.local.json",
         help="path for the native observation capture",
     )
+    fossil_oracle_command.add_argument(
+        "--membership-output",
+        type=Path,
+        default=project_root() / "tests" / "oracles" / "fossil" / "capture.membership.local.json",
+        help="path for the native membership-transition capture",
+    )
 
     brz_oracle_command = commands.add_parser(
         "oracle-brz", help="capture Breezy ignore behavior in isolated working trees"
@@ -319,7 +325,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         if arguments.command == "oracle-svn-config":
             return _oracle_svn_config(arguments.output)
         if arguments.command == "oracle-fossil":
-            return _oracle_fossil(arguments.fossil, arguments.output)
+            return _oracle_fossil(arguments.fossil, arguments.output, arguments.membership_output)
         if arguments.command == "oracle-brz":
             return _oracle_brz(arguments.brz, arguments.output)
         if arguments.command == "oracle-darcs":
@@ -654,12 +660,26 @@ def _oracle_svn_config(output: Path) -> int:
     )
 
 
-def _oracle_fossil(executable: str, output: Path) -> int:
-    """Delegate Fossil behavior capture to its isolated, scheme-specific oracle runner."""
+def _oracle_fossil(executable: str, output: Path, membership_output: Path) -> int:
+    """Capture Fossil ignore behavior and membership transitions in isolated checkouts."""
     runner = project_root() / "tests" / "oracles" / "fossil" / "run.py"
-    return _run(
+    result = _run(
         [sys.executable, str(runner), "--fossil", executable, "--output", str(output)],
         label="Capture native Fossil ignore-glob observations",
+    )
+    if result != 0:
+        return result
+    membership_runner = project_root() / "tests" / "oracles" / "fossil" / "membership.py"
+    return _run(
+        [
+            sys.executable,
+            str(membership_runner),
+            "--fossil",
+            executable,
+            "--output",
+            str(membership_output),
+        ],
+        label="Capture native Fossil membership transitions",
     )
 
 

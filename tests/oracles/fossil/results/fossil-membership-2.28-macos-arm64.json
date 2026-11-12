@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "cases": [
+    {
+      "id": "fossil.membership.added.tmp",
+      "expected_status": "new",
+      "observed_status": "new",
+      "candidate_matches": true
+    },
+    {
+      "id": "fossil.membership.deleted.tmp",
+      "expected_status": "missing",
+      "observed_status": "missing",
+      "candidate_matches": true
+    },
+    {
+      "id": "fossil.membership.modified.tmp",
+      "expected_status": "edited",
+      "observed_status": "edited",
+      "candidate_matches": true
+    },
+    {
+      "id": "fossil.membership.renamed.tmp",
+      "expected_status": [
+        "missing",
+        "renamed"
+      ],
+      "observed_status": [
+        "missing",
+        "renamed"
+      ],
+      "candidate_matches": true
+    },
+    {
+      "id": "fossil.membership.root-inventory",
+      "expected_entries": [
+        "deleted.tmp",
+        "modified.tmp",
+        "moved.tmp",
+        "nested",
+        "tracked.tmp"
+      ],
+      "observed_entries": [
+        "deleted.tmp",
+        "modified.tmp",
+        "moved.tmp",
+        "nested",
+        "tracked.tmp"
+      ],
+      "candidate_matches": true
+    },
+    {
+      "id": "fossil.membership.nested-inventory",
+      "expected_entries": [
+        "versioned.txt"
+      ],
+      "observed_entries": [
+        "versioned.txt"
+      ],
+      "candidate_matches": true
+    },
+    {
+      "id": "fossil.membership.clean-status",
+      "expected_status_files": [],
+      "observed_status_files": [],
+      "candidate_matches": true
+    }
+  ],
+  "client": {
+    "fossil": "This is fossil version 2.28 [52445a27f1] 2026-03-11 11:31:46 UTC",
+    "executable": "/opt/homebrew/bin/fossil",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "runner_python": "3.12.16"
+  },
+  "commands": {
+    "inventory": [
+      "fossil json dir --checkin current --name /",
+      "fossil json dir --checkin current --name nested"
+    ],
+    "status": "fossil json status"
+  },
+  "native_results": {
+    "root_inventory": {
+      "exit_code": 0,
+      "stdout_base64": "ewoJImZvc3NpbCI6IjUyNDQ1YTI3ZjExNjYwM2Q3ODRhZDc1M2M2YWNkNDk0ZTBiMDJhZWFmODUwMmVlMGZlZTBhYTMwMDMwZjRjNGUiLAoJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMiwKCSJjb21tYW5kIjoiZGlyIiwKCSJwcm9jVGltZVVzIjo2ODYsCgkicHJvY1RpbWVNcyI6MCwKCSJwYXlsb2FkIjp7CgkJIm5hbWUiOiIvIiwKCQkiY2hlY2tpbiI6IjdkMGJmNzUwMTQ1Y2RjNjI5YzNiMDhmZjhiM2M1M2JjYmQ5NTM4MGVmZmUzNThkM2EwNjU0YzdjMzc4MWQzMmQiLAoJCSJlbnRyaWVzIjpbCgkJCXsKCQkJCSJpc0RpciI6dHJ1ZSwKCQkJCSJuYW1lIjoibmVzdGVkIgoJCQl9LAoJCQl7CgkJCQkibmFtZSI6ImRlbGV0ZWQudG1wIiwKCQkJCSJ1dWlkIjoiODY3MjM0YzUyM2E2NmQ5NTVjMjM4NGE0NWU1Zjc5ZGI3OTY1OWMzYjU5OGZkMmIyMjg5OGQ0MzZiZGZmMzMzNCIsCgkJCQkic2l6ZSI6MTYsCgkJCQkidGltZXN0YW1wIjoxNzk0NDQzMzEyLAoJCQkJImRvd25sb2FkUGF0aCI6Ii9yYXcvZGVsZXRlZC50bXA/bmFtZT04NjcyMzRjNTIzYTY2ZDk1NWMyMzg0YTQ1ZTVmNzlkYjc5NjU5YzNiNTk4ZmQyYjIyODk4ZDQzNmJkZmYzMzM0IgoJCQl9LAoJCQl7CgkJCQkibmFtZSI6Im1vZGlmaWVkLnRtcCIsCgkJCQkidXVpZCI6ImZjN2IyOWRkOTRlOGZiZmU5NmY3MjJjMWNiMjJjMzg4ODYxY2ViOTExZDhiODQzYTBlNWQ4NDgxMGU2NDJhZGMiLAoJCQkJInNpemUiOjEyLAoJCQkJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMiwKCQkJCSJkb3dubG9hZFBhdGgiOiIvcmF3L21vZGlmaWVkLnRtcD9uYW1lPWZjN2IyOWRkOTRlOGZiZmU5NmY3MjJjMWNiMjJjMzg4ODYxY2ViOTExZDhiODQzYTBlNWQ4NDgxMGU2NDJhZGMiCgkJCX0sCgkJCXsKCQkJCSJuYW1lIjoibW92ZWQudG1wIiwKCQkJCSJ1dWlkIjoiOWExNGQzMzVmMjI3MTU3NDNlOTZkZGI4YzZhZTdkNjIwZmJkMTJkOGE0OWMyZmUyODgzZTIzODdkOGUwZWFiMyIsCgkJCQkic2l6ZSI6MTYsCgkJCQkidGltZXN0YW1wIjoxNzk0NDQzMzEyLAoJCQkJImRvd25sb2FkUGF0aCI6Ii9yYXcvbW92ZWQudG1wP25hbWU9OWExNGQzMzVmMjI3MTU3NDNlOTZkZGI4YzZhZTdkNjIwZmJkMTJkOGE0OWMyZmUyODgzZTIzODdkOGUwZWFiMyIKCQkJfSwKCQkJewoJCQkJIm5hbWUiOiJ0cmFja2VkLnRtcCIsCgkJCQkidXVpZCI6IjNmZmYzMGE0ZmUxYjk3YjljNjExYzVhZTgxODJjMWRkZjNlOTMxYjI2OTZhNTNkMDZkNjMwMmJkNzJhYWQwYWUiLAoJCQkJInNpemUiOjIzLAoJCQkJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMiwKCQkJCSJkb3dubG9hZFBhdGgiOiIvcmF3L3RyYWNrZWQudG1wP25hbWU9M2ZmZjMwYTRmZTFiOTdiOWM2MTFjNWFlODE4MmMxZGRmM2U5MzFiMjY5NmE1M2QwNmQ2MzAyYmQ3MmFhZDBhZSIKCQkJfQoJCV0KCX0KfQo=",
+      "stderr_base64": ""
+    },
+    "nested_inventory": {
+      "exit_code": 0,
+      "stdout_base64": "ewoJImZvc3NpbCI6IjUyNDQ1YTI3ZjExNjYwM2Q3ODRhZDc1M2M2YWNkNDk0ZTBiMDJhZWFmODUwMmVlMGZlZTBhYTMwMDMwZjRjNGUiLAoJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMiwKCSJjb21tYW5kIjoiZGlyIiwKCSJwcm9jVGltZVVzIjo2NDEsCgkicHJvY1RpbWVNcyI6MCwKCSJwYXlsb2FkIjp7CgkJIm5hbWUiOiJuZXN0ZWQiLAoJCSJjaGVja2luIjoiN2QwYmY3NTAxNDVjZGM2MjljM2IwOGZmOGIzYzUzYmNiZDk1MzgwZWZmZTM1OGQzYTA2NTRjN2MzNzgxZDMyZCIsCgkJImVudHJpZXMiOlt7CgkJCQkibmFtZSI6InZlcnNpb25lZC50eHQiLAoJCQkJInV1aWQiOiIwNmQyMDRlZmVkYjkwYTk2YTg1NDc3N2UzMGNiZDNkZmQxZWM0NTExYTMyNWY2Mzk1MjkyNTE1ZmFkNTYyYjI2IiwKCQkJCSJzaXplIjoyMCwKCQkJCSJ0aW1lc3RhbXAiOjE3OTQ0NDMzMTIsCgkJCQkiZG93bmxvYWRQYXRoIjoiL3Jhdy9uZXN0ZWQvdmVyc2lvbmVkLnR4dD9uYW1lPTA2ZDIwNGVmZWRiOTBhOTZhODU0Nzc3ZTMwY2JkM2RmZDFlYzQ1MTFhMzI1ZjYzOTUyOTI1MTVmYWQ1NjJiMjYiCgkJCX1dCgl9Cn0K",
+      "stderr_base64": ""
+    },
+    "clean_status": {
+      "exit_code": 0,
+      "stdout_base64": "ewoJImZvc3NpbCI6IjUyNDQ1YTI3ZjExNjYwM2Q3ODRhZDc1M2M2YWNkNDk0ZTBiMDJhZWFmODUwMmVlMGZlZTBhYTMwMDMwZjRjNGUiLAoJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMiwKCSJjb21tYW5kIjoic3RhdHVzIiwKCSJwcm9jVGltZVVzIjo2MTYsCgkicHJvY1RpbWVNcyI6MCwKCSJwYXlsb2FkIjp7CgkJInJlcG9zaXRvcnkiOiIvcHJpdmF0ZS92YXIvZm9sZGVycy84ay9kbmtqeGYzeDN0djNmNHI1MzBkcnh4N2MwMDAwZ24vVC9naXRpZ25vcmUtd2Fsay1mb3NzaWwtbWVtYmVyc2hpcC0weHpweWJwcy9yZXBvc2l0b3J5LmZvc3NpbCIsCgkJImxvY2FsUm9vdCI6Ii9wcml2YXRlL3Zhci9mb2xkZXJzLzhrL2Rua2p4ZjN4M3R2M2Y0cjUzMGRyeHg3YzAwMDBnbi9UL2dpdGlnbm9yZS13YWxrLWZvc3NpbC1tZW1iZXJzaGlwLTB4enB5YnBzL2NoZWNrb3V0LyIsCgkJImNoZWNrb3V0Ijp7CgkJCSJ1dWlkIjoiN2QwYmY3NTAxNDVjZGM2MjljM2IwOGZmOGIzYzUzYmNiZDk1MzgwZWZmZTM1OGQzYTA2NTRjN2MzNzgxZDMyZCIsCgkJCSJ0YWdzIjpbInRydW5rIl0sCgkJCSJkYXRldGltZSI6IjIwMjYtMTEtMTIgMDA6Mjg6MzIgVVRDIiwKCQkJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMgoJCX0sCgkJImZpbGVzIjpbXSwKCQkiZXJyb3JDb3VudCI6MAoJfQp9Cg==",
+      "stderr_base64": ""
+    },
+    "transition_status": {
+      "exit_code": 0,
+      "stdout_base64": "ewoJImZvc3NpbCI6IjUyNDQ1YTI3ZjExNjYwM2Q3ODRhZDc1M2M2YWNkNDk0ZTBiMDJhZWFmODUwMmVlMGZlZTBhYTMwMDMwZjRjNGUiLAoJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMiwKCSJjb21tYW5kIjoic3RhdHVzIiwKCSJwcm9jVGltZVVzIjo4NzAsCgkicHJvY1RpbWVNcyI6MCwKCSJwYXlsb2FkIjp7CgkJInJlcG9zaXRvcnkiOiIvcHJpdmF0ZS92YXIvZm9sZGVycy84ay9kbmtqeGYzeDN0djNmNHI1MzBkcnh4N2MwMDAwZ24vVC9naXRpZ25vcmUtd2Fsay1mb3NzaWwtbWVtYmVyc2hpcC0weHpweWJwcy9yZXBvc2l0b3J5LmZvc3NpbCIsCgkJImxvY2FsUm9vdCI6Ii9wcml2YXRlL3Zhci9mb2xkZXJzLzhrL2Rua2p4ZjN4M3R2M2Y0cjUzMGRyeHg3YzAwMDBnbi9UL2dpdGlnbm9yZS13YWxrLWZvc3NpbC1tZW1iZXJzaGlwLTB4enB5YnBzL2NoZWNrb3V0LyIsCgkJImNoZWNrb3V0Ijp7CgkJCSJ1dWlkIjoiN2QwYmY3NTAxNDVjZGM2MjljM2IwOGZmOGIzYzUzYmNiZDk1MzgwZWZmZTM1OGQzYTA2NTRjN2MzNzgxZDMyZCIsCgkJCSJ0YWdzIjpbInRydW5rIl0sCgkJCSJkYXRldGltZSI6IjIwMjYtMTEtMTIgMDA6Mjg6MzIgVVRDIiwKCQkJInRpbWVzdGFtcCI6MTc5NDQ0MzMxMgoJCX0sCgkJImZpbGVzIjpbCgkJCXsKCQkJCSJuYW1lIjoiYWRkZWQudG1wIiwKCQkJCSJzdGF0dXMiOiJuZXciCgkJCX0sCgkJCXsKCQkJCSJuYW1lIjoiZGVsZXRlZC50bXAiLAoJCQkJInN0YXR1cyI6Im1pc3NpbmciCgkJCX0sCgkJCXsKCQkJCSJuYW1lIjoibW9kaWZpZWQudG1wIiwKCQkJCSJzdGF0dXMiOiJlZGl0ZWQiCgkJCX0sCgkJCXsKCQkJCSJzdGF0dXMiOlsKCQkJCQkibWlzc2luZyIsCgkJCQkJInJlbmFtZWQiCgkJCQldLAoJCQkJInByaW9yTmFtZSI6Im1vdmVkLnRtcCIsCgkJCQkibmFtZSI6InJlbmFtZWQudG1wIgoJCQl9CgkJXSwKCQkiZXJyb3JDb3VudCI6MgoJfQp9Cg==",
+      "stderr_base64": ""
+    }
+  },
+  "inventory": {
+    "root_entries": [
+      "deleted.tmp",
+      "modified.tmp",
+      "moved.tmp",
+      "nested",
+      "tracked.tmp"
+    ],
+    "nested_entries": [
+      "versioned.txt"
+    ]
+  },
+  "before_transitions": {
+    "status_files": []
+  },
+  "after_transitions": {
+    "status_files": [
+      {
+        "name": "added.tmp",
+        "status": "new"
+      },
+      {
+        "name": "deleted.tmp",
+        "status": "missing"
+      },
+      {
+        "name": "modified.tmp",
+        "status": "edited"
+      },
+      {
+        "status": [
+          "missing",
+          "renamed"
+        ],
+        "priorName": "moved.tmp",
+        "name": "renamed.tmp"
+      }
+    ],
+    "status_by_name": {
+      "added.tmp": "new",
+      "deleted.tmp": "missing",
+      "modified.tmp": "edited",
+      "renamed.tmp": [
+        "missing",
+        "renamed"
+      ]
+    }
+  }
+}

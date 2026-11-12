@@ -304,7 +304,8 @@ platform/client coverage remain open. Membership-aware walks keep scheduled addi
 renames, and missing tracked paths separate from ignored unversioned files in both top-down and
 bottom-up traversal. The default Fossil config also keeps `.fslckout` and `_FOSSIL_` out of included
 results; pass `initial_excludes=()` to replace that baseline when the checkout marker should be
-yielded. See
+yielded. The committed membership-transition capture records Fossil 2.28/macOS arm64; the same live
+policy test also runs in the Ubuntu native-client job. See
 the [Fossil glob documentation](https://fossil-scm.org/home/doc/trunk/www/globs.md) and
 [oracle notes](tests/oracles/fossil/README.md).
 

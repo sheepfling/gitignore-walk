@@ -153,7 +153,11 @@ traversal orders. Fossil selection now
 retains its metadata-marker baseline by default, with explicit `initial_excludes` replacement. A
 Fossil 2.28/macOS native comparison also confirms parent walks stop at a nested checkout opened
 with `fossil open --nested`, in both top-down and bottom-up traversal. Cross-profile status and
-broader traversal coverage remain open.
+broader traversal coverage remain open. A new isolated Fossil membership capture records current
+root/nested check-in inventory plus scheduled-add, missing, edited, and rename status records on
+Fossil 2.28/macOS arm64. Native Linux CI now emits and validates its own profile capture, and the
+live policy/walker transition fixture runs with the native Linux job. The committed transition
+artifact currently covers only macOS; keep broader client-version and platform profiles open.
 Breezy's corpus is now
 captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64 with
 isolated user configuration: all thirty-three boolean cases agree, including global-versus-branch

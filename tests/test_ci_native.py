@@ -146,6 +146,19 @@ def test_svn_captures_rule_cases_and_status_transitions(tmp_path: Path) -> None:
     ]
 
 
+def test_fossil_captures_ignore_cases_and_membership_transitions(tmp_path: Path) -> None:
+    arguments, paths = ci_native.capture_arguments("fossil", tmp_path)
+    membership = tmp_path / "fossil-membership-oracle.json"
+    assert arguments == [
+        "oracle-fossil",
+        "--output",
+        str(tmp_path / "fossil-oracle.json"),
+        "--membership-output",
+        str(membership),
+    ]
+    assert paths == [tmp_path / "fossil-oracle.json", membership]
+
+
 def test_compat_backend_uses_existing_scheme_specific_capture(tmp_path: Path) -> None:
     arguments, paths = ci_native.capture_arguments("compat", tmp_path)
     assert arguments == ["oracle-compat", "--output", str(tmp_path / "compat-oracle.json")]
@@ -239,6 +252,11 @@ def test_native_continues_after_failure_and_uses_fresh_captures(
         path = Path(command[command.index("--output") + 1])
         if command[3] == "oracle-fossil":
             write_capture(path)
+            membership_path = Path(command[command.index("--membership-output") + 1])
+            write_capture(
+                membership_path,
+                cases=[{"id": "membership", "candidate_matches": True}],
+            )
         return subprocess.CompletedProcess(command, 0)
 
     monkeypatch.setattr(ci_native.subprocess, "run", run)

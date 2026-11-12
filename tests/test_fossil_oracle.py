@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 import subprocess
@@ -26,6 +27,11 @@ CAPTURES: dict[str, dict[str, Any]] = {
     name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
     for name in CAPTURE_FILES
 }
+MEMBERSHIP_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / "fossil-membership-2.28-macos-arm64.json").read_text(
+        encoding="utf-8"
+    )
+)
 TOKENIZER_CASES = tuple(case for case in CASES if "probes" in case["setup"])
 TOKENIZER_PROBES = tuple(
     (case, probe) for case in TOKENIZER_CASES for probe in case["setup"]["probes"]
@@ -201,6 +207,50 @@ def test_fossil_captured_profiles_agree() -> None:
         )
 
     assert observations[0] == observations[1]
+
+
+def test_fossil_membership_transition_capture_is_complete() -> None:
+    """Retain exact native inventory and status evidence for membership transitions."""
+    assert MEMBERSHIP_CAPTURE["schema_version"] == 1
+    assert MEMBERSHIP_CAPTURE["status"] == "captured"
+    assert MEMBERSHIP_CAPTURE["client"]["fossil"].startswith("This is fossil version 2.28 ")
+    assert MEMBERSHIP_CAPTURE["client"]["platform"].startswith("macOS-")
+    assert MEMBERSHIP_CAPTURE["inventory"] == {
+        "root_entries": ["deleted.tmp", "modified.tmp", "moved.tmp", "nested", "tracked.tmp"],
+        "nested_entries": ["versioned.txt"],
+    }
+    assert MEMBERSHIP_CAPTURE["before_transitions"]["status_files"] == []
+    assert MEMBERSHIP_CAPTURE["after_transitions"]["status_by_name"] == {
+        "added.tmp": "new",
+        "deleted.tmp": "missing",
+        "modified.tmp": "edited",
+        "renamed.tmp": ["missing", "renamed"],
+    }
+    assert {case["id"] for case in MEMBERSHIP_CAPTURE["cases"]} == {
+        "fossil.membership.added.tmp",
+        "fossil.membership.clean-status",
+        "fossil.membership.deleted.tmp",
+        "fossil.membership.modified.tmp",
+        "fossil.membership.nested-inventory",
+        "fossil.membership.renamed.tmp",
+        "fossil.membership.root-inventory",
+    }
+    assert all(case["candidate_matches"] for case in MEMBERSHIP_CAPTURE["cases"])
+    raw_results = MEMBERSHIP_CAPTURE["native_results"]
+    assert all(result["exit_code"] == 0 for result in raw_results.values())
+    root_payload = json.loads(base64.b64decode(raw_results["root_inventory"]["stdout_base64"]))[
+        "payload"
+    ]
+    status_payload = json.loads(
+        base64.b64decode(raw_results["transition_status"]["stdout_base64"])
+    )["payload"]
+    assert (
+        sorted(entry["name"] for entry in root_payload["entries"])
+        == MEMBERSHIP_CAPTURE["inventory"]["root_entries"]
+    )
+    assert {item["name"]: item["status"] for item in status_payload["files"]} == MEMBERSHIP_CAPTURE[
+        "after_transitions"
+    ]["status_by_name"]
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
