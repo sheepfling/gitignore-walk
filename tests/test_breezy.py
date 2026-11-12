@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -20,7 +21,12 @@ from gitignore_walk import (
     select_policy,
 )
 from gitignore_walk._schemes.breezy import policy as breezy_policy_module
-from gitignore_walk._schemes.breezy.policy import _compile_rule, _glob_to_regex
+from gitignore_walk._schemes.breezy.policy import (
+    _compile_python_regex,
+    _compile_rule,
+    _glob_to_regex,
+    _parse_client_python_version,
+)
 
 ORACLE_ROOT = Path(__file__).parent / "oracles" / "breezy"
 ORACLE_CASES: list[dict[str, Any]] = json.loads(
@@ -297,6 +303,46 @@ def test_breezy_regex_matches_complete_path_and_normalizes_strong_source() -> No
     assert not strong_escaped.matches("cache/drop.tmp")
 
 
+def test_breezy_regex_uses_the_client_python_escape_version() -> None:
+    assert _parse_client_python_version(
+        "Breezy (brz) 3.3.24\n  Python interpreter: /opt/brz 3.15.2\n"
+    ) == (3, 15)
+    assert _parse_client_python_version("Breezy (brz) 3.3.24\n") is None
+
+    native_newer = _compile_python_regex(
+        r"^foo\z$", native_python_version=(3, 15), local_python_version=(3, 12)
+    )
+    escaped_literal = _compile_python_regex(
+        r"^foo\\z$", native_python_version=(3, 15), local_python_version=(3, 12)
+    )
+    assert native_newer.fullmatch("foo")
+    assert escaped_literal.fullmatch("foo\\z")
+
+    with pytest.raises(re.error, match=r"bad escape \\z"):
+        _compile_python_regex(
+            r"^foo\z$", native_python_version=(3, 13), local_python_version=(3, 15)
+        )
+
+
+@pytest.mark.skipif(shutil.which("brz") is None, reason="Breezy is not installed")
+def test_breezy_policy_matches_native_python_regex_runtime(tmp_path: Path) -> None:
+    (tmp_path / ".bzr").mkdir()
+    (tmp_path / ".bzrignore").write_text("RE:^foo\\z\n", encoding="utf-8")
+    version = subprocess.run(
+        ["brz", "--version"], capture_output=True, check=True, text=True
+    ).stdout
+    native_python = _parse_client_python_version(version)
+    assert native_python is not None
+
+    if native_python >= (3, 14):
+        policy = BreezyIgnorePolicy(tmp_path)
+        assert policy._client_python_version == native_python
+        assert policy.explain("foo").ignored
+    else:
+        with pytest.raises(BreezyIgnoreError, match="Invalid Breezy pattern"):
+            BreezyIgnorePolicy(tmp_path)
+
+
 def test_breezy_rejects_global_inline_regex_flags(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -496,6 +542,12 @@ def test_breezy_policy_matches_captured_candidate(
 ) -> None:
     """Compare local policy decisions to the versioned Breezy candidate corpus."""
     monkeypatch.setattr(BreezyIgnorePolicy, "_load_default_patterns", lambda self: DEFAULT_RULES)
+    if case["id"] == "brz.regex-python-z-anchor":
+        monkeypatch.setattr(
+            BreezyIgnorePolicy,
+            "_load_client_python_version",
+            lambda self: (3, 15),
+        )
     root = tmp_path / "checkout"
     root.mkdir()
     (root / ".bzr").mkdir()

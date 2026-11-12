@@ -9,7 +9,11 @@ from typing import Any
 import pytest
 
 from gitignore_walk import BreezyIgnorePolicy, IgnoreWalker
-from tests.oracles.breezy.run import _capture_profile_name, _select_cases_for_profile
+from tests.oracles.breezy.run import (
+    _capture_profile_name,
+    _client_python_version,
+    _select_cases_for_profile,
+)
 from tests.oracles.breezy.source_precedence import (
     SOURCE_PRECEDENCE_CASES,
     _cases_for_profile,
@@ -96,6 +100,23 @@ def test_breezy_capture_only_runs_cases_declared_for_the_current_profile() -> No
             "current_profile": "brz-3.3.24-windows-x86_64-py312.json",
         }
     ]
+
+
+def test_breezy_capture_only_runs_cases_for_supported_client_python() -> None:
+    cases = [{"id": "new-regex", "capture_python_minimum": [3, 14]}]
+    selected, excluded = _select_cases_for_profile(cases, "macos", (3, 13))
+
+    assert selected == []
+    assert excluded == [
+        {
+            "id": "new-regex",
+            "required_python_minimum": [3, 14],
+            "current_python": [3, 13],
+        }
+    ]
+    assert _client_python_version(
+        "Breezy (brz) 3.3.24\n  Python interpreter: /opt/brz 3.15.2\n"
+    ) == (3, 15)
 
 
 def test_breezy_source_precedence_profile_enables_only_three_scoped_cases() -> None:
@@ -189,15 +210,28 @@ def test_breezy_debian13_profile_records_exact_client_and_python() -> None:
     assert capture["client"]["brz"]["version"] == "Breezy (brz) 3.3.11"
     assert capture["client"]["runner_python"].startswith("3.13.")
     assert len(capture["cases"]) == 52
-    assert len(capture["excluded_cases"]) == 4
+    assert len(capture["excluded_cases"]) == 5
     assert sum(case["candidate_matches"] is not None for case in capture["cases"]) == 48
     assert sum(case["winning_pattern_matches"] is not None for case in capture["cases"]) == 3
+
+
+def test_breezy_macos_z_anchor_capture_records_client_python_runtime() -> None:
+    capture = CAPTURES["brz-3.3.24-macos-arm64.json"]
+    observation = next(
+        case for case in capture["cases"] if case["id"] == "brz.regex-python-z-anchor"
+    )
+
+    assert capture["client"]["brz"]["python_interpreter"].endswith("3.15.2")
+    assert observation["observed_ignored"] is True
+    assert observation["candidate_matches"] is True
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)
 def test_breezy_captures_record_exact_profile_exclusions(profile: str) -> None:
     capture = CAPTURES[profile]
-    selected, excluded = _select_cases_for_profile(CASES, profile)
+    recorded_version = capture["client"]["brz"].get("python_version")
+    python_version = tuple(recorded_version) if recorded_version else None
+    selected, excluded = _select_cases_for_profile(CASES, profile, python_version)
 
     assert {case["id"] for case in capture["cases"]} == {case["id"] for case in selected}
     assert capture["excluded_cases"] == excluded

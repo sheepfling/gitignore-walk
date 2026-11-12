@@ -47,6 +47,12 @@ match the full path: `!!cache/private` does not match a deeper file, while
 `!!cache/private/**` does. `BRZ_HOME/breezy/ignore` is recognized as a global-ignore source. The
 default-rule listing is captured separately in each result. Named capture groups are rewritten to
 non-capturing groups with a warning; a native query confirms the normalized pattern still matches.
+The macOS arm64 capture also records Breezy's embedded Python 3.15.2 runtime and confirms that
+`RE:^foo\z` matches `foo`. `\z` became a Python `re` end anchor in Python 3.14, so this case is
+restricted to client runtimes 3.14 and newer. The policy reads the runtime from `brz --version` only
+when a rule uses this anchor, maps it to the equivalent `\Z` when the local interpreter is older,
+and rejects it when the native client runtime predates 3.14. Other version-sensitive regex syntax is
+not yet normalized or classified.
 Anchored path regexes, negative lookahead, and scoped inline flags match and reject captured paths as
 expected. Malformed RE patterns
 fail `ignored` and `status` with exit code 3. The published global inline flag example
@@ -56,7 +62,7 @@ policy walker matches
 captured status unknown/ignored paths when an exception opens an ignored parent and exposes its
 siblings. A regex exception also opens an ignored parent in top-down and bottom-up walks: its target
 appears as unknown while sibling files remain ignored. Without that exception, native status keeps
-the ignored subtree hidden. The local policy is checked against all 52 boolean candidate cases on
+the ignored subtree hidden. The local policy is checked against all 53 boolean candidate cases on
 macOS arm64 and 36 on Linux aarch64; the other two Breezy 3.3.24 committed profiles retain 33
 checked cases. The Debian Breezy 3.3.11 profile checks 48 boolean candidates. Variable directory
 scopes from `*`, `**`, and regex exceptions are captured on Breezy 3.3.24/macOS and 3.3.11/Debian;

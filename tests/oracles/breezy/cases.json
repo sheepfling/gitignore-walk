@@ -369,6 +369,32 @@
       "release_gate": "Captured against Breezy 3.3.24 on macOS arm64, Linux aarch64/x86_64, and Windows Server 2025 x86_64; see results."
     },
     {
+      "id": "brz.regex-python-z-anchor",
+      "profile": "breezy",
+      "dimension": "regex-runtime-version",
+      "setup": {
+        "patterns": [
+          "RE:^foo\\z"
+        ]
+      },
+      "query": "foo",
+      "expected_candidate": true,
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "capture_profiles": [
+        "brz-3.3.24-macos-arm64.json"
+      ],
+      "capture_python_minimum": [
+        3,
+        14
+      ],
+      "source_ids": [
+        "BRZ-PATTERNS",
+        "PY-RE-314"
+      ],
+      "release_gate": "Capture Breezy 3.3.24 with its embedded Python 3.15 runtime; compare the Python-version-sensitive end anchor against the portable evaluator."
+    },
+    {
       "id": "brz.regex-invalid-pattern",
       "profile": "breezy",
       "dimension": "regex",

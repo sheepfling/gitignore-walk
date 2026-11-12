@@ -10,6 +10,7 @@ import os
 import re
 import stat
 import subprocess
+import sys
 import tempfile
 from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
@@ -31,6 +32,9 @@ _WORKSPACE_MARKER = ".bzr"
 _NAMED_CAPTURE = re.compile(r"\(\?P<([A-Za-z_][A-Za-z0-9_]*)>")
 _GLOBAL_INLINE_FLAGS = re.compile(r"(?<!\\)(?:\\\\)*\(\?[aiLmsux]+\)")
 _SEPARATOR_RUN = re.compile(r"[\\/]+")
+_PYTHON_INTERPRETER_VERSION = re.compile(
+    r"^\s*Python interpreter: .*\s(\d+)\.(\d+)\.\d+\s*$", re.MULTILINE
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -167,6 +171,8 @@ class BreezyIgnorePolicy(IgnorePolicy):
             item.replace("\\", "/").strip("/") for item in initial_excludes
         )
         self.workspace_root = _find_workspace_root(self.root)
+        self._client_python_version: tuple[int, int] | None = None
+        self._client_python_version_loaded = False
         self._default_patterns = self._load_default_patterns()
         self._load_snapshot()
 
@@ -274,18 +280,81 @@ class BreezyIgnorePolicy(IgnorePolicy):
             )
         return tuple(result.stdout.decode("utf-8", errors="strict").splitlines())
 
+    def _load_client_python_version(self) -> tuple[int, int]:
+        """Read the Python runtime used by Breezy for version-sensitive regex syntax."""
+        with tempfile.TemporaryDirectory(prefix="gitignore-walk-brz-version-") as temporary:
+            home = Path(temporary)
+            environment = {
+                "HOME": str(home),
+                "USERPROFILE": str(home),
+                "XDG_CONFIG_HOME": str(home / ".config"),
+                "BRZ_HOME": str(home / "brz-home"),
+                "BRZ_PLUGIN_PATH": "",
+                "PATH": os.pathsep.join(os.get_exec_path(self._environment)),
+                "LC_ALL": "C",
+                "LANG": "C",
+                "TZ": "UTC",
+            }
+            try:
+                result = self._run_brz(("--version",), environment, cwd=self.workspace_root)
+            except BreezyIgnoreError as error:
+                raise BreezyIgnoreError(
+                    "Unable to determine Breezy's Python runtime for a version-specific regex.",
+                    operation="client-version",
+                ) from error
+        if result.returncode != 0:
+            detail = result.stderr.decode("utf-8", errors="replace").strip()
+            raise BreezyIgnoreError(
+                f"Unable to determine Breezy's Python runtime: {detail}",
+                operation="client-version",
+            )
+        version_text = result.stdout.decode("utf-8", errors="replace")
+        if version := _parse_client_python_version(version_text):
+            return version
+        raise BreezyIgnoreError(
+            "Breezy did not report its Python runtime for a version-specific regex.",
+            operation="client-version",
+        )
+
     def _load_snapshot(self) -> _BreezySnapshot:
         """Load current global and checkout rules around the cached native defaults."""
         rules: list[_BreezyRule] = []
         global_path = self._global_ignore_path()
-        if global_path.is_file():
-            rules.extend(_load_rule_file(global_path))
-        for line_number, pattern in enumerate(self._default_patterns, start=1):
-            if rule := _compile_rule(pattern, source="Breezy built-in defaults", line=line_number):
-                rules.append(rule)
         local_path = self.workspace_root / ".bzrignore"
-        if local_path.is_file():
-            rules.extend(_load_rule_file(local_path))
+        global_patterns = _read_rule_file_patterns(global_path) if global_path.is_file() else []
+        local_patterns = _read_rule_file_patterns(local_path) if local_path.is_file() else []
+        native_python_version = None
+        version_sensitive_patterns = [pattern for _, pattern in (*global_patterns, *local_patterns)]
+        version_sensitive_patterns.extend(self._default_patterns)
+        if any(_uses_python_314_z_anchor(pattern) for pattern in version_sensitive_patterns):
+            if not self._client_python_version_loaded:
+                self._client_python_version = self._load_client_python_version()
+                self._client_python_version_loaded = True
+            native_python_version = self._client_python_version
+        if global_patterns:
+            rules.extend(
+                _compile_rule_records(
+                    global_path,
+                    global_patterns,
+                    native_python_version=native_python_version,
+                )
+            )
+        for line_number, pattern in enumerate(self._default_patterns, start=1):
+            if rule := _compile_rule(
+                pattern,
+                source="Breezy built-in defaults",
+                line=line_number,
+                native_python_version=native_python_version,
+            ):
+                rules.append(rule)
+        if local_patterns:
+            rules.extend(
+                _compile_rule_records(
+                    local_path,
+                    local_patterns,
+                    native_python_version=native_python_version,
+                )
+            )
         return _BreezySnapshot(tuple(rules))
 
     def _load_membership(self) -> frozenset[str]:
@@ -509,8 +578,8 @@ def _find_workspace_root(root: Path) -> Path:
     raise ValueError(f"no Breezy working tree found at or above policy root: {root}")
 
 
-def _load_rule_file(path: Path) -> list[_BreezyRule]:
-    """Read one UTF-8 Breezy ignore source while preserving spaces in pattern records."""
+def _read_rule_file_patterns(path: Path) -> list[tuple[int, str]]:
+    """Read non-comment ignore records with their source line numbers."""
     try:
         contents = path.read_text(encoding="utf-8")
     except (OSError, UnicodeError) as error:
@@ -519,16 +588,49 @@ def _load_rule_file(path: Path) -> list[_BreezyRule]:
             operation="read",
             source=str(path),
         ) from error
+    return [
+        (line_number, pattern)
+        for line_number, pattern in enumerate(contents.splitlines(), start=1)
+        if pattern and not pattern.startswith("#")
+    ]
+
+
+def _compile_rule_records(
+    path: Path,
+    patterns: Sequence[tuple[int, str]],
+    *,
+    native_python_version: tuple[int, int] | None = None,
+) -> list[_BreezyRule]:
+    """Compile source records while retaining their line numbers and provenance."""
     rules: list[_BreezyRule] = []
-    for line_number, pattern in enumerate(contents.splitlines(), start=1):
-        if not pattern or pattern.startswith("#"):
-            continue
-        if rule := _compile_rule(pattern, source=str(path), line=line_number):
+    for line_number, pattern in patterns:
+        if rule := _compile_rule(
+            pattern,
+            source=str(path),
+            line=line_number,
+            native_python_version=native_python_version,
+        ):
             rules.append(rule)
     return rules
 
 
-def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None:
+def _uses_python_314_z_anchor(pattern: str) -> bool:
+    """Return whether a Breezy RE rule uses Python 3.14's ``\\z`` anchor."""
+    body = pattern
+    if body.startswith("!!"):
+        body = body[2:]
+    elif body.startswith("!"):
+        body = body[1:]
+    return body.startswith("RE:") and _has_unescaped_z_anchor(body[3:])
+
+
+def _compile_rule(
+    pattern: str,
+    *,
+    source: str,
+    line: int,
+    native_python_version: tuple[int, int] | None = None,
+) -> _BreezyRule | None:
     """Apply Breezy normalization, compile one rule, and classify its priority."""
     original_pattern = pattern
     # Match Breezy 3.3.24's normalize_pattern order: !!RE is not exempted before
@@ -560,8 +662,13 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
         )
         if scope_text and "/" in scope_text:
             try:
-                exception_scope = re.compile(
-                    f"({scope_text})$" if regex else _glob_to_regex(scope_text)
+                exception_scope = (
+                    _compile_python_regex(
+                        f"({scope_text})$",
+                        native_python_version=native_python_version,
+                    )
+                    if regex
+                    else re.compile(_glob_to_regex(scope_text))
                 )
             except re.error:
                 # A valid file rule can have an incomplete regex before its final slash. Leave
@@ -585,7 +692,10 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
             # Breezy wraps regular expressions in a capturing group before
             # compiling them. Keep that wrapper: numeric backreferences are
             # numbered relative to it, including its open group.
-            expression = re.compile(f"({expression_text})$")
+            expression = _compile_python_regex(
+                f"({expression_text})$",
+                native_python_version=native_python_version,
+            )
         else:
             expression = re.compile(_glob_to_regex(expression_text))
     except re.error as error:
@@ -606,6 +716,69 @@ def _compile_rule(pattern: str, *, source: str, line: int) -> _BreezyRule | None
         exception_scope=exception_scope,
         diagnostic=diagnostic,
     )
+
+
+def _compile_python_regex(
+    expression: str,
+    *,
+    native_python_version: tuple[int, int] | None,
+    local_python_version: tuple[int, int] | None = None,
+) -> re.Pattern[str]:
+    """Compile regex syntax with the escape support of Breezy's Python runtime."""
+    native_version = native_python_version or sys.version_info[:2]
+    local_version = local_python_version or sys.version_info[:2]
+    if native_version >= (3, 14) and local_version < (3, 14):
+        expression = _replace_unescaped_z_anchor(expression)
+    elif (
+        native_version < (3, 14)
+        and local_version >= (3, 14)
+        and _has_unescaped_z_anchor(expression)
+    ):
+        raise re.error("bad escape \\z")
+    return re.compile(expression)
+
+
+def _parse_client_python_version(version_output: str) -> tuple[int, int] | None:
+    """Extract Breezy's embedded Python version from ``brz --version`` output."""
+    match = _PYTHON_INTERPRETER_VERSION.search(version_output)
+    if match is None:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
+def _has_unescaped_z_anchor(expression: str) -> bool:
+    """Return whether ``expression`` contains Python 3.14's unescaped ``\\z`` anchor."""
+    index = 0
+    while index < len(expression):
+        if expression[index] != chr(92):
+            index += 1
+            continue
+        start = index
+        while index < len(expression) and expression[index] == chr(92):
+            index += 1
+        if index < len(expression) and expression[index] == "z" and (index - start) % 2:
+            return True
+    return False
+
+
+def _replace_unescaped_z_anchor(expression: str) -> str:
+    """Replace only active ``\\z`` anchors, preserving escaped literal backslashes."""
+    output: list[str] = []
+    index = 0
+    while index < len(expression):
+        if expression[index] != chr(92):
+            output.append(expression[index])
+            index += 1
+            continue
+        start = index
+        while index < len(expression) and expression[index] == chr(92):
+            index += 1
+        slash_count = index - start
+        output.append(chr(92) * slash_count)
+        if index < len(expression) and expression[index] == "z" and slash_count % 2:
+            output[-1] = chr(92) * (slash_count - 1) + r"\Z"
+            index += 1
+    return "".join(output)
 
 
 def _regex_parent_expression(expression: str) -> str | None:

@@ -42,22 +42,52 @@ def _capture_profile_name(
     return f"brz-{version_match.group(1)}-{operating_system}-{architecture}{python_suffix}.json"
 
 
+def _client_python_version(version_output: str) -> tuple[int, int] | None:
+    """Extract the interpreter version embedded in Breezy's version report."""
+    match = re.search(
+        r"^\s*Python interpreter: .*\s(\d+)\.(\d+)\.\d+\s*$",
+        version_output,
+        re.MULTILINE,
+    )
+    if match is None:
+        return None
+    return int(match.group(1)), int(match.group(2))
+
+
 def _select_cases_for_profile(
-    cases: Sequence[Mapping[str, Any]], capture_profile: str | None
+    cases: Sequence[Mapping[str, Any]],
+    capture_profile: str | None,
+    python_version: tuple[int, int] | None = None,
 ) -> tuple[list[Mapping[str, Any]], list[dict[str, Any]]]:
     """Keep profile-scoped probes out of native profiles not named by the case."""
     selected: list[Mapping[str, Any]] = []
     excluded: list[dict[str, Any]] = []
     for case in cases:
         required_profiles = case.get("capture_profiles")
-        if required_profiles and capture_profile not in required_profiles:
-            excluded.append(
-                {
-                    "id": case["id"],
-                    "required_profiles": required_profiles,
-                    "current_profile": capture_profile,
-                }
-            )
+        required_python = case.get("capture_python_minimum")
+        excluded_by_profile = required_profiles and capture_profile not in required_profiles
+        excluded_by_python = (
+            required_python
+            and not excluded_by_profile
+            and (python_version is None or python_version < tuple(required_python))
+        )
+        if excluded_by_profile or excluded_by_python:
+            exclusion: dict[str, Any] = {"id": case["id"]}
+            if excluded_by_profile:
+                exclusion.update(
+                    {
+                        "required_profiles": required_profiles,
+                        "current_profile": capture_profile,
+                    }
+                )
+            if excluded_by_python:
+                exclusion.update(
+                    {
+                        "required_python_minimum": required_python,
+                        "current_python": list(python_version) if python_version else None,
+                    }
+                )
+            excluded.append(exclusion)
         else:
             selected.append(case)
     return selected, excluded
@@ -329,8 +359,9 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
                 environment=environment,
             )
         capture_profile = _capture_profile_name(version_text[0] if version_text else "")
+        brz_python_version = _client_python_version("\n".join(version_text))
         selected_cases, excluded_cases = _select_cases_for_profile(
-            cases_data["cases"], capture_profile
+            cases_data["cases"], capture_profile, brz_python_version
         )
         captured = [_capture_case(case, executable) for case in selected_cases]
         expected_invalid_patterns = {
@@ -354,6 +385,11 @@ def capture(cases_path: Path, output_path: Path, brz_name: str) -> int:
                 "brz": {
                     "executable": executable,
                     "version": version_text[0] if version_text else "unknown",
+                    "python_version": list(brz_python_version) if brz_python_version else None,
+                    "python_interpreter": next(
+                        (line.strip() for line in version_text if "Python interpreter:" in line),
+                        None,
+                    ),
                 },
                 "platform": platform.platform(),
                 "runner_python": sys.version.split()[0],

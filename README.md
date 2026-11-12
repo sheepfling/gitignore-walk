@@ -257,7 +257,10 @@ membership-unknown because Breezy omits missing files from this listing. Members
 from ignore matching, so an ignored versioned file is still selected by an included walk. Symlink
 membership uses the queried lexical repository path even though rule evaluation resolves the target;
 this includes tracked symlinks to directories.
-The 52 boolean candidates on Breezy 3.3.24/macOS arm64 and 36 on Linux aarch64
+When a `RE:` rule uses Python 3.14's `\z` end anchor, the policy checks the Python runtime reported
+by `brz --version`: it maps the equivalent anchor to `\Z` on older local Python versions and
+preserves Breezy's parse error when the native client uses an older runtime. The 53 boolean
+candidates on Breezy 3.3.24/macOS arm64 and 36 on Linux aarch64
 include exact-path versus `/**` strong exclusions, `BRZ_HOME` global-ignore discovery, negative
 lookahead, scoped inline regex flags, and variable wildcard/regex exception scopes. Linux x86_64 and
 Windows Server 2025 x86_64 captures contain 33 checked cases; Breezy 3.3.11/Debian 13 x86_64 matches
@@ -266,8 +269,9 @@ establish regular source order as global ignores,
 built-in defaults, then branch `.bzrignore` on macOS arm64 and Linux aarch64. Both profiles also
 reject `RE:(?i)foo` with a native invalid-pattern error, despite the published pattern guide showing
 that form. Other regex, global-config, and platform behavior remain open; see the
-[Breezy oracle notes](tests/oracles/breezy/README.md) and [Breezy pattern
-reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html).
+[Breezy oracle notes](tests/oracles/breezy/README.md), [Breezy pattern
+reference](https://www.breezy-vcs.org/doc/en/user-reference/patterns-help.html), and
+[Python regular-expression reference](https://docs.python.org/3/library/re.html).
 
 ### Fossil matching
 

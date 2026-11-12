@@ -4,7 +4,12 @@
   "client": {
     "brz": {
       "executable": "/opt/homebrew/bin/brz",
-      "version": "Breezy (brz) 3.3.24"
+      "version": "Breezy (brz) 3.3.24",
+      "python_version": [
+        3,
+        15
+      ],
+      "python_interpreter": "Python interpreter: /opt/homebrew/Cellar/breezy/3.3.24/libexec/bin/brz 3.15.2"
     },
     "platform": "macOS-26.6.2-arm64-arm-64bit",
     "runner_python": "3.12.16"
@@ -998,6 +1003,55 @@
       "status_stdout": "?   .bzrignore\n",
       "status_stderr": "",
       "stdout_sha256": "a3ed9d83514493cfdf70ec41b5534a2ac8fc142dc165e124ff5a193075b49a42",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "isolated_configuration": true,
+      "global_ignore_existed_before": false,
+      "global_ignore_exists_after": true
+    },
+    {
+      "id": "brz.regex-python-z-anchor",
+      "dimension": "regex-runtime-version",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "query": "foo",
+      "observed_ignored": true,
+      "observed_pattern": "RE:^foo\\z",
+      "expected_winning_pattern": null,
+      "winning_pattern_matches": null,
+      "observed_unknown": false,
+      "candidate_matches": true,
+      "init_exit_code": 0,
+      "init_stderr": "",
+      "anchor_add_exit_code": null,
+      "anchor_add_stderr": "",
+      "anchor_add_method": null,
+      "ignored_command": [
+        "brz",
+        "ignored",
+        "--no-plugins",
+        "--verbose"
+      ],
+      "ignored_exit_code": 0,
+      "status_command": [
+        "brz",
+        "status",
+        "--no-plugins",
+        "--short",
+        "--no-classify"
+      ],
+      "status_exit_code": 0,
+      "ignored_paths": [
+        "foo"
+      ],
+      "unknown_paths": [
+        ".bzrignore"
+      ],
+      "stdout": "foo                                                RE:^foo\\z\n",
+      "stderr": "",
+      "status_stdout": "?   .bzrignore\n",
+      "status_stderr": "",
+      "stdout_sha256": "87c6669466105e1c8347983e75fa3d0b3a3f22ec51f1b1c2eb5a640211e10c76",
       "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
       "isolated_configuration": true,
       "global_ignore_existed_before": false,
