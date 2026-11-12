@@ -336,8 +336,8 @@ status and membership scope from the external working copy. The transition test 
 against Subversion 1.15.0 and runs in the hosted Ubuntu 1.14.3 and Windows SlikSvn 1.14.5 native
 integration jobs. A live membership test also roots the policy and walker at a nested versioned
 directory and matches its membership with native status from that caller root. Transition captures
-for macOS 1.15.0, Ubuntu 1.14.3, and Windows SlikSvn 1.14.5 are versioned and replayed; broader
-status traversal remains open.
+for macOS 1.15.0, Ubuntu 1.14.3, Windows SlikSvn 1.14.5, and Debian 13 Subversion 1.14.5 on both
+architectures are versioned and replayed; broader status traversal remains open.
 
 Reorder this list when user demand, supported client automation, or native probe results justify it.
 Do not implement a candidate merely because a CLI is installed. Each implementation starts with a

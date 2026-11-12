@@ -206,6 +206,43 @@ jobs:
         uses: docker/setup-qemu-action@v4
         with:
           platforms: arm64
+      - name: Capture Subversion status transitions on Debian 13
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/native"
+          for architecture in amd64 arm64; do
+            case "$architecture" in
+              amd64) profile=x86_64 ;;
+              arm64) profile=arm64 ;;
+            esac
+            docker run --rm --platform "linux/$architecture" \
+              --volume "$GITHUB_WORKSPACE:/workspace" \
+              --volume "$RUNNER_TEMP/native:/output" \
+              --workdir /workspace \
+              debian:13-slim \
+              bash -lc "apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq subversion python3 && python3 tests/oracles/svn/transitions.py --svn /usr/bin/svn --svnadmin /usr/bin/svnadmin --output /output/svn-status-transitions-1.14.5-debian13-$profile.json"
+          done
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+
+          directory = Path(os.environ["RUNNER_TEMP"]) / "native"
+          for profile, architecture in (("x86_64", "x86_64"), ("arm64", "aarch64")):
+              path = directory / f"svn-status-transitions-1.14.5-debian13-{profile}.json"
+              capture = json.loads(path.read_text(encoding="utf-8"))
+              assert capture["status"] == "captured", capture
+              assert capture["client"]["svn"]["version"] == "1.14.5", capture["client"]
+              assert architecture in capture["client"]["platform"], capture["client"]
+              case = capture["cases"][0]
+              assert case["id"] == "svn.status-membership-transitions"
+              assert case["candidate_matches"]
+              assert case["expected_status_items"] == case["observed_status_items"]
+              assert hashlib.sha256(case["normalized_stdout"].encode()).hexdigest() == case[
+                  "normalized_stdout_sha256"
+              ]
+          PY
       - name: Recapture Mercurial 7.0.1 on Debian 13
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: |

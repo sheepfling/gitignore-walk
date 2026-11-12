@@ -157,6 +157,8 @@ def test_subversion_captured_profiles_agree() -> None:
         ("svn-status-transitions-1.15.0-macos-arm64.json", "1.15.0"),
         ("svn-status-transitions-1.14.3-ubuntu-24.04-x86_64.json", "1.14.3"),
         ("svn-status-transitions-1.14.5-windows-x86_64.json", "1.14.5-SlikSvn"),
+        ("svn-status-transitions-1.14.5-debian13-x86_64.json", "1.14.5"),
+        ("svn-status-transitions-1.14.5-debian13-arm64.json", "1.14.5"),
     ],
 )
 def test_subversion_status_transition_capture_matches_expected_states(
