@@ -32,6 +32,11 @@ MEMBERSHIP_CAPTURE = json.loads(
         encoding="utf-8"
     )
 )
+LINUX_MEMBERSHIP_CAPTURE = json.loads(
+    (ORACLE_ROOT / "results" / "fossil-membership-2.23-ubuntu-24.04-x86_64.json").read_text(
+        encoding="utf-8"
+    )
+)
 TOKENIZER_CASES = tuple(case for case in CASES if "probes" in case["setup"])
 TOKENIZER_PROBES = tuple(
     (case, probe) for case in TOKENIZER_CASES for probe in case["setup"]["probes"]
@@ -249,6 +254,39 @@ def test_fossil_membership_transition_capture_is_complete() -> None:
         == MEMBERSHIP_CAPTURE["inventory"]["root_entries"]
     )
     assert {item["name"]: item["status"] for item in status_payload["files"]} == MEMBERSHIP_CAPTURE[
+        "after_transitions"
+    ]["status_by_name"]
+
+
+def test_fossil_linux_membership_capture_matches_transition_contract() -> None:
+    """Check the Linux capture against the committed macOS membership observations."""
+    capture = LINUX_MEMBERSHIP_CAPTURE
+
+    assert capture["schema_version"] == 1
+    assert capture["status"] == "captured"
+    assert capture["client"]["fossil"].startswith("This is fossil version 2.23 ")
+    assert capture["client"]["platform"].startswith("Linux-")
+    assert capture["inventory"] == MEMBERSHIP_CAPTURE["inventory"]
+    assert capture["before_transitions"] == MEMBERSHIP_CAPTURE["before_transitions"]
+    assert capture["after_transitions"] == MEMBERSHIP_CAPTURE["after_transitions"]
+    assert {case["id"] for case in capture["cases"]} == {
+        case["id"] for case in MEMBERSHIP_CAPTURE["cases"]
+    }
+    assert all(case["candidate_matches"] for case in capture["cases"])
+
+    raw_results = capture["native_results"]
+    assert all(result["exit_code"] == 0 for result in raw_results.values())
+    root_payload = json.loads(base64.b64decode(raw_results["root_inventory"]["stdout_base64"]))[
+        "payload"
+    ]
+    status_payload = json.loads(
+        base64.b64decode(raw_results["transition_status"]["stdout_base64"])
+    )["payload"]
+    assert (
+        sorted(entry["name"] for entry in root_payload["entries"])
+        == capture["inventory"]["root_entries"]
+    )
+    assert {item["name"]: item["status"] for item in status_payload["files"]} == capture[
         "after_transitions"
     ]["status_by_name"]
 

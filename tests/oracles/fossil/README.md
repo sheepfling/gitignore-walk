@@ -51,14 +51,15 @@ untracked, and directory targets while asserting that membership does not change
 The test also checks native status entries for scheduled additions (`new`), missing files, edits
 (`edited`), and renames (`["missing", "renamed"]`), and confirms those paths remain versioned while
 an absent, unreported path stays unknown. Directory membership remains unknown. The versioned
-`results/fossil-membership-2.28-macos-arm64.json` capture preserves root and nested check-in
-inventories plus clean, scheduled-add, missing, edited, and rename status evidence. It stores each
-membership query's exit code and raw stdout/stderr as base64 so the parsed fields can be audited.
-The native CI
-runner now emits and validates a fresh transition capture alongside the ignore-glob capture; the
-Linux profile result is retained as a CI artifact. The live policy test also checks the transition
-matrix and membership-aware walker selections. Broader client-version and platform profiles remain
-open.
+`results/fossil-membership-2.28-macos-arm64.json` and
+`results/fossil-membership-2.23-ubuntu-24.04-x86_64.json` captures preserve root and nested
+check-in inventories plus clean, scheduled-add, missing, edited, and rename status evidence. Both
+profiles match the same seven transition cases. They store each membership query's exit code and
+raw stdout/stderr as base64 so the parsed fields can be audited. The native CI runner also emits
+and validates a fresh transition capture alongside the ignore-glob capture. Debian 13's packaged
+Fossil 2.26 lacks the JSON command required for membership discovery, so it is not used for this
+membership profile. The live policy test checks the transition matrix and membership-aware walker
+selections. Broader client-version and platform profiles remain open.
 Membership-aware walking keeps ignored directories traversable because they may contain versioned
 descendants. The Fossil 2.28/macOS live fixture checks that a tracked child is selected as included
 while `fossil extras` omits its ignored untracked sibling, in both traversal orders.

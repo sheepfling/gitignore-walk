@@ -155,9 +155,11 @@ Fossil 2.28/macOS native comparison also confirms parent walks stop at a nested 
 with `fossil open --nested`, in both top-down and bottom-up traversal. Cross-profile status and
 broader traversal coverage remain open. A new isolated Fossil membership capture records current
 root/nested check-in inventory plus scheduled-add, missing, edited, and rename status records on
-Fossil 2.28/macOS arm64. Native Linux CI now emits and validates its own profile capture, and the
-live policy/walker transition fixture runs with the native Linux job. The committed transition
-artifact currently covers only macOS; keep broader client-version and platform profiles open.
+Fossil 2.28/macOS arm64 and Fossil 2.23/Ubuntu 24.04 x86_64. Both captures agree on all seven
+transition cases. Native Linux CI also emits and validates its own profile capture, and the live
+policy/walker transition fixture runs with the native Linux job. Debian 13's packaged Fossil 2.26
+lacks the JSON command needed by membership discovery, so that profile is excluded. Broader
+client-version and platform profiles remain open.
 Breezy's corpus is now
 captured on 3.3.24/macOS arm64, Linux aarch64 and x86_64, and Windows Server 2025 x86_64 with
 isolated user configuration: all thirty-three boolean cases agree, including global-versus-branch
