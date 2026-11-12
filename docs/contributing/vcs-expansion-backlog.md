@@ -857,9 +857,10 @@ Ubuntu 24.04's Mercurial 6.7.2 package, including the workspace `.hgignore` vers
 `HGRCPATH` unset and checks the default per-user and repository `.hg/hgrc` `ui.ignore` sources
 against native `debugignore`; the workspace `.hgignore` wins while the policy trace retains all
 three matching sources in order. This is captured on Mercurial 7.2.4/macOS arm64 and Windows
-x86_64. The case also runs live with installed Mercurial clients on native CI platforms. Broader
-versioned profiles remain open. The existing live membership fixture already
-covers clean,
+x86_64. The case also runs live with installed Mercurial clients on native CI platforms. Mercurial
+7.0.1 Debian 13 x86_64 and ARM64 captures also confirm the default source precedence with
+`HGRCPATH` unset. Broader versioned profiles remain open. The existing live membership fixture
+already covers clean,
 pending-forget, forgotten, re-added, committed, and pending-remove states. A new regression also
 checks a tracked rename from an ignored name to a visible name: pending source/destination paths
 remain versioned, and after commit the absent old path remains ignore-matched with unknown

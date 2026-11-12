@@ -2117,6 +2117,54 @@
       "raw_stderr": ""
     },
     {
+      "id": "hg.default-config-source-precedence",
+      "profile": "hg",
+      "dimension": "configuration-precedence",
+      "evidence_status": "native-observed",
+      "native_status": "captured",
+      "expected_candidate": true,
+      "observed_ignored": true,
+      "candidate_matches": true,
+      "observation_method": "debugignore",
+      "fallback_observation": null,
+      "command": [
+        "/usr/bin/hg",
+        "debugignore",
+        "-v",
+        "--",
+        "common.tmp"
+      ],
+      "working_directory": "<repo>",
+      "environment": {
+        "HGRCPATH": null,
+        "HGPLAIN": "1",
+        "LC_ALL": "C"
+      },
+      "init_exit_code": 0,
+      "init_stdout": "",
+      "init_stderr": "",
+      "exit_code": 0,
+      "result": "ignored",
+      "stdout": "common.tmp is ignored\n(ignore rule in <repo>/.hgignore, line 2: 'common.tmp')\n",
+      "stderr": "",
+      "configuration": {
+        "command": [
+          "/usr/bin/hg",
+          "config",
+          "--debug",
+          "ui"
+        ],
+        "exit_code": 0,
+        "stdout": "read config from: resource:mercurial.defaultrc.mergetools.rc\nread config from: /usr/etc/mercurial/hgrc\nread config from: /etc/mercurial/hgrc\nread config from: /etc/mercurial/hgrc.d/cacerts.rc\nread config from: /etc/mercurial/hgrc.d/default-tools.rc\nread config from: /etc/mercurial/hgrc.d/hgext.rc\nread config from: <home>/.hgrc\nread config from: <home>/.config/hg/hgrc\n/etc/mercurial/hgrc.d/default-tools.rc:2: ui.editor=sensible-editor\n<home>/.hgrc:2: ui.ignore.user=user.ignore\n<repo>/.hg/hgrc:2: ui.ignore.repository=repository.ignore\n--verbose: ui.verbose=False\n--debug: ui.debug=True\n--quiet: ui.quiet=False\n",
+        "stderr": "",
+        "normalized_stdout_sha256": "15301102ac37716ae622a5d0c521c082ff8d9ccad873388bb49301f94c7923c0"
+      },
+      "normalized_stdout_sha256": "1933a467c3384950d0ba3c7b4a6bdcfd941e75d37ba943a426c624d48519f79f",
+      "normalized_stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "raw_stdout": "common.tmp is ignored\n(ignore rule in /tmp/gitignore-walk-hg-oracle-rzcj0v8f/repo/.hgignore, line 2: 'common.tmp')\n",
+      "raw_stderr": ""
+    },
+    {
       "id": "hg.glob-unicode-normalization-is-significant",
       "profile": "hg",
       "dimension": "path-normalization",

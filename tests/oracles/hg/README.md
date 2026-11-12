@@ -70,7 +70,8 @@ default per-user config and repository `.hg/hgrc`. With the same path matched by
 files and `.hgignore`, native `debugignore` attributes the decision to `.hgignore`; the opt-in
 policy retains all three matches in precedence order. This is captured on Mercurial 7.2.4/macOS
 arm64 and Mercurial 7.2.4/Windows x86_64, and also runs live against installed clients on native CI
-platforms. Broader versioned profiles remain open.
+platforms. The Mercurial 7.0.1 Debian 13 x86_64 and aarch64 captures also confirm the same default
+source precedence with `HGRCPATH` unset. Broader versioned profiles remain open.
 Configured-path environment expansion is captured with Mercurial 7.2.4 on macOS arm64 and Windows
 x86_64, and Mercurial 7.0.1 on Debian 13 Linux aarch64 and x86_64. The POSIX captures cover
 `$VAR`/`${VAR}` paths; the Windows capture covers `%VAR%` expansion. Live native tests also exercise
