@@ -978,10 +978,16 @@ jobs:
 
           path = Path(os.environ["RUNNER_TEMP"]) / "native/darcs-2.16.3-windows-x64.json"
           capture = json.loads(path.read_text(encoding="utf-8"))
+          corpus = json.loads(Path("tests/oracles/darcs/cases.json").read_text(encoding="utf-8"))["cases"]
           assert capture["status"] == "captured", capture
           assert capture["client"]["version"].startswith("2.16.3"), capture["client"]
+          assert {case["id"] for case in capture["cases"]} == {case["id"] for case in corpus}
           closed = [case for case in capture["cases"] if case["expected_boring"] is not None]
-          assert len(closed) == 18, len(closed)
+          closed_ids = {case["id"] for case in closed}
+          expected_closed_ids = {
+              case["id"] for case in corpus if case["expected_boring"] is not None
+          }
+          assert closed_ids == expected_closed_ids, closed_ids ^ expected_closed_ids
           mismatches = [
               case["id"] for case in closed
               if case["expected_boring"] != case["observed_boring"]
