@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "case": {
+    "id": "fossil.walk-stops-at-nested-checkout",
+    "command": [
+      "fossil",
+      "extras",
+      "--dotfiles"
+    ],
+    "expected_paths": [
+      "outer.txt"
+    ],
+    "observed_native_paths": [
+      "outer.txt"
+    ],
+    "observed_policy_paths": [
+      "outer.txt"
+    ],
+    "candidate_matches_native": true,
+    "native_matches_expected": true,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  "client": {
+    "fossil": "This is fossil version 2.28 [52445a27f1] 2026-03-11 11:31:46 UTC",
+    "executable": "/opt/homebrew/bin/fossil",
+    "distribution": "macOS 26.6.2",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "runner_python": "3.12.16"
+  }
+}

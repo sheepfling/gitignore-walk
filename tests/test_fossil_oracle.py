@@ -37,6 +37,14 @@ LINUX_MEMBERSHIP_CAPTURE = json.loads(
         encoding="utf-8"
     )
 )
+NESTED_CHECKOUT_CAPTURE_FILES = (
+    "fossil-nested-checkout-2.28-macos-arm64.json",
+    "fossil-nested-checkout-2.23-ubuntu-24.04-x86_64.json",
+)
+NESTED_CHECKOUT_CAPTURES: dict[str, dict[str, Any]] = {
+    name: json.loads((ORACLE_ROOT / "results" / name).read_text(encoding="utf-8"))
+    for name in NESTED_CHECKOUT_CAPTURE_FILES
+}
 TOKENIZER_CASES = tuple(case for case in CASES if "probes" in case["setup"])
 TOKENIZER_PROBES = tuple(
     (case, probe) for case in TOKENIZER_CASES for probe in case["setup"]["probes"]
@@ -109,6 +117,25 @@ def test_fossil_capture_has_no_setup_or_probe_command_failures(profile: str) -> 
     assert all(
         case["extras"] is None or case["extras"]["exit_code"] == 0 for case in capture["cases"]
     )
+
+
+@pytest.mark.parametrize("profile", NESTED_CHECKOUT_CAPTURE_FILES)
+def test_fossil_nested_checkout_capture_matches_native_boundary(profile: str) -> None:
+    capture = NESTED_CHECKOUT_CAPTURES[profile]
+    case = capture["case"]
+
+    assert capture["schema_version"] == 1
+    assert capture["status"] == "captured"
+    assert capture["client"]["fossil"].startswith("This is fossil version ")
+    assert case["id"] == "fossil.walk-stops-at-nested-checkout"
+    assert case["command"] == ["fossil", "extras", "--dotfiles"]
+    assert case["expected_paths"] == ["outer.txt"]
+    assert case["observed_native_paths"] == case["expected_paths"]
+    assert case["observed_policy_paths"] == case["observed_native_paths"]
+    assert case["candidate_matches_native"] is True
+    assert case["native_matches_expected"] is True
+    assert case["exit_code"] == 0
+    assert case["stderr"] == ""
 
 
 @pytest.mark.parametrize("profile", CAPTURE_FILES)

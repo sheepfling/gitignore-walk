@@ -813,6 +813,26 @@ jobs:
           python -m scripts.ci native --include-trust
           --backends hg svn fossil brz p4
           --output-dir "$RUNNER_TEMP/native"
+      - name: Capture Fossil nested-checkout boundary on Ubuntu 24.04
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: |
+          python tests/oracles/fossil/nested_checkout.py \
+            --output "$RUNNER_TEMP/native/fossil-nested-checkout-ubuntu-24.04-x86_64.json"
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          path = Path(os.environ["RUNNER_TEMP"]) / "native/fossil-nested-checkout-ubuntu-24.04-x86_64.json"
+          capture = json.loads(path.read_text(encoding="utf-8"))
+          assert capture["status"] == "captured", capture
+          assert capture["client"]["fossil"].startswith("This is fossil version 2.23"), capture
+          case = capture["case"]
+          assert case["observed_native_paths"] == ["outer.txt"], case
+          assert case["observed_policy_paths"] == case["observed_native_paths"], case
+          assert case["candidate_matches_native"] and case["native_matches_expected"], case
+          print(capture)
+          PY
       - name: Capture Breezy source precedence on Linux x86_64
         if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
         run: >-

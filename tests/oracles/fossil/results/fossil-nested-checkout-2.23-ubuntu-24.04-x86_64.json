@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "status": "captured",
+  "case": {
+    "id": "fossil.walk-stops-at-nested-checkout",
+    "command": [
+      "fossil",
+      "extras",
+      "--dotfiles"
+    ],
+    "expected_paths": [
+      "outer.txt"
+    ],
+    "observed_native_paths": [
+      "outer.txt"
+    ],
+    "observed_policy_paths": [
+      "outer.txt"
+    ],
+    "candidate_matches_native": true,
+    "native_matches_expected": true,
+    "exit_code": 0,
+    "stderr": ""
+  },
+  "client": {
+    "fossil": "This is fossil version 2.23 [ffad4043e5] 2023-11-01 21:50:12 UTC",
+    "executable": "/usr/bin/fossil",
+    "distribution": "Ubuntu 24.04.5 LTS",
+    "platform": "Linux-7.0.12-linuxkit-x86_64-with-glibc2.39",
+    "runner_python": "3.12.3"
+  }
+}
