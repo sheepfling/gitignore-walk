@@ -853,7 +853,9 @@ currently tested clients and platforms. Workspace-membership transitions now run
 installed clients on native CI platforms, pinned Mercurial 7.2.4 on Windows, and Mercurial 7.0.1 on
 Debian 13 x86_64 and ARM64. Configuration precedence also has a native capture for
 Ubuntu 24.04's Mercurial 6.7.2 package, including the workspace `.hgignore` versus configured
-`ui.ignore` source-order probe. A new native capture on Mercurial 7.2.4/macOS arm64 leaves
+`ui.ignore` source-order probe. The full 73-case Mercurial 6.7.2 hosted Ubuntu capture is now
+versioned and replayed: 71 closed observations match, with the include-cycle and nested-subinclude
+client failures retained as open cases. A new native capture on Mercurial 7.2.4/macOS arm64 leaves
 `HGRCPATH` unset and checks the default per-user and repository `.hg/hgrc` `ui.ignore` sources
 against native `debugignore`; the workspace `.hgignore` wins while the policy trace retains all
 three matching sources in order. This is captured on Mercurial 7.2.4/macOS arm64 and Windows

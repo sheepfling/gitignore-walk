@@ -41,6 +41,7 @@ MATCHING_CAPTURE_FILES = (
     "hg-6.7.2-linux-x86_64.json",
     "hg-7.0.1-linux-aarch64.json",
     "hg-7.0.1-linux-x86_64.json",
+    "hg-6.7.2-ubuntu-24.04-x86_64.json",
     "hg-7.1.2-windows-x86_64.json",
     "hg-7.2.4-windows-x86_64.json",
 )
@@ -557,9 +558,14 @@ def test_windows_source_discovery_marks_symlink_sources_unavailable(
 
 def test_subinclude_match_is_corroborated_by_native_status_walks() -> None:
     """A Mercurial debugignore formatting crash does not invalidate the matched rule result."""
-    assert len(MATCHING_CAPTURE_FILES) == len(WALK_CAPTURE_FILES)
-    for index, profile in enumerate(MATCHING_CAPTURE_FILES):
-        walk_profile = WALK_CAPTURE_FILES[index]
+    profiles_with_walks: set[str] = set()
+    profiles_without_walks: set[str] = set()
+    for profile in MATCHING_CAPTURE_FILES:
+        walk_profile = profile.replace("hg-", "hg-walk-", 1)
+        if walk_profile not in WALK_OBSERVATIONS:
+            profiles_without_walks.add(profile)
+            continue
+        profiles_with_walks.add(walk_profile)
         debugignore = MATCHING_OBSERVATIONS[profile]["hg.subinclude-rebases"]
         status_walk = WALK_OBSERVATIONS[walk_profile]["hg.walk.subinclude-scope"]
 
@@ -567,6 +573,9 @@ def test_subinclude_match_is_corroborated_by_native_status_walks() -> None:
         assert debugignore["observed_ignored"] is True
         assert status_walk["candidate_matches"]
         assert "pkg/build/one.tmp" in status_walk["observed_ignored_paths"]
+
+    assert profiles_with_walks == set(WALK_CAPTURE_FILES)
+    assert profiles_without_walks == {"hg-6.7.2-ubuntu-24.04-x86_64.json"}
 
 
 @pytest.mark.parametrize(

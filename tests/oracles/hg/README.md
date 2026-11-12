@@ -26,6 +26,9 @@ macOS arm64 Mercurial 7.2.4, Debian 13 Linux aarch64 and x86_64 Mercurial 7.0.1,
 Server 2025 x86_64 Mercurial 7.1.2. A hosted Ubuntu x86_64 capture records Mercurial 6.7.2 from
 the native Linux CI job. A supplementary Ubuntu 24.04 x86_64 container capture of the same 6.7.2
 client extends its config-precedence coverage; the container uses LinuxKit's x86_64 kernel.
+The hosted runner's full 73-case capture is retained as
+`results/hg-6.7.2-ubuntu-24.04-x86_64.json` and replayed by the Mercurial test suite: 71 closed
+observations match the policy, and the include-cycle and nested-subinclude client errors remain open.
 The current Mercurial 7.2.4 Windows profile is installed from a checksum-pinned
 CPython 3.12 wheel; the Windows job also runs the focused membership-transition test against that
 executable to compare its status behavior with the system-installed Mercurial. The original 48
